@@ -381,9 +381,8 @@ export function LogsPage() {
 
       {/* Filtros */}
       <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6">
-        <div className="flex flex-wrap items-end gap-4">
-
-          {/* Busca */}
+        <div className="space-y-3">
+          {/* Linha 1: Busca */}
           <div className="flex items-center gap-2">
             <input
               type="text"
@@ -391,77 +390,79 @@ export function LogsPage() {
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              className="form-input text-sm w-44"
+              className="form-input text-sm w-64"
             />
             <Button onClick={handleSearch} variant="secondary" size="sm">
               <Search size={14} />
             </Button>
+            <Button onClick={handleClearFilters} variant="secondary" size="sm">
+              <RefreshCw size={14} className="mr-1" />
+              Limpar
+            </Button>
           </div>
 
-          {/* Ação */}
-          <div>
-            <select
-              value={filters.action || ''}
-              onChange={(e) => setFilters((prev) => ({ ...prev, action: e.target.value || undefined, page: 1 }))}
-              className="form-select text-sm"
-            >
-              <option value="">Ação: Todas</option>
-              {stats?.byAction.map((item) => (
-                <option key={item.action} value={item.action}>
-                  {ACTION_LABELS[item.action] || item.action} ({item.count})
-                </option>
-              ))}
-            </select>
+          {/* Linha 2: Ação e Severidade */}
+          <div className="flex flex-wrap items-center gap-4">
+            <div>
+              <label className="text-xs text-gray-500 mb-1 block">Ação</label>
+              <select
+                value={filters.action || ''}
+                onChange={(e) => setFilters((prev) => ({ ...prev, action: e.target.value || undefined, page: 1 }))}
+                className="form-select text-sm"
+              >
+                <option value="">Todas</option>
+                {stats?.byAction.map((item) => (
+                  <option key={item.action} value={item.action}>
+                    {ACTION_LABELS[item.action] || item.action} ({item.count})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="text-xs text-gray-500 mb-1 block">Severidade</label>
+              <select
+                value={filters.severity || ''}
+                onChange={(e) => setFilters((prev) => ({ ...prev, severity: e.target.value || undefined, page: 1 }))}
+                className="form-select text-sm"
+              >
+                <option value="">Todas</option>
+                {stats?.bySeverity.map((item) => (
+                  <option key={item.severity} value={item.severity}>
+                    {SEVERITY_CONFIG[item.severity as keyof typeof SEVERITY_CONFIG]?.label || item.severity} ({item.count})
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
-          {/* Severidade */}
-          <div>
-            <select
-              value={filters.severity || ''}
-              onChange={(e) => setFilters((prev) => ({ ...prev, severity: e.target.value || undefined, page: 1 }))}
-              className="form-select text-sm"
-            >
-              <option value="">Severidade: Todas</option>
-              {stats?.bySeverity.map((item) => (
-                <option key={item.severity} value={item.severity}>
-                  {SEVERITY_CONFIG[item.severity as keyof typeof SEVERITY_CONFIG]?.label || item.severity} ({item.count})
-                </option>
-              ))}
-            </select>
-          </div>
+          {/* Linha 3: Data Inicial e Data Final */}
+          <div className="flex flex-wrap items-center gap-4">
+            <div>
+              <label className="text-xs text-gray-500 mb-1 block">Data Inicial</label>
+              <input
+                type="date"
+                value={filters.startDate || ''}
+                onChange={(e) => setFilters((prev) => ({ ...prev, startDate: e.target.value || undefined, page: 1 }))}
+                className="form-input text-sm"
+              />
+            </div>
 
-          {/* Data Inicial */}
-          <div>
-            <input
-              type="date"
-              value={filters.startDate || ''}
-              onChange={(e) => setFilters((prev) => ({ ...prev, startDate: e.target.value || undefined, page: 1 }))}
-              className="form-input text-sm"
-              placeholder="Data inicial"
-            />
+            <div>
+              <label className="text-xs text-gray-500 mb-1 block">Data Final</label>
+              <input
+                type="date"
+                value={filters.endDate || ''}
+                onChange={(e) => setFilters((prev) => ({ ...prev, endDate: e.target.value || undefined, page: 1 }))}
+                className="form-input text-sm"
+              />
+            </div>
           </div>
-
-          {/* Data Final */}
-          <div>
-            <input
-              type="date"
-              value={filters.endDate || ''}
-              onChange={(e) => setFilters((prev) => ({ ...prev, endDate: e.target.value || undefined, page: 1 }))}
-              className="form-input text-sm"
-              placeholder="Data final"
-            />
-          </div>
-
-          {/* Limpar */}
-          <Button onClick={handleClearFilters} variant="secondary" size="sm">
-            <RefreshCw size={14} className="mr-1" />
-            Limpar
-          </Button>
         </div>
       </div>
 
       {/* Tabela de Logs - Estilo Console */}
-      <div className="bg-gray-900 rounded-xl border border-gray-700 overflow-hidden shadow-2xl">
+      <div className="bg-gray-900 rounded-xl border border-gray-700 shadow-2xl">
         {/* Header da tabela */}
         <div className="bg-gray-800 px-4 py-3 border-b border-gray-700 flex items-center justify-between">
           <div className="flex items-center gap-2">
