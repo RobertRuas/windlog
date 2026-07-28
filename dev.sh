@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ============================================================================
-# DEV STARTUP SCRIPT - Inicia o ambiente de desenvolvimento
+# DEV STARTUP SCRIPT - Inicia o ambiente de desenvolvimento completo
 # ============================================================================
 #
 # O QUE ESTE SCRIPT FAZ?
@@ -10,7 +10,8 @@
 # 2. Gera o client Prisma
 # 3. Aplica migrations pendentes
 # 4. Roda o seed (cria usuários iniciais)
-# 5. Inicia o servidor NestJS em modo desenvolvimento
+# 5. Inicia o servidor NestJS (API) em background
+# 6. Inicia o Vite (Frontend) em foreground
 #
 # COMO USAR?
 # ----------
@@ -18,6 +19,10 @@
 #
 # OU com permissão de execução:
 # chmod +x dev.sh && ./dev.sh
+#
+# PARA PARAR:
+# -----------
+# Pressione Ctrl+C para parar ambos os servidores
 #
 # ============================================================================
 
@@ -30,12 +35,32 @@ RED='\033[0;31m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Diretório do script
+# Diretórios do projeto
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 API_DIR="$SCRIPT_DIR/API"
+FRONTEND_DIR="$SCRIPT_DIR"
+
+# PID dos processos em background (para limpeza ao sair)
+API_PID=""
+
+# Função de limpeza - executada ao pressionar Ctrl+C
+cleanup() {
+    echo ""
+    echo -e "${YELLOW}Parando servidores...${NC}"
+    if [ -n "$API_PID" ]; then
+        kill $API_PID 2>/dev/null || true
+        echo -e "${GREEN}  ✅ API parada${NC}"
+    fi
+    echo -e "${GREEN}  ✅ Frontend parado${NC}"
+    echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    exit 0
+}
+
+# Registra a função de limpeza para executar ao sair (Ctrl+C)
+trap cleanup SIGINT SIGTERM
 
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${BLUE}  🚀 Windlog API - Dev Startup${NC}"
+echo -e "${BLUE}  🚀 Windlog - Dev Startup (API + Frontend)${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 
@@ -103,14 +128,15 @@ npx tsx prisma/seed.ts
 echo -e "${GREEN}  ✅ Migrations e seed aplicados${NC}"
 
 # -------------------------------------------------------------------------
-# PASSO 5: Iniciar o servidor NestJS
+# PASSO 5: Iniciar API (background) e Frontend (foreground)
 # -------------------------------------------------------------------------
-echo -e "${YELLOW}[5/5] Iniciando servidor NestJS...${NC}"
+echo -e "${YELLOW}[5/5] Iniciando servidores...${NC}"
 echo ""
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo -e "${GREEN}  🎉 Ambiente pronto!${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
+echo -e "  ${GREEN}Frontend:${NC}   http://localhost:5173"
 echo -e "  ${GREEN}API:${NC}        http://localhost:3000"
 echo -e "  ${GREEN}Swagger:${NC}    http://localhost:3000/api/docs"
 echo -e "  ${GREEN}Prisma Studio:${NC} npx prisma studio"
@@ -120,8 +146,19 @@ echo -e "    admin@windlog.com   / 123  (ADMIN)"
 echo -e "    rh@windlog.com      / 123  (HR)"
 echo -e "    default@windlog.com / 123  (STANDARD)"
 echo ""
+echo -e "  ${YELLOW}Pressione Ctrl+C para parar${NC}"
+echo ""
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 
-# Inicia o servidor em modo desenvolvimento
-npm run start:dev
+# Inicia a API em background
+cd "$API_DIR"
+npm run start:dev &
+API_PID=$!
+
+# Aguarda a API iniciar (tempo para compilar)
+sleep 3
+
+# Inicia o Frontend em foreground (Ctrl+C para ambos)
+cd "$FRONTEND_DIR"
+npm run dev
