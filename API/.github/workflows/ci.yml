@@ -1,0 +1,79 @@
+# ============================================================================
+# GITHUB ACTIONS CI - Integração Contínua
+# ============================================================================
+#
+# O QUE É ESTE ARQUIVO?
+# ---------------------
+# Define o pipeline de CI (Continuous Integration) que roda automaticamente
+# a cada push ou pull request para a branch main.
+#
+# O QUE FAZ?
+# ----------
+# 1. Instala dependências
+# 2. Gera o Prisma Client
+# 3. Verifica lint (padrões de código)
+# 4. Faz o build (compila TypeScript)
+# 5. Roda os testes
+#
+# Quando roda?
+# - A cada push na branch 'main'
+# - A cada pull request para 'main'
+# ============================================================================
+
+name: CI
+
+# Gatilhos: quando executar este workflow
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Jobs: tarefas que serão executadas
+jobs:
+  build:
+    # Máquina virtual onde o job será executado
+    runs-on: ubuntu-latest
+
+    # Estratégia de execução (pode rodar em múltiplas versões do Node)
+    strategy:
+      matrix:
+        node-version: [20.x, 22.x]
+
+    steps:
+      # Passo 1: Clona o repositório
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Passo 2: Configura o Node.js
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: API/package.json
+
+      # Passo 3: Instala dependências
+      - name: Install dependencies
+        working-directory: API
+        run: npm ci
+
+      # Passo 4: Gera o Prisma Client
+      - name: Generate Prisma Client
+        working-directory: API
+        run: npx prisma generate
+
+      # Passo 5: Verifica lint
+      - name: Run lint
+        working-directory: API
+        run: npm run lint
+
+      # Passo 6: Faz o build
+      - name: Build
+        working-directory: API
+        run: npm run build
+
+      # Passo 7: Roda os testes
+      - name: Run tests
+        working-directory: API
+        run: npm test

@@ -1,0 +1,123 @@
+// ============================================================================
+// PRISMA SCHEMA - Definição do Banco de Dados
+// ============================================================================
+//
+// O QUE É ESTE ARQUIVO?
+// ---------------------
+// Este é o arquivo central do Prisma ORM. Ele define TODA a estrutura do
+// banco de dados: tabelas (models), relacionamentos, enums e configurações.
+//
+// POR QUE PRISMA?
+// ---------------
+// Prisma oferece type-safety (segurança de tipos) gerando automaticamente
+// tipos TypeScript baseados no schema. Isso significa que o banco de dados
+// e o código estão sempre sincronizados.
+//
+// COMO FUNCIONA?
+// --------------
+// 1. Defina os models aqui
+// 2. Rode: npx prisma migrate dev --name nome_da_migration
+// 3. O Prisma cria as tabelas no PostgreSQL automaticamente
+// 4. O código TypeScript ganha acesso aos tipos gerados
+//
+// CONVENÇÕES IMPORTANTES:
+// -----------------------
+// - IDs sempre em UUID (universally unique identifiers)
+// - Datas sempre em UTC (horário universal)
+// - Soft Delete: nunca apagamos dados, usamos o campo 'deletedAt'
+// - Todo registro pertence a uma empresa (multi-tenant)
+// - Nomes de models em PascalCase (ex: User, Project)
+// - Nomes de campos em camelCase (ex: createdAt, firstName)
+//
+// NOTA PRISMA v7:
+// ---------------
+// A URL do banco NÃO fica mais aqui. Ela está em 'prisma.config.ts'.
+// O client é gerado em './generated/prisma' (não mais em node_modules).
+// ============================================================================
+
+// ---------------------------------------------------------------------------
+// CONFIGURAÇÃO DO GENERADOR
+// ---------------------------------------------------------------------------
+// 'prisma-client' é o novo provider (substitui 'prisma-client-js')
+// 'output' define onde o client TypeScript será gerado
+// IMPORTANTE: Após 'prisma generate', importe de './generated/prisma/client'
+// ---------------------------------------------------------------------------
+generator client {
+  provider = "prisma-client"
+  output   = "./generated/prisma"
+}
+
+// ---------------------------------------------------------------------------
+// DATASOURCE - Configuração do Banco de Dados
+// ---------------------------------------------------------------------------
+// Define qual banco de dados usar (PostgreSQL)
+// A URL da conexão está em 'prisma.config.ts' (novo no Prisma v7)
+// ---------------------------------------------------------------------------
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// ENUM: ROLE (Papéis de Usuário)
+// ---------------------------------------------------------------------------
+// Define os níveis de acesso do sistema (RBAC - Role-Based Access Control)
+// Cada role tem permissões diferentes:
+//
+// - TECHNICIAN:   Acesso básico (registro de atividades)
+// - TEAM_LEADER:  Aprovações e gestão de equipe
+// - SUPERVISOR:   Criar/editar projetos e gerenciar usuários
+// - ADMIN:        Acesso completo ao sistema
+// ---------------------------------------------------------------------------
+enum Role {
+  TECHNICIAN
+  TEAM_LEADER
+  SUPERVISOR
+  ADMIN
+}
+
+// ---------------------------------------------------------------------------
+// MODEL: USER (Usuário do Sistema)
+// ---------------------------------------------------------------------------
+// Representa qualquer pessoa que usa o sistema.
+//
+// CAMPOS:
+// - id:         Identificador único (UUID gerado automaticamente)
+// - email:      E-mail único (usado para login)
+// - password:   Senha criptografada com bcrypt (NUNCA salvar em texto puro)
+// - firstName:  Primeiro nome do usuário
+// - lastName:   Sobrenome do usuário
+// - role:       Papel do usuário no sistema (enum Role)
+// - isActive:   Se o usuário está ativo (true) ou desativado (false)
+// - createdAt:  Data/hora de criação (UTC, automática)
+// - updatedAt:  Data/hora da última alteração (UTC, automática)
+// - deletedAt:  Data/hora do soft delete (null = ativo)
+//
+// RELACIONAMENTOS (futuros):
+// - Um usuário pode ter múltiplos timesheets
+// - Um usuário pode ser atribuído a múltiplos projetos
+// ---------------------------------------------------------------------------
+model User {
+  // Identificador único (UUID v4 gerado automaticamente pelo banco)
+  id        String   @id @default(uuid())
+
+  // Dados de autenticação
+  email     String   @unique
+  password  String
+
+  // Dados pessoais
+  firstName String
+  lastName  String
+
+  // Controle de acesso (RBAC)
+  role      Role     @default(TECHNICIAN)
+  isActive  Boolean  @default(true)
+
+  // Timestamps (datas em UTC)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  // Relações futuras serão adicionadas aqui
+  // Ex: timesheets Timesheet[]
+  // Ex: projects  ProjectUser[]
+}
