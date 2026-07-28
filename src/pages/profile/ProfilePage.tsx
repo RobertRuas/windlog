@@ -150,16 +150,47 @@ export function ProfilePage() {
     { key: 'firstName', label: t('profile.firstName'), minLength: 2, required: true, category: 'identity' },
     { key: 'lastName', label: t('profile.lastName'), minLength: 2, required: true, category: 'identity' },
     { key: 'dateOfBirth', label: t('profile.dateOfBirth'), type: 'date', category: 'identity' },
-    { key: 'nationality', label: t('profile.nationality'), type: 'select', options: countryOptions, category: 'identity' },
+    {
+      key: 'nationality',
+      label: t('profile.nationality'),
+      type: 'select',
+      options: countryOptions,
+      category: 'identity',
+      formatDisplay: (d) => {
+        if (!d.nationality) return null;
+        return PREDEFINED_COUNTRIES.find((c) => c.code === d.nationality)?.name ?? d.nationality;
+      },
+    },
     // Contato
     { key: 'email', label: t('profile.email'), type: 'email', span: 2, category: 'contact' },
-    { key: 'phoneCountryCode', label: t('profile.phoneCountryCode'), type: 'select', options: phoneCodeOptions, category: 'contact' },
-    { key: 'phone', label: t('profile.phone'), category: 'contact' },
+    {
+      key: 'fullPhone',
+      label: t('profile.phone'),
+      category: 'contact',
+      virtual: true,
+      formatDisplay: (d) => {
+        if (!d.phone) return null;
+        return d.phoneCountryCode ? `${d.phoneCountryCode} ${d.phone}` : d.phone;
+      },
+    },
+    { key: 'phoneCountryCode', label: t('profile.phoneCountryCode'), type: 'select', options: phoneCodeOptions, category: 'contact', hideInView: true },
+    { key: 'phone', label: t('profile.phone'), category: 'contact', hideInView: true },
     // Localização
-    { key: 'address', label: t('profile.address'), span: 2, category: 'location' },
-    { key: 'city', label: t('profile.city'), category: 'location' },
-    { key: 'postalCode', label: t('profile.postalCode'), category: 'location' },
-    { key: 'country', label: t('profile.country'), type: 'select', options: countryOptions, category: 'location' },
+    {
+      key: 'fullAddress',
+      label: t('profile.address'),
+      category: 'location',
+      span: 2,
+      virtual: true,
+      formatDisplay: (d) => {
+        const parts = [d.address, d.city, d.postalCode, d.country ? PREDEFINED_COUNTRIES.find((c) => c.code === d.country)?.name ?? d.country : null].filter(Boolean);
+        return parts.length > 0 ? parts.join(', ') : null;
+      },
+    },
+    { key: 'address', label: t('profile.address'), span: 2, category: 'location', hideInView: true },
+    { key: 'city', label: t('profile.city'), category: 'location', hideInView: true },
+    { key: 'postalCode', label: t('profile.postalCode'), category: 'location', hideInView: true },
+    { key: 'country', label: t('profile.country'), type: 'select', options: countryOptions, category: 'location', hideInView: true },
     // Profissional
     { key: 'department', label: t('profile.department'), category: 'professional' },
     { key: 'position', label: t('profile.position'), category: 'professional' },

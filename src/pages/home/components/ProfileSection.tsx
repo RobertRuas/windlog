@@ -60,6 +60,12 @@ export interface FieldConfig {
   span?: 1 | 2;
   /** Categoria/grupo a que o campo pertence */
   category?: string;
+  /** Formata o valor exibido no modo visualização (recebe todos os dados) */
+  formatDisplay?: (data: Record<string, string | null | undefined>) => string | null;
+  /** Se true, campo é apenas exibido (não aparece no modo edição) */
+  virtual?: boolean;
+  /** Se true, campo se oculta no modo visualização (aparece só na edição) */
+  hideInView?: boolean;
 }
 
 /**
@@ -253,7 +259,8 @@ export function ProfileSection({
           /* MODO EDIÇÃO - Campos agrupados */
           <div className="space-y-5">
             {(groups ?? []).map((group) => {
-              const groupFields = fields.filter((f) => f.category === group.id);
+              // Em modo edição, pula campos virtuais (apenas visualização)
+              const groupFields = fields.filter((f) => f.category === group.id && !f.virtual);
               if (groupFields.length === 0) return null;
               const GroupIcon = group.icon;
               return (
@@ -339,8 +346,12 @@ export function ProfileSection({
           <div className="space-y-5">
             {(groups ?? []).map((group) => {
               const groupFields = fields.filter((f) => f.category === group.id);
-              // Filtra apenas campos com valor
-              const visibleFields = groupFields.filter((f) => data[f.key]);
+              // Filtra apenas campos com valor visível (data ou formatDisplay)
+              const visibleFields = groupFields.filter((f) => {
+                if (f.hideInView) return false;
+                if (f.formatDisplay) return f.formatDisplay(data) !== null;
+                return data[f.key];
+              });
               if (visibleFields.length === 0) return null;
               const GroupIcon = group.icon;
               return (
@@ -357,7 +368,12 @@ export function ProfileSection({
                   {/* Campos do grupo */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2.5 pl-8">
                     {visibleFields.map((field) => {
-                      const value = data[field.key]!;
+                      // Usa formatDisplay se disponível, senão formata o valor direto
+                      const displayValue = field.formatDisplay
+                        ? field.formatDisplay(data)
+                        : field.type === 'date'
+                          ? formatDate(data[field.key]!)
+                          : data[field.key]!;
                       const spanClass = field.span === 2 ? 'sm:col-span-2' : '';
                       return (
                         <div key={field.key} className={`flex items-baseline gap-3 text-sm ${spanClass}`}>
@@ -367,8 +383,8 @@ export function ProfileSection({
                           >
                             {field.label}
                           </span>
-                          <span className="text-gray-900 font-medium truncate">
-                            {field.type === 'date' ? formatDate(value) : value}
+                          <span className="text-gray-900 font-medium">
+                            {displayValue}
                           </span>
                         </div>
                       );
