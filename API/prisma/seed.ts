@@ -17,9 +17,9 @@
  *
  * USUÁRIOS CRIADOS:
  * -----------------
- * 1. admin / 123    → Role: ADMIN
- * 2. rh / 123       → Role: HR (Recursos Humanos)
- * 3. default / 123  → Role: STANDARD (Padrão)
+ * 1. admin / 123456    → Role: ADMIN
+ * 2. rh / 123456       → Role: HR (Recursos Humanos)
+ * 3. default / 123456  → Role: STANDARD (Padrão)
  *
  * IMPORTANTE:
  * -----------
@@ -56,7 +56,7 @@ const SALT_ROUNDS = 10;
 const seedUsers = [
   {
     email: 'admin@windlog.com',
-    password: '123',
+    password: '123456',
     firstName: 'Admin',
     lastName: 'User',
     role: Role.ADMIN,
@@ -68,7 +68,7 @@ const seedUsers = [
   },
   {
     email: 'rh@windlog.com',
-    password: '123',
+    password: '123456',
     firstName: 'Recursos',
     lastName: 'Humanos',
     role: Role.HR,
@@ -80,7 +80,7 @@ const seedUsers = [
   },
   {
     email: 'default@windlog.com',
-    password: '123',
+    password: '123456',
     firstName: 'Default',
     lastName: 'User',
     role: Role.STANDARD,
@@ -138,9 +138,9 @@ async function main() {
   console.log('   ┌─────────────────────────────────────────────┐');
   console.log('   │ Email                  │ Senha │ Role       │');
   console.log('   ├─────────────────────────────────────────────┤');
-  console.log('   │ admin@windlog.com      │  123  │ ADMIN      │');
-  console.log('   │ rh@windlog.com         │  123  │ HR         │');
-  console.log('   │ default@windlog.com    │  123  │ STANDARD   │');
+  console.log('   │ admin@windlog.com      │ 123456 │ ADMIN      │');
+  console.log('   │ rh@windlog.com         │ 123456 │ HR         │');
+  console.log('   │ default@windlog.com    │ 123456 │ STANDARD   │');
   console.log('   └─────────────────────────────────────────────┘');
 }
 
