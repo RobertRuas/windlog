@@ -350,54 +350,28 @@ export function LogsPage() {
         </div>
       </div>
 
-      {/* Dashboard de Estatísticas */}
+      {/* Estatísticas Básicas */}
       {stats && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-3 gap-4 mb-6">
           {/* Total de Logs */}
-          <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white shadow-lg shadow-blue-500/20">
-            <div className="flex items-center justify-between mb-2">
-              <Activity size={20} className="opacity-80" />
-              <span className="text-xs font-medium opacity-80">Total</span>
-            </div>
-            <div className="text-3xl font-bold">{stats.total.toLocaleString()}</div>
-            <div className="text-xs opacity-70 mt-1">registros</div>
+          <div className="bg-white rounded-xl border border-gray-200 p-4">
+            <div className="text-sm text-gray-500 mb-1">Total</div>
+            <div className="text-2xl font-bold text-gray-900">{stats.total.toLocaleString()}</div>
           </div>
 
           {/* Erros */}
-          <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-4 text-white shadow-lg shadow-red-500/20">
-            <div className="flex items-center justify-between mb-2">
-              <XCircle size={20} className="opacity-80" />
-              <span className="text-xs font-medium opacity-80">Erros</span>
-            </div>
-            <div className="text-3xl font-bold">
+          <div className="bg-white rounded-xl border border-gray-200 p-4">
+            <div className="text-sm text-gray-500 mb-1">Erros</div>
+            <div className="text-2xl font-bold text-red-600">
               {stats.bySeverity.find((s) => s.severity === 'ERROR')?.count || 0}
             </div>
-            <div className="text-xs opacity-70 mt-1">críticos</div>
           </div>
 
           {/* Avisos */}
-          <div className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl p-4 text-white shadow-lg shadow-amber-500/20">
-            <div className="flex items-center justify-between mb-2">
-              <AlertTriangle size={20} className="opacity-80" />
-              <span className="text-xs font-medium opacity-80">Avisos</span>
-            </div>
-            <div className="text-3xl font-bold">
+          <div className="bg-white rounded-xl border border-gray-200 p-4">
+            <div className="text-sm text-gray-500 mb-1">Avisos</div>
+            <div className="text-2xl font-bold text-amber-600">
               {stats.bySeverity.find((s) => s.severity === 'WARNING')?.count || 0}
-            </div>
-            <div className="text-xs opacity-70 mt-1">atenção</div>
-          </div>
-
-          {/* Ação Mais Comum */}
-          <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl p-4 text-white shadow-lg shadow-emerald-500/20">
-            <div className="flex items-center justify-between mb-2">
-              <TrendingUp size={20} className="opacity-80" />
-              <span className="text-xs font-medium opacity-80">Top Ação</span>
-            </div>
-            <div className="text-lg font-bold truncate">
-              {stats.byAction[0] ? ACTION_LABELS[stats.byAction[0].action] || stats.byAction[0].action : '-'}
-            </div>
-            <div className="text-xs opacity-70 mt-1">
-              {stats.byAction[0]?.count || 0} execuções
             </div>
           </div>
         </div>
@@ -435,7 +409,7 @@ export function LogsPage() {
             </div>
           </div>
 
-          {/* Filtro por ação */}
+          {/* Filtro por ação - apenas ações existentes */}
           <div>
             <label className="text-xs text-gray-500 mb-1 block">Ação</label>
             <select
@@ -444,15 +418,15 @@ export function LogsPage() {
               className="form-select w-full"
             >
               <option value="">Todas</option>
-              {Object.entries(ACTION_LABELS).map(([key, label]) => (
-                <option key={key} value={key}>
-                  {label}
+              {stats?.byAction.map((item) => (
+                <option key={item.action} value={item.action}>
+                  {ACTION_LABELS[item.action] || item.action} ({item.count})
                 </option>
               ))}
             </select>
           </div>
 
-          {/* Filtro por severidade */}
+          {/* Filtro por severidade - apenas severidades existentes */}
           <div>
             <label className="text-xs text-gray-500 mb-1 block">Severidade</label>
             <select
@@ -461,10 +435,11 @@ export function LogsPage() {
               className="form-select w-full"
             >
               <option value="">Todas</option>
-              <option value="INFO">Informação</option>
-              <option value="WARNING">Aviso</option>
-              <option value="ERROR">Erro</option>
-              <option value="CRITICAL">Crítico</option>
+              {stats?.bySeverity.map((item) => (
+                <option key={item.severity} value={item.severity}>
+                  {SEVERITY_CONFIG[item.severity as keyof typeof SEVERITY_CONFIG]?.label || item.severity} ({item.count})
+                </option>
+              ))}
             </select>
           </div>
 
