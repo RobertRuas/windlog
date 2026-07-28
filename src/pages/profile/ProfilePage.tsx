@@ -161,16 +161,6 @@ export function ProfilePage() {
         return PREDEFINED_COUNTRIES.find((c) => c.code === d.nationality)?.name ?? d.nationality;
       },
     },
-    {
-      key: 'role',
-      label: t('profile.role'),
-      category: 'identity',
-      virtual: true,
-      formatDisplay: (d) => {
-        if (!d.role) return null;
-        return t(`roles.${d.role}`);
-      },
-    },
     // Contato
     { key: 'email', label: t('profile.email'), type: 'email', category: 'contact' },
     {
@@ -204,6 +194,16 @@ export function ProfilePage() {
     // Profissional
     { key: 'department', label: t('profile.department'), category: 'professional' },
     { key: 'position', label: t('profile.position'), category: 'professional' },
+    {
+      key: 'role',
+      label: t('profile.role'),
+      category: 'professional',
+      virtual: true,
+      formatDisplay: (d) => {
+        if (!d.role) return null;
+        return t(`roles.${d.role}`);
+      },
+    },
     // Sobre
     { key: 'bio', label: t('profile.bio'), type: 'textarea', span: 2, category: 'about' },
   ];
