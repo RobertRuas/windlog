@@ -33,6 +33,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { AuthGuard } from '@nestjs/passport';
 import { SystemLogService } from './system-log.service.js';
 import { LogFilterDto, LogAction, LogSeverity } from './dto/system-log.dto.js';
 import { RolesGuard } from '../../common/guards/roles.guard.js';
@@ -44,7 +45,7 @@ import { Roles, Role } from '../../common/decorators/roles.decorator.js';
 @ApiTags('System Logs')
 @ApiBearerAuth()
 @Controller('system-logs')
-@UseGuards(RolesGuard)
+@UseGuards(AuthGuard('jwt'), RolesGuard)
 @Roles(Role.ADMIN)
 export class SystemLogController {
   constructor(private readonly systemLogService: SystemLogService) {}
