@@ -1,30 +1,16 @@
 /**
  * ============================================================================
- * LOGS PAGE - Página de Logs do Sistema (Redesenhada)
+ * LOGS PAGE - Página de Logs do Sistema
  * ============================================================================
  *
- * O QUE É ESTA PÁGINA?
- * --------------------
  * Página exclusiva para administradores visualizarem os logs do sistema.
- * Design moderno com estatísticas visuais e tabela estilo console.
+ * Design profissional com estatísticas, filtros compactos e tabela elegante.
  *
- * FUNCIONALIDADES:
- * ----------------
- * - Dashboard com estatísticas visuais (cards coloridos)
- * - Filtros organizados por categoria
- * - Tabela estilo console/terminal (fundo escuro, fonte mono)
- * - Linhas expansíveis para ver detalhes completos
- * - Badges coloridos para métodos HTTP e status codes
- * - Navegação fácil com paginação intuitiva
- *
- * SEGURANÇA:
- * ----------
- * - Apenas administradores (ADMIN) podem acessar
- * - Rota protegida no App.tsx
+ * SEGURANÇA: Apenas administradores (ADMIN) podem acessar.
  * ============================================================================
  */
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   Search,
@@ -36,13 +22,13 @@ import {
   ChevronRight,
   RefreshCw,
   Activity,
-  Zap,
-  Users,
   Clock,
   Globe,
   ChevronDown,
-  ChevronUp,
   Terminal,
+  Filter,
+  X,
+  ArrowUpDown,
 } from 'lucide-react';
 
 // Layout
@@ -54,9 +40,11 @@ import { Button } from '@/components/ui/Button';
 // Serviços
 import { getLogs, getLogStats, type LogFilters, type SystemLog } from '@/services/system-log.service';
 
-/**
- * Mapeamento de ações para labels legíveis.
- */
+/* -------------------------------------------------------------------------- */
+/*  Constantes de configuração visual                                         */
+/* -------------------------------------------------------------------------- */
+
+/** Mapeamento de ações para labels legíveis em português. */
 const ACTION_LABELS: Record<string, string> = {
   LOGIN: 'Login',
   LOGOUT: 'Logout',
@@ -97,153 +85,207 @@ const ACTION_LABELS: Record<string, string> = {
   OTHER: 'Outro',
 };
 
-/**
- * Mapeamento de severidades para cores e ícones (tema claro).
- */
+/** Configuração visual por severidade (tema claro). */
 const SEVERITY_CONFIG = {
-  INFO: { color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200', icon: Info, label: 'INFO' },
-  WARNING: { color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-200', icon: AlertTriangle, label: 'WARN' },
-  ERROR: { color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200', icon: XCircle, label: 'ERROR' },
-  CRITICAL: { color: 'text-purple-600', bg: 'bg-purple-50', border: 'border-purple-200', icon: AlertCircle, label: 'CRIT' },
+  INFO: {
+    color: 'text-blue-700',
+    bg: 'bg-blue-50',
+    border: 'border-blue-200',
+    dot: 'bg-blue-500',
+    icon: Info,
+    label: 'Info',
+  },
+  WARNING: {
+    color: 'text-amber-700',
+    bg: 'bg-amber-50',
+    border: 'border-amber-200',
+    dot: 'bg-amber-500',
+    icon: AlertTriangle,
+    label: 'Aviso',
+  },
+  ERROR: {
+    color: 'text-red-700',
+    bg: 'bg-red-50',
+    border: 'border-red-200',
+    dot: 'bg-red-500',
+    icon: XCircle,
+    label: 'Erro',
+  },
+  CRITICAL: {
+    color: 'text-purple-700',
+    bg: 'bg-purple-50',
+    border: 'border-purple-200',
+    dot: 'bg-purple-500',
+    icon: AlertCircle,
+    label: 'Crítico',
+  },
 };
 
-/**
- * Cores para métodos HTTP.
- */
+/** Cores para métodos HTTP (tema claro). */
 const METHOD_COLORS: Record<string, string> = {
-  GET: 'text-emerald-400',
-  POST: 'text-blue-400',
-  PUT: 'text-amber-400',
-  PATCH: 'text-orange-400',
-  DELETE: 'text-red-400',
+  GET: 'text-emerald-700 bg-emerald-50',
+  POST: 'text-blue-700 bg-blue-50',
+  PUT: 'text-amber-700 bg-amber-50',
+  PATCH: 'text-orange-700 bg-orange-50',
+  DELETE: 'text-red-700 bg-red-50',
 };
 
-/**
- * Cores para status codes.
- */
-function getStatusColor(status: number | null): string {
-  if (!status) return 'text-gray-500';
-  if (status >= 500) return 'text-red-400';
-  if (status >= 400) return 'text-amber-400';
-  if (status >= 300) return 'text-blue-400';
-  if (status >= 200) return 'text-emerald-400';
-  return 'text-gray-500';
+/** Retorna a cor do badge de status code (tema claro). */
+function getStatusBadge(status: number | null): { color: string; bg: string } {
+  if (!status) return { color: 'text-gray-500', bg: 'bg-gray-50' };
+  if (status >= 500) return { color: 'text-red-700', bg: 'bg-red-50' };
+  if (status >= 400) return { color: 'text-amber-700', bg: 'bg-amber-50' };
+  if (status >= 300) return { color: 'text-blue-700', bg: 'bg-blue-50' };
+  if (status >= 200) return { color: 'text-emerald-700', bg: 'bg-emerald-50' };
+  return { color: 'text-gray-500', bg: 'bg-gray-50' };
 }
 
-/**
- * Componente de linha expansível do log.
- */
+/** Formata a duração para exibição legível. */
+function formatDuration(ms: number | null): string {
+  if (!ms) return '—';
+  if (ms < 1000) return `${ms}ms`;
+  return `${(ms / 1000).toFixed(1)}s`;
+}
+
+/** Formata a data/hora para exibição compacta. */
+function formatDateTime(dateStr: string): string {
+  return new Date(dateStr).toLocaleString('pt-PT', {
+    day: '2-digit',
+    month: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  });
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Componente: Linha expansível do log                                       */
+/* -------------------------------------------------------------------------- */
+
 function LogRow({ log, isExpanded, onToggle }: { log: SystemLog; isExpanded: boolean; onToggle: () => void }) {
   const severityConfig = SEVERITY_CONFIG[log.severity as keyof typeof SEVERITY_CONFIG];
   const SeverityIcon = severityConfig.icon;
+  const statusBadge = getStatusBadge(log.statusCode);
 
   return (
     <>
       {/* Linha principal */}
       <tr
         onClick={onToggle}
-        className="hover:bg-gray-800/50 cursor-pointer transition-colors border-b border-gray-700/50"
+        className={`
+          group cursor-pointer transition-colors border-b border-gray-100 last:border-b-0
+          ${isExpanded ? 'bg-gray-50/80' : 'hover:bg-gray-50/50'}
+        `}
       >
         {/* Timestamp */}
-        <td className="px-4 py-3 font-mono text-xs text-gray-400 whitespace-nowrap">
-          {new Date(log.createdAt).toLocaleString('pt-PT', {
-            day: '2-digit',
-            month: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-          })}
+        <td className="px-4 py-3 text-xs text-gray-500 font-mono whitespace-nowrap w-[130px]">
+          {formatDateTime(log.createdAt)}
         </td>
 
         {/* Severidade */}
-        <td className="px-4 py-3">
-          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-mono font-bold ${severityConfig.color} ${severityConfig.bg}`}>
+        <td className="px-4 py-3 w-[100px]">
+          <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold ${severityConfig.color} ${severityConfig.bg}`}>
             <SeverityIcon size={10} />
             {severityConfig.label}
           </span>
         </td>
 
         {/* Método + URL */}
-        <td className="px-4 py-3 font-mono text-xs">
-          <span className={METHOD_COLORS[log.method || ''] || 'text-gray-400'}>
-            {log.method || '---'}
-          </span>
-          <span className="text-gray-500 ml-2">{log.url || '-'}</span>
+        <td className="px-4 py-3 text-xs max-w-[250px]">
+          <div className="flex items-center gap-2">
+            {log.method && (
+              <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold font-mono ${METHOD_COLORS[log.method] || 'text-gray-600 bg-gray-100'}`}>
+                {log.method}
+              </span>
+            )}
+            <span className="text-gray-600 truncate font-mono" title={log.url || undefined}>
+              {log.url || '—'}
+            </span>
+          </div>
         </td>
 
         {/* Status */}
-        <td className="px-4 py-3 font-mono text-xs font-bold">
-          <span className={getStatusColor(log.statusCode)}>
-            {log.statusCode || '---'}
-          </span>
+        <td className="px-4 py-3 w-[80px]">
+          {log.statusCode ? (
+            <span className={`inline-flex px-2 py-0.5 rounded text-[11px] font-bold font-mono ${statusBadge.color} ${statusBadge.bg}`}>
+              {log.statusCode}
+            </span>
+          ) : (
+            <span className="text-gray-400 text-xs">—</span>
+          )}
         </td>
 
         {/* Duração */}
-        <td className="px-4 py-3 font-mono text-xs text-gray-400">
-          {log.duration ? `${log.duration}ms` : '-'}
+        <td className="px-4 py-3 text-xs text-gray-500 font-mono w-[80px]">
+          {formatDuration(log.duration)}
         </td>
 
         {/* Ação */}
-        <td className="px-4 py-3 text-xs text-gray-300">
+        <td className="px-4 py-3 text-xs text-gray-700 font-medium w-[140px]">
           {ACTION_LABELS[log.action] || log.action}
         </td>
 
         {/* Usuário */}
-        <td className="px-4 py-3 text-xs text-gray-400 truncate max-w-[150px]">
-          {log.userEmail || log.userName || '-'}
+        <td className="px-4 py-3 text-xs text-gray-500 truncate max-w-[160px]">
+          {log.userEmail || log.userName || '—'}
         </td>
 
         {/* Expand indicator */}
-        <td className="px-4 py-3 text-gray-500">
-          {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+        <td className="px-4 py-3 w-[32px]">
+          <ChevronDown
+            size={14}
+            className={`text-gray-400 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+          />
         </td>
       </tr>
 
-      {/* Linha expandida com detalhes */}
+      {/* Painel expandido com detalhes */}
       {isExpanded && (
-        <tr className="bg-gray-800/30">
-          <td colSpan={8} className="px-4 py-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
-              {/* IP Address */}
-              <div>
-                <div className="text-gray-500 mb-1 flex items-center gap-1">
-                  <Globe size={10} />
-                  IP Address
+        <tr className="bg-gray-50/60">
+          <td colSpan={8} className="px-4 py-0">
+            <div className="py-4 pl-4 border-l-2 border-blue-200 ml-2 mb-3">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-5 text-xs">
+                {/* IP Address */}
+                <div>
+                  <div className="text-gray-400 mb-1 flex items-center gap-1 font-medium uppercase tracking-wider text-[10px]">
+                    <Globe size={10} />
+                    IP Address
+                  </div>
+                  <div className="font-mono text-gray-700">{log.ipAddress || '—'}</div>
                 </div>
-                <div className="font-mono text-gray-300">{log.ipAddress || '-'}</div>
-              </div>
 
-              {/* User Agent */}
-              <div className="col-span-2">
-                <div className="text-gray-500 mb-1">User Agent</div>
-                <div className="font-mono text-gray-400 truncate" title={log.userAgent || undefined}>
-                  {log.userAgent || '-'}
+                {/* User Agent */}
+                <div className="col-span-2">
+                  <div className="text-gray-400 mb-1 font-medium uppercase tracking-wider text-[10px]">User Agent</div>
+                  <div className="font-mono text-gray-500 truncate" title={log.userAgent || undefined}>
+                    {log.userAgent || '—'}
+                  </div>
                 </div>
-              </div>
 
-              {/* Entity */}
-              <div>
-                <div className="text-gray-500 mb-1">Entidade</div>
-                <div className="font-mono text-gray-300">
-                  {log.entity ? `${log.entity}${log.entityName ? ` (${log.entityName})` : ''}` : '-'}
+                {/* Entity */}
+                <div>
+                  <div className="text-gray-400 mb-1 font-medium uppercase tracking-wider text-[10px]">Entidade</div>
+                  <div className="font-mono text-gray-700">
+                    {log.entity ? `${log.entity}${log.entityName ? ` — ${log.entityName}` : ''}` : '—'}
+                  </div>
                 </div>
-              </div>
 
-              {/* Message */}
-              <div className="col-span-2 md:col-span-3">
-                <div className="text-gray-500 mb-1">Mensagem</div>
-                <div className="font-mono text-gray-300">{log.message}</div>
-              </div>
-
-              {/* Details JSON */}
-              {log.details && Object.keys(log.details).length > 0 && (
+                {/* Message */}
                 <div className="col-span-2 md:col-span-4">
-                  <div className="text-gray-500 mb-1">Detalhes</div>
-                  <pre className="font-mono text-xs text-gray-400 bg-gray-900/50 rounded p-2 overflow-x-auto">
-                    {JSON.stringify(log.details, null, 2)}
-                  </pre>
+                  <div className="text-gray-400 mb-1 font-medium uppercase tracking-wider text-[10px]">Mensagem</div>
+                  <div className="text-gray-700 leading-relaxed">{log.message}</div>
                 </div>
-              )}
+
+                {/* Details JSON */}
+                {log.details && Object.keys(log.details).length > 0 && (
+                  <div className="col-span-2 md:col-span-4">
+                    <div className="text-gray-400 mb-1 font-medium uppercase tracking-wider text-[10px]">Detalhes</div>
+                    <pre className="font-mono text-[11px] text-gray-600 bg-white rounded-lg border border-gray-200 p-3 overflow-x-auto leading-relaxed">
+                      {JSON.stringify(log.details, null, 2)}
+                    </pre>
+                  </div>
+                )}
+              </div>
             </div>
           </td>
         </tr>
@@ -252,9 +294,37 @@ function LogRow({ log, isExpanded, onToggle }: { log: SystemLog; isExpanded: boo
   );
 }
 
-/**
- * Componente LogsPage - Página de logs do sistema.
- */
+/* -------------------------------------------------------------------------- */
+/*  Componente: Card de estatística                                           */
+/* -------------------------------------------------------------------------- */
+
+function StatCard({ icon: Icon, label, value, color, bgColor }: {
+  icon: React.ElementType;
+  label: string;
+  value: string | number;
+  color: string;
+  bgColor: string;
+}) {
+  return (
+    <div className="bg-white rounded-xl border border-gray-200 px-4 py-3 flex items-center gap-3 min-w-[160px]">
+      <div className={`w-9 h-9 rounded-lg ${bgColor} flex items-center justify-center flex-shrink-0`}>
+        <Icon size={18} className={color} />
+      </div>
+      <div className="min-w-0">
+        <div className="text-[11px] text-gray-400 font-medium uppercase tracking-wider">{label}</div>
+        <div className="text-lg font-bold text-gray-900 truncate">{typeof value === 'number' ? value.toLocaleString('pt-PT') : value}</div>
+      </div>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Componente principal: LogsPage                                            */
+/* -------------------------------------------------------------------------- */
+
+type SortField = 'createdAt' | 'severity' | 'statusCode' | 'duration';
+type SortDir = 'asc' | 'desc';
+
 export function LogsPage() {
   // Estados dos filtros
   const [filters, setFilters] = useState<LogFilters>({
@@ -263,9 +333,12 @@ export function LogsPage() {
   });
   const [searchInput, setSearchInput] = useState('');
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const [showFilters, setShowFilters] = useState(false);
+  const [sortField, setSortField] = useState<SortField>('createdAt');
+  const [sortDir, setSortDir] = useState<SortDir>('desc');
 
   // Busca logs com filtros
-  const { data: logsData, isLoading: logsLoading } = useQuery({
+  const { data: logsData, isLoading: logsLoading, refetch } = useQuery({
     queryKey: ['system-logs', filters],
     queryFn: () => getLogs(filters),
     refetchInterval: 30000,
@@ -278,218 +351,264 @@ export function LogsPage() {
     refetchInterval: 60000,
   });
 
-  /**
-   * Aplica a busca textual.
-   */
+  /** Verifica se há filtros ativos além de paginação. */
+  const hasActiveFilters = useMemo(() => {
+    return !!(filters.search || filters.action || filters.severity || filters.startDate || filters.endDate);
+  }, [filters]);
+
+  /** Aplica a busca textual. */
   function handleSearch() {
     setFilters((prev) => ({ ...prev, search: searchInput, page: 1 }));
   }
 
-  /**
-   * Limpa todos os filtros.
-   */
+  /** Limpa todos os filtros. */
   function handleClearFilters() {
     setFilters({ page: 1, limit: 50 });
     setSearchInput('');
   }
 
-  /**
-   * Muda para a página anterior/próxima.
-   */
+  /** Muda para a página anterior/próxima. */
   function handlePageChange(newPage: number) {
     setFilters((prev) => ({ ...prev, page: newPage }));
   }
 
-  /**
-   * Toggle expand/collapse de uma linha.
-   */
+  /** Toggle expand/collapse de uma linha. */
   function toggleRow(logId: string) {
     setExpandedRows((prev) => {
       const next = new Set(prev);
-      if (next.has(logId)) {
-        next.delete(logId);
-      } else {
-        next.add(logId);
-      }
+      if (next.has(logId)) next.delete(logId);
+      else next.add(logId);
       return next;
     });
   }
 
-  /**
-   * Expande todas as linhas.
-   */
+  /** Expande todas as linhas. */
   function expandAll() {
-    if (logsData) {
-      setExpandedRows(new Set(logsData.data.map((log) => log.id)));
-    }
+    if (logsData) setExpandedRows(new Set(logsData.data.map((l) => l.id)));
   }
 
-  /**
-   * Colapsa todas as linhas.
-   */
+  /** Colapsa todas as linhas. */
   function collapseAll() {
     setExpandedRows(new Set());
   }
+
+  /** Alterna a ordenação por coluna. */
+  function toggleSort(field: SortField) {
+    if (sortField === field) {
+      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortField(field);
+      setSortDir('desc');
+    }
+  }
+
+  /** Dados ordenados no frontend (os demais filtros já vêm da API). */
+  const sortedLogs = useMemo(() => {
+    if (!logsData?.data) return [];
+    const arr = [...logsData.data];
+    arr.sort((a, b) => {
+      let cmp = 0;
+      switch (sortField) {
+        case 'createdAt':
+          cmp = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+          break;
+        case 'severity': {
+          const order = { INFO: 0, WARNING: 1, ERROR: 2, CRITICAL: 3 };
+          cmp = (order[a.severity] ?? 0) - (order[b.severity] ?? 0);
+          break;
+        }
+        case 'statusCode':
+          cmp = (a.statusCode ?? 0) - (b.statusCode ?? 0);
+          break;
+        case 'duration':
+          cmp = (a.duration ?? 0) - (b.duration ?? 0);
+          break;
+      }
+      return sortDir === 'asc' ? cmp : -cmp;
+    });
+    return arr;
+  }, [logsData, sortField, sortDir]);
+
+  /** Contador de filtros ativos. */
+  const activeFilterCount = [filters.action, filters.severity, filters.startDate, filters.endDate].filter(Boolean).length;
 
   return (
     <AppLayout>
       {/* Cabeçalho */}
       <div className="mb-6">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+        <div className="flex items-center gap-3 mb-1">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-sm">
             <Terminal size={20} className="text-white" />
           </div>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Logs do Sistema</h1>
-            <p className="text-sm text-gray-500">
-              Monitoramento em tempo real de todas as ações
-            </p>
+            <p className="text-sm text-gray-500">Monitoramento e auditoria em tempo real</p>
           </div>
         </div>
       </div>
 
       {/* Estatísticas */}
       {stats && (
-        <div className="flex gap-4 mb-6">
-          <div className="bg-white rounded-xl border border-gray-200 px-5 py-3 flex items-center gap-3">
-            <Activity size={18} className="text-gray-400" />
-            <div>
-              <div className="text-xs text-gray-500">Total</div>
-              <div className="text-lg font-bold text-gray-900">{stats.total.toLocaleString()}</div>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl border border-gray-200 px-5 py-3 flex items-center gap-3">
-            <XCircle size={18} className="text-red-400" />
-            <div>
-              <div className="text-xs text-gray-500">Erros</div>
-              <div className="text-lg font-bold text-red-600">
-                {stats.bySeverity.find((s) => s.severity === 'ERROR')?.count || 0}
-              </div>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl border border-gray-200 px-5 py-3 flex items-center gap-3">
-            <AlertTriangle size={18} className="text-amber-400" />
-            <div>
-              <div className="text-xs text-gray-500">Avisos</div>
-              <div className="text-lg font-bold text-amber-600">
-                {stats.bySeverity.find((s) => s.severity === 'WARNING')?.count || 0}
-              </div>
-            </div>
-          </div>
+        <div className="flex gap-3 mb-6 overflow-x-auto pb-1">
+          <StatCard
+            icon={Activity}
+            label="Total"
+            value={stats.total}
+            color="text-gray-700"
+            bgColor="bg-gray-100"
+          />
+          <StatCard
+            icon={XCircle}
+            label="Erros"
+            value={stats.bySeverity.find((s) => s.severity === 'ERROR')?.count || 0}
+            color="text-red-600"
+            bgColor="bg-red-50"
+          />
+          <StatCard
+            icon={AlertTriangle}
+            label="Avisos"
+            value={stats.bySeverity.find((s) => s.severity === 'WARNING')?.count || 0}
+            color="text-amber-600"
+            bgColor="bg-amber-50"
+          />
+          <StatCard
+            icon={AlertCircle}
+            label="Críticos"
+            value={stats.bySeverity.find((s) => s.severity === 'CRITICAL')?.count || 0}
+            color="text-purple-600"
+            bgColor="bg-purple-50"
+          />
         </div>
       )}
 
-      {/* Filtros */}
-      <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6">
-        <div className="space-y-3">
-          {/* Linha 1: Busca */}
-          <div className="flex items-center gap-2">
+      {/* Barra de busca + toggle filtros */}
+      <div className="bg-white rounded-xl border border-gray-200 p-3 mb-4">
+        <div className="flex items-center gap-2">
+          {/* Busca */}
+          <div className="relative flex-1 max-w-md">
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
-              placeholder="Buscar..."
+              placeholder="Buscar por mensagem, usuário, entidade..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              className="form-input text-sm w-64"
+              className="form-input text-sm w-full pl-9"
             />
-            <Button onClick={handleSearch} variant="secondary" size="sm">
-              <Search size={14} />
-            </Button>
+          </div>
+
+          <Button onClick={handleSearch} variant="primary" size="sm">
+            Buscar
+          </Button>
+
+          {/* Toggle filtros avançados */}
+          <Button
+            onClick={() => setShowFilters((v) => !v)}
+            variant="secondary"
+            size="sm"
+            className="relative"
+          >
+            <Filter size={13} className="mr-1.5" />
+            Filtros
+            {activeFilterCount > 0 && (
+              <span className="ml-1.5 w-4 h-4 rounded-full bg-blue-600 text-white text-[10px] flex items-center justify-center font-bold">
+                {activeFilterCount}
+              </span>
+            )}
+          </Button>
+
+          {/* Limpar */}
+          {hasActiveFilters && (
             <Button onClick={handleClearFilters} variant="secondary" size="sm">
-              <RefreshCw size={14} className="mr-1" />
+              <X size={13} className="mr-1" />
               Limpar
             </Button>
-          </div>
+          )}
 
-          {/* Linha 2: Ação e Severidade */}
-          <div className="flex flex-wrap items-center gap-4">
-            <div>
-              <label className="text-xs text-gray-500 mb-1 block">Ação</label>
-              <select
-                value={filters.action || ''}
-                onChange={(e) => setFilters((prev) => ({ ...prev, action: e.target.value || undefined, page: 1 }))}
-                className="form-select text-sm"
-              >
-                <option value="">Todas</option>
-                {stats?.byAction.map((item) => (
-                  <option key={item.action} value={item.action}>
-                    {ACTION_LABELS[item.action] || item.action} ({item.count})
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="text-xs text-gray-500 mb-1 block">Severidade</label>
-              <select
-                value={filters.severity || ''}
-                onChange={(e) => setFilters((prev) => ({ ...prev, severity: e.target.value || undefined, page: 1 }))}
-                className="form-select text-sm"
-              >
-                <option value="">Todas</option>
-                {stats?.bySeverity.map((item) => (
-                  <option key={item.severity} value={item.severity}>
-                    {SEVERITY_CONFIG[item.severity as keyof typeof SEVERITY_CONFIG]?.label || item.severity} ({item.count})
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Linha 3: Data Inicial e Data Final */}
-          <div className="flex flex-wrap items-center gap-4">
-            <div>
-              <label className="text-xs text-gray-500 mb-1 block">Data Inicial</label>
-              <input
-                type="date"
-                value={filters.startDate || ''}
-                onChange={(e) => setFilters((prev) => ({ ...prev, startDate: e.target.value || undefined, page: 1 }))}
-                className="form-input text-sm"
-              />
-            </div>
-
-            <div>
-              <label className="text-xs text-gray-500 mb-1 block">Data Final</label>
-              <input
-                type="date"
-                value={filters.endDate || ''}
-                onChange={(e) => setFilters((prev) => ({ ...prev, endDate: e.target.value || undefined, page: 1 }))}
-                className="form-input text-sm"
-              />
-            </div>
-          </div>
+          {/* Refresh */}
+          <Button onClick={() => refetch()} variant="secondary" size="sm">
+            <RefreshCw size={13} className="mr-1" />
+            Atualizar
+          </Button>
         </div>
+
+        {/* Filtros avançados (expansível) */}
+        {showFilters && (
+          <div className="mt-3 pt-3 border-t border-gray-100">
+            <div className="flex flex-wrap gap-4">
+              <div className="min-w-[160px]">
+                <label className="text-[11px] text-gray-400 font-medium uppercase tracking-wider mb-1 block">Ação</label>
+                <select
+                  value={filters.action || ''}
+                  onChange={(e) => setFilters((prev) => ({ ...prev, action: e.target.value || undefined, page: 1 }))}
+                  className="form-select text-sm w-full"
+                >
+                  <option value="">Todas</option>
+                  {stats?.byAction.map((item) => (
+                    <option key={item.action} value={item.action}>
+                      {ACTION_LABELS[item.action] || item.action} ({item.count})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="min-w-[140px]">
+                <label className="text-[11px] text-gray-400 font-medium uppercase tracking-wider mb-1 block">Severidade</label>
+                <select
+                  value={filters.severity || ''}
+                  onChange={(e) => setFilters((prev) => ({ ...prev, severity: e.target.value || undefined, page: 1 }))}
+                  className="form-select text-sm w-full"
+                >
+                  <option value="">Todas</option>
+                  {stats?.bySeverity.map((item) => (
+                    <option key={item.severity} value={item.severity}>
+                      {SEVERITY_CONFIG[item.severity as keyof typeof SEVERITY_CONFIG]?.label || item.severity} ({item.count})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="min-w-[150px]">
+                <label className="text-[11px] text-gray-400 font-medium uppercase tracking-wider mb-1 block">Data Inicial</label>
+                <input
+                  type="date"
+                  value={filters.startDate || ''}
+                  onChange={(e) => setFilters((prev) => ({ ...prev, startDate: e.target.value || undefined, page: 1 }))}
+                  className="form-input text-sm w-full"
+                />
+              </div>
+
+              <div className="min-w-[150px]">
+                <label className="text-[11px] text-gray-400 font-medium uppercase tracking-wider mb-1 block">Data Final</label>
+                <input
+                  type="date"
+                  value={filters.endDate || ''}
+                  onChange={(e) => setFilters((prev) => ({ ...prev, endDate: e.target.value || undefined, page: 1 }))}
+                  className="form-input text-sm w-full"
+                />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Tabela de Logs - Estilo Console */}
-      <div className="bg-gray-900 rounded-xl border border-gray-700 shadow-2xl">
-        {/* Header da tabela */}
-        <div className="bg-gray-800 px-4 py-3 border-b border-gray-700 flex items-center justify-between">
+      {/* Tabela de Logs */}
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        {/* Header da tabela com controles */}
+        <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="flex gap-1.5">
-              <div className="w-3 h-3 rounded-full bg-red-500"></div>
-              <div className="w-3 h-3 rounded-full bg-amber-500"></div>
-              <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-            </div>
-            <span className="text-xs font-mono text-gray-400 ml-2">system-logs</span>
+            <Clock size={14} className="text-gray-400" />
+            <span className="text-sm font-medium text-gray-700">
+              {logsLoading ? 'Carregando...' : `${logsData?.total.toLocaleString('pt-PT') ?? 0} registros`}
+            </span>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              onClick={expandAll}
-              variant="secondary"
-              size="sm"
-              className="text-xs h-7"
-            >
+            <Button onClick={expandAll} variant="secondary" size="sm" className="text-xs h-7">
               <ChevronDown size={12} className="mr-1" />
               Expandir
             </Button>
-            <Button
-              onClick={collapseAll}
-              variant="secondary"
-              size="sm"
-              className="text-xs h-7"
-            >
-              <ChevronUp size={12} className="mr-1" />
+            <Button onClick={collapseAll} variant="secondary" size="sm" className="text-xs h-7">
+              <ChevronDown size={12} className="mr-1 rotate-180" />
               Colapsar
             </Button>
           </div>
@@ -497,57 +616,79 @@ export function LogsPage() {
 
         {/* Conteúdo */}
         {logsLoading ? (
-          <div className="flex items-center justify-center py-20">
+          <div className="flex items-center justify-center py-24">
             <div className="flex items-center gap-3 text-gray-400">
               <RefreshCw size={20} className="animate-spin" />
-              <span className="font-mono text-sm">Carregando logs...</span>
+              <span className="text-sm">Carregando logs...</span>
             </div>
           </div>
         ) : !logsData || logsData.data.length === 0 ? (
-          <div className="flex items-center justify-center py-20">
+          <div className="flex items-center justify-center py-24">
             <div className="text-center">
-              <Terminal size={40} className="text-gray-600 mx-auto mb-3" />
-              <p className="font-mono text-gray-400">Nenhum log encontrado</p>
-              <p className="font-mono text-xs text-gray-600 mt-1">Tente ajustar os filtros</p>
+              <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3">
+                <Terminal size={24} className="text-gray-400" />
+              </div>
+              <p className="text-sm font-medium text-gray-700">Nenhum log encontrado</p>
+              <p className="text-xs text-gray-400 mt-1">Tente ajustar os filtros ou aguarde novas atividades</p>
             </div>
           </div>
         ) : (
           <>
             <div className="overflow-auto max-h-[600px]">
               <table className="w-full min-w-[900px]">
-                <thead className="bg-gray-800 border-b border-gray-700 sticky top-0 z-10">
+                <thead className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
                   <tr>
-                    <th className="px-4 py-2 text-left text-xs font-mono font-medium text-gray-500 uppercase">
-                      <Clock size={12} className="inline mr-1" />
-                      Timestamp
+                    <th
+                      onClick={() => toggleSort('createdAt')}
+                      className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700 select-none w-[130px]"
+                    >
+                      <span className="inline-flex items-center gap-1">
+                        <Clock size={11} />
+                        Data
+                        <ArrowUpDown size={10} className={sortField === 'createdAt' ? 'text-blue-500' : 'text-gray-300'} />
+                      </span>
                     </th>
-                    <th className="px-4 py-2 text-left text-xs font-mono font-medium text-gray-500 uppercase">
-                      Level
+                    <th
+                      onClick={() => toggleSort('severity')}
+                      className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700 select-none w-[100px]"
+                    >
+                      <span className="inline-flex items-center gap-1">
+                        Nível
+                        <ArrowUpDown size={10} className={sortField === 'severity' ? 'text-blue-500' : 'text-gray-300'} />
+                      </span>
                     </th>
-                    <th className="px-4 py-2 text-left text-xs font-mono font-medium text-gray-500 uppercase">
+                    <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
                       Request
                     </th>
-                    <th className="px-4 py-2 text-left text-xs font-mono font-medium text-gray-500 uppercase">
-                      Status
+                    <th
+                      onClick={() => toggleSort('statusCode')}
+                      className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700 select-none w-[80px]"
+                    >
+                      <span className="inline-flex items-center gap-1">
+                        Status
+                        <ArrowUpDown size={10} className={sortField === 'statusCode' ? 'text-blue-500' : 'text-gray-300'} />
+                      </span>
                     </th>
-                    <th className="px-4 py-2 text-left text-xs font-mono font-medium text-gray-500 uppercase">
-                      <Zap size={12} className="inline mr-1" />
-                      Duration
+                    <th
+                      onClick={() => toggleSort('duration')}
+                      className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700 select-none w-[80px]"
+                    >
+                      <span className="inline-flex items-center gap-1">
+                        Duração
+                        <ArrowUpDown size={10} className={sortField === 'duration' ? 'text-blue-500' : 'text-gray-300'} />
+                      </span>
                     </th>
-                    <th className="px-4 py-2 text-left text-xs font-mono font-medium text-gray-500 uppercase">
-                      Action
+                    <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider w-[140px]">
+                      Ação
                     </th>
-                    <th className="px-4 py-2 text-left text-xs font-mono font-medium text-gray-500 uppercase">
-                      <Users size={12} className="inline mr-1" />
-                      User
+                    <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider w-[160px]">
+                      Usuário
                     </th>
-                    <th className="px-4 py-2 text-left text-xs font-mono font-medium text-gray-500 uppercase w-8">
-                      
-                    </th>
+                    <th className="px-4 py-2.5 w-[32px]" />
                   </tr>
                 </thead>
                 <tbody>
-                  {logsData.data.map((log) => (
+                  {sortedLogs.map((log) => (
                     <LogRow
                       key={log.id}
                       log={log}
@@ -560,11 +701,11 @@ export function LogsPage() {
             </div>
 
             {/* Paginação */}
-            {logsData.totalPages > 1 && (
-              <div className="bg-gray-800 px-4 py-3 border-t border-gray-700 flex items-center justify-between">
-                <div className="font-mono text-xs text-gray-400">
+            {(logsData.totalPages ?? 0) > 1 && (
+              <div className="px-4 py-3 border-t border-gray-100 flex items-center justify-between bg-gray-50/50">
+                <div className="text-xs text-gray-500">
                   Página {logsData.page} de {logsData.totalPages}
-                  <span className="text-gray-600 ml-2">({logsData.total.toLocaleString()} registros)</span>
+                  <span className="text-gray-400 ml-2">({logsData.total.toLocaleString('pt-PT')} registros)</span>
                 </div>
                 <div className="flex gap-2">
                   <Button
@@ -572,7 +713,7 @@ export function LogsPage() {
                     disabled={!logsData.hasPreviousPage}
                     variant="secondary"
                     size="sm"
-                    className="font-mono text-xs"
+                    className="text-xs"
                   >
                     <ChevronLeft size={14} className="mr-1" />
                     Anterior
@@ -582,7 +723,7 @@ export function LogsPage() {
                     disabled={!logsData.hasNextPage}
                     variant="secondary"
                     size="sm"
-                    className="font-mono text-xs"
+                    className="text-xs"
                   >
                     Próxima
                     <ChevronRight size={14} className="ml-1" />
