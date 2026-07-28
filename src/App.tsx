@@ -19,8 +19,9 @@
  *
  * ROTAS DA APLICAÇÃO:
  * -------------------
- * - /       -> HomePage (protegida, requer login)
- * - /login  -> LoginPage (pública)
+ * - /          -> HomePage (protegida, requer login)
+ * - /profile   -> ProfilePage (protegida, requer login)
+ * - /login     -> LoginPage (pública)
  * - Qualquer outra rota -> redireciona para / ou /login
  * ============================================================================
  */
@@ -35,6 +36,7 @@ import '@/i18n';
 // Páginas da aplicação
 import { LoginPage } from '@/pages/login/LoginPage';
 import { HomePage } from '@/pages/home/HomePage';
+import { ProfilePage } from '@/pages/profile/ProfilePage';
 
 // Serviço de autenticação
 import { isAuthenticated } from '@/services/auth.service';
@@ -113,6 +115,16 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <HomePage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Rota protegida - perfil do usuário (requer autenticação) */}
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
               </ProtectedRoute>
             }
           />

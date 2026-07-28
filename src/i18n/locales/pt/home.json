@@ -1,6 +1,12 @@
 {
   "title": "Bem-vindo",
   "subtitle": "Seu perfil",
+  "homeSubtitle": "Aqui está um resumo do seu perfil.",
+  "profileCard": {
+    "title": "Editar Perfil",
+    "description": "Atualize suas informações pessoais, telefones, certificações e idiomas.",
+    "action": "Ir para Perfil"
+  },
   "sections": {
     "personal": {
       "title": "Informações Pessoais e Profissionais",

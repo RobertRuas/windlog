@@ -1,5 +1,9 @@
 {
   "app_name": "Windlog",
+  "nav": {
+    "home": "Início",
+    "profile": "Perfil"
+  },
   "buttons": {
     "save": "Salvar",
     "cancel": "Cancelar",

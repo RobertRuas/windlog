@@ -87,7 +87,9 @@ interface ApiOptions {
 async function apiRequest<T>(url: string, options: ApiOptions = {}): Promise<T> {
   // Verifica se o token JWT está expirado ANTES de fazer a requisição
   // Isso evita fazer requisições que já sabemos que vão falhar
-  if (isTokenExpired()) {
+  // IMPORTANTE: Pula a verificação se não houver token (ex: login/registro)
+  const existingToken = localStorage.getItem('accessToken');
+  if (existingToken && isTokenExpired(existingToken)) {
     handleUnauthorized();
     throw new Error('Token expirado. Faça login novamente.');
   }
