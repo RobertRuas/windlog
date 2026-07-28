@@ -82,6 +82,21 @@ export async function getProfile(): Promise<ProfileResponse> {
 }
 
 /**
+ * Atualiza o perfil do usuário autenticado.
+ *
+ * Envia apenas os campos que foram modificados (atualização parcial).
+ * Requer que o usuário esteja logado (token JWT válido).
+ *
+ * @param data - Dados a serem atualizados (todos opcionais)
+ * @returns Promise com o perfil atualizado
+ */
+export async function updateProfile(data: Partial<ProfileResponse>): Promise<ProfileResponse> {
+  // A API retorna { data: {...}, message, statusCode, timestamp }
+  const response = await api.put<ApiResponse<ProfileResponse>>('/api/v1/auth/profile', data);
+  return response.data;
+}
+
+/**
  * Realiza o logout do usuário.
  *
  * Remove o token JWT do localStorage, invalidando a sessão local.

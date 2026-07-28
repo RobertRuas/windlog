@@ -27,6 +27,7 @@
 
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from 'sonner';
 
 // Importa a configuração do i18next (deve ser importado antes de usar traduções)
 import '@/i18n';
@@ -86,6 +87,8 @@ export default function App() {
     /* QueryClientProvider - disponibiliza o TanStack Query para todos os componentes.
      * Qualquer componente pode usar useQuery() para buscar dados da API. */
     <QueryClientProvider client={queryClient}>
+      {/* Toaster - exibe notificações toast (sucesso, erro, etc.) */}
+      <Toaster position="top-right" richColors closeButton />
       {/* BrowserRouter - disponibiliza o sistema de rotas.
        * Permite usar useNavigate(), <Link>, <Routes>, etc. */}
       <BrowserRouter>

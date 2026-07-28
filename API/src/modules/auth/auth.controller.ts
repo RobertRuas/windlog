@@ -14,6 +14,7 @@
  * POST /api/v1/auth/register  - Registrar novo usuário
  * POST /api/v1/auth/login     - Fazer login
  * GET  /api/v1/auth/profile   - Obter perfil do usuário (requer token)
+ * PUT  /api/v1/auth/profile   - Atualizar perfil do usuário (requer token)
  *
  * FLUXO DE AUTENTICAÇÃO:
  * ----------------------
@@ -38,6 +39,7 @@ import {
   Controller,
   Post,
   Get,
+  Put,
   Body,
   HttpCode,
   HttpStatus,
@@ -54,6 +56,7 @@ import {
 import { AuthService } from './auth.service.js';
 import { LoginDto } from './dto/login.dto.js';
 import { RegisterDto } from './dto/register.dto.js';
+import { UpdateProfileDto } from './dto/update-profile.dto.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
 import type { JwtPayload } from './strategies/jwt.strategy.js';
 import {
@@ -180,5 +183,48 @@ export class AuthController {
   @Get('profile')
   getProfile(@CurrentUser() user: JwtPayload) {
     return this.authService.getProfile(user.sub);
+  }
+
+  /**
+   * PUT /api/v1/auth/profile
+   *
+   * Atualiza o perfil do usuário autenticado.
+   * Endpoint PROTEGIDO (requer token JWT válido).
+   *
+   * FLUXO:
+   * 1. O JwtAuthGuard valida o token do header Authorization
+   * 2. O @CurrentUser() extrai os dados do usuário do token
+   * 3. Valida os dados enviados
+   * 4. Atualiza apenas os campos fornecidos no banco de dados
+   * 5. Retorna o perfil atualizado
+   */
+  @ApiOperation({
+    summary: 'Update current user profile',
+    description:
+      'Atualiza os dados do perfil do usuário autenticado. Todos os campos são opcionais, permitindo atualizações parciais. Requer token JWT válido no header Authorization.',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Perfil atualizado com sucesso',
+    type: UserProfileResponseDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Dados inválidos',
+    type: ErrorResponseDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Token inválido, expirado ou ausente',
+    type: ErrorResponseDto,
+  })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Put('profile')
+  updateProfile(
+    @CurrentUser() user: JwtPayload,
+    @Body() dto: UpdateProfileDto,
+  ) {
+    return this.authService.updateProfile(user.sub, dto);
   }
 }

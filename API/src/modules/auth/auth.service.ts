@@ -33,6 +33,7 @@ import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../database/prisma.service.js';
 import { LoginDto } from './dto/login.dto.js';
 import { RegisterDto } from './dto/register.dto.js';
+import { UpdateProfileDto } from './dto/update-profile.dto.js';
 import { JwtPayload } from './strategies/jwt.strategy.js';
 
 /**
@@ -238,6 +239,89 @@ export class AuthService {
       phoneNumbers: user.phoneNumbers,
       certifications: user.certifications,
       languages: user.languages,
+    };
+  }
+
+  /**
+   * Atualiza o perfil do usuário autenticado.
+   *
+   * PASSO A PASSO:
+   * 1. Busca o usuário pelo ID
+   * 2. Atualiza apenas os campos fornecidos
+   * 3. Retorna o perfil atualizado
+   *
+   * @param userId - ID do usuário (extraído do JWT)
+   * @param dto - Dados a serem atualizados (todos opcionais)
+   * @returns Perfil atualizado
+   * @throws UnauthorizedException se o usuário não existir
+   */
+  async updateProfile(userId: string, dto: UpdateProfileDto) {
+    // Verifica se o usuário existe
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    // Prepara os dados para atualização (apenas campos fornecidos)
+    const updateData: Record<string, unknown> = {};
+
+    if (dto.firstName !== undefined) updateData.firstName = dto.firstName;
+    if (dto.lastName !== undefined) updateData.lastName = dto.lastName;
+    if (dto.phone !== undefined) updateData.phone = dto.phone;
+    if (dto.phoneCountryCode !== undefined) updateData.phoneCountryCode = dto.phoneCountryCode;
+    if (dto.dateOfBirth !== undefined) updateData.dateOfBirth = dto.dateOfBirth ? new Date(dto.dateOfBirth) : null;
+    if (dto.nationality !== undefined) updateData.nationality = dto.nationality;
+    if (dto.address !== undefined) updateData.address = dto.address;
+    if (dto.city !== undefined) updateData.city = dto.city;
+    if (dto.postalCode !== undefined) updateData.postalCode = dto.postalCode;
+    if (dto.country !== undefined) updateData.country = dto.country;
+    if (dto.department !== undefined) updateData.department = dto.department;
+    if (dto.position !== undefined) updateData.position = dto.position;
+    if (dto.bio !== undefined) updateData.bio = dto.bio;
+
+    // Atualiza o usuário no banco de dados
+    const updatedUser = await this.prisma.user.update({
+      where: { id: userId },
+      data: updateData,
+      include: {
+        phoneNumbers: true,
+        certifications: {
+          orderBy: { expiryDate: 'asc' },
+        },
+        languages: true,
+      },
+    });
+
+    // Registra a operação no log
+    this.logger.log(`Profile updated for user: ${user.email} (${user.id})`);
+
+    // Retorna o perfil atualizado
+    return {
+      id: updatedUser.id,
+      email: updatedUser.email,
+      firstName: updatedUser.firstName,
+      lastName: updatedUser.lastName,
+      phone: updatedUser.phone,
+      phoneCountryCode: updatedUser.phoneCountryCode,
+      dateOfBirth: updatedUser.dateOfBirth,
+      nationality: updatedUser.nationality,
+      address: updatedUser.address,
+      city: updatedUser.city,
+      postalCode: updatedUser.postalCode,
+      country: updatedUser.country,
+      department: updatedUser.department,
+      position: updatedUser.position,
+      hireDate: updatedUser.hireDate,
+      employeeId: updatedUser.employeeId,
+      bio: updatedUser.bio,
+      role: updatedUser.role,
+      createdAt: updatedUser.createdAt,
+      phoneNumbers: updatedUser.phoneNumbers,
+      certifications: updatedUser.certifications,
+      languages: updatedUser.languages,
     };
   }
 }

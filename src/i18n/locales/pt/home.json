@@ -1,12 +1,51 @@
 {
   "title": "Bem-vindo",
   "subtitle": "Seu perfil",
+  "sections": {
+    "personal": {
+      "title": "Informações Pessoais",
+      "description": "Seus dados básicos de contato"
+    },
+    "address": {
+      "title": "Endereço",
+      "description": "Seu endereço residencial"
+    },
+    "professional": {
+      "title": "Informações Profissionais",
+      "description": "Seus dados na empresa"
+    }
+  },
   "profile": {
-    "name": "Nome",
+    "firstName": "Primeiro Nome",
+    "lastName": "Sobrenome",
     "email": "E-mail",
-    "role": "Função",
+    "phone": "Telefone",
+    "phoneCountryCode": "Código do País",
+    "dateOfBirth": "Data de Nascimento",
+    "nationality": "Nacionalidade",
+    "address": "Endereço",
+    "city": "Cidade",
+    "postalCode": "Código Postal",
+    "country": "País",
     "department": "Departamento",
-    "position": "Cargo"
+    "position": "Cargo",
+    "bio": "Biografia",
+    "role": "Função"
+  },
+  "actions": {
+    "edit": "Editar",
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "saving": "Salvando..."
+  },
+  "feedback": {
+    "success": "Perfil atualizado com sucesso!",
+    "error": "Erro ao atualizar perfil. Tente novamente."
+  },
+  "validation": {
+    "minLength": "Mínimo de {{count}} caracteres",
+    "required": "Campo obrigatório",
+    "invalidDate": "Data inválida"
   },
   "roles": {
     "ADMIN": "Administrador",
