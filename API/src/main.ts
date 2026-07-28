@@ -127,17 +127,44 @@ async function bootstrap() {
   // Configura a documentação interativa da API
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Windlog API')
-    .setDescription('API do sistema Windlog para gestão de projetos eólicos')
+    .setDescription(
+      'API do sistema Windlog para gestão de projetos eólicos.\n\n' +
+        '**Autenticação:** Use o botão "Authorize" e insira o token JWT ' +
+        'no formato: Bearer <token>\n\n' +
+        '**Prefixo:** Todos os endpoints usam o prefixo `/api/v1`\n\n' +
+        '**Respostas:** Todas seguem o formato padronizado:\n' +
+        '- Sucesso: `{ data, message, statusCode, timestamp }`\n' +
+        '- Erro: `{ error, message, statusCode, timestamp, path }`',
+    )
     .setVersion('1.0')
-    .addBearerAuth() // Documenta a autenticação Bearer (JWT)
-    .addTag('auth', 'Endpoints de autenticação')
+    .addBearerAuth(
+      // Configura o esquema de autenticação Bearer JWT
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        description: 'Insira o token JWT recebido no login/registro',
+      },
+      'access-token', // Nome do esquema de segurança
+    )
+    .addTag('auth', 'Autenticação e autorização - Endpoints para registro, login e gestão de sessão')
     .build();
 
   // Cria o documento Swagger baseado na configuração
   const document = SwaggerModule.createDocument(app, swaggerConfig);
 
   // Monta o Swagger UI em /api/docs
-  SwaggerModule.setup('api/docs', app, document);
+  SwaggerModule.setup('api/docs', app, document, {
+    // Configurações adicionais do Swagger UI
+    swaggerOptions: {
+      // Mantém as requisições abertas após enviar (útil para debug)
+      persistAuthorization: true,
+      // Expande as tags por padrão
+      docExpansion: 'list',
+      // Mostra exemplos de respostas
+      displayRequestDuration: true,
+    },
+  });
 
   // -------------------------------------------------------------------------
   // 10. INICIA O SERVIDOR

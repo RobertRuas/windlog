@@ -6,7 +6,8 @@
  * O QUE É ESTE ARQUIVO?
  * ---------------------
  * Define os endpoints HTTP para autenticação de usuários.
- * Este controller é PÚBLICO (não requer token JWT para acessar).
+ * Este controller é PÚBLICO (não requer token JWT para acessar),
+ * exceto o endpoint /profile que requer autenticação.
  *
  * ENDPOINTS:
  * ----------
@@ -22,6 +23,14 @@
  * 4. Cliente envia o token em todas as requisições subsequentes:
  *    Authorization: Bearer <accessToken>
  * 5. O JwtAuthGuard valida o token automaticamente
+ *
+ * SWAGGER:
+ * --------
+ * Todos os endpoints estão documentados com:
+ * - @ApiOperation: resumo do que o endpoint faz
+ * - @ApiResponse: respostas possíveis (sucesso e erro)
+ * - @ApiBody: corpo da requisição (via DTOs com @ApiProperty)
+ * - @ApiBearerAuth: indica que requer token JWT
  * ============================================================================
  */
 
@@ -47,6 +56,11 @@ import { LoginDto } from './dto/login.dto.js';
 import { RegisterDto } from './dto/register.dto.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
 import type { JwtPayload } from './strategies/jwt.strategy.js';
+import {
+  SuccessResponseDto,
+  ErrorResponseDto,
+  AuthResponseDataDto,
+} from '../../common/dto/swagger-response.dto.js';
 
 /**
  * Controller do módulo de autenticação.
@@ -65,21 +79,35 @@ export class AuthController {
    * Registra um novo usuário no sistema.
    * Endpoint PÚBLICO (não requer autenticação).
    *
-   * @param dto - Dados do registro (email, password, firstName, lastName)
-   * @returns Token JWT e dados do usuário criado
+   * FLUXO:
+   * 1. Valida os dados recebidos (email único, senha mínima 6 chars)
+   * 2. Criptografa a senha com bcrypt
+   * 3. Cria o usuário no banco de dados
+   * 4. Gera e retorna o token JWT
    */
-  @ApiOperation({ summary: 'Register a new user' })
+  @ApiOperation({
+    summary: 'Register a new user',
+    description:
+      'Cria uma nova conta de usuário e retorna o token JWT. O e-mail deve ser único.',
+  })
   @ApiResponse({
     status: HttpStatus.CREATED,
-    description: 'User successfully registered',
+    description: 'Usuário registrado com sucesso',
+    type: SuccessResponseDto,
   })
   @ApiResponse({
     status: HttpStatus.CONFLICT,
-    description: 'Email already registered',
+    description: 'E-mail já cadastrado no sistema',
+    type: ErrorResponseDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Dados inválidos (ex: e-mail inválido, senha muito curta)',
+    type: ErrorResponseDto,
   })
   @Post('register')
-  register(@Body() dto: RegisterDto) {
-    return this.authService.register(dto);
+  register(@Body() dto: RegisterDto): Promise<{ accessToken: string; user: AuthResponseDataDto['user'] }> {
+    return this.authService.register(dto) as Promise<{ accessToken: string; user: AuthResponseDataDto['user'] }>;
   }
 
   /**
@@ -88,23 +116,36 @@ export class AuthController {
    * Realiza o login do usuário.
    * Endpoint PÚBLICO (não requer autenticação).
    *
-   * @HttpCode(200) - Retorna 200 (não 201, pois não cria recurso)
-   * @param dto - Dados do login (email, password)
-   * @returns Token JWT e dados do usuário autenticado
+   * FLUXO:
+   * 1. Busca o usuário pelo e-mail
+   * 2. Verifica se o usuário existe e está ativo
+   * 3. Compara a senha fornecida com a senha hasheada
+   * 4. Gera e retorna o token JWT
    */
-  @ApiOperation({ summary: 'Login with email and password' })
+  @ApiOperation({
+    summary: 'Login with email and password',
+    description:
+      'Autentica o usuário com e-mail e senha. Retorna o token JWT que deve ser enviado em requisições protegidas.',
+  })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Login successful',
+    description: 'Login realizado com sucesso',
+    type: SuccessResponseDto,
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
-    description: 'Invalid credentials',
+    description: 'Credenciais inválidas (e-mail ou senha incorretos)',
+    type: ErrorResponseDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Dados inválidos',
+    type: ErrorResponseDto,
   })
   @HttpCode(HttpStatus.OK)
   @Post('login')
-  login(@Body() dto: LoginDto) {
-    return this.authService.login(dto);
+  login(@Body() dto: LoginDto): Promise<{ accessToken: string; user: AuthResponseDataDto['user'] }> {
+    return this.authService.login(dto) as Promise<{ accessToken: string; user: AuthResponseDataDto['user'] }>;
   }
 
   /**
@@ -113,19 +154,25 @@ export class AuthController {
    * Obtém o perfil do usuário autenticado.
    * Endpoint PROTEGIDO (requer token JWT válido).
    *
-   * @UseGuards(AuthGuard('jwt')) - Protege o endpoint com JWT
-   * @ApiBearerAuth() - Documenta no Swagger que requer Bearer token
-   * @param user - Dados do usuário extraídos do JWT (via @CurrentUser)
-   * @returns Perfil completo do usuário
+   * FLUXO:
+   * 1. O JwtAuthGuard valida o token do header Authorization
+   * 2. O @CurrentUser() extrai os dados do usuário do token
+   * 3. Busca o perfil completo no banco de dados
    */
-  @ApiOperation({ summary: 'Get current user profile' })
+  @ApiOperation({
+    summary: 'Get current user profile',
+    description:
+      'Retorna os dados do usuário autenticado. Requer token JWT válido no header Authorization.',
+  })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'User profile retrieved successfully',
+    description: 'Perfil do usuário retornado com sucesso',
+    type: SuccessResponseDto,
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
-    description: 'Invalid or missing token',
+    description: 'Token inválido, expirado ou ausente',
+    type: ErrorResponseDto,
   })
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))

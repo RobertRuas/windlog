@@ -39,6 +39,11 @@ export type {
   ApiError,
   PaginatedResponse,
 } from './dto/api-response.dto.js';
+export {
+  SuccessResponseDto,
+  ErrorResponseDto,
+  AuthResponseDataDto,
+} from './dto/swagger-response.dto.js';
 
 // Utils
 export {
