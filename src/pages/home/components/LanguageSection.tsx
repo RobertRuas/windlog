@@ -6,20 +6,20 @@
  * O QUE É ESTE COMPONENTE?
  * ------------------------
  * Exibe e gerencia os idiomas falados pelo usuário.
- * Permite adicionar, editar e remover idiomas com seus níveis.
+ * Usado dentro de um Accordion na HomePage.
  *
  * FUNCIONALIDADES:
  * ----------------
  * - Lista todos os idiomas com nível de proficiência
  * - Seleção de idioma a partir de lista predefinida
  * - Nível de proficiência (A1, A2, B1, B2, C1, C2, NATIVE)
- * - Edição inline com design alinhado
+ * - Design alinhado com altura consistente
  * ============================================================================
  */
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Globe, Plus, Pencil, Trash2, X, Check } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, Check } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { PREDEFINED_LANGUAGES } from '@/constants/languages';
 import type { Language } from '@/services/auth.service';
@@ -49,11 +49,6 @@ export function LanguageSection({ languages, onAdd, onUpdate, onRemove }: Langua
     language: '',
     level: 'A1',
   });
-
-  /**
-   * Estilos comuns para inputs e selects.
-   */
-  const inputClass = "w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent";
 
   /**
    * Formata o nível de proficiência para exibição.
@@ -151,15 +146,9 @@ export function LanguageSection({ languages, onAdd, onUpdate, onRemove }: Langua
   );
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      {/* Cabeçalho da seção */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <Globe className="w-5 h-5 text-green-600" />
-          <h2 className="text-lg font-semibold text-gray-900">
-            {t('languages.title')}
-          </h2>
-        </div>
+    <div className="pt-4">
+      {/* Botão adicionar */}
+      <div className="mb-4">
         {!isAdding && (
           <Button
             variant="secondary"
@@ -183,17 +172,15 @@ export function LanguageSection({ languages, onAdd, onUpdate, onRemove }: Langua
         {languages.map((lang) => (
           <div
             key={lang.id}
-            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+            className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gray-50 rounded-lg gap-3"
           >
             {editingId === lang.id ? (
               /* Modo de edição */
               <div className="flex-1 flex flex-col sm:flex-row gap-4">
                 <div className="flex-1">
-                  <label className="block text-xs font-medium text-gray-600 mb-1">
-                    {t('languages.language')}
-                  </label>
+                  <label className="form-label">{t('languages.language')}</label>
                   <select
-                    className={inputClass}
+                    className="form-select w-full"
                     value={formData.language}
                     onChange={(e) => setFormData({ ...formData, language: e.target.value })}
                   >
@@ -206,11 +193,9 @@ export function LanguageSection({ languages, onAdd, onUpdate, onRemove }: Langua
                   </select>
                 </div>
                 <div className="flex-1">
-                  <label className="block text-xs font-medium text-gray-600 mb-1">
-                    {t('languages.level')}
-                  </label>
+                  <label className="form-label">{t('languages.level')}</label>
                   <select
-                    className={inputClass}
+                    className="form-select w-full"
                     value={formData.level}
                     onChange={(e) => setFormData({ ...formData, level: e.target.value })}
                   >
@@ -261,11 +246,9 @@ export function LanguageSection({ languages, onAdd, onUpdate, onRemove }: Langua
           <div className="p-4 bg-green-50 rounded-lg border border-green-200">
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1">
-                <label className="block text-xs font-medium text-gray-600 mb-1">
-                  {t('languages.language')}
-                </label>
+                <label className="form-label">{t('languages.language')}</label>
                 <select
-                  className={inputClass}
+                  className="form-select w-full"
                   value={formData.language}
                   onChange={(e) => setFormData({ ...formData, language: e.target.value })}
                 >
@@ -278,11 +261,9 @@ export function LanguageSection({ languages, onAdd, onUpdate, onRemove }: Langua
                 </select>
               </div>
               <div className="flex-1">
-                <label className="block text-xs font-medium text-gray-600 mb-1">
-                  {t('languages.level')}
-                </label>
+                <label className="form-label">{t('languages.level')}</label>
                 <select
-                  className={inputClass}
+                  className="form-select w-full"
                   value={formData.level}
                   onChange={(e) => setFormData({ ...formData, level: e.target.value })}
                 >

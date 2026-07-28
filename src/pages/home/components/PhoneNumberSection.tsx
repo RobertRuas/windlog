@@ -7,6 +7,7 @@
  * ------------------------
  * Exibe e gerencia os números de telefone do usuário.
  * Permite adicionar, editar e remover números.
+ * Usado dentro de um Accordion na HomePage.
  *
  * FUNCIONALIDADES:
  * ----------------
@@ -14,13 +15,13 @@
  * - Adiciona novo número com código do país e tipo
  * - Edita números existentes inline
  * - Remove números com confirmação
- * - Design alinhado e responsivo
+ * - Design alinhado com altura consistente
  * ============================================================================
  */
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Phone, Plus, Pencil, Trash2, X, Check } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, Check } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import type { PhoneNumber } from '@/services/auth.service';
 
@@ -125,21 +126,10 @@ export function PhoneNumberSection({ phones, onAdd, onUpdate, onRemove }: PhoneN
     return types[type] || type;
   };
 
-  /**
-   * Estilos comuns para inputs e selects.
-   */
-  const inputClass = "w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent";
-
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      {/* Cabeçalho da seção */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <Phone className="w-5 h-5 text-blue-600" />
-          <h2 className="text-lg font-semibold text-gray-900">
-            {t('phones.title')}
-          </h2>
-        </div>
+    <div className="pt-4">
+      {/* Botão adicionar */}
+      <div className="mb-4">
         {!isAdding && (
           <Button
             variant="secondary"
@@ -170,35 +160,29 @@ export function PhoneNumberSection({ phones, onAdd, onUpdate, onRemove }: PhoneN
               <>
                 <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">
-                      {t('phones.countryCode')}
-                    </label>
+                    <label className="form-label">{t('phones.countryCode')}</label>
                     <input
                       type="text"
-                      className={inputClass}
+                      className="form-input w-full"
                       value={formData.countryCode}
                       onChange={(e) => setFormData({ ...formData, countryCode: e.target.value })}
                       placeholder="+351"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">
-                      {t('phones.number')}
-                    </label>
+                    <label className="form-label">{t('phones.number')}</label>
                     <input
                       type="text"
-                      className={inputClass}
+                      className="form-input w-full"
                       value={formData.number}
                       onChange={(e) => setFormData({ ...formData, number: e.target.value })}
                       placeholder="912345678"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">
-                      {t('phones.type')}
-                    </label>
+                    <label className="form-label">{t('phones.type')}</label>
                     <select
-                      className={inputClass}
+                      className="form-select w-full"
                       value={formData.type}
                       onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                     >
@@ -251,35 +235,29 @@ export function PhoneNumberSection({ phones, onAdd, onUpdate, onRemove }: PhoneN
           <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">
-                  {t('phones.countryCode')}
-                </label>
+                <label className="form-label">{t('phones.countryCode')}</label>
                 <input
                   type="text"
-                  className={inputClass}
+                  className="form-input w-full"
                   value={formData.countryCode}
                   onChange={(e) => setFormData({ ...formData, countryCode: e.target.value })}
                   placeholder="+351"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">
-                  {t('phones.number')}
-                </label>
+                <label className="form-label">{t('phones.number')}</label>
                 <input
                   type="text"
-                  className={inputClass}
+                  className="form-input w-full"
                   value={formData.number}
                   onChange={(e) => setFormData({ ...formData, number: e.target.value })}
                   placeholder="912345678"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">
-                  {t('phones.type')}
-                </label>
+                <label className="form-label">{t('phones.type')}</label>
                 <select
-                  className={inputClass}
+                  className="form-select w-full"
                   value={formData.type}
                   onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                 >

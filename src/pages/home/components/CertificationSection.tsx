@@ -6,22 +6,22 @@
  * O QUE É ESTE COMPONENTE?
  * ------------------------
  * Exibe e gerencia as certificações do usuário.
- * Permite adicionar, editar e remover certificações.
+ * Usado dentro de um Accordion na HomePage.
  *
  * FUNCIONALIDADES:
  * ----------------
  * - Lista todas as certificações
- * - Adiciona nova certificação com nome, entidade, tipo, datas
+ * - Adiciona nova certificação
  * - Edita certificações existentes
  * - Remove certificações com confirmação
  * - Mostra alertas para certificações expiradas
- * - Design alinhado e responsivo
+ * - Design alinhado com altura consistente
  * ============================================================================
  */
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Award, Plus, Pencil, Trash2, X, Check, AlertCircle } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, Check, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import type { Certification } from '@/services/auth.service';
 
@@ -55,11 +55,6 @@ export function CertificationSection({ certifications, onAdd, onUpdate, onRemove
     issueDate: '',
     expiryDate: '',
   });
-
-  /**
-   * Estilos comuns para inputs e selects.
-   */
-  const inputClass = "w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent";
 
   /**
    * Verifica se uma certificação está expirada.
@@ -173,15 +168,9 @@ export function CertificationSection({ certifications, onAdd, onUpdate, onRemove
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      {/* Cabeçalho da seção */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <Award className="w-5 h-5 text-purple-600" />
-          <h2 className="text-lg font-semibold text-gray-900">
-            {t('certifications.title')}
-          </h2>
-        </div>
+    <div className="pt-4">
+      {/* Botão adicionar */}
+      <div className="mb-4">
         {!isAdding && (
           <Button
             variant="secondary"
@@ -216,24 +205,20 @@ export function CertificationSection({ certifications, onAdd, onUpdate, onRemove
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">
-                      {t('certifications.name')}
-                    </label>
+                    <label className="form-label">{t('certifications.name')}</label>
                     <input
                       type="text"
-                      className={inputClass}
+                      className="form-input w-full"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       placeholder="GWO BST"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">
-                      {t('certifications.issuer')}
-                    </label>
+                    <label className="form-label">{t('certifications.issuer')}</label>
                     <input
                       type="text"
-                      className={inputClass}
+                      className="form-input w-full"
                       value={formData.issuer}
                       onChange={(e) => setFormData({ ...formData, issuer: e.target.value })}
                       placeholder="GWO"
@@ -242,11 +227,9 @@ export function CertificationSection({ certifications, onAdd, onUpdate, onRemove
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">
-                      {t('certifications.type')}
-                    </label>
+                    <label className="form-label">{t('certifications.type')}</label>
                     <select
-                      className={inputClass}
+                      className="form-select w-full"
                       value={formData.type}
                       onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                     >
@@ -258,24 +241,20 @@ export function CertificationSection({ certifications, onAdd, onUpdate, onRemove
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">
-                      {t('certifications.certNumber')}
-                    </label>
+                    <label className="form-label">{t('certifications.certNumber')}</label>
                     <input
                       type="text"
-                      className={inputClass}
+                      className="form-input w-full"
                       value={formData.certNumber}
                       onChange={(e) => setFormData({ ...formData, certNumber: e.target.value })}
                       placeholder="GWO-2024-12345"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">
-                      {t('certifications.description')}
-                    </label>
+                    <label className="form-label">{t('certifications.description')}</label>
                     <input
                       type="text"
-                      className={inputClass}
+                      className="form-input w-full"
                       value={formData.description}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                       placeholder={t('certifications.descriptionPlaceholder')}
@@ -284,23 +263,19 @@ export function CertificationSection({ certifications, onAdd, onUpdate, onRemove
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">
-                      {t('certifications.issueDate')}
-                    </label>
+                    <label className="form-label">{t('certifications.issueDate')}</label>
                     <input
                       type="date"
-                      className={inputClass}
+                      className="form-input w-full"
                       value={formData.issueDate}
                       onChange={(e) => setFormData({ ...formData, issueDate: e.target.value })}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">
-                      {t('certifications.expiryDate')}
-                    </label>
+                    <label className="form-label">{t('certifications.expiryDate')}</label>
                     <input
                       type="date"
-                      className={inputClass}
+                      className="form-input w-full"
                       value={formData.expiryDate}
                       onChange={(e) => setFormData({ ...formData, expiryDate: e.target.value })}
                     />
@@ -365,24 +340,20 @@ export function CertificationSection({ certifications, onAdd, onUpdate, onRemove
           <div className="p-4 bg-purple-50 rounded-lg border border-purple-200 space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">
-                  {t('certifications.name')}
-                </label>
+                <label className="form-label">{t('certifications.name')}</label>
                 <input
                   type="text"
-                  className={inputClass}
+                  className="form-input w-full"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="GWO BST"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">
-                  {t('certifications.issuer')}
-                </label>
+                <label className="form-label">{t('certifications.issuer')}</label>
                 <input
                   type="text"
-                  className={inputClass}
+                  className="form-input w-full"
                   value={formData.issuer}
                   onChange={(e) => setFormData({ ...formData, issuer: e.target.value })}
                   placeholder="GWO"
@@ -391,11 +362,9 @@ export function CertificationSection({ certifications, onAdd, onUpdate, onRemove
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">
-                  {t('certifications.type')}
-                </label>
+                <label className="form-label">{t('certifications.type')}</label>
                 <select
-                  className={inputClass}
+                  className="form-select w-full"
                   value={formData.type}
                   onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                 >
@@ -407,24 +376,20 @@ export function CertificationSection({ certifications, onAdd, onUpdate, onRemove
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">
-                  {t('certifications.certNumber')}
-                </label>
+                <label className="form-label">{t('certifications.certNumber')}</label>
                 <input
                   type="text"
-                  className={inputClass}
+                  className="form-input w-full"
                   value={formData.certNumber}
                   onChange={(e) => setFormData({ ...formData, certNumber: e.target.value })}
                   placeholder="GWO-2024-12345"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">
-                  {t('certifications.description')}
-                </label>
+                <label className="form-label">{t('certifications.description')}</label>
                 <input
                   type="text"
-                  className={inputClass}
+                  className="form-input w-full"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder={t('certifications.descriptionPlaceholder')}
@@ -433,23 +398,19 @@ export function CertificationSection({ certifications, onAdd, onUpdate, onRemove
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">
-                  {t('certifications.issueDate')}
-                </label>
+                <label className="form-label">{t('certifications.issueDate')}</label>
                 <input
                   type="date"
-                  className={inputClass}
+                  className="form-input w-full"
                   value={formData.issueDate}
                   onChange={(e) => setFormData({ ...formData, issueDate: e.target.value })}
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">
-                  {t('certifications.expiryDate')}
-                </label>
+                <label className="form-label">{t('certifications.expiryDate')}</label>
                 <input
                   type="date"
-                  className={inputClass}
+                  className="form-input w-full"
                   value={formData.expiryDate}
                   onChange={(e) => setFormData({ ...formData, expiryDate: e.target.value })}
                 />

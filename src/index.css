@@ -71,3 +71,118 @@ body {
   /* Cor de fundo padrão */
   background-color: #f5f5f7;
 }
+
+/* ==========================================================================
+   Padrão de Altura Consistente para Formulários
+   ==========================================================================
+   Define altura padrão de 40px para todos os elementos de formulário:
+   - Inputs de texto
+   - Selects/Dropdowns
+   - Botões
+   - Textareas (altura mínima)
+   
+   Isso garante alinhamento visual perfeito quando elementos estão
+   lado a lado em grids ou flex containers.
+   ========================================================================== */
+
+/* Altura padrão para inputs e selects */
+.form-input,
+.form-select {
+  height: 40px;
+  padding: 0 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background-color: white;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.form-input:focus,
+.form-select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Altura para textareas (mínimo) */
+.form-textarea {
+  min-height: 80px;
+  padding: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background-color: white;
+  resize: vertical;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.form-textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Altura para botões */
+.form-button {
+  height: 40px;
+  padding: 0 16px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.form-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Botão primário */
+.form-button-primary {
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+}
+
+.form-button-primary:hover:not(:disabled) {
+  background-color: #2563eb;
+}
+
+/* Botão secundário */
+.form-button-secondary {
+  background-color: white;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.form-button-secondary:hover:not(:disabled) {
+  background-color: #f9fafb;
+}
+
+/* Botão danger */
+.form-button-danger {
+  background-color: white;
+  color: #dc2626;
+  border: 1px solid #d1d5db;
+}
+
+.form-button-danger:hover:not(:disabled) {
+  background-color: #fef2f2;
+  border-color: #dc2626;
+}
+
+/* Label padrão */
+.form-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: #6b7280;
+  margin-bottom: 4px;
+}

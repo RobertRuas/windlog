@@ -39,7 +39,6 @@ import { Pencil, X, Check } from 'lucide-react';
 
 // Componentes compartilhados
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
 
 /**
  * Interface para configuração de um campo da seção.
@@ -49,12 +48,14 @@ export interface FieldConfig {
   key: string;
   /** Label exibido acima do campo */
   label: string;
-  /** Tipo do input (text, email, date, textarea) */
-  type?: 'text' | 'email' | 'date' | 'textarea';
+  /** Tipo do input (text, email, date, textarea, select) */
+  type?: 'text' | 'email' | 'date' | 'textarea' | 'select';
   /** Validação mínima de caracteres */
   minLength?: number;
   /** Se o campo é obrigatório */
   required?: boolean;
+  /** Opções para tipo select */
+  options?: { value: string; label: string }[];
 }
 
 /**
@@ -220,44 +221,51 @@ export function ProfileSection({
           <div className="flex flex-col gap-4">
             {fields.map((field) => (
               <div key={field.key} className="relative">
+                <label className="form-label">{field.label}</label>
+                
                 {field.type === 'textarea' ? (
                   /* Campo textarea */
-                  <div className="flex flex-col gap-1">
-                    <label className="text-sm font-medium text-gray-700">
-                      {field.label}
-                    </label>
-                    <textarea
-                      value={formData[field.key] || ''}
-                      onChange={(e) => handleFieldChange(field.key, e.target.value)}
-                      rows={3}
-                      className={`
-                        px-3 py-2 rounded-lg border text-sm resize-none
-                        focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                        ${errors[field.key] ? 'border-red-500' : 'border-gray-300'}
-                      `}
-                    />
-                  </div>
+                  <textarea
+                    value={formData[field.key] || ''}
+                    onChange={(e) => handleFieldChange(field.key, e.target.value)}
+                    rows={3}
+                    className={`form-textarea w-full ${errors[field.key] ? 'border-red-500' : ''}`}
+                  />
+                ) : field.type === 'select' && field.options ? (
+                  /* Campo select */
+                  <select
+                    value={formData[field.key] || ''}
+                    onChange={(e) => handleFieldChange(field.key, e.target.value)}
+                    className={`form-select w-full ${errors[field.key] ? 'border-red-500' : ''}`}
+                  >
+                    <option value="">{t('validation.selectOption', { defaultValue: 'Selecione...' })}</option>
+                    {field.options.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
                 ) : (
                   /* Campo input normal */
-                  <Input
-                    label={field.label}
+                  <input
                     type={field.type || 'text'}
                     value={formData[field.key] || ''}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      handleFieldChange(field.key, e.target.value)
-                    }
-                    error={errors[field.key]}
+                    onChange={(e) => handleFieldChange(field.key, e.target.value)}
+                    className={`form-input w-full ${errors[field.key] ? 'border-red-500' : ''}`}
                   />
                 )}
 
-                {/* Botão X para dismiss do erro */}
+                {/* Mensagem de erro */}
                 {errors[field.key] && (
-                  <button
-                    onClick={() => dismissError(field.key)}
-                    className="absolute right-2 top-8 text-gray-400 hover:text-gray-600"
-                  >
-                    <X size={14} />
-                  </button>
+                  <div className="flex items-center justify-between mt-1">
+                    <span className="text-xs text-red-600">{errors[field.key]}</span>
+                    <button
+                      onClick={() => dismissError(field.key)}
+                      className="text-red-400 hover:text-red-600"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
                 )}
               </div>
             ))}

@@ -11,12 +11,12 @@
  *
  * SEÇÕES DO PERFIL:
  * -----------------
- * 1. Informações Pessoais: nome, email, telefone, data nascimento, nacionalidade
- * 2. Endereço: endereço, cidade, código postal, país
- * 3. Informações Profissionais: departamento, cargo, biografia
- * 4. Números de Telefone: lista de números com adição/edição/remoção
- * 5. Certificações: lista de certificações com CRUD completo
- * 6. Idiomas: lista de idiomas falados com níveis de proficiência
+ * 1. Informações Pessoais (inclui endereço): nome, email, telefone, 
+ *    data nascimento, nacionalidade, endereço completo
+ * 2. Informações Profissionais: departamento, cargo, biografia
+ * 3. Números de Telefone (acordeão): lista de números com CRUD
+ * 4. Certificações (acordeão): lista de certificações com CRUD
+ * 5. Idiomas (acordeão): lista de idiomas com níveis
  *
  * COMO FUNCIONA?
  * --------------
@@ -25,19 +25,21 @@
  * 3. Ao salvar, usa mutation do TanStack Query para atualizar
  * 4. Exibe toast de sucesso/erro usando Sonner
  * 5. Invalida o cache para recarregar os dados automaticamente
+ * 6. Seções opcionais ficam em acordeões recolhidos
  * ============================================================================
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { LogOut, Wind } from 'lucide-react';
+import { LogOut, Wind, Phone, Award, Globe, User } from 'lucide-react';
 
 // Componentes
 import { ProfileSection, type FieldConfig } from './components/ProfileSection';
 import { PhoneNumberSection } from './components/PhoneNumberSection';
 import { CertificationSection } from './components/CertificationSection';
 import { LanguageSection } from './components/LanguageSection';
+import { Accordion } from '@/components/ui/Accordion';
 
 // Serviços
 import type { ProfileResponse } from '@/types/user.types';
@@ -58,6 +60,9 @@ import {
   type Certification,
   type Language,
 } from '@/services/auth.service';
+
+// Constantes
+import { PREDEFINED_COUNTRIES } from '@/constants/countries';
 
 /**
  * Componente HomePage - Página inicial com perfil editável.
@@ -145,7 +150,15 @@ export function HomePage() {
   });
 
   /**
-   * Configuração dos campos da seção Pessoal.
+   * Opções de países para o select.
+   */
+  const countryOptions = PREDEFINED_COUNTRIES.map((c) => ({
+    value: c.code,
+    label: c.name,
+  }));
+
+  /**
+   * Configuração dos campos da seção Pessoal (inclui endereço).
    */
   const personalFields: FieldConfig[] = [
     { key: 'firstName', label: t('profile.firstName'), minLength: 2, required: true },
@@ -155,16 +168,16 @@ export function HomePage() {
     { key: 'phoneCountryCode', label: t('profile.phoneCountryCode') },
     { key: 'dateOfBirth', label: t('profile.dateOfBirth'), type: 'date' },
     { key: 'nationality', label: t('profile.nationality') },
-  ];
-
-  /**
-   * Configuração dos campos da seção Endereço.
-   */
-  const addressFields: FieldConfig[] = [
+    // Campos de endereço incluídos na seção pessoal
     { key: 'address', label: t('profile.address') },
     { key: 'city', label: t('profile.city') },
     { key: 'postalCode', label: t('profile.postalCode') },
-    { key: 'country', label: t('profile.country') },
+    { 
+      key: 'country', 
+      label: t('profile.country'), 
+      type: 'select',
+      options: countryOptions,
+    },
   ];
 
   /**
@@ -294,21 +307,11 @@ export function HomePage() {
 
         {/* Seções do perfil */}
         <div className="flex flex-col gap-6">
-          {/* Seção: Informações Pessoais */}
+          {/* Seção: Informações Pessoais (inclui endereço) */}
           <ProfileSection
             title={t('sections.personal.title')}
             description={t('sections.personal.description')}
             fields={personalFields}
-            data={data as unknown as Record<string, string | null | undefined>}
-            onSave={handleSave}
-            isLoading={mutation.isPending}
-          />
-
-          {/* Seção: Endereço */}
-          <ProfileSection
-            title={t('sections.address.title')}
-            description={t('sections.address.description')}
-            fields={addressFields}
             data={data as unknown as Record<string, string | null | undefined>}
             onSave={handleSave}
             isLoading={mutation.isPending}
@@ -324,29 +327,47 @@ export function HomePage() {
             isLoading={mutation.isPending}
           />
 
-          {/* Seção: Números de Telefone */}
-          <PhoneNumberSection
-            phones={data?.phoneNumbers || []}
-            onAdd={handleAddPhone}
-            onUpdate={handleUpdatePhone}
-            onRemove={handleRemovePhone}
-          />
+          {/* Seção: Números de Telefone (Acordeão) */}
+          <Accordion
+            title={t('phones.title')}
+            icon={<Phone className="w-5 h-5 text-blue-600" />}
+            defaultOpen={false}
+          >
+            <PhoneNumberSection
+              phones={data?.phoneNumbers || []}
+              onAdd={handleAddPhone}
+              onUpdate={handleUpdatePhone}
+              onRemove={handleRemovePhone}
+            />
+          </Accordion>
 
-          {/* Seção: Certificações */}
-          <CertificationSection
-            certifications={data?.certifications || []}
-            onAdd={handleAddCertification}
-            onUpdate={handleUpdateCertification}
-            onRemove={handleRemoveCertification}
-          />
+          {/* Seção: Certificações (Acordeão) */}
+          <Accordion
+            title={t('certifications.title')}
+            icon={<Award className="w-5 h-5 text-purple-600" />}
+            defaultOpen={false}
+          >
+            <CertificationSection
+              certifications={data?.certifications || []}
+              onAdd={handleAddCertification}
+              onUpdate={handleUpdateCertification}
+              onRemove={handleRemoveCertification}
+            />
+          </Accordion>
 
-          {/* Seção: Idiomas */}
-          <LanguageSection
-            languages={data?.languages || []}
-            onAdd={handleAddLanguage}
-            onUpdate={handleUpdateLanguage}
-            onRemove={handleRemoveLanguage}
-          />
+          {/* Seção: Idiomas (Acordeão) */}
+          <Accordion
+            title={t('languages.title')}
+            icon={<Globe className="w-5 h-5 text-green-600" />}
+            defaultOpen={false}
+          >
+            <LanguageSection
+              languages={data?.languages || []}
+              onAdd={handleAddLanguage}
+              onUpdate={handleUpdateLanguage}
+              onRemove={handleRemoveLanguage}
+            />
+          </Accordion>
         </div>
       </main>
     </div>
