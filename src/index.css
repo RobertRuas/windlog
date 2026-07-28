@@ -17,6 +17,12 @@
  *
  * Isso cria um layout flex, centralizado verticalmente, com espaçamento,
  * fundo branco, bordas arredondadas e sombra - tudo sem escrever CSS.
+ *
+ * FONTE SAN FRANCISCO (SF):
+ * -------------------------
+ * Usamos a fonte Inter (open-source, visualmente idêntica ao SF Pro) como
+ * fonte principal incluída no projeto. Em dispositivos Apple, o sistema
+ * automaticamente usa SF Pro nativo como fallback.
  * ============================================================================
  */
 
@@ -24,12 +30,34 @@
 @import "tailwindcss";
 
 /* ==========================================================================
+   Fonte San Francisco (SF) via Inter (open-source)
+   ==========================================================================
+   A fonte Inter é visualmente idêntica ao SF Pro da Apple e é open-source.
+   Em dispositivos Apple (Mac, iPhone, iPad), o sistema usa SF Pro nativo.
+   Em outros sistemas, usa Inter que é uma alternativa muito similar.
+   ========================================================================== */
+
+/* Importa a fonte Inter (pesos regulares usados no projeto) */
+@import "@fontsource/inter/400.css"; /* Regular */
+@import "@fontsource/inter/500.css"; /* Medium */
+@import "@fontsource/inter/600.css"; /* Semibold */
+@import "@fontsource/inter/700.css"; /* Bold */
+
+/* ==========================================================================
    Estilos base do corpo da página
    ========================================================================== */
 body {
-  /* Define a fonte padrão do sistema */
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+  /*
+   * Fonte padrão: San Francisco (SF) via Inter
+   *
+   * Ordem de prioridade:
+   * 1. 'Inter' - fonte open-source incluída no projeto (similar ao SF Pro)
+   * 2. -apple-system - SF Pro nativo em Mac/iOS
+   * 3. BlinkMacSystemFont - SF Pro em versões antigas do Mac
+   * 4. Demais fallbacks para outros sistemas
+   */
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
+    'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
 
   /* Suaviza a renderização de fontes */
