@@ -292,3 +292,163 @@ model UserLanguage {
   @@index([userId])
   @@unique([userId, language])
 }
+
+// ---------------------------------------------------------------------------
+// ENUM: LOG ACTION (Ações Registradas no Log)
+// ---------------------------------------------------------------------------
+// Define todas as ações que podem ser registradas no log do sistema.
+// Usado para auditoria e rastreamento de atividades.
+// ---------------------------------------------------------------------------
+enum LogAction {
+  // Autenticação
+  LOGIN
+  LOGOUT
+  LOGIN_FAILED
+  PASSWORD_CHANGE
+  PASSWORD_RESET
+  
+  // Gestão de Usuários
+  USER_CREATE
+  USER_UPDATE
+  USER_DELETE
+  USER_DEACTIVATE
+  USER_REACTIVATE
+  USER_ROLE_CHANGE
+  
+  // Perfil
+  PROFILE_UPDATE
+  PROFILE_VIEW
+  
+  // Telefones
+  PHONE_ADD
+  PHONE_UPDATE
+  PHONE_DELETE
+  
+  // Certificações
+  CERTIFICATION_ADD
+  CERTIFICATION_UPDATE
+  CERTIFICATION_DELETE
+  
+  // Idiomas
+  LANGUAGE_ADD
+  LANGUAGE_UPDATE
+  LANGUAGE_DELETE
+  
+  // Projetos
+  PROJECT_CREATE
+  PROJECT_UPDATE
+  PROJECT_DELETE
+  
+  // Turbinas
+  TURBINE_CREATE
+  TURBINE_UPDATE
+  TURBINE_DELETE
+  
+  // Técnicos
+  TECHNICIAN_CREATE
+  TECHNICIAN_UPDATE
+  TECHNICIAN_DELETE
+  
+  // Sistema
+  SYSTEM_ERROR
+  API_ERROR
+  ACCESS_DENIED
+  DATA_EXPORT
+  DATA_IMPORT
+  
+  // Outros
+  OTHER
+}
+
+// ---------------------------------------------------------------------------
+// ENUM: LOG SEVERITY (Nível de Severidade do Log)
+// ---------------------------------------------------------------------------
+// Classifica a severidade/importância do log registrado.
+// ---------------------------------------------------------------------------
+enum LogSeverity {
+  INFO      // Informação geral (ações normais)
+  WARNING   // Aviso (algo incomum mas não crítico)
+  ERROR     // Erro (algo falhou)
+  CRITICAL  // Crítico (falha grave do sistema)
+}
+
+// ---------------------------------------------------------------------------
+// MODEL: SYSTEM LOG (Log do Sistema)
+// ---------------------------------------------------------------------------
+// Registra TODAS as ações realizadas no sistema para auditoria e segurança.
+// Cada log captura detalhes completos da ação realizada.
+//
+// CAMPOS IMPORTANTES:
+// - action:      O que foi feito (enum LogAction)
+// - severity:    Nível de importância (INFO, WARNING, ERROR, CRITICAL)
+// - userId:      Quem fez a ação (null se foi ação do sistema)
+// - entity:      Qual entidade foi afetada (User, Project, etc.)
+// - entityId:    ID da entidade afetada
+// - details:     Detalhes adicionais em JSON (dados antigos, novos, etc.)
+// - ipAddress:   IP de onde a ação foi realizada
+// - userAgent:   Browser/client usado
+// - url:         URL/endpoint acessado
+// - method:      Método HTTP (GET, POST, PUT, DELETE)
+// - statusCode:  Código HTTP da resposta
+// - duration:    Tempo de execução da ação em ms
+// ---------------------------------------------------------------------------
+model SystemLog {
+  id        String   @id @default(uuid())
+
+  // Ação realizada
+  /// O que foi feito (enum LogAction)
+  action    LogAction
+  /// Nível de severidade/importância
+  severity  LogSeverity @default(INFO)
+  /// Descrição legível da ação (ex: "Usuário atualizou perfil")
+  message   String
+
+  // Quem fez a ação
+  /// ID do usuário que realizou a ação (null se foi ação do sistema)
+  userId    String?
+  /// Nome do usuário (denormalizado para performance na consulta)
+  userName  String?
+  /// Email do usuário (denormalizado para performance na consulta)
+  userEmail String?
+
+  // O que foi afetado
+  /// Tipo da entidade afetada (ex: "User", "Project", "Certification")
+  entity    String?
+  /// ID da entidade afetada
+  entityId  String?
+  /// Nome/título da entidade (denormalizado para exibição)
+  entityName String?
+
+  // Detalhes adicionais
+  /// Dados adicionais em formato JSON (dados antigos, novos valores, etc.)
+  details   Json?
+  /// Metadata adicional (headers, query params, etc.)
+  metadata  Json?
+
+  // Contexto da requisição
+  /// Endereço IP de onde a ação foi realizada
+  ipAddress String?
+  /// User-Agent do browser/client
+  userAgent String?
+  /// URL/endpoint acessado
+  url       String?
+  /// Método HTTP (GET, POST, PUT, DELETE, PATCH)
+  method    String?
+  /// Código HTTP da resposta (200, 201, 400, 401, 403, 404, 500, etc.)
+  statusCode Int?
+  /// Tempo de execução da ação em milissegundos
+  duration  Int?
+
+  // Timestamp
+  /// Data/hora em que a ação foi realizada (UTC)
+  createdAt DateTime @default(now())
+
+  // Índices para performance nas consultas
+  @@index([userId])
+  @@index([action])
+  @@index([severity])
+  @@index([entity, entityId])
+  @@index([createdAt])
+  @@index([createdAt, action])
+  @@index([createdAt, userId])
+}

@@ -33,6 +33,7 @@ import { ConfigModule } from '@nestjs/config';
 
 import { EnvironmentVariables } from './config/env.validation.js';
 import { AuthModule } from './modules/auth/auth.module.js';
+import { SystemLogModule } from './modules/system-log/system-log.module.js';
 
 @Module({
   imports: [
@@ -62,6 +63,11 @@ import { AuthModule } from './modules/auth/auth.module.js';
     // AUTH MODULE - Autenticação e Autorização
     // -------------------------------------------------------------------------
     AuthModule,
+
+    // -------------------------------------------------------------------------
+    // SYSTEM LOG MODULE - Logs do Sistema
+    // -------------------------------------------------------------------------
+    SystemLogModule,
 
     // -------------------------------------------------------------------------
     // PRÓXIMOS MÓDULOS SERÃO ADICIONADOS AQUI

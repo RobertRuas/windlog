@@ -37,6 +37,7 @@ import '@/i18n';
 import { LoginPage } from '@/pages/login/LoginPage';
 import { HomePage } from '@/pages/home/HomePage';
 import { ProfilePage } from '@/pages/profile/ProfilePage';
+import { LogsPage } from '@/pages/logs/LogsPage';
 
 // Serviço de autenticação
 import { isAuthenticated } from '@/services/auth.service';
@@ -90,6 +91,48 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 /**
+ * Componente AdminRoute - Rota protegida para administradores.
+ *
+ * Verifica se o usuário está autenticado E tem role ADMIN.
+ * Se não for ADMIN, redireciona para a página inicial.
+ *
+ * @param children - componente a ser exibido se for ADMIN
+ */
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  // Verifica se existe um token JWT no localStorage
+  const authenticated = isAuthenticated();
+  const expired = isTokenExpired();
+
+  // Se o token existe mas está expirado, faz logout automático
+  if (authenticated && expired) {
+    localStorage.removeItem('accessToken');
+    return <Navigate to="/login" replace />;
+  }
+
+  // Se não autenticado, redireciona para /login
+  if (!authenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // Busca o perfil do usuário para verificar o role
+  // Nota: Isso é uma verificação simples baseada no token JWT
+  // Em produção, você pode querer buscar o perfil completo da API
+  try {
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      if (payload.role !== 'ADMIN') {
+        return <Navigate to="/" replace />;
+      }
+    }
+  } catch {
+    return <Navigate to="/" replace />;
+  }
+
+  return <>{children}</>;
+}
+
+/**
  * Componente App - raiz da aplicação.
  *
  * Envolve toda a aplicação com os providers necessários
@@ -126,6 +169,16 @@ export default function App() {
               <ProtectedRoute>
                 <ProfilePage />
               </ProtectedRoute>
+            }
+          />
+
+          {/* Rota protegida - logs do sistema (apenas ADMIN) */}
+          <Route
+            path="/logs"
+            element={
+              <AdminRoute>
+                <LogsPage />
+              </AdminRoute>
             }
           />
 

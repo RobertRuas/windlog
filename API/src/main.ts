@@ -35,6 +35,8 @@ import helmet from 'helmet';
 import { AppModule } from './app.module.js';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter.js';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor.js';
+import { LoggingInterceptor } from './common/interceptors/logging.interceptor.js';
+import { SystemLogService } from './modules/system-log/system-log.service.js';
 
 /**
  * Função principal que bootstrapa a aplicação.
@@ -136,6 +138,13 @@ async function bootstrap() {
   // -------------------------------------------------------------------------
   // Padroniza TODAS as respostas de sucesso no formato definido
   app.useGlobalInterceptors(new TransformInterceptor());
+
+  // -------------------------------------------------------------------------
+  // 8.1. INTERCEPTOR DE LOGS
+  // -------------------------------------------------------------------------
+  // Registra automaticamente todas as requisições HTTP
+  const systemLogService = app.get(SystemLogService);
+  app.useGlobalInterceptors(new LoggingInterceptor(systemLogService));
 
   // -------------------------------------------------------------------------
   // 9. DOCUMENTAÇÃO SWAGGER (OpenAPI)
