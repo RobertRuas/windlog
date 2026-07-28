@@ -28,7 +28,6 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   Search,
-  Filter,
   AlertCircle,
   Info,
   AlertTriangle,
@@ -39,7 +38,6 @@ import {
   Activity,
   Zap,
   Users,
-  TrendingUp,
   Clock,
   Globe,
   ChevronDown,
@@ -350,120 +348,108 @@ export function LogsPage() {
         </div>
       </div>
 
-      {/* Estatísticas Compactas */}
-      {stats && (
-        <div className="flex gap-3 mb-6">
-          <div className="bg-white rounded-lg border border-gray-200 px-3 py-2 flex items-center gap-2">
-            <Activity size={14} className="text-gray-400" />
-            <span className="text-xs text-gray-500">Total</span>
-            <span className="text-sm font-bold text-gray-900">{stats.total.toLocaleString()}</span>
-          </div>
-          <div className="bg-white rounded-lg border border-gray-200 px-3 py-2 flex items-center gap-2">
-            <XCircle size={14} className="text-red-400" />
-            <span className="text-xs text-gray-500">Erros</span>
-            <span className="text-sm font-bold text-red-600">
-              {stats.bySeverity.find((s) => s.severity === 'ERROR')?.count || 0}
-            </span>
-          </div>
-          <div className="bg-white rounded-lg border border-gray-200 px-3 py-2 flex items-center gap-2">
-            <AlertTriangle size={14} className="text-amber-400" />
-            <span className="text-xs text-gray-500">Avisos</span>
-            <span className="text-sm font-bold text-amber-600">
-              {stats.bySeverity.find((s) => s.severity === 'WARNING')?.count || 0}
-            </span>
-          </div>
-        </div>
-      )}
-
-      {/* Filtros */}
+      {/* Estatísticas + Filtros em uma única linha */}
       <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-wrap items-end gap-4">
+          {/* Stats compactas */}
+          {stats && (
+            <>
+              <div className="flex items-center gap-1.5 border-r border-gray-200 pr-4">
+                <Activity size={13} className="text-gray-400" />
+                <span className="text-xs text-gray-500">Total</span>
+                <span className="text-sm font-bold text-gray-900">{stats.total.toLocaleString()}</span>
+              </div>
+              <div className="flex items-center gap-1.5 border-r border-gray-200 pr-4">
+                <XCircle size={13} className="text-red-400" />
+                <span className="text-xs text-gray-500">Erros</span>
+                <span className="text-sm font-bold text-red-600">
+                  {stats.bySeverity.find((s) => s.severity === 'ERROR')?.count || 0}
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5 border-r border-gray-200 pr-4">
+                <AlertTriangle size={13} className="text-amber-400" />
+                <span className="text-xs text-gray-500">Avisos</span>
+                <span className="text-sm font-bold text-amber-600">
+                  {stats.bySeverity.find((s) => s.severity === 'WARNING')?.count || 0}
+                </span>
+              </div>
+            </>
+          )}
+
+          {/* Busca */}
           <div className="flex items-center gap-2">
-            <Filter size={18} className="text-gray-500" />
-            <span className="text-sm font-semibold text-gray-700">Filtros</span>
+            <input
+              type="text"
+              placeholder="Buscar..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+              className="form-input text-sm w-44"
+            />
+            <Button onClick={handleSearch} variant="secondary" size="sm">
+              <Search size={14} />
+            </Button>
           </div>
+
+          {/* Ação */}
+          <div>
+            <select
+              value={filters.action || ''}
+              onChange={(e) => setFilters((prev) => ({ ...prev, action: e.target.value || undefined, page: 1 }))}
+              className="form-select text-sm"
+            >
+              <option value="">Ação: Todas</option>
+              {stats?.byAction.map((item) => (
+                <option key={item.action} value={item.action}>
+                  {ACTION_LABELS[item.action] || item.action} ({item.count})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Severidade */}
+          <div>
+            <select
+              value={filters.severity || ''}
+              onChange={(e) => setFilters((prev) => ({ ...prev, severity: e.target.value || undefined, page: 1 }))}
+              className="form-select text-sm"
+            >
+              <option value="">Severidade: Todas</option>
+              {stats?.bySeverity.map((item) => (
+                <option key={item.severity} value={item.severity}>
+                  {SEVERITY_CONFIG[item.severity as keyof typeof SEVERITY_CONFIG]?.label || item.severity} ({item.count})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Data Inicial */}
+          <div>
+            <input
+              type="date"
+              value={filters.startDate || ''}
+              onChange={(e) => setFilters((prev) => ({ ...prev, startDate: e.target.value || undefined, page: 1 }))}
+              className="form-input text-sm"
+              placeholder="Data inicial"
+            />
+          </div>
+
+          {/* Data Final */}
+          <div>
+            <input
+              type="date"
+              value={filters.endDate || ''}
+              onChange={(e) => setFilters((prev) => ({ ...prev, endDate: e.target.value || undefined, page: 1 }))}
+              className="form-input text-sm"
+              placeholder="Data final"
+            />
+          </div>
+
+          {/* Limpar */}
           <Button onClick={handleClearFilters} variant="secondary" size="sm">
             <RefreshCw size={14} className="mr-1" />
             Limpar
           </Button>
-        </div>
-
-        <div className="space-y-4">
-          {/* Linha 1: Busca textual */}
-          <div>
-            <label className="text-xs text-gray-500 mb-1 block">Buscar</label>
-            <div className="flex gap-2 max-w-md">
-              <input
-                type="text"
-                placeholder="Mensagem, usuário, URL..."
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                className="form-input flex-1"
-              />
-              <Button onClick={handleSearch} variant="secondary">
-                <Search size={16} />
-              </Button>
-            </div>
-          </div>
-
-          {/* Linha 2: Ação e Severidade */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-md">
-            <div>
-              <label className="text-xs text-gray-500 mb-1 block">Ação</label>
-              <select
-                value={filters.action || ''}
-                onChange={(e) => setFilters((prev) => ({ ...prev, action: e.target.value || undefined, page: 1 }))}
-                className="form-select w-full"
-              >
-                <option value="">Todas</option>
-                {stats?.byAction.map((item) => (
-                  <option key={item.action} value={item.action}>
-                    {ACTION_LABELS[item.action] || item.action} ({item.count})
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="text-xs text-gray-500 mb-1 block">Severidade</label>
-              <select
-                value={filters.severity || ''}
-                onChange={(e) => setFilters((prev) => ({ ...prev, severity: e.target.value || undefined, page: 1 }))}
-                className="form-select w-full"
-              >
-                <option value="">Todas</option>
-                {stats?.bySeverity.map((item) => (
-                  <option key={item.severity} value={item.severity}>
-                    {SEVERITY_CONFIG[item.severity as keyof typeof SEVERITY_CONFIG]?.label || item.severity} ({item.count})
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Linha 3: Data Inicial e Data Final */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-md">
-            <div>
-              <label className="text-xs text-gray-500 mb-1 block">Data Inicial</label>
-              <input
-                type="date"
-                value={filters.startDate || ''}
-                onChange={(e) => setFilters((prev) => ({ ...prev, startDate: e.target.value || undefined, page: 1 }))}
-                className="form-input w-full"
-              />
-            </div>
-
-            <div>
-              <label className="text-xs text-gray-500 mb-1 block">Data Final</label>
-              <input
-                type="date"
-                value={filters.endDate || ''}
-                onChange={(e) => setFilters((prev) => ({ ...prev, endDate: e.target.value || undefined, page: 1 }))}
-                className="form-input w-full"
-              />
-            </div>
-          </div>
         </div>
       </div>
 
@@ -519,9 +505,9 @@ export function LogsPage() {
           </div>
         ) : (
           <>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-800/50 border-b border-gray-700">
+            <div className="overflow-auto max-h-[600px]">
+              <table className="w-full min-w-[900px]">
+                <thead className="bg-gray-800 border-b border-gray-700 sticky top-0 z-10">
                   <tr>
                     <th className="px-4 py-2 text-left text-xs font-mono font-medium text-gray-500 uppercase">
                       <Clock size={12} className="inline mr-1" />
