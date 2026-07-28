@@ -390,7 +390,7 @@ export function LogsPage() {
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
           {/* Busca textual */}
           <div className="lg:col-span-2">
             <label className="text-xs text-gray-500 mb-1 block">Buscar</label>
