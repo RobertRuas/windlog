@@ -43,7 +43,7 @@ import { Roles, Role } from '../../common/decorators/roles.decorator.js';
  */
 @ApiTags('System Logs')
 @ApiBearerAuth()
-@Controller('api/v1/system-logs')
+@Controller('system-logs')
 @UseGuards(RolesGuard)
 @Roles(Role.ADMIN)
 export class SystemLogController {

@@ -121,7 +121,7 @@ export async function getLogs(filters: LogFilters = {}): Promise<LogPaginatedRes
   if (filters.page) params.append('page', filters.page.toString());
   if (filters.limit) params.append('limit', filters.limit.toString());
 
-  const response = await api.get<ApiResponse<LogPaginatedResponse>>(`/system-logs?${params.toString()}`);
+  const response = await api.get<ApiResponse<LogPaginatedResponse>>(`/api/v1/system-logs?${params.toString()}`);
   return response.data;
 }
 
@@ -132,7 +132,7 @@ export async function getLogs(filters: LogFilters = {}): Promise<LogPaginatedRes
  * @returns Promise com o log
  */
 export async function getLogById(id: string): Promise<SystemLog> {
-  const response = await api.get<ApiResponse<SystemLog>>(`/system-logs/${id}`);
+  const response = await api.get<ApiResponse<SystemLog>>(`/api/v1/system-logs/${id}`);
   return response.data;
 }
 
@@ -142,7 +142,7 @@ export async function getLogById(id: string): Promise<SystemLog> {
  * @returns Promise com estatísticas
  */
 export async function getLogStats(): Promise<LogStats> {
-  const response = await api.get<ApiResponse<LogStats>>('/system-logs/stats');
+  const response = await api.get<ApiResponse<LogStats>>('/api/v1/system-logs/stats');
   return response.data;
 }
 
@@ -153,6 +153,6 @@ export async function getLogStats(): Promise<LogStats> {
  * @returns Promise com quantidade de logs removidos
  */
 export async function cleanupLogs(days: number = 90): Promise<number> {
-  const response = await api.delete<ApiResponse<number>>(`/system-logs/cleanup?days=${days}`);
+  const response = await api.delete<ApiResponse<number>>(`/api/v1/system-logs/cleanup?days=${days}`);
   return response.data;
 }
