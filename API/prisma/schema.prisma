@@ -63,38 +63,61 @@ datasource db {
 // Define os níveis de acesso do sistema (RBAC - Role-Based Access Control)
 // Cada role tem permissões diferentes:
 //
-// - TECHNICIAN:   Acesso básico (registro de atividades)
-// - TEAM_LEADER:  Aprovações e gestão de equipe
-// - SUPERVISOR:   Criar/editar projetos e gerenciar usuários
-// - ADMIN:        Acesso completo ao sistema
+// - ADMIN:      Acesso completo ao sistema (gestão total)
+// - HR:         Recursos Humanos (gestão de funcionários, certificados)
+// - STANDARD:   Acesso padrão (operações básicas do dia-a-dia)
 // ---------------------------------------------------------------------------
 enum Role {
-  TECHNICIAN
-  TEAM_LEADER
-  SUPERVISOR
   ADMIN
+  HR
+  STANDARD
+}
+
+// ---------------------------------------------------------------------------
+// ENUM: LANGUAGE LEVEL (Nível de Proficiência em Idiomas)
+// ---------------------------------------------------------------------------
+// Escala CEFR (Common European Framework of Reference for Languages)
+// Usada para padronizar o nível de todos os idiomas dos funcionários
+// ---------------------------------------------------------------------------
+enum LanguageLevel {
+  A1
+  A2
+  B1
+  B2
+  C1
+  C2
+  NATIVE
+}
+
+// ---------------------------------------------------------------------------
+// ENUM: CERTIFICATION TYPE (Tipo de Certificação)
+// ---------------------------------------------------------------------------
+// Classifica o tipo de certificação/cursos dos funcionários
+// ---------------------------------------------------------------------------
+enum CertificationType {
+  CERTIFICATION
+  DIPLOMA
+  COURSE
+  TRAINING
+  LICENSE
 }
 
 // ---------------------------------------------------------------------------
 // MODEL: USER (Usuário do Sistema)
 // ---------------------------------------------------------------------------
-// Representa qualquer pessoa que usa o sistema.
+// Representa qualquer funcionário da empresa multinacional.
 //
-// CAMPOS:
-// - id:         Identificador único (UUID gerado automaticamente)
-// - email:      E-mail único (usado para login)
-// - password:   Senha criptografada com bcrypt (NUNCA salvar em texto puro)
-// - firstName:  Primeiro nome do usuário
-// - lastName:   Sobrenome do usuário
-// - role:       Papel do usuário no sistema (enum Role)
-// - isActive:   Se o usuário está ativo (true) ou desativado (false)
-// - createdAt:  Data/hora de criação (UTC, automática)
-// - updatedAt:  Data/hora da última alteração (UTC, automática)
-// - deletedAt:  Data/hora do soft delete (null = ativo)
+// CAMPOS OBRIGATÓRIOS (apenas no cadastro inicial):
+// - email, password, firstName, lastName, role
 //
-// RELACIONAMENTOS (futuros):
-// - Um usuário pode ter múltiplos timesheets
-// - Um usuário pode ser atribuído a múltiplos projetos
+// CAMPOS OPCIONAIS (preenchidos posteriormente):
+// - Dados pessoais: phone, dateOfBirth, nationality, address
+// - Dados profissionais: department, position, hireDate, bio
+//
+// RELACIONAMENTOS:
+// - Um usuário pode ter múltiplos números de telefone
+// - Um usuário pode ter múltiplas certificações/cursos
+// - Um usuário pode falar múltiplos idiomas (cada um com seu nível)
 // ---------------------------------------------------------------------------
 model User {
   // Identificador único (UUID v4 gerado automaticamente pelo banco)
@@ -104,20 +127,168 @@ model User {
   email     String   @unique
   password  String
 
-  // Dados pessoais
+  // Dados pessoais (obrigatórios)
   firstName String
   lastName  String
 
+  // Dados pessoais (opcionais - preenchidos posteriormente)
+  /// Número de telefone principal (formato internacional)
+  phone           String?
+  /// Código do país do telefone (ex: "+351", "+33", "+49")
+  phoneCountryCode String?
+  /// Data de nascimento
+  dateOfBirth     DateTime?
+  /// Nacionalidade (código ISO 3166-1 alpha-2, ex: "PT", "FR", "DE")
+  nationality     String?
+  /// Endereço completo
+  address         String?
+  /// Cidade
+  city            String?
+  /// Código postal
+  postalCode      String?
+  /// País de residência (código ISO 3166-1 alpha-2)
+  country         String?
+
+  // Dados profissionais
+  /// Departamento (ex: "Operations", "Maintenance", "Engineering")
+  department      String?
+  /// Cargo/função (ex: "Wind Turbine Technician", "Site Supervisor")
+  position        String?
+  /// Data de contratação na empresa
+  hireDate        DateTime?
+  /// Número de funcionário (ID interno da empresa)
+  employeeId      String?   @unique
+  /// Biografia/resumo profissional
+  bio             String?
+
   // Controle de acesso (RBAC)
-  role      Role     @default(TECHNICIAN)
+  role      Role     @default(STANDARD)
   isActive  Boolean  @default(true)
 
   // Timestamps (datas em UTC)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  deletedAt  DateTime?
+
+  // Relações
+  phoneNumbers    UserPhoneNumber[]
+  certifications  UserCertification[]
+  languages       UserLanguage[]
+}
+
+// ---------------------------------------------------------------------------
+// MODEL: USER PHONE NUMBER (Números de Telefone do Usuário)
+// ---------------------------------------------------------------------------
+// Permite que o usuário tenha múltiplos números de telefone
+// de diferentes países (contexto multinacional).
+//
+// EXEMPLO:
+// - Telefone pessoal de Portugal (+351)
+// - Telefone de trabalho da França (+33)
+// ---------------------------------------------------------------------------
+model UserPhoneNumber {
+  id        String   @id @default(uuid())
+
+  /// Código do país (ex: "+351", "+33", "+49", "+34")
+  countryCode String
+  /// Número de telefone (sem código do país)
+  number      String
+  /// Tipo do número (móvel, fixo, trabalho, etc.)
+  type        String   @default("mobile")
+  /// Se é o número principal do usuário
+  isPrimary   Boolean  @default(false)
+
+  // Relação com o usuário
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Timestamps
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  deletedAt DateTime?
 
-  // Relações futuras serão adicionadas aqui
-  // Ex: timesheets Timesheet[]
-  // Ex: projects  ProjectUser[]
+  @@index([userId])
+}
+
+// ---------------------------------------------------------------------------
+// MODEL: USER CERTIFICATION (Certificações, Diplomas e Cursos)
+// ---------------------------------------------------------------------------
+// Registra todas as certificações profissionais do usuário.
+// Usado para:
+// - Certificações de manutenção de turbinas eólicas
+// - Diplomas de formação técnica
+// - Cursos de segurança (GWO, etc.)
+// - Licenças profissionais
+//
+// CAMPOS IMPORTANTES:
+// - issueDate:   Data em que a certificação foi obtida
+// - expiryDate:  Data de validade (usado para alertas de renovação)
+// - isExpired:   Calculado automaticamente com base na expiryDate
+// ---------------------------------------------------------------------------
+model UserCertification {
+  id        String   @id @default(uuid())
+
+  // Dados da certificação
+  /// Nome/título da certificação (ex: "GWO BST", "IEC 61400", "Electrical Safety")
+  name        String
+  /// Entidade emissora (ex: "GWO", "Vestas", "Siemens Gamesa", "Ministry of Education")
+  issuer      String
+  /// Tipo de certificação (enum CertificationType)
+  type        CertificationType
+  /// Descrição detalhada (opcional)
+  description String?
+  /// Número/ID da certificação (ex: "GWO-2024-12345")
+  certNumber  String?
+
+  // Datas importantes
+  /// Data de expedição (quando obteve a certificação)
+  issueDate   DateTime
+  /// Data de expiração (null = não expira)
+  expiryDate  DateTime?
+
+  // Arquivo/comprovativo (caminho para upload futuro)
+  filePath    String?
+
+  // Relação com o usuário
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([expiryDate])
+}
+
+// ---------------------------------------------------------------------------
+// MODEL: USER LANGUAGE (Idiomas Falados pelo Usuário)
+// ---------------------------------------------------------------------------
+// Registra cada idioma que o usuário fala com seu respectivo nível.
+// Contexto multinacional: funcionários trabalham em vários países
+// da União Europeia e precisam comunicar-se em diferentes idiomas.
+//
+// EXEMPLO:
+// - Português (NATIVE)
+// - Inglês (C1)
+// - Francês (B2)
+// - Espanhol (A2)
+// ---------------------------------------------------------------------------
+model UserLanguage {
+  id        String   @id @default(uuid())
+
+  /// Nome do idioma (ex: "English", "French", "German", "Spanish")
+  language  String
+  /// Nível de proficiência (escala CEFR: A1, A2, B1, B2, C1, C2, NATIVE)
+  level     LanguageLevel
+
+  // Relação com o usuário
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@unique([userId, language])
 }

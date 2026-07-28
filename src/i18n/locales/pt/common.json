@@ -1,0 +1,17 @@
+{
+  "app_name": "Windlog",
+  "buttons": {
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "back": "Voltar",
+    "confirm": "Confirmar",
+    "logout": "Sair"
+  },
+  "status": {
+    "loading": "Carregando...",
+    "error": "Ocorreu um erro",
+    "success": "Sucesso"
+  }
+}

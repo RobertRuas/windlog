@@ -1,0 +1,17 @@
+{
+  "title": "Bem-vindo",
+  "subtitle": "Seu perfil",
+  "profile": {
+    "name": "Nome",
+    "email": "E-mail",
+    "role": "Função",
+    "status": "Status",
+    "active": "Ativo",
+    "inactive": "Inativo"
+  },
+  "roles": {
+    "ADMIN": "Administrador",
+    "HR": "Recursos Humanos",
+    "STANDARD": "Padrão"
+  }
+}

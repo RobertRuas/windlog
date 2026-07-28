@@ -60,6 +60,7 @@ import {
   SuccessResponseDto,
   ErrorResponseDto,
   AuthResponseDataDto,
+  UserProfileResponseDto,
 } from '../../common/dto/swagger-response.dto.js';
 
 /**
@@ -162,12 +163,12 @@ export class AuthController {
   @ApiOperation({
     summary: 'Get current user profile',
     description:
-      'Retorna os dados do usuário autenticado. Requer token JWT válido no header Authorization.',
+      'Retorna o perfil completo do usuário autenticado, incluindo dados pessoais, profissionais, idiomas, certificações e números de telefone. Requer token JWT válido no header Authorization.',
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Perfil do usuário retornado com sucesso',
-    type: SuccessResponseDto,
+    description: 'Perfil completo do usuário retornado com sucesso',
+    type: UserProfileResponseDto,
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,

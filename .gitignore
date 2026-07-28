@@ -27,3 +27,6 @@ coverage/
 
 # Prisma generated
 prisma/generated/
+
+# Frontend
+*.tsbuildinfo

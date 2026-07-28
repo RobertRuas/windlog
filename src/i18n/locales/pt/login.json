@@ -1,0 +1,19 @@
+{
+  "title": "Entrar",
+  "subtitle": "Acesse sua conta Windlog",
+  "email": {
+    "label": "E-mail",
+    "placeholder": "seu@email.com"
+  },
+  "password": {
+    "label": "Senha",
+    "placeholder": "Digite sua senha"
+  },
+  "submit": "Entrar",
+  "errors": {
+    "invalid_credentials": "E-mail ou senha incorretos",
+    "required_field": "Este campo é obrigatório",
+    "invalid_email": "Digite um e-mail válido",
+    "generic": "Erro ao fazer login. Tente novamente."
+  }
+}

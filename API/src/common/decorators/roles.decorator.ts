@@ -32,12 +32,15 @@ import { SetMetadata } from '@nestjs/common';
 /**
  * Enum dos papéis disponíveis no sistema.
  * Deve ser igual ao enum definido no schema.prisma.
+ *
+ * - ADMIN:    Acesso completo ao sistema
+ * - HR:       Recursos Humanos (gestão de funcionários)
+ * - STANDARD: Acesso padrão (operações básicas)
  */
 export enum Role {
-  TECHNICIAN = 'TECHNICIAN',
-  TEAM_LEADER = 'TEAM_LEADER',
-  SUPERVISOR = 'SUPERVISOR',
   ADMIN = 'ADMIN',
+  HR = 'HR',
+  STANDARD = 'STANDARD',
 }
 
 /**

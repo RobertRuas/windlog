@@ -64,10 +64,10 @@ export class AuthService {
    * PASSO A PASSO:
    * 1. Verifica se o e-mail já está em uso
    * 2. Criptografa a senha com bcrypt
-   * 3. Cria o usuário no banco de dados
+   * 3. Cria o usuário no banco de dados (apenas campos obrigatórios)
    * 4. Gera e retorna o token JWT
    *
-   * @param dto - Dados do registro (email, password, firstName, lastName)
+   * @param dto - Dados do registro (email, password, firstName, lastName + opcionais)
    * @returns Token JWT e dados do usuário (sem senha)
    * @throws ConflictException se o e-mail já estiver em uso
    */
@@ -85,6 +85,7 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(dto.password, SALT_ROUNDS);
 
     // PASSO 3: Cria o usuário no banco de dados
+    // Apenas campos obrigatórios + opcionais enviados no DTO
     const user = await this.prisma.user.create({
       data: {
         email: dto.email,
@@ -92,6 +93,13 @@ export class AuthService {
         firstName: dto.firstName,
         lastName: dto.lastName,
         role: dto.role,
+        // Campos opcionais (preenchidos posteriormente no perfil)
+        phone: dto.phone,
+        phoneCountryCode: dto.phoneCountryCode,
+        dateOfBirth: dto.dateOfBirth ? new Date(dto.dateOfBirth) : undefined,
+        nationality: dto.nationality,
+        department: dto.department,
+        position: dto.position,
       },
     });
 
@@ -186,12 +194,20 @@ export class AuthService {
    * Obtém o perfil do usuário autenticado.
    *
    * @param userId - ID do usuário (extraído do JWT via @CurrentUser('sub'))
-   * @returns Dados do usuário (sem senha)
+   * @returns Dados completos do usuário (sem senha), incluindo certificações
    * @throws UnauthorizedException se o usuário não existir
    */
   async getProfile(userId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
+      // Inclui os relacionamentos para retornar dados completos
+      include: {
+        phoneNumbers: true,
+        certifications: {
+          orderBy: { expiryDate: 'asc' },
+        },
+        languages: true,
+      },
     });
 
     if (!user) {
@@ -204,8 +220,24 @@ export class AuthService {
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
+      phone: user.phone,
+      phoneCountryCode: user.phoneCountryCode,
+      dateOfBirth: user.dateOfBirth,
+      nationality: user.nationality,
+      address: user.address,
+      city: user.city,
+      postalCode: user.postalCode,
+      country: user.country,
+      department: user.department,
+      position: user.position,
+      hireDate: user.hireDate,
+      employeeId: user.employeeId,
+      bio: user.bio,
       role: user.role,
       createdAt: user.createdAt,
+      phoneNumbers: user.phoneNumbers,
+      certifications: user.certifications,
+      languages: user.languages,
     };
   }
 }
