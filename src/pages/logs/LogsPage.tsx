@@ -471,7 +471,7 @@ export function LogsPage() {
           </div>
         ) : (
           <>
-            <div className="overflow-auto max-h-[600px]">
+            <div className="overflow-x-auto overflow-y-auto max-h-[600px]">
               <table className="w-full min-w-[900px]">
                 <thead className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
                   <tr>
