@@ -169,6 +169,22 @@ async function bootstrap() {
   // Cria o documento Swagger baseado na configuração
   const document = SwaggerModule.createDocument(app, swaggerConfig);
 
+  // -------------------------------------------------------------------------
+  // REDIRECT: Força barra final no Swagger UI
+  // -------------------------------------------------------------------------
+  // Sem a barra final, os caminhos relativos dos assets ficam errados.
+  // Este middleware faz redirect de /api/docs para /api/docs/
+  // -------------------------------------------------------------------------
+  const expressApp = app.getHttpAdapter().getInstance();
+  expressApp.get('/api/docs', (req: { url: string }, res: { redirect: (arg0: number, arg1: string) => void }, next: () => void) => {
+    // Só faz redirect se não tiver barra final (evita loop infinito)
+    if (!req.url.endsWith('/')) {
+      res.redirect(301, '/api/docs/');
+    } else {
+      next();
+    }
+  });
+
   // Monta o Swagger UI em /api/docs
   SwaggerModule.setup('api/docs', app, document, {
     // Configurações adicionais do Swagger UI
@@ -179,7 +195,11 @@ async function bootstrap() {
       docExpansion: 'list',
       // Mostra exemplos de respostas
       displayRequestDuration: true,
+      // URL absoluta do schema OpenAPI (evita problemas com caminhos relativos)
+      url: '/api/docs-json',
     },
+    // Usa o JSON do schema diretamente (evita problemas com caminhos de assets)
+    jsonDocumentUrl: '/api/docs-json',
   });
 
   // -------------------------------------------------------------------------
