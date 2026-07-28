@@ -136,6 +136,7 @@ export function ProfileSection({
   /**
    * Inicializa o formData com os dados atuais quando a seção entra em modo edição.
    * Pula campos virtuais (apenas visualização) pois não têm dados reais.
+   * Para campos de data, extrai apenas YYYY-MM-DD do formato ISO.
    */
   useEffect(() => {
     if (isEditing) {
@@ -144,7 +145,14 @@ export function ProfileSection({
         // Pula campos virtuais (fullPhone, fullAddress) - não têm dados reais
         if (field.virtual) return;
         const value = data[field.key];
-        initialData[field.key] = value ?? '';
+        // Para campos de data, extrai apenas YYYY-MM-DD do formato ISO
+        if (field.type === 'date' && value) {
+          // Extrai YYYY-MM-DD de formatos como "1990-01-15T00:00:00.000Z" ou "1990-01-15"
+          const dateMatch = value.match(/^(\d{4}-\d{2}-\d{2})/);
+          initialData[field.key] = dateMatch ? dateMatch[1] : '';
+        } else {
+          initialData[field.key] = value ?? '';
+        }
       });
       setFormData(initialData);
       setErrors({});
@@ -374,7 +382,7 @@ export function ProfileSection({
                     </span>
                   </div>
                   {/* Campos do grupo */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2.5 pl-8">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 pl-8">
                     {visibleFields.map((field) => {
                       // Usa formatDisplay se disponível, senão formata o valor direto
                       const displayValue = field.formatDisplay
@@ -384,14 +392,14 @@ export function ProfileSection({
                           : data[field.key]!;
                       const spanClass = field.span === 2 ? 'sm:col-span-2' : '';
                       return (
-                        <div key={field.key} className={`flex items-baseline gap-3 text-sm ${spanClass}`}>
+                        <div key={field.key} className={`flex flex-col gap-0.5 text-sm ${spanClass}`}>
                           <span
-                            className="text-gray-500 w-[110px] flex-shrink-0 truncate"
+                            className="text-gray-500 text-xs truncate"
                             title={field.label}
                           >
                             {field.label}
                           </span>
-                          <span className="text-gray-900 font-medium">
+                          <span className="text-gray-900 font-medium truncate">
                             {displayValue}
                           </span>
                         </div>
