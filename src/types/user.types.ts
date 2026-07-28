@@ -22,24 +22,56 @@
  */
 
 /**
- * Interface User - Representa os dados básicos de um usuário.
+ * Interface User - Representa os dados completos de um usuário.
  *
  * Esta interface é usada tanto na resposta do login quanto no perfil.
- * Contém apenas os dados essenciais exibidos na interface.
+ * Contém todos os dados retornados pela API.
  */
 export interface User {
   /** ID único do usuário no banco de dados */
   id: string;
   /** E-mail do usuário (usado para login) */
   email: string;
-  /** Nome completo do usuário */
+  /** Primeiro nome do usuário */
   firstName: string;
   /** Sobrenome do usuário */
   lastName: string;
   /** Papel/função do usuário no sistema (ADMIN, HR, STANDARD) */
   role: string;
-  /** Indica se a conta do usuário está ativa */
-  isActive: boolean;
+  /** Número de telefone principal */
+  phone?: string;
+  /** Código do país do telefone (ex: "+351") */
+  phoneCountryCode?: string;
+  /** Data de nascimento (formato ISO) */
+  dateOfBirth?: string | null;
+  /** Nacionalidade (código do país, ex: "PT", "BR") */
+  nationality?: string;
+  /** Endereço */
+  address?: string | null;
+  /** Cidade */
+  city?: string | null;
+  /** Código postal */
+  postalCode?: string | null;
+  /** País */
+  country?: string | null;
+  /** Departamento */
+  department?: string;
+  /** Cargo/função profissional */
+  position?: string;
+  /** Data de contratação (formato ISO) */
+  hireDate?: string | null;
+  /** ID do funcionário */
+  employeeId?: string | null;
+  /** Biografia/resumo */
+  bio?: string | null;
+  /** Data de criação da conta (formato ISO) */
+  createdAt?: string;
+  /** Idiomas que o usuário fala */
+  languages?: UserLanguage[];
+  /** Certificações profissionais do usuário */
+  certifications?: UserCertification[];
+  /** Números de telefone do usuário */
+  phoneNumbers?: UserPhoneNumber[];
 }
 
 /**
@@ -69,23 +101,10 @@ export interface LoginResponse {
 }
 
 /**
- * Interface ProfileResponse - Resposta da API ao buscar o perfil.
- *
- * Contém dados completos do usuário, incluindo informações
- * profissionais, idiomas, certificações, etc.
+ * Type alias para ProfileResponse.
+ * A API retorna os dados do perfil diretamente (mesma estrutura de User).
  */
-export interface ProfileResponse {
-  /** Dados básicos do usuário */
-  user: User;
-  /** Nacionalidade do usuário (código do país, ex: "BR", "PT") */
-  nationality?: string;
-  /** Idiomas que o usuário fala */
-  languages?: UserLanguage[];
-  /** Certificações profissionais do usuário */
-  certifications?: UserCertification[];
-  /** Números de telefone do usuário */
-  phoneNumbers?: UserPhoneNumber[];
-}
+export type ProfileResponse = User;
 
 /**
  * Interface UserLanguage - Idioma falado pelo usuário.

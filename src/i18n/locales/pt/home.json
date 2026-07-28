@@ -5,9 +5,8 @@
     "name": "Nome",
     "email": "E-mail",
     "role": "Função",
-    "status": "Status",
-    "active": "Ativo",
-    "inactive": "Inativo"
+    "department": "Departamento",
+    "position": "Cargo"
   },
   "roles": {
     "ADMIN": "Administrador",

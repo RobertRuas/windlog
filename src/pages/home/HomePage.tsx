@@ -132,11 +132,11 @@ export function HomePage() {
       <main className="max-w-4xl mx-auto p-6">
         {/* Título da página */}
         <h1 className="text-2xl font-bold text-gray-900 mb-6">
-          {t('title')}, {data!.user.firstName}!
+          {t('title')}, {data!.firstName}!
         </h1>
 
         {/* Card com dados do perfil */}
-        <UserProfileCard user={data!.user} />
+        <UserProfileCard user={data!} />
       </main>
     </div>
   );

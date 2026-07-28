@@ -13,7 +13,8 @@
  * - Nome completo (primeiro nome + sobrenome)
  * - E-mail
  * - Função/papel no sistema (ADMIN, HR, STANDARD)
- * - Status da conta (ativo/inativo)
+ * - Departamento
+ * - Cargo
  *
  * COMO RECEBE OS DADOS?
  * ---------------------
@@ -23,7 +24,7 @@
  */
 
 import { useTranslation } from 'react-i18next';
-import { Mail, Shield, CheckCircle, XCircle } from 'lucide-react';
+import { Mail, Shield, Building2, Briefcase } from 'lucide-react';
 
 // Tipo TypeScript para os dados do usuário
 import type { User as UserType } from '@/types/user.types';
@@ -84,19 +85,23 @@ export function UserProfileCard({ user }: UserProfileCardProps) {
           <span className="text-gray-900 font-medium">{roleLabel}</span>
         </div>
 
-        {/* Status da conta */}
-        <div className="flex items-center gap-3 text-sm">
-          {/* Ícone diferente para ativo/inativo */}
-          {user.isActive ? (
-            <CheckCircle size={16} className="text-green-500" />
-          ) : (
-            <XCircle size={16} className="text-red-500" />
-          )}
-          <span className="text-gray-600">{t('profile.status')}:</span>
-          <span className={`font-medium ${user.isActive ? 'text-green-600' : 'text-red-600'}`}>
-            {user.isActive ? t('profile.active') : t('profile.inactive')}
-          </span>
-        </div>
+        {/* Departamento */}
+        {user.department && (
+          <div className="flex items-center gap-3 text-sm">
+            <Building2 size={16} className="text-gray-400" />
+            <span className="text-gray-600">{t('profile.department')}:</span>
+            <span className="text-gray-900 font-medium">{user.department}</span>
+          </div>
+        )}
+
+        {/* Cargo */}
+        {user.position && (
+          <div className="flex items-center gap-3 text-sm">
+            <Briefcase size={16} className="text-gray-400" />
+            <span className="text-gray-600">{t('profile.position')}:</span>
+            <span className="text-gray-900 font-medium">{user.position}</span>
+          </div>
+        )}
       </div>
     </div>
   );
