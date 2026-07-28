@@ -28,6 +28,21 @@ import { api } from './api';
 import type { LoginPayload, LoginResponse, ProfileResponse } from '@/types/user.types';
 
 /**
+ * Interface para a resposta padrão da API.
+ * A API NestJS envolve todos os dados no campo 'data'.
+ */
+interface ApiResponse<T> {
+  /** Dados da resposta (o que realmente interessa) */
+  data: T;
+  /** Mensagem de status */
+  message: string;
+  /** Código HTTP de status */
+  statusCode: number;
+  /** Timestamp da resposta */
+  timestamp: string;
+}
+
+/**
  * Realiza o login do usuário na API.
  *
  * FLUXO:
@@ -40,12 +55,16 @@ import type { LoginPayload, LoginResponse, ProfileResponse } from '@/types/user.
  */
 export async function login(payload: LoginPayload): Promise<LoginResponse> {
   // Faz a requisição POST para o endpoint de login
-  const response = await api.post<LoginResponse>('/api/v1/auth/login', payload);
+  // A API retorna { data: { accessToken, user }, message, statusCode, timestamp }
+  const response = await api.post<ApiResponse<LoginResponse>>('/api/v1/auth/login', payload);
+
+  // Extrai os dados do campo 'data' da resposta
+  const { accessToken } = response.data;
 
   // Salva o token JWT no localStorage para usar nas próximas requisições
-  localStorage.setItem('accessToken', response.accessToken);
+  localStorage.setItem('accessToken', accessToken);
 
-  return response;
+  return response.data;
 }
 
 /**
@@ -57,7 +76,9 @@ export async function login(payload: LoginPayload): Promise<LoginResponse> {
  * @returns Promise com os dados completos do perfil
  */
 export async function getProfile(): Promise<ProfileResponse> {
-  return api.get<ProfileResponse>('/api/v1/auth/profile');
+  // A API retorna { data: {...}, message, statusCode, timestamp }
+  const response = await api.get<ApiResponse<ProfileResponse>>('/api/v1/auth/profile');
+  return response.data;
 }
 
 /**
