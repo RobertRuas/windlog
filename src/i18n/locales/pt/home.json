@@ -3,8 +3,8 @@
   "subtitle": "Seu perfil",
   "sections": {
     "personal": {
-      "title": "Informações Pessoais",
-      "description": "Seus dados básicos de contato"
+      "title": "Informações Pessoais e Profissionais",
+      "description": "Seus dados pessoais, endereço e informações na empresa"
     },
     "address": {
       "title": "Endereço",

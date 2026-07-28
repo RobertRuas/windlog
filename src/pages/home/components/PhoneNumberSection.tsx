@@ -23,6 +23,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plus, Pencil, Trash2, X, Check } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { PREDEFINED_COUNTRIES } from '@/constants/countries';
 import type { PhoneNumber } from '@/services/auth.service';
 
 /**
@@ -161,13 +162,17 @@ export function PhoneNumberSection({ phones, onAdd, onUpdate, onRemove }: PhoneN
                 <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
                     <label className="form-label">{t('phones.countryCode')}</label>
-                    <input
-                      type="text"
-                      className="form-input w-full"
+                    <select
+                      className="form-select w-full"
                       value={formData.countryCode}
                       onChange={(e) => setFormData({ ...formData, countryCode: e.target.value })}
-                      placeholder="+351"
-                    />
+                    >
+                      {PREDEFINED_COUNTRIES.map((c: { phoneCode: string; name: string }) => (
+                        <option key={c.phoneCode} value={c.phoneCode}>
+                          {c.phoneCode} - {c.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   <div>
                     <label className="form-label">{t('phones.number')}</label>
@@ -236,13 +241,17 @@ export function PhoneNumberSection({ phones, onAdd, onUpdate, onRemove }: PhoneN
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
                 <label className="form-label">{t('phones.countryCode')}</label>
-                <input
-                  type="text"
-                  className="form-input w-full"
+                <select
+                  className="form-select w-full"
                   value={formData.countryCode}
                   onChange={(e) => setFormData({ ...formData, countryCode: e.target.value })}
-                  placeholder="+351"
-                />
+                >
+                  {PREDEFINED_COUNTRIES.map((c: { phoneCode: string; name: string }) => (
+                    <option key={c.phoneCode} value={c.phoneCode}>
+                      {c.phoneCode} - {c.name}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="form-label">{t('phones.number')}</label>

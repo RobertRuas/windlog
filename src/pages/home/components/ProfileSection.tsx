@@ -56,6 +56,8 @@ export interface FieldConfig {
   required?: boolean;
   /** Opções para tipo select */
   options?: { value: string; label: string }[];
+  /** Largura do campo no grid (1 = metade, 2 = linha inteira) */
+  span?: 1 | 2;
 }
 
 /**
@@ -217,61 +219,64 @@ export function ProfileSection({
       {/* Conteúdo da seção */}
       <div className="px-6 py-4">
         {isEditing ? (
-          /* MODO EDIÇÃO - Campos editáveis */
-          <div className="flex flex-col gap-4">
-            {fields.map((field) => (
-              <div key={field.key} className="relative">
-                <label className="form-label">{field.label}</label>
-                
-                {field.type === 'textarea' ? (
-                  /* Campo textarea */
-                  <textarea
-                    value={formData[field.key] || ''}
-                    onChange={(e) => handleFieldChange(field.key, e.target.value)}
-                    rows={3}
-                    className={`form-textarea w-full ${errors[field.key] ? 'border-red-500' : ''}`}
-                  />
-                ) : field.type === 'select' && field.options ? (
-                  /* Campo select */
-                  <select
-                    value={formData[field.key] || ''}
-                    onChange={(e) => handleFieldChange(field.key, e.target.value)}
-                    className={`form-select w-full ${errors[field.key] ? 'border-red-500' : ''}`}
-                  >
-                    <option value="">{t('validation.selectOption', { defaultValue: 'Selecione...' })}</option>
-                    {field.options.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  /* Campo input normal */
-                  <input
-                    type={field.type || 'text'}
-                    value={formData[field.key] || ''}
-                    onChange={(e) => handleFieldChange(field.key, e.target.value)}
-                    className={`form-input w-full ${errors[field.key] ? 'border-red-500' : ''}`}
-                  />
-                )}
-
-                {/* Mensagem de erro */}
-                {errors[field.key] && (
-                  <div className="flex items-center justify-between mt-1">
-                    <span className="text-xs text-red-600">{errors[field.key]}</span>
-                    <button
-                      onClick={() => dismissError(field.key)}
-                      className="text-red-400 hover:text-red-600"
+          /* MODO EDIÇÃO - Campos editáveis em grid */
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {fields.map((field) => {
+              const spanClass = field.span === 2 ? 'sm:col-span-2' : '';
+              return (
+                <div key={field.key} className={`relative ${spanClass}`}>
+                  <label className="form-label">{field.label}</label>
+                  
+                  {field.type === 'textarea' ? (
+                    /* Campo textarea */
+                    <textarea
+                      value={formData[field.key] || ''}
+                      onChange={(e) => handleFieldChange(field.key, e.target.value)}
+                      rows={3}
+                      className={`form-textarea w-full ${errors[field.key] ? 'border-red-500' : ''}`}
+                    />
+                  ) : field.type === 'select' && field.options ? (
+                    /* Campo select */
+                    <select
+                      value={formData[field.key] || ''}
+                      onChange={(e) => handleFieldChange(field.key, e.target.value)}
+                      className={`form-select w-full ${errors[field.key] ? 'border-red-500' : ''}`}
                     >
-                      <X size={12} />
-                    </button>
-                  </div>
-                )}
-              </div>
-            ))}
+                      <option value="">{t('validation.selectOption', { defaultValue: 'Selecione...' })}</option>
+                      {field.options.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    /* Campo input normal */
+                    <input
+                      type={field.type || 'text'}
+                      value={formData[field.key] || ''}
+                      onChange={(e) => handleFieldChange(field.key, e.target.value)}
+                      className={`form-input w-full ${errors[field.key] ? 'border-red-500' : ''}`}
+                    />
+                  )}
 
-            {/* Botões de ação (Salvar / Cancelar) */}
-            <div className="flex gap-2 pt-2">
+                  {/* Mensagem de erro */}
+                  {errors[field.key] && (
+                    <div className="flex items-center justify-between mt-1">
+                      <span className="text-xs text-red-600">{errors[field.key]}</span>
+                      <button
+                        onClick={() => dismissError(field.key)}
+                        className="text-red-400 hover:text-red-600"
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+
+            {/* Botões de ação (Salvar / Cancelar) - linha inteira */}
+            <div className="sm:col-span-2 flex gap-2 pt-2">
               <Button onClick={handleSave} disabled={isLoading}>
                 <span className="flex items-center gap-1.5">
                   <Check size={14} />
@@ -284,15 +289,15 @@ export function ProfileSection({
             </div>
           </div>
         ) : (
-          /* MODO VISUALIZAÇÃO - Dados em texto */
-          <div className="flex flex-col gap-3">
+          /* MODO VISUALIZAÇÃO - Dados em grid */
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {fields.map((field) => {
               const value = data[field.key];
               if (!value) return null;
-
+              const spanClass = field.span === 2 ? 'sm:col-span-2' : '';
               return (
-                <div key={field.key} className="flex items-start gap-3 text-sm">
-                  <span className="text-gray-500 min-w-[140px]">{field.label}:</span>
+                <div key={field.key} className={`flex items-start gap-2 text-sm ${spanClass}`}>
+                  <span className="text-gray-500 min-w-[120px]">{field.label}:</span>
                   <span className="text-gray-900 font-medium">{value}</span>
                 </div>
               );

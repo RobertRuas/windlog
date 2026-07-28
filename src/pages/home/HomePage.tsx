@@ -11,12 +11,11 @@
  *
  * SEÇÕES DO PERFIL:
  * -----------------
- * 1. Informações Pessoais (inclui endereço): nome, email, telefone, 
- *    data nascimento, nacionalidade, endereço completo
- * 2. Informações Profissionais: departamento, cargo, biografia
- * 3. Números de Telefone (acordeão): lista de números com CRUD
- * 4. Certificações (acordeão): lista de certificações com CRUD
- * 5. Idiomas (acordeão): lista de idiomas com níveis
+ * 1. Informações Pessoais e Profissionais (unificada): nome, email, telefone, 
+ *    data nascimento, nacionalidade, endereço completo, departamento, cargo, biografia
+ * 2. Números de Telefone (acordeão): lista de números com CRUD
+ * 3. Certificações (acordeão): lista de certificações com CRUD
+ * 4. Idiomas (acordeão): lista de idiomas com níveis
  *
  * COMO FUNCIONA?
  * --------------
@@ -26,6 +25,8 @@
  * 4. Exibe toast de sucesso/erro usando Sonner
  * 5. Invalida o cache para recarregar os dados automaticamente
  * 6. Seções opcionais ficam em acordeões recolhidos
+ * 7. Campos lado a lado quando possível (grid layout)
+ * 8. Dropdowns para país (telefone e endereço) e nacionalidade
  * ============================================================================
  */
 
@@ -150,26 +151,47 @@ export function HomePage() {
   });
 
   /**
-   * Opções de países para o select.
+   * Opções de países para o select (código do país).
    */
-  const countryOptions = PREDEFINED_COUNTRIES.map((c) => ({
+  const countryOptions = PREDEFINED_COUNTRIES.map((c: { code: string; name: string }) => ({
     value: c.code,
     label: c.name,
   }));
 
   /**
-   * Configuração dos campos da seção Pessoal (inclui endereço).
+   * Opções de códigos telefônicos para o select.
    */
-  const personalFields: FieldConfig[] = [
+  const phoneCodeOptions = PREDEFINED_COUNTRIES.map((c: { phoneCode: string; name: string }) => ({
+    value: c.phoneCode,
+    label: `${c.phoneCode} - ${c.name}`,
+  }));
+
+  /**
+   * Configuração dos campos da seção Pessoal + Profissional + Endereço.
+   * Campos lado a lado quando possível (span: 1 = metade, span: 2 = linha inteira).
+   */
+  const profileFields: FieldConfig[] = [
+    // Dados pessoais básicos
     { key: 'firstName', label: t('profile.firstName'), minLength: 2, required: true },
     { key: 'lastName', label: t('profile.lastName'), minLength: 2, required: true },
-    { key: 'email', label: t('profile.email'), type: 'email' },
+    { key: 'email', label: t('profile.email'), type: 'email', span: 2 },
+    // Telefone e nascimento
+    { 
+      key: 'phoneCountryCode', 
+      label: t('profile.phoneCountryCode'), 
+      type: 'select',
+      options: phoneCodeOptions,
+    },
     { key: 'phone', label: t('profile.phone') },
-    { key: 'phoneCountryCode', label: t('profile.phoneCountryCode') },
     { key: 'dateOfBirth', label: t('profile.dateOfBirth'), type: 'date' },
-    { key: 'nationality', label: t('profile.nationality') },
-    // Campos de endereço incluídos na seção pessoal
-    { key: 'address', label: t('profile.address') },
+    { 
+      key: 'nationality', 
+      label: t('profile.nationality'), 
+      type: 'select',
+      options: countryOptions,
+    },
+    // Endereço
+    { key: 'address', label: t('profile.address'), span: 2 },
     { key: 'city', label: t('profile.city') },
     { key: 'postalCode', label: t('profile.postalCode') },
     { 
@@ -178,15 +200,10 @@ export function HomePage() {
       type: 'select',
       options: countryOptions,
     },
-  ];
-
-  /**
-   * Configuração dos campos da seção Profissional.
-   */
-  const professionalFields: FieldConfig[] = [
+    // Dados profissionais
     { key: 'department', label: t('profile.department') },
     { key: 'position', label: t('profile.position') },
-    { key: 'bio', label: t('profile.bio'), type: 'textarea' },
+    { key: 'bio', label: t('profile.bio'), type: 'textarea', span: 2 },
   ];
 
   /**
@@ -307,21 +324,11 @@ export function HomePage() {
 
         {/* Seções do perfil */}
         <div className="flex flex-col gap-6">
-          {/* Seção: Informações Pessoais (inclui endereço) */}
+          {/* Seção: Informações Pessoais, Profissionais e Endereço */}
           <ProfileSection
             title={t('sections.personal.title')}
             description={t('sections.personal.description')}
-            fields={personalFields}
-            data={data as unknown as Record<string, string | null | undefined>}
-            onSave={handleSave}
-            isLoading={mutation.isPending}
-          />
-
-          {/* Seção: Informações Profissionais */}
-          <ProfileSection
-            title={t('sections.professional.title')}
-            description={t('sections.professional.description')}
-            fields={professionalFields}
+            fields={profileFields}
             data={data as unknown as Record<string, string | null | undefined>}
             onSave={handleSave}
             isLoading={mutation.isPending}

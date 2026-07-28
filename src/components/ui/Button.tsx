@@ -36,6 +36,8 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
   /** Estilo visual do botão: 'primary' (azul) ou 'secondary' (cinza) */
   variant?: 'primary' | 'secondary';
+  /** Tamanho do botão: 'sm' (compacto) ou 'md' (padrão) */
+  size?: 'sm' | 'md';
 }
 
 /**
@@ -47,6 +49,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 export function Button({
   children,
   variant = 'primary',
+  size = 'md',
   type = 'button',
   disabled,
   className = '',
@@ -63,15 +66,26 @@ export function Button({
       'bg-gray-200 text-gray-800 hover:bg-gray-300 disabled:bg-gray-100',
   };
 
+  /**
+   * Mapeia o tamanho para classes CSS do Tailwind.
+   */
+  const sizeClasses = {
+    sm: 'px-3 py-1.5 text-xs',
+    md: 'px-4 py-2 text-sm',
+  };
+
   return (
     <button
       type={type}
       disabled={disabled}
       className={`
-        px-4 py-2 rounded-lg font-medium text-sm
+        rounded-lg font-medium
         transition-colors duration-200
         disabled:cursor-not-allowed
+        inline-flex items-center justify-center
+        whitespace-nowrap
         ${variantClasses[variant]}
+        ${sizeClasses[size]}
         ${className}
       `.trim()}
       {...rest}
