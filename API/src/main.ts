@@ -65,7 +65,23 @@ async function bootstrap() {
   // - X-Content-Type-Options
   // - X-Frame-Options
   // - E outros
-  app.use(helmet());
+  //
+  // IMPORTANTE: O Swagger UI usa scripts inline, então precisamos permitir
+  // no Content Security Policy (CSP) para a documentação funcionar.
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          // Permite scripts inline (necessário para o Swagger UI)
+          scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+          // Permite estilos inline (necessário para o Swagger UI)
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          // Permite carregar imagens de data URIs (ícones do Swagger)
+          imgSrc: ["'self'", 'data:', 'https://validator.swagger.io'],
+        },
+      },
+    }),
+  );
 
   // -------------------------------------------------------------------------
   // 3. PERFORMANCE - COMPRESSION
