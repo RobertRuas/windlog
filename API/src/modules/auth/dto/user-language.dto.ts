@@ -17,7 +17,20 @@
 
 import { IsString, IsNotEmpty, IsEnum } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { LanguageLevel } from '../../../prisma/generated/prisma/client.js';
+
+/**
+ * Enum local para níveis de proficiência em idiomas.
+ * Deve ser mantido em sincronia com o schema Prisma.
+ */
+export enum LanguageLevel {
+  A1 = 'A1',
+  A2 = 'A2',
+  B1 = 'B1',
+  B2 = 'B2',
+  C1 = 'C1',
+  C2 = 'C2',
+  NATIVE = 'NATIVE',
+}
 
 /**
  * DTO para criar um novo idioma.

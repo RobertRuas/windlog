@@ -13,7 +13,16 @@
  * 1. Todas as requisições passam por esta função
  * 2. Se houver um token JWT no localStorage, ele é enviado no header
  * 3. A resposta é convertida para JSON automaticamente
- * 4. Se a API retornar erro (401, 403, etc.), o erro é tratado
+ * 4. Se a API retornar erro 401 (Unauthorized), faz logout automático
+ *    e redireciona para a página de login
+ *
+ * AUTO-LOGOUT:
+ * ------------
+ * Quando o backend retorna 401, significa que o token JWT expirou ou
+ * é inválido. Neste caso, a função:
+ * 1. Remove o token do localStorage
+ * 2. Redireciona o usuário para /login
+ * 3. Evita múltiplas requisições simultâneas de logout (flag isLoggingOut)
  *
  * EXEMPLO DE USO:
  * ---------------
@@ -21,6 +30,37 @@
  * const result = await api.post('/api/v1/auth/login', { email, password });
  * ============================================================================
  */
+
+import { isTokenExpired } from '@/utils/jwt';
+
+/**
+ * Flag para evitar múltiplas requisições de logout simultâneas.
+ * Quando um 401 é recebido, esta flag é ativada para evitar que
+ * outras requisições pendentes também tentem fazer logout.
+ */
+let isLoggingOut = false;
+
+/**
+ * Executa o logout automático e redireciona para a página de login.
+ * Esta função é chamada quando o backend retorna 401 (Unauthorized).
+ */
+function handleUnauthorized(): void {
+  // Evita múltiplas chamadas simultâneas
+  if (isLoggingOut) return;
+  isLoggingOut = true;
+
+  // Remove o token do localStorage
+  localStorage.removeItem('accessToken');
+
+  // Redireciona para a página de login
+  // Usa window.location.href para forçar recarregamento completo
+  window.location.href = '/login';
+
+  // Reseta a flag após um tempo (caso o redirect falhe)
+  setTimeout(() => {
+    isLoggingOut = false;
+  }, 3000);
+}
 
 /**
  * Interface para as opções da requisição.
@@ -45,6 +85,13 @@ interface ApiOptions {
  * @throws Error se a resposta da API indicar erro
  */
 async function apiRequest<T>(url: string, options: ApiOptions = {}): Promise<T> {
+  // Verifica se o token JWT está expirado ANTES de fazer a requisição
+  // Isso evita fazer requisições que já sabemos que vão falhar
+  if (isTokenExpired()) {
+    handleUnauthorized();
+    throw new Error('Token expirado. Faça login novamente.');
+  }
+
   // Monta os headers da requisição
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -64,6 +111,13 @@ async function apiRequest<T>(url: string, options: ApiOptions = {}): Promise<T> 
     headers,
     body: options.body ? JSON.stringify(options.body) : undefined,
   });
+
+  // Se a resposta for 401 (Unauthorized), o token expirou ou é inválido
+  // Faz logout automático e redireciona para a página de login
+  if (response.status === 401) {
+    handleUnauthorized();
+    throw new Error('Sessão expirada. Faça login novamente.');
+  }
 
   // Se a resposta não for bem-sucedida (status 4xx ou 5xx)
   if (!response.ok) {

@@ -20,7 +20,18 @@
 
 import { IsString, IsNotEmpty, IsOptional, IsDateString, IsEnum } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { CertificationType } from '../../../prisma/generated/prisma/client.js';
+
+/**
+ * Enum local para tipos de certificação.
+ * Deve ser mantido em sincronia com o schema Prisma.
+ */
+export enum CertificationType {
+  CERTIFICATION = 'CERTIFICATION',
+  DIPLOMA = 'DIPLOMA',
+  COURSE = 'COURSE',
+  TRAINING = 'TRAINING',
+  LICENSE = 'LICENSE',
+}
 
 /**
  * DTO para criar uma nova certificação.

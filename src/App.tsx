@@ -38,6 +38,7 @@ import { HomePage } from '@/pages/home/HomePage';
 
 // Serviço de autenticação
 import { isAuthenticated } from '@/services/auth.service';
+import { isTokenExpired } from '@/utils/jwt';
 
 /**
  * Instância do QueryClient - gerenciador de cache do TanStack Query.
@@ -59,7 +60,8 @@ const queryClient = new QueryClient({
  * Componente ProtectedRoute - Rota protegida.
  *
  * Verifica se o usuário está autenticado antes de exibir a página.
- * Se não estiver autenticado, redireciona para a página de login.
+ * Se não estiver autenticado OU o token estiver expirado, redireciona para /login.
+ * Se o token estiver expirado, remove o token automaticamente (logout).
  *
  * @param children - componente a ser exibido se autenticado
  */
@@ -67,12 +69,21 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   // Verifica se existe um token JWT no localStorage
   const authenticated = isAuthenticated();
 
+  // Verifica se o token está expirado
+  const expired = isTokenExpired();
+
+  // Se o token existe mas está expirado, faz logout automático
+  if (authenticated && expired) {
+    localStorage.removeItem('accessToken');
+    return <Navigate to="/login" replace />;
+  }
+
   // Se não autenticado, redireciona para /login
   if (!authenticated) {
     return <Navigate to="/login" replace />;
   }
 
-  // Se autenticado, exibe o conteúdo da rota
+  // Se autenticado e token válido, exibe o conteúdo da rota
   return <>{children}</>;
 }
 
