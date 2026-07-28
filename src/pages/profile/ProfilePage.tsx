@@ -161,6 +161,16 @@ export function ProfilePage() {
         return PREDEFINED_COUNTRIES.find((c) => c.code === d.nationality)?.name ?? d.nationality;
       },
     },
+    {
+      key: 'role',
+      label: t('profile.role'),
+      category: 'identity',
+      virtual: true,
+      formatDisplay: (d) => {
+        if (!d.role) return null;
+        return t(`roles.${d.role}`);
+      },
+    },
     // Contato
     { key: 'email', label: t('profile.email'), type: 'email', category: 'contact' },
     {
