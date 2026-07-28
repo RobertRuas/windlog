@@ -135,11 +135,14 @@ export function ProfileSection({
 
   /**
    * Inicializa o formData com os dados atuais quando a seção entra em modo edição.
+   * Pula campos virtuais (apenas visualização) pois não têm dados reais.
    */
   useEffect(() => {
     if (isEditing) {
       const initialData: Record<string, string> = {};
       fields.forEach((field) => {
+        // Pula campos virtuais (fullPhone, fullAddress) - não têm dados reais
+        if (field.virtual) return;
         const value = data[field.key];
         initialData[field.key] = value ?? '';
       });
@@ -151,11 +154,14 @@ export function ProfileSection({
   /**
    * Valida os dados do formulário antes de salvar.
    * Retorna true se válido, false se houver erros.
+   * Pula campos virtuais (apenas visualização).
    */
   function validate(): boolean {
     const newErrors: Record<string, string> = {};
 
     fields.forEach((field) => {
+      // Pula campos virtuais (fullPhone, fullAddress) - não são editáveis
+      if (field.virtual) return;
       const value = formData[field.key] || '';
 
       // Validação de campo obrigatório
@@ -206,9 +212,11 @@ export function ProfileSection({
   async function handleSave() {
     if (!validate()) return;
 
-    // Envia apenas campos que mudaram
+    // Envia apenas campos que mudaram (exclui campos virtuais)
     const changedData: Record<string, string | null> = {};
     fields.forEach((field) => {
+      // Pula campos virtuais (fullPhone, fullAddress) - não têm dados reais
+      if (field.virtual) return;
       const newValue = formData[field.key] || '';
       const oldValue = data[field.key] ?? '';
       if (newValue !== oldValue) {

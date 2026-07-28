@@ -162,7 +162,7 @@ export function ProfilePage() {
       },
     },
     // Contato
-    { key: 'email', label: t('profile.email'), type: 'email', span: 2, category: 'contact' },
+    { key: 'email', label: t('profile.email'), type: 'email', category: 'contact' },
     {
       key: 'fullPhone',
       label: t('profile.phone'),
