@@ -348,33 +348,40 @@ export function LogsPage() {
         </div>
       </div>
 
-      {/* Estatísticas + Filtros em uma única linha */}
+      {/* Estatísticas */}
+      {stats && (
+        <div className="flex gap-4 mb-6">
+          <div className="bg-white rounded-xl border border-gray-200 px-5 py-3 flex items-center gap-3">
+            <Activity size={18} className="text-gray-400" />
+            <div>
+              <div className="text-xs text-gray-500">Total</div>
+              <div className="text-lg font-bold text-gray-900">{stats.total.toLocaleString()}</div>
+            </div>
+          </div>
+          <div className="bg-white rounded-xl border border-gray-200 px-5 py-3 flex items-center gap-3">
+            <XCircle size={18} className="text-red-400" />
+            <div>
+              <div className="text-xs text-gray-500">Erros</div>
+              <div className="text-lg font-bold text-red-600">
+                {stats.bySeverity.find((s) => s.severity === 'ERROR')?.count || 0}
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-xl border border-gray-200 px-5 py-3 flex items-center gap-3">
+            <AlertTriangle size={18} className="text-amber-400" />
+            <div>
+              <div className="text-xs text-gray-500">Avisos</div>
+              <div className="text-lg font-bold text-amber-600">
+                {stats.bySeverity.find((s) => s.severity === 'WARNING')?.count || 0}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Filtros */}
       <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6">
         <div className="flex flex-wrap items-end gap-4">
-          {/* Stats compactas */}
-          {stats && (
-            <>
-              <div className="flex items-center gap-1.5 border-r border-gray-200 pr-4">
-                <Activity size={13} className="text-gray-400" />
-                <span className="text-xs text-gray-500">Total</span>
-                <span className="text-sm font-bold text-gray-900">{stats.total.toLocaleString()}</span>
-              </div>
-              <div className="flex items-center gap-1.5 border-r border-gray-200 pr-4">
-                <XCircle size={13} className="text-red-400" />
-                <span className="text-xs text-gray-500">Erros</span>
-                <span className="text-sm font-bold text-red-600">
-                  {stats.bySeverity.find((s) => s.severity === 'ERROR')?.count || 0}
-                </span>
-              </div>
-              <div className="flex items-center gap-1.5 border-r border-gray-200 pr-4">
-                <AlertTriangle size={13} className="text-amber-400" />
-                <span className="text-xs text-gray-500">Avisos</span>
-                <span className="text-sm font-bold text-amber-600">
-                  {stats.bySeverity.find((s) => s.severity === 'WARNING')?.count || 0}
-                </span>
-              </div>
-            </>
-          )}
 
           {/* Busca */}
           <div className="flex items-center gap-2">
