@@ -32,15 +32,70 @@
     "bio": "Biografia",
     "role": "Função"
   },
+  "phones": {
+    "title": "Números de Telefone",
+    "add": "Adicionar Telefone",
+    "empty": "Nenhum número de telefone cadastrado",
+    "countryCode": "Código do País",
+    "number": "Número",
+    "type": "Tipo",
+    "primary": "Principal",
+    "confirmDelete": "Tem certeza que deseja remover este número?",
+    "types": {
+      "mobile": "Celular",
+      "home": "Residencial",
+      "work": "Trabalho"
+    }
+  },
+  "certifications": {
+    "title": "Certificações",
+    "add": "Adicionar Certificação",
+    "empty": "Nenhuma certificação cadastrada",
+    "name": "Nome da Certificação",
+    "issuer": "Entidade Emissora",
+    "type": "Tipo",
+    "description": "Descrição",
+    "descriptionPlaceholder": "Descrição opcional",
+    "certNumber": "Número da Certificação",
+    "issueDate": "Data de Expedição",
+    "expiryDate": "Data de Expiração",
+    "expired": "Expirada",
+    "confirmDelete": "Tem certeza que deseja remover esta certificação?",
+    "types": {
+      "certification": "Certificação",
+      "diploma": "Diploma",
+      "course": "Curso",
+      "training": "Treinamento",
+      "license": "Licença"
+    }
+  },
+  "languages": {
+    "title": "Idiomas",
+    "add": "Adicionar Idioma",
+    "empty": "Nenhum idioma cadastrado",
+    "language": "Idioma",
+    "level": "Nível",
+    "confirmDelete": "Tem certeza que deseja remover este idioma?",
+    "levels": {
+      "a1": "A1 - Básico",
+      "a2": "A2 - Elementar",
+      "b1": "B1 - Intermediário",
+      "b2": "B2 - Intermediário Superior",
+      "c1": "C1 - Avançado",
+      "c2": "C2 - Proficiente",
+      "native": "Nativo"
+    }
+  },
   "actions": {
     "edit": "Editar",
     "save": "Salvar",
     "cancel": "Cancelar",
-    "saving": "Salvando..."
+    "saving": "Salvando...",
+    "add": "Adicionar"
   },
   "feedback": {
-    "success": "Perfil atualizado com sucesso!",
-    "error": "Erro ao atualizar perfil. Tente novamente."
+    "success": "Atualizado com sucesso!",
+    "error": "Erro ao atualizar. Tente novamente."
   },
   "validation": {
     "minLength": "Mínimo de {{count}} caracteres",

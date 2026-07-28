@@ -14,6 +14,9 @@
  * 1. Informações Pessoais: nome, email, telefone, data nascimento, nacionalidade
  * 2. Endereço: endereço, cidade, código postal, país
  * 3. Informações Profissionais: departamento, cargo, biografia
+ * 4. Números de Telefone: lista de números com adição/edição/remoção
+ * 5. Certificações: lista de certificações com CRUD completo
+ * 6. Idiomas: lista de idiomas falados com níveis de proficiência
  *
  * COMO FUNCIONA?
  * --------------
@@ -32,10 +35,29 @@ import { LogOut, Wind } from 'lucide-react';
 
 // Componentes
 import { ProfileSection, type FieldConfig } from './components/ProfileSection';
+import { PhoneNumberSection } from './components/PhoneNumberSection';
+import { CertificationSection } from './components/CertificationSection';
+import { LanguageSection } from './components/LanguageSection';
 
 // Serviços
 import type { ProfileResponse } from '@/types/user.types';
-import { getProfile, updateProfile, logout } from '@/services/auth.service';
+import {
+  getProfile,
+  updateProfile,
+  logout,
+  addPhone,
+  updatePhone,
+  removePhone,
+  addCertification,
+  updateCertification,
+  removeCertification,
+  addLanguage,
+  updateLanguage,
+  removeLanguage,
+  type PhoneNumber,
+  type Certification,
+  type Language,
+} from '@/services/auth.service';
 
 /**
  * Componente HomePage - Página inicial com perfil editável.
@@ -60,13 +82,64 @@ export function HomePage() {
   const mutation = useMutation({
     mutationFn: updateProfile,
     onSuccess: () => {
-      // Mostra toast de sucesso
       toast.success(t('feedback.success'));
-      // Invalida o cache para recarregar o perfil
       queryClient.invalidateQueries({ queryKey: ['profile'] });
     },
     onError: () => {
-      // Mostra toast de erro
+      toast.error(t('feedback.error'));
+    },
+  });
+
+  /**
+   * Mutations para números de telefone.
+   */
+  const phoneMutation = useMutation({
+    mutationFn: ({ action, id, data }: { action: 'add' | 'update' | 'remove'; id?: string; data?: Omit<PhoneNumber, 'id'> | Partial<PhoneNumber> }) => {
+      if (action === 'add') return addPhone(data as Omit<PhoneNumber, 'id'>);
+      if (action === 'update') return updatePhone(id!, data as Partial<PhoneNumber>);
+      return removePhone(id!);
+    },
+    onSuccess: () => {
+      toast.success(t('feedback.success'));
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+    },
+    onError: () => {
+      toast.error(t('feedback.error'));
+    },
+  });
+
+  /**
+   * Mutations para certificações.
+   */
+  const certMutation = useMutation({
+    mutationFn: ({ action, id, data }: { action: 'add' | 'update' | 'remove'; id?: string; data?: Omit<Certification, 'id'> | Partial<Certification> }) => {
+      if (action === 'add') return addCertification(data as Omit<Certification, 'id'>);
+      if (action === 'update') return updateCertification(id!, data as Partial<Certification>);
+      return removeCertification(id!);
+    },
+    onSuccess: () => {
+      toast.success(t('feedback.success'));
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+    },
+    onError: () => {
+      toast.error(t('feedback.error'));
+    },
+  });
+
+  /**
+   * Mutations para idiomas.
+   */
+  const langMutation = useMutation({
+    mutationFn: ({ action, id, data }: { action: 'add' | 'update' | 'remove'; id?: string; data?: Omit<Language, 'id'> | Partial<Language> }) => {
+      if (action === 'add') return addLanguage(data as Omit<Language, 'id'>);
+      if (action === 'update') return updateLanguage(id!, data as Partial<Language>);
+      return removeLanguage(id!);
+    },
+    onSuccess: () => {
+      toast.success(t('feedback.success'));
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+    },
+    onError: () => {
       toast.error(t('feedback.error'));
     },
   });
@@ -116,6 +189,45 @@ export function HomePage() {
    */
   function handleSave(sectionData: Record<string, string | null>) {
     mutation.mutate(sectionData);
+  }
+
+  /**
+   * Handlers para números de telefone.
+   */
+  async function handleAddPhone(data: Omit<PhoneNumber, 'id'>) {
+    await phoneMutation.mutateAsync({ action: 'add', data });
+  }
+  async function handleUpdatePhone(id: string, data: Partial<PhoneNumber>) {
+    await phoneMutation.mutateAsync({ action: 'update', id, data });
+  }
+  async function handleRemovePhone(id: string) {
+    await phoneMutation.mutateAsync({ action: 'remove', id });
+  }
+
+  /**
+   * Handlers para certificações.
+   */
+  async function handleAddCertification(data: Omit<Certification, 'id'>) {
+    await certMutation.mutateAsync({ action: 'add', data });
+  }
+  async function handleUpdateCertification(id: string, data: Partial<Certification>) {
+    await certMutation.mutateAsync({ action: 'update', id, data });
+  }
+  async function handleRemoveCertification(id: string) {
+    await certMutation.mutateAsync({ action: 'remove', id });
+  }
+
+  /**
+   * Handlers para idiomas.
+   */
+  async function handleAddLanguage(data: Omit<Language, 'id'>) {
+    await langMutation.mutateAsync({ action: 'add', data });
+  }
+  async function handleUpdateLanguage(id: string, data: Partial<Language>) {
+    await langMutation.mutateAsync({ action: 'update', id, data });
+  }
+  async function handleRemoveLanguage(id: string) {
+    await langMutation.mutateAsync({ action: 'remove', id });
   }
 
   /**
@@ -210,6 +322,30 @@ export function HomePage() {
             data={data as unknown as Record<string, string | null | undefined>}
             onSave={handleSave}
             isLoading={mutation.isPending}
+          />
+
+          {/* Seção: Números de Telefone */}
+          <PhoneNumberSection
+            phones={data?.phoneNumbers || []}
+            onAdd={handleAddPhone}
+            onUpdate={handleUpdatePhone}
+            onRemove={handleRemovePhone}
+          />
+
+          {/* Seção: Certificações */}
+          <CertificationSection
+            certifications={data?.certifications || []}
+            onAdd={handleAddCertification}
+            onUpdate={handleUpdateCertification}
+            onRemove={handleRemoveCertification}
+          />
+
+          {/* Seção: Idiomas */}
+          <LanguageSection
+            languages={data?.languages || []}
+            onAdd={handleAddLanguage}
+            onUpdate={handleUpdateLanguage}
+            onRemove={handleRemoveLanguage}
           />
         </div>
       </main>

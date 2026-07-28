@@ -34,6 +34,9 @@ import { PrismaService } from '../../database/prisma.service.js';
 import { LoginDto } from './dto/login.dto.js';
 import { RegisterDto } from './dto/register.dto.js';
 import { UpdateProfileDto } from './dto/update-profile.dto.js';
+import { CreatePhoneDto, UpdatePhoneDto } from './dto/user-phone.dto.js';
+import { CreateCertificationDto, UpdateCertificationDto } from './dto/user-certification.dto.js';
+import { CreateLanguageDto, UpdateLanguageDto } from './dto/user-language.dto.js';
 import { JwtPayload } from './strategies/jwt.strategy.js';
 
 /**
@@ -323,5 +326,183 @@ export class AuthService {
       certifications: updatedUser.certifications,
       languages: updatedUser.languages,
     };
+  }
+
+  // ==========================================================================
+  // PHONE NUMBERS - Gerenciamento de Números de Telefone
+  // ==========================================================================
+
+  /**
+   * Adiciona um novo número de telefone ao usuário.
+   */
+  async addPhone(userId: string, dto: CreatePhoneDto) {
+    return this.prisma.userPhoneNumber.create({
+      data: {
+        userId,
+        countryCode: dto.countryCode,
+        number: dto.number,
+        type: dto.type,
+        isPrimary: dto.isPrimary ?? false,
+      },
+    });
+  }
+
+  /**
+   * Atualiza um número de telefone existente.
+   */
+  async updatePhone(userId: string, phoneId: string, dto: UpdatePhoneDto) {
+    // Verifica se o número pertence ao usuário
+    const phone = await this.prisma.userPhoneNumber.findFirst({
+      where: { id: phoneId, userId },
+    });
+
+    if (!phone) {
+      throw new UnauthorizedException('Phone number not found');
+    }
+
+    return this.prisma.userPhoneNumber.update({
+      where: { id: phoneId },
+      data: dto,
+    });
+  }
+
+  /**
+   * Remove um número de telefone.
+   */
+  async removePhone(userId: string, phoneId: string) {
+    // Verifica se o número pertence ao usuário
+    const phone = await this.prisma.userPhoneNumber.findFirst({
+      where: { id: phoneId, userId },
+    });
+
+    if (!phone) {
+      throw new UnauthorizedException('Phone number not found');
+    }
+
+    return this.prisma.userPhoneNumber.delete({
+      where: { id: phoneId },
+    });
+  }
+
+  // ==========================================================================
+  // CERTIFICATIONS - Gerenciamento de Certificações
+  // ==========================================================================
+
+  /**
+   * Adiciona uma nova certificação ao usuário.
+   */
+  async addCertification(userId: string, dto: CreateCertificationDto) {
+    return this.prisma.userCertification.create({
+      data: {
+        userId,
+        name: dto.name,
+        issuer: dto.issuer,
+        type: dto.type,
+        description: dto.description,
+        certNumber: dto.certNumber,
+        issueDate: new Date(dto.issueDate),
+        expiryDate: dto.expiryDate ? new Date(dto.expiryDate) : null,
+      },
+    });
+  }
+
+  /**
+   * Atualiza uma certificação existente.
+   */
+  async updateCertification(userId: string, certId: string, dto: UpdateCertificationDto) {
+    // Verifica se a certificação pertence ao usuário
+    const cert = await this.prisma.userCertification.findFirst({
+      where: { id: certId, userId },
+    });
+
+    if (!cert) {
+      throw new UnauthorizedException('Certification not found');
+    }
+
+    const updateData: Record<string, unknown> = {};
+    if (dto.name !== undefined) updateData.name = dto.name;
+    if (dto.issuer !== undefined) updateData.issuer = dto.issuer;
+    if (dto.type !== undefined) updateData.type = dto.type;
+    if (dto.description !== undefined) updateData.description = dto.description;
+    if (dto.certNumber !== undefined) updateData.certNumber = dto.certNumber;
+    if (dto.issueDate !== undefined) updateData.issueDate = new Date(dto.issueDate);
+    if (dto.expiryDate !== undefined) updateData.expiryDate = dto.expiryDate ? new Date(dto.expiryDate) : null;
+
+    return this.prisma.userCertification.update({
+      where: { id: certId },
+      data: updateData,
+    });
+  }
+
+  /**
+   * Remove uma certificação.
+   */
+  async removeCertification(userId: string, certId: string) {
+    // Verifica se a certificação pertence ao usuário
+    const cert = await this.prisma.userCertification.findFirst({
+      where: { id: certId, userId },
+    });
+
+    if (!cert) {
+      throw new UnauthorizedException('Certification not found');
+    }
+
+    return this.prisma.userCertification.delete({
+      where: { id: certId },
+    });
+  }
+
+  // ==========================================================================
+  // LANGUAGES - Gerenciamento de Idiomas
+  // ==========================================================================
+
+  /**
+   * Adiciona um novo idioma ao usuário.
+   */
+  async addLanguage(userId: string, dto: CreateLanguageDto) {
+    return this.prisma.userLanguage.create({
+      data: {
+        userId,
+        language: dto.language,
+        level: dto.level,
+      },
+    });
+  }
+
+  /**
+   * Atualiza um idioma existente.
+   */
+  async updateLanguage(userId: string, languageId: string, dto: UpdateLanguageDto) {
+    // Verifica se o idioma pertence ao usuário
+    const lang = await this.prisma.userLanguage.findFirst({
+      where: { id: languageId, userId },
+    });
+
+    if (!lang) {
+      throw new UnauthorizedException('Language not found');
+    }
+
+    return this.prisma.userLanguage.update({
+      where: { id: languageId },
+      data: dto,
+    });
+  }
+
+  /**
+   * Remove um idioma.
+   */
+  async removeLanguage(userId: string, languageId: string) {
+    // Verifica se o idioma pertence ao usuário
+    const lang = await this.prisma.userLanguage.findFirst({
+      where: { id: languageId, userId },
+    });
+
+    if (!lang) {
+      throw new UnauthorizedException('Language not found');
+    }
+
+    return this.prisma.userLanguage.delete({
+      where: { id: languageId },
+    });
   }
 }

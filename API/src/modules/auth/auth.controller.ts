@@ -40,7 +40,9 @@ import {
   Post,
   Get,
   Put,
+  Delete,
   Body,
+  Param,
   HttpCode,
   HttpStatus,
   UseGuards,
@@ -57,6 +59,9 @@ import { AuthService } from './auth.service.js';
 import { LoginDto } from './dto/login.dto.js';
 import { RegisterDto } from './dto/register.dto.js';
 import { UpdateProfileDto } from './dto/update-profile.dto.js';
+import { CreatePhoneDto, UpdatePhoneDto } from './dto/user-phone.dto.js';
+import { CreateCertificationDto, UpdateCertificationDto } from './dto/user-certification.dto.js';
+import { CreateLanguageDto, UpdateLanguageDto } from './dto/user-language.dto.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
 import type { JwtPayload } from './strategies/jwt.strategy.js';
 import {
@@ -226,5 +231,92 @@ export class AuthController {
     @Body() dto: UpdateProfileDto,
   ) {
     return this.authService.updateProfile(user.sub, dto);
+  }
+
+  // ==========================================================================
+  // PHONE NUMBERS ENDPOINTS
+  // ==========================================================================
+
+  @Post('phones')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  addPhone(@CurrentUser() user: JwtPayload, @Body() dto: CreatePhoneDto) {
+    return this.authService.addPhone(user.sub, dto);
+  }
+
+  @Put('phones/:id')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  updatePhone(
+    @CurrentUser() user: JwtPayload,
+    @Param('id') id: string,
+    @Body() dto: UpdatePhoneDto,
+  ) {
+    return this.authService.updatePhone(user.sub, id, dto);
+  }
+
+  @Delete('phones/:id')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  removePhone(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
+    return this.authService.removePhone(user.sub, id);
+  }
+
+  // ==========================================================================
+  // CERTIFICATIONS ENDPOINTS
+  // ==========================================================================
+
+  @Post('certifications')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  addCertification(@CurrentUser() user: JwtPayload, @Body() dto: CreateCertificationDto) {
+    return this.authService.addCertification(user.sub, dto);
+  }
+
+  @Put('certifications/:id')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  updateCertification(
+    @CurrentUser() user: JwtPayload,
+    @Param('id') id: string,
+    @Body() dto: UpdateCertificationDto,
+  ) {
+    return this.authService.updateCertification(user.sub, id, dto);
+  }
+
+  @Delete('certifications/:id')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  removeCertification(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
+    return this.authService.removeCertification(user.sub, id);
+  }
+
+  // ==========================================================================
+  // LANGUAGES ENDPOINTS
+  // ==========================================================================
+
+  @Post('languages')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  addLanguage(@CurrentUser() user: JwtPayload, @Body() dto: CreateLanguageDto) {
+    return this.authService.addLanguage(user.sub, dto);
+  }
+
+  @Put('languages/:id')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  updateLanguage(
+    @CurrentUser() user: JwtPayload,
+    @Param('id') id: string,
+    @Body() dto: UpdateLanguageDto,
+  ) {
+    return this.authService.updateLanguage(user.sub, id, dto);
+  }
+
+  @Delete('languages/:id')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  removeLanguage(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
+    return this.authService.removeLanguage(user.sub, id);
   }
 }

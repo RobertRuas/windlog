@@ -96,6 +96,85 @@ export async function updateProfile(data: Partial<ProfileResponse>): Promise<Pro
   return response.data;
 }
 
+// ============================================================================
+// PHONE NUMBERS - Gerenciamento de Números de Telefone
+// ============================================================================
+
+export interface PhoneNumber {
+  id: string;
+  countryCode: string;
+  number: string;
+  type: string;
+  isPrimary: boolean;
+}
+
+export async function addPhone(data: Omit<PhoneNumber, 'id'>): Promise<PhoneNumber> {
+  const response = await api.post<ApiResponse<PhoneNumber>>('/api/v1/auth/phones', data);
+  return response.data;
+}
+
+export async function updatePhone(id: string, data: Partial<PhoneNumber>): Promise<PhoneNumber> {
+  const response = await api.put<ApiResponse<PhoneNumber>>(`/api/v1/auth/phones/${id}`, data);
+  return response.data;
+}
+
+export async function removePhone(id: string): Promise<void> {
+  await api.delete(`/api/v1/auth/phones/${id}`);
+}
+
+// ============================================================================
+// CERTIFICATIONS - Gerenciamento de Certificações
+// ============================================================================
+
+export interface Certification {
+  id: string;
+  name: string;
+  issuer: string;
+  type: string;
+  description?: string;
+  certNumber?: string;
+  issueDate: string;
+  expiryDate?: string;
+}
+
+export async function addCertification(data: Omit<Certification, 'id'>): Promise<Certification> {
+  const response = await api.post<ApiResponse<Certification>>('/api/v1/auth/certifications', data);
+  return response.data;
+}
+
+export async function updateCertification(id: string, data: Partial<Certification>): Promise<Certification> {
+  const response = await api.put<ApiResponse<Certification>>(`/api/v1/auth/certifications/${id}`, data);
+  return response.data;
+}
+
+export async function removeCertification(id: string): Promise<void> {
+  await api.delete(`/api/v1/auth/certifications/${id}`);
+}
+
+// ============================================================================
+// LANGUAGES - Gerenciamento de Idiomas
+// ============================================================================
+
+export interface Language {
+  id: string;
+  language: string;
+  level: string;
+}
+
+export async function addLanguage(data: Omit<Language, 'id'>): Promise<Language> {
+  const response = await api.post<ApiResponse<Language>>('/api/v1/auth/languages', data);
+  return response.data;
+}
+
+export async function updateLanguage(id: string, data: Partial<Language>): Promise<Language> {
+  const response = await api.put<ApiResponse<Language>>(`/api/v1/auth/languages/${id}`, data);
+  return response.data;
+}
+
+export async function removeLanguage(id: string): Promise<void> {
+  await api.delete(`/api/v1/auth/languages/${id}`);
+}
+
 /**
  * Realiza o logout do usuário.
  *
