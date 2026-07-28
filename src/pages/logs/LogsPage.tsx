@@ -350,29 +350,27 @@ export function LogsPage() {
         </div>
       </div>
 
-      {/* Estatísticas Básicas */}
+      {/* Estatísticas Compactas */}
       {stats && (
-        <div className="grid grid-cols-3 gap-4 mb-6">
-          {/* Total de Logs */}
-          <div className="bg-white rounded-xl border border-gray-200 p-4">
-            <div className="text-sm text-gray-500 mb-1">Total</div>
-            <div className="text-2xl font-bold text-gray-900">{stats.total.toLocaleString()}</div>
+        <div className="flex gap-3 mb-6">
+          <div className="bg-white rounded-lg border border-gray-200 px-3 py-2 flex items-center gap-2">
+            <Activity size={14} className="text-gray-400" />
+            <span className="text-xs text-gray-500">Total</span>
+            <span className="text-sm font-bold text-gray-900">{stats.total.toLocaleString()}</span>
           </div>
-
-          {/* Erros */}
-          <div className="bg-white rounded-xl border border-gray-200 p-4">
-            <div className="text-sm text-gray-500 mb-1">Erros</div>
-            <div className="text-2xl font-bold text-red-600">
+          <div className="bg-white rounded-lg border border-gray-200 px-3 py-2 flex items-center gap-2">
+            <XCircle size={14} className="text-red-400" />
+            <span className="text-xs text-gray-500">Erros</span>
+            <span className="text-sm font-bold text-red-600">
               {stats.bySeverity.find((s) => s.severity === 'ERROR')?.count || 0}
-            </div>
+            </span>
           </div>
-
-          {/* Avisos */}
-          <div className="bg-white rounded-xl border border-gray-200 p-4">
-            <div className="text-sm text-gray-500 mb-1">Avisos</div>
-            <div className="text-2xl font-bold text-amber-600">
+          <div className="bg-white rounded-lg border border-gray-200 px-3 py-2 flex items-center gap-2">
+            <AlertTriangle size={14} className="text-amber-400" />
+            <span className="text-xs text-gray-500">Avisos</span>
+            <span className="text-sm font-bold text-amber-600">
               {stats.bySeverity.find((s) => s.severity === 'WARNING')?.count || 0}
-            </div>
+            </span>
           </div>
         </div>
       )}
@@ -390,11 +388,11 @@ export function LogsPage() {
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-          {/* Busca textual */}
-          <div className="lg:col-span-2">
+        <div className="space-y-4">
+          {/* Linha 1: Busca textual */}
+          <div>
             <label className="text-xs text-gray-500 mb-1 block">Buscar</label>
-            <div className="flex gap-2">
+            <div className="flex gap-2 max-w-md">
               <input
                 type="text"
                 placeholder="Mensagem, usuário, URL..."
@@ -409,60 +407,62 @@ export function LogsPage() {
             </div>
           </div>
 
-          {/* Filtro por ação - apenas ações existentes */}
-          <div>
-            <label className="text-xs text-gray-500 mb-1 block">Ação</label>
-            <select
-              value={filters.action || ''}
-              onChange={(e) => setFilters((prev) => ({ ...prev, action: e.target.value || undefined, page: 1 }))}
-              className="form-select w-full"
-            >
-              <option value="">Todas</option>
-              {stats?.byAction.map((item) => (
-                <option key={item.action} value={item.action}>
-                  {ACTION_LABELS[item.action] || item.action} ({item.count})
-                </option>
-              ))}
-            </select>
+          {/* Linha 2: Ação e Severidade */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-md">
+            <div>
+              <label className="text-xs text-gray-500 mb-1 block">Ação</label>
+              <select
+                value={filters.action || ''}
+                onChange={(e) => setFilters((prev) => ({ ...prev, action: e.target.value || undefined, page: 1 }))}
+                className="form-select w-full"
+              >
+                <option value="">Todas</option>
+                {stats?.byAction.map((item) => (
+                  <option key={item.action} value={item.action}>
+                    {ACTION_LABELS[item.action] || item.action} ({item.count})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="text-xs text-gray-500 mb-1 block">Severidade</label>
+              <select
+                value={filters.severity || ''}
+                onChange={(e) => setFilters((prev) => ({ ...prev, severity: e.target.value || undefined, page: 1 }))}
+                className="form-select w-full"
+              >
+                <option value="">Todas</option>
+                {stats?.bySeverity.map((item) => (
+                  <option key={item.severity} value={item.severity}>
+                    {SEVERITY_CONFIG[item.severity as keyof typeof SEVERITY_CONFIG]?.label || item.severity} ({item.count})
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
-          {/* Filtro por severidade - apenas severidades existentes */}
-          <div>
-            <label className="text-xs text-gray-500 mb-1 block">Severidade</label>
-            <select
-              value={filters.severity || ''}
-              onChange={(e) => setFilters((prev) => ({ ...prev, severity: e.target.value || undefined, page: 1 }))}
-              className="form-select w-full"
-            >
-              <option value="">Todas</option>
-              {stats?.bySeverity.map((item) => (
-                <option key={item.severity} value={item.severity}>
-                  {SEVERITY_CONFIG[item.severity as keyof typeof SEVERITY_CONFIG]?.label || item.severity} ({item.count})
-                </option>
-              ))}
-            </select>
-          </div>
+          {/* Linha 3: Data Inicial e Data Final */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-md">
+            <div>
+              <label className="text-xs text-gray-500 mb-1 block">Data Inicial</label>
+              <input
+                type="date"
+                value={filters.startDate || ''}
+                onChange={(e) => setFilters((prev) => ({ ...prev, startDate: e.target.value || undefined, page: 1 }))}
+                className="form-input w-full"
+              />
+            </div>
 
-          {/* Filtro por data inicial */}
-          <div>
-            <label className="text-xs text-gray-500 mb-1 block">Data Inicial</label>
-            <input
-              type="date"
-              value={filters.startDate || ''}
-              onChange={(e) => setFilters((prev) => ({ ...prev, startDate: e.target.value || undefined, page: 1 }))}
-              className="form-input w-full"
-            />
-          </div>
-
-          {/* Filtro por data final */}
-          <div>
-            <label className="text-xs text-gray-500 mb-1 block">Data Final</label>
-            <input
-              type="date"
-              value={filters.endDate || ''}
-              onChange={(e) => setFilters((prev) => ({ ...prev, endDate: e.target.value || undefined, page: 1 }))}
-              className="form-input w-full"
-            />
+            <div>
+              <label className="text-xs text-gray-500 mb-1 block">Data Final</label>
+              <input
+                type="date"
+                value={filters.endDate || ''}
+                onChange={(e) => setFilters((prev) => ({ ...prev, endDate: e.target.value || undefined, page: 1 }))}
+                className="form-input w-full"
+              />
+            </div>
           </div>
         </div>
       </div>
