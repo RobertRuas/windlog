@@ -21,6 +21,13 @@
       "description": "Seus dados na empresa"
     }
   },
+  "groups": {
+    "identity": "Identidade",
+    "contact": "Contato",
+    "location": "Localização",
+    "professional": "Profissional",
+    "about": "Sobre"
+  },
   "profile": {
     "firstName": "Primeiro Nome",
     "lastName": "Sobrenome",

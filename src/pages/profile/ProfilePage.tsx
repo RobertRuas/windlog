@@ -25,13 +25,13 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { Phone, Award, Globe } from 'lucide-react';
+import { Phone, Award, Globe, User, Mail, MapPin, Briefcase, FileText } from 'lucide-react';
 
 // Layout
 import { AppLayout } from '@/components/layout/AppLayout';
 
 // Componentes
-import { ProfileSection, type FieldConfig } from '@/pages/home/components/ProfileSection';
+import { ProfileSection, type FieldConfig, type FieldGroup } from '@/pages/home/components/ProfileSection';
 import { PhoneNumberSection } from '@/pages/home/components/PhoneNumberSection';
 import { CertificationSection } from '@/pages/home/components/CertificationSection';
 import { LanguageSection } from '@/pages/home/components/LanguageSection';
@@ -137,21 +137,34 @@ export function ProfilePage() {
     label: `${c.phoneCode} - ${c.name}`,
   }));
 
+  const profileGroups: FieldGroup[] = [
+    { id: 'identity', label: t('groups.identity'), icon: User },
+    { id: 'contact', label: t('groups.contact'), icon: Mail },
+    { id: 'location', label: t('groups.location'), icon: MapPin },
+    { id: 'professional', label: t('groups.professional'), icon: Briefcase },
+    { id: 'about', label: t('groups.about'), icon: FileText },
+  ];
+
   const profileFields: FieldConfig[] = [
-    { key: 'firstName', label: t('profile.firstName'), minLength: 2, required: true },
-    { key: 'lastName', label: t('profile.lastName'), minLength: 2, required: true },
-    { key: 'email', label: t('profile.email'), type: 'email', span: 2 },
-    { key: 'phoneCountryCode', label: t('profile.phoneCountryCode'), type: 'select', options: phoneCodeOptions },
-    { key: 'phone', label: t('profile.phone') },
-    { key: 'dateOfBirth', label: t('profile.dateOfBirth'), type: 'date' },
-    { key: 'nationality', label: t('profile.nationality'), type: 'select', options: countryOptions },
-    { key: 'address', label: t('profile.address'), span: 2 },
-    { key: 'city', label: t('profile.city') },
-    { key: 'postalCode', label: t('profile.postalCode') },
-    { key: 'country', label: t('profile.country'), type: 'select', options: countryOptions },
-    { key: 'department', label: t('profile.department') },
-    { key: 'position', label: t('profile.position') },
-    { key: 'bio', label: t('profile.bio'), type: 'textarea', span: 2 },
+    // Identidade
+    { key: 'firstName', label: t('profile.firstName'), minLength: 2, required: true, category: 'identity' },
+    { key: 'lastName', label: t('profile.lastName'), minLength: 2, required: true, category: 'identity' },
+    { key: 'dateOfBirth', label: t('profile.dateOfBirth'), type: 'date', category: 'identity' },
+    { key: 'nationality', label: t('profile.nationality'), type: 'select', options: countryOptions, category: 'identity' },
+    // Contato
+    { key: 'email', label: t('profile.email'), type: 'email', span: 2, category: 'contact' },
+    { key: 'phoneCountryCode', label: t('profile.phoneCountryCode'), type: 'select', options: phoneCodeOptions, category: 'contact' },
+    { key: 'phone', label: t('profile.phone'), category: 'contact' },
+    // Localização
+    { key: 'address', label: t('profile.address'), span: 2, category: 'location' },
+    { key: 'city', label: t('profile.city'), category: 'location' },
+    { key: 'postalCode', label: t('profile.postalCode'), category: 'location' },
+    { key: 'country', label: t('profile.country'), type: 'select', options: countryOptions, category: 'location' },
+    // Profissional
+    { key: 'department', label: t('profile.department'), category: 'professional' },
+    { key: 'position', label: t('profile.position'), category: 'professional' },
+    // Sobre
+    { key: 'bio', label: t('profile.bio'), type: 'textarea', span: 2, category: 'about' },
   ];
 
   function handleSave(sectionData: Record<string, string | null>) {
@@ -222,6 +235,7 @@ export function ProfilePage() {
           title={t('sections.personal.title')}
           description={t('sections.personal.description')}
           fields={profileFields}
+          groups={profileGroups}
           data={data as unknown as Record<string, string | null | undefined>}
           onSave={handleSave}
           isLoading={mutation.isPending}

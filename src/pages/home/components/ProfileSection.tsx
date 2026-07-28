@@ -35,7 +35,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pencil, X, Check } from 'lucide-react';
+import { Pencil, X, Check, type LucideIcon } from 'lucide-react';
 
 // Componentes compartilhados
 import { Button } from '@/components/ui/Button';
@@ -58,6 +58,20 @@ export interface FieldConfig {
   options?: { value: string; label: string }[];
   /** Largura do campo no grid (1 = metade, 2 = linha inteira) */
   span?: 1 | 2;
+  /** Categoria/grupo a que o campo pertence */
+  category?: string;
+}
+
+/**
+ * Definição de um grupo de campos dentro da seção.
+ */
+export interface FieldGroup {
+  /** ID do grupo (usado no field.category) */
+  id: string;
+  /** Label do grupo */
+  label: string;
+  /** Ícone do grupo (lucide-react) */
+  icon: LucideIcon;
 }
 
 /**
@@ -70,6 +84,8 @@ interface ProfileSectionProps {
   description: string;
   /** Configuração dos campos exibidos na seção */
   fields: FieldConfig[];
+  /** Grupos para categorizar os campos (opcional) */
+  groups?: FieldGroup[];
   /** Dados atuais do usuário */
   data: Record<string, string | null | undefined>;
   /** Função chamada ao salvar (recebe dados modificados) */
@@ -85,11 +101,26 @@ export function ProfileSection({
   title,
   description,
   fields,
+  groups,
   data,
   onSave,
   isLoading,
 }: ProfileSectionProps) {
   const { t } = useTranslation('home');
+
+  /**
+   * Formata uma data ISO (yyyy-mm-dd) para dd/mm/yyyy.
+   * Retorna o valor original se não for uma data válida.
+   */
+  function formatDate(value: string): string {
+    if (!value) return value;
+    // Suporta formato ISO (yyyy-mm-dd) ou já formatado (dd/mm/yyyy)
+    const isoMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (isoMatch) {
+      return `${isoMatch[3]}/${isoMatch[2]}/${isoMatch[1]}`;
+    }
+    return value;
+  }
 
   // Estados da seção
   const [isEditing, setIsEditing] = useState(false);
@@ -217,66 +248,81 @@ export function ProfileSection({
       </div>
 
       {/* Conteúdo da seção */}
-      <div className="px-6 py-4">
+      <div className="px-6 py-4 space-y-5">
         {isEditing ? (
-          /* MODO EDIÇÃO - Campos editáveis em grid */
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {fields.map((field) => {
-              const spanClass = field.span === 2 ? 'sm:col-span-2' : '';
+          /* MODO EDIÇÃO - Campos agrupados */
+          <div className="space-y-5">
+            {(groups ?? []).map((group) => {
+              const groupFields = fields.filter((f) => f.category === group.id);
+              if (groupFields.length === 0) return null;
+              const GroupIcon = group.icon;
               return (
-                <div key={field.key} className={`relative ${spanClass}`}>
-                  <label className="form-label">{field.label}</label>
-                  
-                  {field.type === 'textarea' ? (
-                    /* Campo textarea */
-                    <textarea
-                      value={formData[field.key] || ''}
-                      onChange={(e) => handleFieldChange(field.key, e.target.value)}
-                      rows={3}
-                      className={`form-textarea w-full ${errors[field.key] ? 'border-red-500' : ''}`}
-                    />
-                  ) : field.type === 'select' && field.options ? (
-                    /* Campo select */
-                    <select
-                      value={formData[field.key] || ''}
-                      onChange={(e) => handleFieldChange(field.key, e.target.value)}
-                      className={`form-select w-full ${errors[field.key] ? 'border-red-500' : ''}`}
-                    >
-                      <option value="">{t('validation.selectOption', { defaultValue: 'Selecione...' })}</option>
-                      {field.options.map((opt) => (
-                        <option key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </option>
-                      ))}
-                    </select>
-                  ) : (
-                    /* Campo input normal */
-                    <input
-                      type={field.type || 'text'}
-                      value={formData[field.key] || ''}
-                      onChange={(e) => handleFieldChange(field.key, e.target.value)}
-                      className={`form-input w-full ${errors[field.key] ? 'border-red-500' : ''}`}
-                    />
-                  )}
-
-                  {/* Mensagem de erro */}
-                  {errors[field.key] && (
-                    <div className="flex items-center justify-between mt-1">
-                      <span className="text-xs text-red-600">{errors[field.key]}</span>
-                      <button
-                        onClick={() => dismissError(field.key)}
-                        className="text-red-400 hover:text-red-600"
-                      >
-                        <X size={12} />
-                      </button>
+                <div key={group.id}>
+                  {/* Header do grupo */}
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-6 h-6 rounded-md bg-gray-100 flex items-center justify-center flex-shrink-0">
+                      <GroupIcon size={13} className="text-gray-500" />
                     </div>
-                  )}
+                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
+                      {group.label}
+                    </span>
+                  </div>
+                  {/* Campos do grupo */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {groupFields.map((field) => {
+                      const spanClass = field.span === 2 ? 'sm:col-span-2' : '';
+                      return (
+                        <div key={field.key} className={`relative ${spanClass}`}>
+                          <label className="form-label">{field.label}</label>
+                          {field.type === 'textarea' ? (
+                            <textarea
+                              value={formData[field.key] || ''}
+                              onChange={(e) => handleFieldChange(field.key, e.target.value)}
+                              rows={3}
+                              className={`form-textarea w-full ${errors[field.key] ? 'border-red-500' : ''}`}
+                            />
+                          ) : field.type === 'select' && field.options ? (
+                            <select
+                              value={formData[field.key] || ''}
+                              onChange={(e) => handleFieldChange(field.key, e.target.value)}
+                              className={`form-select w-full ${errors[field.key] ? 'border-red-500' : ''}`}
+                            >
+                              <option value="">{t('validation.selectOption', { defaultValue: 'Selecione...' })}</option>
+                              {field.options.map((opt) => (
+                                <option key={opt.value} value={opt.value}>
+                                  {opt.label}
+                                </option>
+                              ))}
+                            </select>
+                          ) : (
+                            <input
+                              type={field.type || 'text'}
+                              value={formData[field.key] || ''}
+                              onChange={(e) => handleFieldChange(field.key, e.target.value)}
+                              className={`form-input w-full ${errors[field.key] ? 'border-red-500' : ''}`}
+                            />
+                          )}
+                          {errors[field.key] && (
+                            <div className="flex items-center justify-between mt-1">
+                              <span className="text-xs text-red-600">{errors[field.key]}</span>
+                              <button
+                                onClick={() => dismissError(field.key)}
+                                className="text-red-400 hover:text-red-600"
+                              >
+                                <X size={12} />
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               );
             })}
 
-            {/* Botões de ação (Salvar / Cancelar) - linha inteira */}
-            <div className="sm:col-span-2 flex gap-2 pt-2">
+            {/* Botões de ação (Salvar / Cancelar) */}
+            <div className="flex gap-2 pt-2">
               <Button onClick={handleSave} disabled={isLoading}>
                 <span className="flex items-center gap-1.5">
                   <Check size={14} />
@@ -289,16 +335,45 @@ export function ProfileSection({
             </div>
           </div>
         ) : (
-          /* MODO VISUALIZAÇÃO - Dados em grid */
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {fields.map((field) => {
-              const value = data[field.key];
-              if (!value) return null;
-              const spanClass = field.span === 2 ? 'sm:col-span-2' : '';
+          /* MODO VISUALIZAÇÃO - Dados agrupados */
+          <div className="space-y-5">
+            {(groups ?? []).map((group) => {
+              const groupFields = fields.filter((f) => f.category === group.id);
+              // Filtra apenas campos com valor
+              const visibleFields = groupFields.filter((f) => data[f.key]);
+              if (visibleFields.length === 0) return null;
+              const GroupIcon = group.icon;
               return (
-                <div key={field.key} className={`flex items-start gap-2 text-sm ${spanClass}`}>
-                  <span className="text-gray-500 min-w-[120px]">{field.label}:</span>
-                  <span className="text-gray-900 font-medium">{value}</span>
+                <div key={group.id}>
+                  {/* Header do grupo */}
+                  <div className="flex items-center gap-2 mb-2.5">
+                    <div className="w-6 h-6 rounded-md bg-gray-100 flex items-center justify-center flex-shrink-0">
+                      <GroupIcon size={13} className="text-gray-500" />
+                    </div>
+                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
+                      {group.label}
+                    </span>
+                  </div>
+                  {/* Campos do grupo */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2.5 pl-8">
+                    {visibleFields.map((field) => {
+                      const value = data[field.key]!;
+                      const spanClass = field.span === 2 ? 'sm:col-span-2' : '';
+                      return (
+                        <div key={field.key} className={`flex items-baseline gap-3 text-sm ${spanClass}`}>
+                          <span
+                            className="text-gray-500 w-[110px] flex-shrink-0 truncate"
+                            title={field.label}
+                          >
+                            {field.label}
+                          </span>
+                          <span className="text-gray-900 font-medium truncate">
+                            {field.type === 'date' ? formatDate(value) : value}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               );
             })}
