@@ -2,7 +2,8 @@
   "app_name": "Windlog",
   "nav": {
     "home": "Início",
-    "profile": "Perfil"
+    "profile": "Perfil",
+    "settings": "Configurações"
   },
   "buttons": {
     "save": "Salvar",

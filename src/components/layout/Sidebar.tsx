@@ -27,6 +27,7 @@ import {
   Wind,
   Home,
   User,
+  Settings,
   LogOut,
   Menu,
   X,
@@ -49,6 +50,7 @@ interface SidebarProps {
 const NAV_ITEMS = [
   { icon: Home, labelKey: 'nav.home', path: '/', end: true },
   { icon: User, labelKey: 'nav.profile', path: '/profile', end: false },
+  { icon: Settings, labelKey: 'nav.settings', path: '/settings', end: false },
 ] as const;
 
 /**

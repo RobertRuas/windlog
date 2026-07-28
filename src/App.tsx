@@ -38,6 +38,7 @@ import { LoginPage } from '@/pages/login/LoginPage';
 import { HomePage } from '@/pages/home/HomePage';
 import { ProfilePage } from '@/pages/profile/ProfilePage';
 import { LogsPage } from '@/pages/logs/LogsPage';
+import { SettingsPage } from '@/pages/settings/SettingsPage';
 
 // Serviço de autenticação
 import { isAuthenticated } from '@/services/auth.service';
@@ -168,6 +169,16 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Rota protegida - configurações (requer autenticação) */}
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <SettingsPage />
               </ProtectedRoute>
             }
           />
