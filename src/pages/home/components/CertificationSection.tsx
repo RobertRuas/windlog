@@ -15,6 +15,7 @@
  * - Edita certificações existentes
  * - Remove certificações com confirmação
  * - Mostra alertas para certificações expiradas
+ * - Design alinhado e responsivo
  * ============================================================================
  */
 
@@ -22,7 +23,6 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Award, Plus, Pencil, Trash2, X, Check, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
 import type { Certification } from '@/services/auth.service';
 
 /**
@@ -55,6 +55,11 @@ export function CertificationSection({ certifications, onAdd, onUpdate, onRemove
     issueDate: '',
     expiryDate: '',
   });
+
+  /**
+   * Estilos comuns para inputs e selects.
+   */
+  const inputClass = "w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent";
 
   /**
    * Verifica se uma certificação está expirada.
@@ -208,75 +213,98 @@ export function CertificationSection({ certifications, onAdd, onUpdate, onRemove
           >
             {editingId === cert.id ? (
               /* Modo de edição */
-              <div className="space-y-3">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  <Input
-                    type="text"
-                    label={t('certifications.name')}
-                    value={formData.name}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                    placeholder="GWO BST"
-                  />
-                  <Input
-                    type="text"
-                    label={t('certifications.issuer')}
-                    value={formData.issuer}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      setFormData({ ...formData, issuer: e.target.value })
-                    }
-                    placeholder="GWO"
-                  />
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      {t('certifications.name')}
+                    </label>
+                    <input
+                      type="text"
+                      className={inputClass}
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      placeholder="GWO BST"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      {t('certifications.issuer')}
+                    </label>
+                    <input
+                      type="text"
+                      className={inputClass}
+                      value={formData.issuer}
+                      onChange={(e) => setFormData({ ...formData, issuer: e.target.value })}
+                      placeholder="GWO"
+                    />
+                  </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                  <select
-                    className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-                    value={formData.type}
-                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                  >
-                    <option value="CERTIFICATION">{t('certifications.types.certification')}</option>
-                    <option value="DIPLOMA">{t('certifications.types.diploma')}</option>
-                    <option value="COURSE">{t('certifications.types.course')}</option>
-                    <option value="TRAINING">{t('certifications.types.training')}</option>
-                    <option value="LICENSE">{t('certifications.types.license')}</option>
-                  </select>
-                  <Input
-                    type="text"
-                    label={t('certifications.certNumber')}
-                    value={formData.certNumber}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      setFormData({ ...formData, certNumber: e.target.value })
-                    }
-                    placeholder="GWO-2024-12345"
-                  />
-                  <Input
-                    type="text"
-                    label={t('certifications.description')}
-                    value={formData.description}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      setFormData({ ...formData, description: e.target.value })
-                    }
-                    placeholder={t('certifications.descriptionPlaceholder')}
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      {t('certifications.type')}
+                    </label>
+                    <select
+                      className={inputClass}
+                      value={formData.type}
+                      onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                    >
+                      <option value="CERTIFICATION">{t('certifications.types.certification')}</option>
+                      <option value="DIPLOMA">{t('certifications.types.diploma')}</option>
+                      <option value="COURSE">{t('certifications.types.course')}</option>
+                      <option value="TRAINING">{t('certifications.types.training')}</option>
+                      <option value="LICENSE">{t('certifications.types.license')}</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      {t('certifications.certNumber')}
+                    </label>
+                    <input
+                      type="text"
+                      className={inputClass}
+                      value={formData.certNumber}
+                      onChange={(e) => setFormData({ ...formData, certNumber: e.target.value })}
+                      placeholder="GWO-2024-12345"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      {t('certifications.description')}
+                    </label>
+                    <input
+                      type="text"
+                      className={inputClass}
+                      value={formData.description}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      placeholder={t('certifications.descriptionPlaceholder')}
+                    />
+                  </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  <Input
-                    type="date"
-                    label={t('certifications.issueDate')}
-                    value={formData.issueDate}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      setFormData({ ...formData, issueDate: e.target.value })
-                    }
-                  />
-                  <Input
-                    type="date"
-                    label={t('certifications.expiryDate')}
-                    value={formData.expiryDate}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      setFormData({ ...formData, expiryDate: e.target.value })
-                    }
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      {t('certifications.issueDate')}
+                    </label>
+                    <input
+                      type="date"
+                      className={inputClass}
+                      value={formData.issueDate}
+                      onChange={(e) => setFormData({ ...formData, issueDate: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      {t('certifications.expiryDate')}
+                    </label>
+                    <input
+                      type="date"
+                      className={inputClass}
+                      value={formData.expiryDate}
+                      onChange={(e) => setFormData({ ...formData, expiryDate: e.target.value })}
+                    />
+                  </div>
                 </div>
                 <div className="flex gap-2">
                   <Button size="sm" onClick={handleSave}>
@@ -291,120 +319,141 @@ export function CertificationSection({ certifications, onAdd, onUpdate, onRemove
               </div>
             ) : (
               /* Modo de visualização */
-              <>
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <p className="font-medium text-gray-900">{cert.name}</p>
-                      {isExpired(cert.expiryDate) && (
-                        <span className="flex items-center gap-1 text-xs text-red-600 bg-red-100 px-2 py-0.5 rounded">
-                          <AlertCircle className="w-3 h-3" />
-                          {t('certifications.expired')}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-sm text-gray-600">{cert.issuer}</p>
-                    <div className="flex flex-wrap gap-2 mt-2 text-xs text-gray-500">
-                      <span className="bg-gray-200 px-2 py-0.5 rounded">
-                        {formatType(cert.type)}
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="font-medium text-gray-900">{cert.name}</p>
+                    {isExpired(cert.expiryDate) && (
+                      <span className="flex items-center gap-1 text-xs text-red-600 bg-red-100 px-2 py-0.5 rounded">
+                        <AlertCircle className="w-3 h-3" />
+                        {t('certifications.expired')}
                       </span>
-                      {cert.certNumber && (
-                        <span>#{cert.certNumber}</span>
-                      )}
-                      <span>{t('certifications.issueDate')}: {formatDate(cert.issueDate)}</span>
-                      {cert.expiryDate && (
-                        <span>{t('certifications.expiryDate')}: {formatDate(cert.expiryDate)}</span>
-                      )}
-                    </div>
-                    {cert.description && (
-                      <p className="text-sm text-gray-500 mt-1">{cert.description}</p>
                     )}
                   </div>
-                  <div className="flex gap-1">
-                    <Button size="sm" variant="secondary" onClick={() => handleEdit(cert)}>
-                      <Pencil className="w-4 h-4" />
-                    </Button>
-                    <Button size="sm" variant="secondary" onClick={() => handleRemove(cert.id)}>
-                      <Trash2 className="w-4 h-4 text-red-600" />
-                    </Button>
+                  <p className="text-sm text-gray-600">{cert.issuer}</p>
+                  <div className="flex flex-wrap gap-2 mt-2 text-xs text-gray-500">
+                    <span className="bg-gray-200 px-2 py-0.5 rounded">
+                      {formatType(cert.type)}
+                    </span>
+                    {cert.certNumber && (
+                      <span>#{cert.certNumber}</span>
+                    )}
+                    <span>{t('certifications.issueDate')}: {formatDate(cert.issueDate)}</span>
+                    {cert.expiryDate && (
+                      <span>{t('certifications.expiryDate')}: {formatDate(cert.expiryDate)}</span>
+                    )}
                   </div>
+                  {cert.description && (
+                    <p className="text-sm text-gray-500 mt-1">{cert.description}</p>
+                  )}
                 </div>
-              </>
+                <div className="flex gap-1">
+                  <Button size="sm" variant="secondary" onClick={() => handleEdit(cert)}>
+                    <Pencil className="w-4 h-4" />
+                  </Button>
+                  <Button size="sm" variant="secondary" onClick={() => handleRemove(cert.id)}>
+                    <Trash2 className="w-4 h-4 text-red-600" />
+                  </Button>
+                </div>
+              </div>
             )}
           </div>
         ))}
 
         {/* Formulário para adicionar nova certificação */}
         {isAdding && (
-          <div className="p-4 bg-purple-50 rounded-lg border border-purple-200 space-y-3">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              <Input
-                type="text"
-                label={t('certifications.name')}
-                value={formData.name}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                placeholder="GWO BST"
-              />
-              <Input
-                type="text"
-                label={t('certifications.issuer')}
-                value={formData.issuer}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setFormData({ ...formData, issuer: e.target.value })
-                }
-                placeholder="GWO"
-              />
+          <div className="p-4 bg-purple-50 rounded-lg border border-purple-200 space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  {t('certifications.name')}
+                </label>
+                <input
+                  type="text"
+                  className={inputClass}
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="GWO BST"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  {t('certifications.issuer')}
+                </label>
+                <input
+                  type="text"
+                  className={inputClass}
+                  value={formData.issuer}
+                  onChange={(e) => setFormData({ ...formData, issuer: e.target.value })}
+                  placeholder="GWO"
+                />
+              </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-              <select
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-                value={formData.type}
-                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-              >
-                <option value="CERTIFICATION">{t('certifications.types.certification')}</option>
-                <option value="DIPLOMA">{t('certifications.types.diploma')}</option>
-                <option value="COURSE">{t('certifications.types.course')}</option>
-                <option value="TRAINING">{t('certifications.types.training')}</option>
-                <option value="LICENSE">{t('certifications.types.license')}</option>
-              </select>
-              <Input
-                type="text"
-                label={t('certifications.certNumber')}
-                value={formData.certNumber}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setFormData({ ...formData, certNumber: e.target.value })
-                }
-                placeholder="GWO-2024-12345"
-              />
-              <Input
-                type="text"
-                label={t('certifications.description')}
-                value={formData.description}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                placeholder={t('certifications.descriptionPlaceholder')}
-              />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  {t('certifications.type')}
+                </label>
+                <select
+                  className={inputClass}
+                  value={formData.type}
+                  onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                >
+                  <option value="CERTIFICATION">{t('certifications.types.certification')}</option>
+                  <option value="DIPLOMA">{t('certifications.types.diploma')}</option>
+                  <option value="COURSE">{t('certifications.types.course')}</option>
+                  <option value="TRAINING">{t('certifications.types.training')}</option>
+                  <option value="LICENSE">{t('certifications.types.license')}</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  {t('certifications.certNumber')}
+                </label>
+                <input
+                  type="text"
+                  className={inputClass}
+                  value={formData.certNumber}
+                  onChange={(e) => setFormData({ ...formData, certNumber: e.target.value })}
+                  placeholder="GWO-2024-12345"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  {t('certifications.description')}
+                </label>
+                <input
+                  type="text"
+                  className={inputClass}
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder={t('certifications.descriptionPlaceholder')}
+                />
+              </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              <Input
-                type="date"
-                label={t('certifications.issueDate')}
-                value={formData.issueDate}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setFormData({ ...formData, issueDate: e.target.value })
-                }
-              />
-              <Input
-                type="date"
-                label={t('certifications.expiryDate')}
-                value={formData.expiryDate}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setFormData({ ...formData, expiryDate: e.target.value })
-                }
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  {t('certifications.issueDate')}
+                </label>
+                <input
+                  type="date"
+                  className={inputClass}
+                  value={formData.issueDate}
+                  onChange={(e) => setFormData({ ...formData, issueDate: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  {t('certifications.expiryDate')}
+                </label>
+                <input
+                  type="date"
+                  className={inputClass}
+                  value={formData.expiryDate}
+                  onChange={(e) => setFormData({ ...formData, expiryDate: e.target.value })}
+                />
+              </div>
             </div>
             <div className="flex gap-2">
               <Button size="sm" onClick={handleAdd}>

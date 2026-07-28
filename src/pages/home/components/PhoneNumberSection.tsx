@@ -14,7 +14,7 @@
  * - Adiciona novo número com código do país e tipo
  * - Edita números existentes inline
  * - Remove números com confirmação
- * - Marca um número como principal
+ * - Design alinhado e responsivo
  * ============================================================================
  */
 
@@ -22,7 +22,6 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Phone, Plus, Pencil, Trash2, X, Check } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
 import type { PhoneNumber } from '@/services/auth.service';
 
 /**
@@ -126,6 +125,11 @@ export function PhoneNumberSection({ phones, onAdd, onUpdate, onRemove }: PhoneN
     return types[type] || type;
   };
 
+  /**
+   * Estilos comuns para inputs e selects.
+   */
+  const inputClass = "w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent";
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
       {/* Cabeçalho da seção */}
@@ -159,39 +163,52 @@ export function PhoneNumberSection({ phones, onAdd, onUpdate, onRemove }: PhoneN
         {phones.map((phone) => (
           <div
             key={phone.id}
-            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+            className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gray-50 rounded-lg gap-3"
           >
             {editingId === phone.id ? (
               /* Modo de edição */
-              <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-2">
-                <Input
-                  type="text"
-                  label={t('phones.countryCode')}
-                  value={formData.countryCode}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    setFormData({ ...formData, countryCode: e.target.value })
-                  }
-                  placeholder="+351"
-                />
-                <Input
-                  type="text"
-                  label={t('phones.number')}
-                  value={formData.number}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    setFormData({ ...formData, number: e.target.value })
-                  }
-                  placeholder="912345678"
-                />
-                <select
-                  className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-                  value={formData.type}
-                  onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                >
-                  <option value="mobile">{t('phones.types.mobile')}</option>
-                  <option value="home">{t('phones.types.home')}</option>
-                  <option value="work">{t('phones.types.work')}</option>
-                </select>
-                <div className="flex items-end gap-1">
+              <>
+                <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      {t('phones.countryCode')}
+                    </label>
+                    <input
+                      type="text"
+                      className={inputClass}
+                      value={formData.countryCode}
+                      onChange={(e) => setFormData({ ...formData, countryCode: e.target.value })}
+                      placeholder="+351"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      {t('phones.number')}
+                    </label>
+                    <input
+                      type="text"
+                      className={inputClass}
+                      value={formData.number}
+                      onChange={(e) => setFormData({ ...formData, number: e.target.value })}
+                      placeholder="912345678"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      {t('phones.type')}
+                    </label>
+                    <select
+                      className={inputClass}
+                      value={formData.type}
+                      onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                    >
+                      <option value="mobile">{t('phones.types.mobile')}</option>
+                      <option value="home">{t('phones.types.home')}</option>
+                      <option value="work">{t('phones.types.work')}</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="flex items-end gap-2">
                   <Button size="sm" onClick={handleSave}>
                     <Check className="w-4 h-4" />
                   </Button>
@@ -199,7 +216,7 @@ export function PhoneNumberSection({ phones, onAdd, onUpdate, onRemove }: PhoneN
                     <X className="w-4 h-4" />
                   </Button>
                 </div>
-              </div>
+              </>
             ) : (
               /* Modo de visualização */
               <>
@@ -207,10 +224,10 @@ export function PhoneNumberSection({ phones, onAdd, onUpdate, onRemove }: PhoneN
                   <p className="font-medium text-gray-900">
                     {phone.countryCode} {phone.number}
                   </p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-500 flex items-center gap-2">
                     {formatType(phone.type)}
                     {phone.isPrimary && (
-                      <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">
+                      <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">
                         {t('phones.primary')}
                       </span>
                     )}
@@ -231,43 +248,56 @@ export function PhoneNumberSection({ phones, onAdd, onUpdate, onRemove }: PhoneN
 
         {/* Formulário para adicionar novo número */}
         {isAdding && (
-          <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
-              <Input
-                type="text"
-                label={t('phones.countryCode')}
-                value={formData.countryCode}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setFormData({ ...formData, countryCode: e.target.value })
-                }
-                placeholder="+351"
-              />
-              <Input
-                type="text"
-                label={t('phones.number')}
-                value={formData.number}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setFormData({ ...formData, number: e.target.value })
-                }
-                placeholder="912345678"
-              />
-              <select
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-                value={formData.type}
-                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-              >
-                <option value="mobile">{t('phones.types.mobile')}</option>
-                <option value="home">{t('phones.types.home')}</option>
-                <option value="work">{t('phones.types.work')}</option>
-              </select>
-              <div className="flex items-end gap-1">
-                <Button size="sm" onClick={handleAdd}>
-                  <Check className="w-4 h-4" />
-                </Button>
-                <Button size="sm" variant="secondary" onClick={handleCancel}>
-                  <X className="w-4 h-4" />
-                </Button>
+          <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  {t('phones.countryCode')}
+                </label>
+                <input
+                  type="text"
+                  className={inputClass}
+                  value={formData.countryCode}
+                  onChange={(e) => setFormData({ ...formData, countryCode: e.target.value })}
+                  placeholder="+351"
+                />
               </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  {t('phones.number')}
+                </label>
+                <input
+                  type="text"
+                  className={inputClass}
+                  value={formData.number}
+                  onChange={(e) => setFormData({ ...formData, number: e.target.value })}
+                  placeholder="912345678"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  {t('phones.type')}
+                </label>
+                <select
+                  className={inputClass}
+                  value={formData.type}
+                  onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                >
+                  <option value="mobile">{t('phones.types.mobile')}</option>
+                  <option value="home">{t('phones.types.home')}</option>
+                  <option value="work">{t('phones.types.work')}</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex gap-2 mt-3">
+              <Button size="sm" onClick={handleAdd}>
+                <Check className="w-4 h-4 mr-1" />
+                {t('actions.add')}
+              </Button>
+              <Button size="sm" variant="secondary" onClick={handleCancel}>
+                <X className="w-4 h-4 mr-1" />
+                {t('actions.cancel')}
+              </Button>
             </div>
           </div>
         )}

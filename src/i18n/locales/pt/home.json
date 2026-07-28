@@ -75,6 +75,7 @@
     "empty": "Nenhum idioma cadastrado",
     "language": "Idioma",
     "level": "Nível",
+    "selectLanguage": "Selecione um idioma",
     "confirmDelete": "Tem certeza que deseja remover este idioma?",
     "levels": {
       "a1": "A1 - Básico",

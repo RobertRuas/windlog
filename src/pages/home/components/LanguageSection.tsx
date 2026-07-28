@@ -11,9 +11,9 @@
  * FUNCIONALIDADES:
  * ----------------
  * - Lista todos os idiomas com nível de proficiência
- * - Adiciona novo idioma com nível (A1, A2, B1, B2, C1, C2, NATIVE)
- * - Edita idiomas existentes
- * - Remove idiomas com confirmação
+ * - Seleção de idioma a partir de lista predefinida
+ * - Nível de proficiência (A1, A2, B1, B2, C1, C2, NATIVE)
+ * - Edição inline com design alinhado
  * ============================================================================
  */
 
@@ -21,7 +21,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Globe, Plus, Pencil, Trash2, X, Check } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
+import { PREDEFINED_LANGUAGES } from '@/constants/languages';
 import type { Language } from '@/services/auth.service';
 
 /**
@@ -51,6 +51,11 @@ export function LanguageSection({ languages, onAdd, onUpdate, onRemove }: Langua
   });
 
   /**
+   * Estilos comuns para inputs e selects.
+   */
+  const inputClass = "w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent";
+
+  /**
    * Formata o nível de proficiência para exibição.
    */
   const formatLevel = (level: string) => {
@@ -64,6 +69,22 @@ export function LanguageSection({ languages, onAdd, onUpdate, onRemove }: Langua
       NATIVE: t('languages.levels.native'),
     };
     return levels[level] || level;
+  };
+
+  /**
+   * Busca o nome do idioma pelo código ou nome.
+   */
+  const getLanguageName = (langName: string) => {
+    // Primeiro tenta encontrar pelo nome
+    const byName = PREDEFINED_LANGUAGES.find((l) => l.name === langName);
+    if (byName) return byName.name;
+
+    // Depois tenta pelo código
+    const byCode = PREDEFINED_LANGUAGES.find((l) => l.code === langName);
+    if (byCode) return byCode.name;
+
+    // Se não encontrar, retorna o valor original
+    return langName;
   };
 
   /**
@@ -93,7 +114,7 @@ export function LanguageSection({ languages, onAdd, onUpdate, onRemove }: Langua
    * Salva as alterações de um idioma.
    */
   const handleSave = async () => {
-    if (!formData.language.trim()) return;
+    if (!formData.language) return;
     if (editingId) {
       await onUpdate(editingId, formData);
       setEditingId(null);
@@ -104,7 +125,7 @@ export function LanguageSection({ languages, onAdd, onUpdate, onRemove }: Langua
    * Adiciona um novo idioma.
    */
   const handleAdd = async () => {
-    if (!formData.language.trim()) return;
+    if (!formData.language) return;
     await onAdd(formData);
     setIsAdding(false);
     setFormData({
@@ -121,6 +142,13 @@ export function LanguageSection({ languages, onAdd, onUpdate, onRemove }: Langua
       await onRemove(id);
     }
   };
+
+  /**
+   * Filtra idiomas já adicionados.
+   */
+  const availableLanguages = PREDEFINED_LANGUAGES.filter(
+    (lang) => !languages.some((l) => l.language === lang.name || l.language === lang.code)
+  );
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -159,30 +187,43 @@ export function LanguageSection({ languages, onAdd, onUpdate, onRemove }: Langua
           >
             {editingId === lang.id ? (
               /* Modo de edição */
-              <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-2">
-                <Input
-                  type="text"
-                  label={t('languages.language')}
-                  value={formData.language}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    setFormData({ ...formData, language: e.target.value })
-                  }
-                  placeholder="English"
-                />
-                <select
-                  className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-                  value={formData.level}
-                  onChange={(e) => setFormData({ ...formData, level: e.target.value })}
-                >
-                  <option value="A1">{t('languages.levels.a1')}</option>
-                  <option value="A2">{t('languages.levels.a2')}</option>
-                  <option value="B1">{t('languages.levels.b1')}</option>
-                  <option value="B2">{t('languages.levels.b2')}</option>
-                  <option value="C1">{t('languages.levels.c1')}</option>
-                  <option value="C2">{t('languages.levels.c2')}</option>
-                  <option value="NATIVE">{t('languages.levels.native')}</option>
-                </select>
-                <div className="flex items-end gap-1">
+              <div className="flex-1 flex flex-col sm:flex-row gap-4">
+                <div className="flex-1">
+                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                    {t('languages.language')}
+                  </label>
+                  <select
+                    className={inputClass}
+                    value={formData.language}
+                    onChange={(e) => setFormData({ ...formData, language: e.target.value })}
+                  >
+                    <option value="">{t('languages.selectLanguage')}</option>
+                    {PREDEFINED_LANGUAGES.map((l) => (
+                      <option key={l.code} value={l.name}>
+                        {l.name} ({l.nativeName})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex-1">
+                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                    {t('languages.level')}
+                  </label>
+                  <select
+                    className={inputClass}
+                    value={formData.level}
+                    onChange={(e) => setFormData({ ...formData, level: e.target.value })}
+                  >
+                    <option value="A1">{t('languages.levels.a1')}</option>
+                    <option value="A2">{t('languages.levels.a2')}</option>
+                    <option value="B1">{t('languages.levels.b1')}</option>
+                    <option value="B2">{t('languages.levels.b2')}</option>
+                    <option value="C1">{t('languages.levels.c1')}</option>
+                    <option value="C2">{t('languages.levels.c2')}</option>
+                    <option value="NATIVE">{t('languages.levels.native')}</option>
+                  </select>
+                </div>
+                <div className="flex items-end gap-2">
                   <Button size="sm" onClick={handleSave}>
                     <Check className="w-4 h-4" />
                   </Button>
@@ -195,7 +236,7 @@ export function LanguageSection({ languages, onAdd, onUpdate, onRemove }: Langua
               /* Modo de visualização */
               <>
                 <div>
-                  <p className="font-medium text-gray-900">{lang.language}</p>
+                  <p className="font-medium text-gray-900">{getLanguageName(lang.language)}</p>
                   <p className="text-sm text-gray-500">
                     <span className="inline-block bg-green-100 text-green-700 px-2 py-0.5 rounded text-xs">
                       {formatLevel(lang.level)}
@@ -217,31 +258,44 @@ export function LanguageSection({ languages, onAdd, onUpdate, onRemove }: Langua
 
         {/* Formulário para adicionar novo idioma */}
         {isAdding && (
-          <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-              <Input
-                type="text"
-                label={t('languages.language')}
-                value={formData.language}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setFormData({ ...formData, language: e.target.value })
-                }
-                placeholder="English"
-              />
-              <select
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-                value={formData.level}
-                onChange={(e) => setFormData({ ...formData, level: e.target.value })}
-              >
-                <option value="A1">{t('languages.levels.a1')}</option>
-                <option value="A2">{t('languages.levels.a2')}</option>
-                <option value="B1">{t('languages.levels.b1')}</option>
-                <option value="B2">{t('languages.levels.b2')}</option>
-                <option value="C1">{t('languages.levels.c1')}</option>
-                <option value="C2">{t('languages.levels.c2')}</option>
-                <option value="NATIVE">{t('languages.levels.native')}</option>
-              </select>
-              <div className="flex items-end gap-1">
+          <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1">
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  {t('languages.language')}
+                </label>
+                <select
+                  className={inputClass}
+                  value={formData.language}
+                  onChange={(e) => setFormData({ ...formData, language: e.target.value })}
+                >
+                  <option value="">{t('languages.selectLanguage')}</option>
+                  {availableLanguages.map((l) => (
+                    <option key={l.code} value={l.name}>
+                      {l.name} ({l.nativeName})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex-1">
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  {t('languages.level')}
+                </label>
+                <select
+                  className={inputClass}
+                  value={formData.level}
+                  onChange={(e) => setFormData({ ...formData, level: e.target.value })}
+                >
+                  <option value="A1">{t('languages.levels.a1')}</option>
+                  <option value="A2">{t('languages.levels.a2')}</option>
+                  <option value="B1">{t('languages.levels.b1')}</option>
+                  <option value="B2">{t('languages.levels.b2')}</option>
+                  <option value="C1">{t('languages.levels.c1')}</option>
+                  <option value="C2">{t('languages.levels.c2')}</option>
+                  <option value="NATIVE">{t('languages.levels.native')}</option>
+                </select>
+              </div>
+              <div className="flex items-end gap-2">
                 <Button size="sm" onClick={handleAdd}>
                   <Check className="w-4 h-4" />
                 </Button>
