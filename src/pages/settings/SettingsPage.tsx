@@ -21,7 +21,7 @@
  */
 
 import { useNavigate } from 'react-router-dom';
-import { FileText, Shield, ChevronRight } from 'lucide-react';
+import { FileText, Shield, ChevronRight, User } from 'lucide-react';
 
 // Layout
 import { AppLayout } from '@/components/layout/AppLayout';
@@ -59,6 +59,36 @@ export function SettingsPage() {
 
       {/* Secções */}
       <div className="space-y-4">
+        {/* Secção: Conta */}
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="px-5 py-4 border-b border-gray-100">
+            <div className="flex items-center gap-2">
+              <User size={18} className="text-gray-500" />
+              <h2 className="text-sm font-semibold text-gray-700">Conta</h2>
+            </div>
+          </div>
+
+          <div className="divide-y divide-gray-100">
+            {/* Meu Perfil */}
+            <button
+              onClick={() => navigate('/profile')}
+              className="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center">
+                  <User size={18} className="text-blue-600" />
+                </div>
+                <div className="text-left">
+                  <div className="text-sm font-medium text-gray-900">Meu Perfil</div>
+                  <div className="text-xs text-gray-500 mt-0.5">
+                    Visualizar e editar seus dados pessoais
+                  </div>
+                </div>
+              </div>
+              <ChevronRight size={16} className="text-gray-400" />
+            </button>
+          </div>
+        </div>
         {/* Secção: Administração */}
         {admin && (
           <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
@@ -96,7 +126,7 @@ export function SettingsPage() {
         {!admin && (
           <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
             <p className="text-sm text-gray-500">
-              Nenhuma configuração disponível para o seu perfil.
+              Nenhuma configuração administrativa disponível para o seu perfil.
             </p>
           </div>
         )}

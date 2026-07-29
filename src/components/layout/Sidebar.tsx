@@ -15,7 +15,7 @@
  * NAVEGAÇÃO:
  * ----------
  * - Início (Home)
- * - Perfil (Profile)
+ * - Configurações (Settings)
  * - Sair (Logout)
  * ============================================================================
  */
@@ -26,7 +26,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Wind,
   Home,
-  User,
   Settings,
   LogOut,
   Menu,
@@ -49,7 +48,6 @@ interface SidebarProps {
  */
 const NAV_ITEMS = [
   { icon: Home, labelKey: 'nav.home', path: '/', end: true },
-  { icon: User, labelKey: 'nav.profile', path: '/profile', end: false },
   { icon: Settings, labelKey: 'nav.settings', path: '/settings', end: false },
 ] as const;
 
