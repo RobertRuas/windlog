@@ -21,6 +21,7 @@
  */
 
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { FileText, Shield, ChevronRight, User } from 'lucide-react';
 
 // Layout
@@ -44,6 +45,7 @@ function isAdmin(): boolean {
  * Componente SettingsPage - Página de configurações.
  */
 export function SettingsPage() {
+  const { t } = useTranslation('settings');
   const navigate = useNavigate();
   const admin = isAdmin();
 
@@ -51,9 +53,9 @@ export function SettingsPage() {
     <AppLayout>
       {/* Cabeçalho */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Configurações</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{t('title')}</h1>
         <p className="text-sm text-gray-500 mt-1">
-          Gerencie as opções do sistema
+          {t('subtitle')}
         </p>
       </div>
 
@@ -64,7 +66,7 @@ export function SettingsPage() {
           <div className="px-5 py-4 border-b border-gray-100">
             <div className="flex items-center gap-2">
               <User size={18} className="text-gray-500" />
-              <h2 className="text-sm font-semibold text-gray-700">Conta</h2>
+              <h2 className="text-sm font-semibold text-gray-700">{t('sections.account')}</h2>
             </div>
           </div>
 
@@ -79,9 +81,9 @@ export function SettingsPage() {
                   <User size={18} className="text-blue-600" />
                 </div>
                 <div className="text-left">
-                  <div className="text-sm font-medium text-gray-900">Meu Perfil</div>
+                  <div className="text-sm font-medium text-gray-900">{t('account.myProfile.title')}</div>
                   <div className="text-xs text-gray-500 mt-0.5">
-                    Visualizar e editar seus dados pessoais
+                    {t('account.myProfile.description')}
                   </div>
                 </div>
               </div>
@@ -95,7 +97,7 @@ export function SettingsPage() {
             <div className="px-5 py-4 border-b border-gray-100">
               <div className="flex items-center gap-2">
                 <Shield size={18} className="text-gray-500" />
-                <h2 className="text-sm font-semibold text-gray-700">Administração</h2>
+                <h2 className="text-sm font-semibold text-gray-700">{t('sections.administration')}</h2>
               </div>
             </div>
 
@@ -110,9 +112,9 @@ export function SettingsPage() {
                     <FileText size={18} className="text-blue-600" />
                   </div>
                   <div className="text-left">
-                    <div className="text-sm font-medium text-gray-900">Logs do Sistema</div>
+                    <div className="text-sm font-medium text-gray-900">{t('admin.systemLogs.title')}</div>
                     <div className="text-xs text-gray-500 mt-0.5">
-                      Consultar todas as ações registradas no sistema
+                      {t('admin.systemLogs.description')}
                     </div>
                   </div>
                 </div>
@@ -126,7 +128,7 @@ export function SettingsPage() {
         {!admin && (
           <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
             <p className="text-sm text-gray-500">
-              Nenhuma configuração administrativa disponível para o seu perfil.
+              {t('admin.noAccess')}
             </p>
           </div>
         )}

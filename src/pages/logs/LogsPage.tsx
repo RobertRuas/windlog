@@ -11,6 +11,7 @@
  */
 
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import {
   Search,
@@ -39,53 +40,12 @@ import { getLogs, getLogStats, type LogFilters, type SystemLog } from '@/service
 /*  Constantes                                                                */
 /* -------------------------------------------------------------------------- */
 
-/** Labels legíveis para ações. */
-const ACTION_LABELS: Record<string, string> = {
-  LOGIN: 'Login',
-  LOGOUT: 'Logout',
-  LOGIN_FAILED: 'Login Falhou',
-  PASSWORD_CHANGE: 'Alteração de Senha',
-  PASSWORD_RESET: 'Reset de Senha',
-  USER_CREATE: 'Criar Usuário',
-  USER_UPDATE: 'Atualizar Usuário',
-  USER_DELETE: 'Excluir Usuário',
-  USER_DEACTIVATE: 'Desativar Usuário',
-  USER_REACTIVATE: 'Reativar Usuário',
-  USER_ROLE_CHANGE: 'Alterar Role',
-  PROFILE_UPDATE: 'Atualizar Perfil',
-  PROFILE_VIEW: 'Visualizar Perfil',
-  PHONE_ADD: 'Adicionar Telefone',
-  PHONE_UPDATE: 'Atualizar Telefone',
-  PHONE_DELETE: 'Excluir Telefone',
-  CERTIFICATION_ADD: 'Adicionar Certificação',
-  CERTIFICATION_UPDATE: 'Atualizar Certificação',
-  CERTIFICATION_DELETE: 'Excluir Certificação',
-  LANGUAGE_ADD: 'Adicionar Idioma',
-  LANGUAGE_UPDATE: 'Atualizar Idioma',
-  LANGUAGE_DELETE: 'Excluir Idioma',
-  PROJECT_CREATE: 'Criar Projeto',
-  PROJECT_UPDATE: 'Atualizar Projeto',
-  PROJECT_DELETE: 'Excluir Projeto',
-  TURBINE_CREATE: 'Criar Turbina',
-  TURBINE_UPDATE: 'Atualizar Turbina',
-  TURBINE_DELETE: 'Excluir Turbina',
-  TECHNICIAN_CREATE: 'Criar Técnico',
-  TECHNICIAN_UPDATE: 'Atualizar Técnico',
-  TECHNICIAN_DELETE: 'Excluir Técnico',
-  SYSTEM_ERROR: 'Erro do Sistema',
-  API_ERROR: 'Erro de API',
-  ACCESS_DENIED: 'Acesso Negado',
-  DATA_EXPORT: 'Exportar Dados',
-  DATA_IMPORT: 'Importar Dados',
-  OTHER: 'Outro',
-};
-
 /** Configuração visual por severidade. */
-const SEVERITY_CONFIG: Record<string, { color: string; bg: string; label: string }> = {
-  INFO:     { color: 'text-blue-600',   bg: 'bg-blue-50',   label: 'Info' },
-  WARNING:  { color: 'text-amber-600',  bg: 'bg-amber-50',  label: 'Aviso' },
-  ERROR:    { color: 'text-red-600',    bg: 'bg-red-50',    label: 'Erro' },
-  CRITICAL: { color: 'text-purple-600', bg: 'bg-purple-50', label: 'Crítico' },
+const SEVERITY_CONFIG: Record<string, { color: string; bg: string }> = {
+  INFO:     { color: 'text-blue-600',   bg: 'bg-blue-50' },
+  WARNING:  { color: 'text-amber-600',  bg: 'bg-amber-50' },
+  ERROR:    { color: 'text-red-600',    bg: 'bg-red-50' },
+  CRITICAL: { color: 'text-purple-600', bg: 'bg-purple-50' },
 };
 
 /** Cores para métodos HTTP. */
@@ -172,8 +132,9 @@ function groupConsecutiveLogs(logs: SystemLog[]): LogGroup[] {
 /*  Componente: Linha do log                                                  */
 /* -------------------------------------------------------------------------- */
 
-function LogRow({ log, isExpanded, onToggle }: { log: SystemLog; isExpanded: boolean; onToggle: () => void }) {
-  const severity = SEVERITY_CONFIG[log.severity] || SEVERITY_CONFIG.INFO;
+function LogRow({ log, isExpanded, onToggle, t }: { log: SystemLog; isExpanded: boolean; onToggle: () => void; t: (key: string) => string }) {
+  const severityKey = log.severity?.toLowerCase() || 'info';
+  const severityStyle = SEVERITY_CONFIG[log.severity] || SEVERITY_CONFIG.INFO;
 
   return (
     <>
@@ -190,8 +151,8 @@ function LogRow({ log, isExpanded, onToggle }: { log: SystemLog; isExpanded: boo
 
         {/* Severidade */}
         <td className="px-4 py-3">
-          <span className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${severity.color} ${severity.bg}`}>
-            {severity.label}
+          <span className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${severityStyle.color} ${severityStyle.bg}`}>
+            {t(`severity.${severityKey}`)}
           </span>
         </td>
 
@@ -223,7 +184,7 @@ function LogRow({ log, isExpanded, onToggle }: { log: SystemLog; isExpanded: boo
 
         {/* Ação */}
         <td className="px-4 py-3 text-xs text-gray-700">
-          {ACTION_LABELS[log.action] || log.action}
+          {t(`actions.${log.action}`) || log.action}
         </td>
 
         {/* Usuário */}
@@ -247,28 +208,28 @@ function LogRow({ log, isExpanded, onToggle }: { log: SystemLog; isExpanded: boo
             <div className="ml-3 pl-4 border-l-2 border-gray-200">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
                 <div>
-                  <div className="text-gray-400 mb-1">IP Address</div>
+                  <div className="text-gray-400 mb-1">{t('details.ipAddress')}</div>
                   <div className="font-mono text-gray-700">{log.ipAddress || '—'}</div>
                 </div>
                 <div className="col-span-2">
-                  <div className="text-gray-400 mb-1">User Agent</div>
+                  <div className="text-gray-400 mb-1">{t('details.userAgent')}</div>
                   <div className="font-mono text-gray-500 truncate" title={log.userAgent || undefined}>
                     {log.userAgent || '—'}
                   </div>
                 </div>
                 <div>
-                  <div className="text-gray-400 mb-1">Entidade</div>
+                  <div className="text-gray-400 mb-1">{t('details.entity')}</div>
                   <div className="font-mono text-gray-700">
                     {log.entity ? `${log.entity}${log.entityName ? ` — ${log.entityName}` : ''}` : '—'}
                   </div>
                 </div>
                 <div className="col-span-2 md:col-span-4">
-                  <div className="text-gray-400 mb-1">Mensagem</div>
+                  <div className="text-gray-400 mb-1">{t('details.message')}</div>
                   <div className="text-gray-700">{log.message}</div>
                 </div>
                 {log.details && Object.keys(log.details).length > 0 && (
                   <div className="col-span-2 md:col-span-4">
-                    <div className="text-gray-400 mb-1">Detalhes</div>
+                    <div className="text-gray-400 mb-1">{t('details.details')}</div>
                     <pre className="font-mono text-[11px] text-gray-600 bg-white rounded-lg border border-gray-200 p-3 overflow-x-auto">
                       {JSON.stringify(log.details, null, 2)}
                     </pre>
@@ -288,6 +249,7 @@ function LogRow({ log, isExpanded, onToggle }: { log: SystemLog; isExpanded: boo
 /* -------------------------------------------------------------------------- */
 
 export function LogsPage() {
+  const { t } = useTranslation('logs');
   const [filters, setFilters] = useState<LogFilters>({ page: 1, limit: 50 });
   const [searchInput, setSearchInput] = useState('');
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
@@ -357,8 +319,8 @@ export function LogsPage() {
     <AppLayout>
       {/* Título */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Logs do Sistema</h1>
-        <p className="text-sm text-gray-500 mt-1">Monitoramento e auditoria em tempo real</p>
+        <h1 className="text-2xl font-bold text-gray-900">{t('title')}</h1>
+        <p className="text-sm text-gray-500 mt-1">{t('subtitle')}</p>
       </div>
 
       {/* Estatísticas */}
@@ -369,7 +331,7 @@ export function LogsPage() {
               <Activity size={20} className="text-gray-600" />
             </div>
             <div className="min-w-0">
-              <p className="text-xs text-gray-500">Total</p>
+              <p className="text-xs text-gray-500">{t('stats.total')}</p>
               <p className="text-sm font-semibold text-gray-900">{stats.total.toLocaleString('pt-PT')}</p>
             </div>
           </div>
@@ -378,7 +340,7 @@ export function LogsPage() {
               <XCircle size={20} className="text-red-600" />
             </div>
             <div className="min-w-0">
-              <p className="text-xs text-gray-500">Erros</p>
+              <p className="text-xs text-gray-500">{t('stats.errors')}</p>
               <p className="text-sm font-semibold text-gray-900">
                 {stats.bySeverity.find((s) => s.severity === 'ERROR')?.count || 0}
               </p>
@@ -389,7 +351,7 @@ export function LogsPage() {
               <AlertTriangle size={20} className="text-amber-600" />
             </div>
             <div className="min-w-0">
-              <p className="text-xs text-gray-500">Avisos</p>
+              <p className="text-xs text-gray-500">{t('stats.warnings')}</p>
               <p className="text-sm font-semibold text-gray-900">
                 {stats.bySeverity.find((s) => s.severity === 'WARNING')?.count || 0}
               </p>
@@ -400,7 +362,7 @@ export function LogsPage() {
               <AlertCircle size={20} className="text-purple-600" />
             </div>
             <div className="min-w-0">
-              <p className="text-xs text-gray-500">Críticos</p>
+              <p className="text-xs text-gray-500">{t('stats.critical')}</p>
               <p className="text-sm font-semibold text-gray-900">
                 {stats.bySeverity.find((s) => s.severity === 'CRITICAL')?.count || 0}
               </p>
@@ -416,7 +378,7 @@ export function LogsPage() {
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
-              placeholder="Buscar por mensagem, usuário..."
+              placeholder={t('search.placeholder')}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -424,7 +386,7 @@ export function LogsPage() {
             />
           </div>
           <Button onClick={handleSearch} variant="primary" size="sm">
-            Buscar
+            {t('search.button')}
           </Button>
           <Button
             onClick={() => setShowFilters((v) => !v)}
@@ -432,7 +394,7 @@ export function LogsPage() {
             size="sm"
           >
             <Filter size={14} className="mr-1.5" />
-            Filtros
+            {t('search.filters')}
             {activeFilterCount > 0 && (
               <span className="ml-1.5 w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] flex items-center justify-center font-semibold">
                 {activeFilterCount}
@@ -442,7 +404,7 @@ export function LogsPage() {
           {hasActiveFilters && (
             <Button onClick={handleClearFilters} variant="secondary" size="sm">
               <RefreshCw size={14} className="mr-1" />
-              Limpar
+              {t('search.clear')}
             </Button>
           )}
         </div>
@@ -452,37 +414,37 @@ export function LogsPage() {
           <div className="mt-4 pt-4 border-t border-gray-100">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
-                <label className="text-xs text-gray-500 mb-1 block">Ação</label>
+                <label className="text-xs text-gray-500 mb-1 block">{t('filters.action')}</label>
                 <select
                   value={filters.action || ''}
                   onChange={(e) => setFilters((prev) => ({ ...prev, action: e.target.value || undefined, page: 1 }))}
                   className="form-select text-sm w-full"
                 >
-                  <option value="">Todas</option>
+                  <option value="">{t('filters.all')}</option>
                   {stats?.byAction.map((item) => (
                     <option key={item.action} value={item.action}>
-                      {ACTION_LABELS[item.action] || item.action} ({item.count})
+                      {t(`actions.${item.action}`) || item.action} ({item.count})
                     </option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="text-xs text-gray-500 mb-1 block">Severidade</label>
+                <label className="text-xs text-gray-500 mb-1 block">{t('filters.severity')}</label>
                 <select
                   value={filters.severity || ''}
                   onChange={(e) => setFilters((prev) => ({ ...prev, severity: e.target.value || undefined, page: 1 }))}
                   className="form-select text-sm w-full"
                 >
-                  <option value="">Todas</option>
+                  <option value="">{t('filters.all')}</option>
                   {stats?.bySeverity.map((item) => (
                     <option key={item.severity} value={item.severity}>
-                      {SEVERITY_CONFIG[item.severity]?.label || item.severity} ({item.count})
+                      {t(`severity.${item.severity.toLowerCase()}`) || item.severity} ({item.count})
                     </option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="text-xs text-gray-500 mb-1 block">Data inicial</label>
+                <label className="text-xs text-gray-500 mb-1 block">{t('filters.startDate')}</label>
                 <input
                   type="date"
                   value={filters.startDate || ''}
@@ -491,7 +453,7 @@ export function LogsPage() {
                 />
               </div>
               <div>
-                <label className="text-xs text-gray-500 mb-1 block">Data final</label>
+                <label className="text-xs text-gray-500 mb-1 block">{t('filters.endDate')}</label>
                 <input
                   type="date"
                   value={filters.endDate || ''}
@@ -509,7 +471,7 @@ export function LogsPage() {
         {/* Header da tabela */}
         <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
           <p className="text-sm text-gray-500">
-            {logsLoading ? 'Carregando...' : `${logsData?.total.toLocaleString('pt-PT') ?? 0} registros`}
+            {logsLoading ? t('table.loading') : t('table.records', { count: logsData?.total ?? 0 })}
           </p>
         </div>
 
@@ -517,15 +479,15 @@ export function LogsPage() {
           <div className="flex items-center justify-center py-20">
             <div className="flex items-center gap-3 text-gray-400">
               <RefreshCw size={18} className="animate-spin" />
-              <p className="text-sm">Carregando logs...</p>
+              <p className="text-sm">{t('table.loading')}</p>
             </div>
           </div>
         ) : !logsData || logsData.data.length === 0 ? (
           <div className="flex items-center justify-center py-20">
             <div className="text-center">
               <Terminal size={32} className="text-gray-300 mx-auto mb-2" />
-              <p className="text-sm text-gray-500">Nenhum log encontrado</p>
-              <p className="text-xs text-gray-400 mt-1">Tente ajustar os filtros</p>
+              <p className="text-sm text-gray-500">{t('table.empty')}</p>
+              <p className="text-xs text-gray-400 mt-1">{t('table.emptyHint')}</p>
             </div>
           </div>
         ) : (
@@ -534,13 +496,13 @@ export function LogsPage() {
               <table className="w-full min-w-[900px]">
                 <thead className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
                   <tr>
-                    <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500">Data</th>
-                    <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500">Nível</th>
-                    <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500">Request</th>
-                    <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500">Status</th>
-                    <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500">Duração</th>
-                    <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500">Ação</th>
-                    <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500">Usuário</th>
+                    <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500">{t('table.date')}</th>
+                    <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500">{t('table.level')}</th>
+                    <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500">{t('table.request')}</th>
+                    <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500">{t('table.status')}</th>
+                    <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500">{t('table.duration')}</th>
+                    <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500">{t('table.action')}</th>
+                    <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500">{t('table.user')}</th>
                     <th className="px-4 py-2.5 w-8" />
                   </tr>
                 </thead>
@@ -556,11 +518,13 @@ export function LogsPage() {
                           log={group.logs[0]}
                           isExpanded={expandedRows.has(group.logs[0].id)}
                           onToggle={() => toggleRow(group.logs[0].id)}
+                          t={t}
                         />
                       );
                     }
 
                     const firstLog = group.logs[0];
+                    const severityKey = firstLog.severity?.toLowerCase() || 'info';
                     const severity = SEVERITY_CONFIG[firstLog.severity] || SEVERITY_CONFIG.INFO;
 
                     return (
@@ -578,7 +542,7 @@ export function LogsPage() {
                           </td>
                           <td className="px-4 py-3">
                             <span className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${severity.color} ${severity.bg}`}>
-                              {severity.label}
+                              {t(`severity.${severityKey}`)}
                             </span>
                           </td>
                           <td className="px-4 py-3 text-xs max-w-[240px]">
@@ -602,7 +566,7 @@ export function LogsPage() {
                             {formatDuration(firstLog.duration)}
                           </td>
                           <td className="px-4 py-3 text-xs text-gray-700">
-                            {ACTION_LABELS[firstLog.action] || firstLog.action}
+                            {t(`actions.${firstLog.action}`) || firstLog.action}
                           </td>
                           <td className="px-4 py-3 text-xs text-gray-500 truncate max-w-[150px]">
                             {group.user}
@@ -628,6 +592,7 @@ export function LogsPage() {
                                       log={log}
                                       isExpanded={expandedRows.has(log.id)}
                                       onToggle={() => toggleRow(log.id)}
+                                      t={t}
                                     />
                                   ))}
                                 </div>
@@ -646,7 +611,7 @@ export function LogsPage() {
             {(logsData.totalPages ?? 0) > 1 && (
               <div className="px-4 py-3 border-t border-gray-100 flex items-center justify-between">
                 <p className="text-xs text-gray-500">
-                  Página {logsData.page} de {logsData.totalPages}
+                  {t('table.page', { page: logsData.page, totalPages: logsData.totalPages })}
                   <span className="text-gray-400 ml-2">({logsData.total.toLocaleString('pt-PT')} registros)</span>
                 </p>
                 <div className="flex gap-2">
@@ -657,7 +622,7 @@ export function LogsPage() {
                     size="sm"
                   >
                     <ChevronLeft size={14} className="mr-1" />
-                    Anterior
+                    {t('table.previous')}
                   </Button>
                   <Button
                     onClick={() => handlePageChange(logsData.page + 1)}
@@ -665,7 +630,7 @@ export function LogsPage() {
                     variant="secondary"
                     size="sm"
                   >
-                    Próxima
+                    {t('table.next')}
                     <ChevronRight size={14} className="ml-1" />
                   </Button>
                 </div>

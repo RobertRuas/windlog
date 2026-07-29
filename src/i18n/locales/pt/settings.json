@@ -1,0 +1,21 @@
+{
+  "title": "Configurações",
+  "subtitle": "Gerencie as opções do sistema",
+  "sections": {
+    "account": "Conta",
+    "administration": "Administração"
+  },
+  "account": {
+    "myProfile": {
+      "title": "Meu Perfil",
+      "description": "Visualizar e editar seus dados pessoais"
+    }
+  },
+  "admin": {
+    "systemLogs": {
+      "title": "Logs do Sistema",
+      "description": "Consultar todas as ações registradas no sistema"
+    },
+    "noAccess": "Nenhuma configuração administrativa disponível para o seu perfil."
+  }
+}

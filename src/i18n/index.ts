@@ -46,6 +46,9 @@ import { initReactI18next } from 'react-i18next';
 import ptCommon from './locales/pt/common.json';
 import ptLogin from './locales/pt/login.json';
 import ptHome from './locales/pt/home.json';
+import ptLogs from './locales/pt/logs.json';
+import ptSettings from './locales/pt/settings.json';
+import ptUsers from './locales/pt/users.json';
 
 /**
  * Inicializa o i18next com as configurações do projeto.
@@ -56,9 +59,12 @@ i18n
     // Recursos (traduções) disponíveis
     resources: {
       pt: {
-        common: ptCommon,  // Traduções compartilhadas (botões, labels, etc.)
-        login: ptLogin,    // Traduções específicas da página de login
-        home: ptHome,      // Traduções específicas da página home
+        common: ptCommon,    // Traduções compartilhadas (botões, labels, etc.)
+        login: ptLogin,      // Traduções específicas da página de login
+        home: ptHome,        // Traduções específicas da página home
+        logs: ptLogs,        // Traduções da página de logs
+        settings: ptSettings,// Traduções da página de configurações
+        users: ptUsers,      // Traduções da página de usuários
       },
       // Futuramente, adicione novos idiomas aqui:
       // en: {

@@ -1,0 +1,58 @@
+{
+  "title": "Usuários",
+  "subtitle": "Gerencie todos os usuários do sistema",
+  "newUser": "Novo Usuário",
+  "search": {
+    "placeholder": "Buscar por nome ou email..."
+  },
+  "filter": {
+    "allRoles": "Todos os roles"
+  },
+  "table": {
+    "name": "Nome",
+    "email": "Email",
+    "role": "Role",
+    "status": "Status",
+    "actions": "Ações",
+    "loading": "Carregando...",
+    "empty": "Nenhum usuário encontrado",
+    "pagination": "Página {{page}} de {{totalPages}} ({{total}} usuários)"
+  },
+  "status": {
+    "active": "Ativo",
+    "inactive": "Inativo"
+  },
+  "roles": {
+    "ADMIN": "Administrador",
+    "HR": "Recursos Humanos",
+    "STANDARD": "Padrão",
+    "adminShort": "Admin",
+    "hrShort": "RH",
+    "standardShort": "Padrão"
+  },
+  "actions": {
+    "edit": "Editar",
+    "deactivate": "Desativar",
+    "confirmDeactivate": "Tem certeza que deseja desativar {{name}}?"
+  },
+  "modal": {
+    "editTitle": "Editar Usuário",
+    "createTitle": "Novo Usuário",
+    "firstName": "Primeiro Nome",
+    "lastName": "Sobrenome",
+    "email": "Email",
+    "password": "Senha",
+    "role": "Role",
+    "cancel": "Cancelar",
+    "save": "Salvar",
+    "create": "Criar"
+  },
+  "toast": {
+    "createSuccess": "Usuário criado com sucesso",
+    "createError": "Erro ao criar usuário",
+    "updateSuccess": "Usuário atualizado com sucesso",
+    "updateError": "Erro ao atualizar usuário",
+    "deactivateSuccess": "Usuário desativado com sucesso",
+    "deactivateError": "Erro ao desativar usuário"
+  }
+}

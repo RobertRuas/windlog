@@ -27,6 +27,7 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import {
   Users as UsersIcon,
@@ -57,6 +58,7 @@ import {
  * Componente UsersPage - Página de gestão de usuários.
  */
 export function UsersPage() {
+  const { t } = useTranslation('users');
   const queryClient = useQueryClient();
 
   // Estados de filtros
@@ -99,12 +101,12 @@ export function UsersPage() {
   const createMutation = useMutation({
     mutationFn: (payload: CreateUserPayload) => createUser(payload),
     onSuccess: () => {
-      toast.success('Usuário criado com sucesso');
+      toast.success(t('toast.createSuccess'));
       queryClient.invalidateQueries({ queryKey: ['users'] });
       closeModal();
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Erro ao criar usuário');
+      toast.error(error.message || t('toast.createError'));
     },
   });
 
@@ -115,12 +117,12 @@ export function UsersPage() {
     mutationFn: ({ id, payload }: { id: string; payload: UpdateUserPayload }) =>
       updateUser(id, payload),
     onSuccess: () => {
-      toast.success('Usuário atualizado com sucesso');
+      toast.success(t('toast.updateSuccess'));
       queryClient.invalidateQueries({ queryKey: ['users'] });
       closeModal();
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Erro ao atualizar usuário');
+      toast.error(error.message || t('toast.updateError'));
     },
   });
 
@@ -130,11 +132,11 @@ export function UsersPage() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => deleteUser(id),
     onSuccess: () => {
-      toast.success('Usuário desativado com sucesso');
+      toast.success(t('toast.deactivateSuccess'));
       queryClient.invalidateQueries({ queryKey: ['users'] });
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Erro ao desativar usuário');
+      toast.error(error.message || t('toast.deactivateError'));
     },
   });
 
@@ -204,7 +206,7 @@ export function UsersPage() {
    * Confirma e executa a desativação do usuário.
    */
   function handleDelete(user: UserListItem) {
-    if (confirm(`Tem certeza que deseja desativar ${user.firstName} ${user.lastName}?`)) {
+    if (confirm(t('actions.confirmDeactivate', { name: `${user.firstName} ${user.lastName}` }))) {
       deleteMutation.mutate(user.id);
     }
   }
@@ -214,9 +216,9 @@ export function UsersPage() {
       {/* Cabeçalho */}
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Usuários</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('title')}</h1>
           <p className="text-sm text-gray-500 mt-1">
-            Gerencie todos os usuários do sistema
+            {t('subtitle')}
           </p>
         </div>
         <button
@@ -224,7 +226,7 @@ export function UsersPage() {
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
           <Plus size={18} />
-          Novo Usuário
+          {t('newUser')}
         </button>
       </div>
 
@@ -236,7 +238,7 @@ export function UsersPage() {
             <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
-              placeholder="Buscar por nome ou email..."
+              placeholder={t('search.placeholder')}
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
@@ -255,10 +257,10 @@ export function UsersPage() {
             }}
             className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="">Todos os roles</option>
-            <option value="ADMIN">Administrador</option>
-            <option value="HR">Recursos Humanos</option>
-            <option value="STANDARD">Padrão</option>
+            <option value="">{t('filter.allRoles')}</option>
+            <option value="ADMIN">{t('roles.ADMIN')}</option>
+            <option value="HR">{t('roles.HR')}</option>
+            <option value="STANDARD">{t('roles.STANDARD')}</option>
           </select>
         </div>
       </div>
@@ -266,11 +268,11 @@ export function UsersPage() {
       {/* Tabela de usuários */}
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         {isLoading ? (
-          <div className="p-8 text-center text-gray-500">Carregando...</div>
+          <div className="p-8 text-center text-gray-500">{t('table.loading')}</div>
         ) : !data?.data.length ? (
           <div className="p-8 text-center text-gray-500">
             <UsersIcon size={48} className="mx-auto mb-3 text-gray-300" />
-            <p>Nenhum usuário encontrado</p>
+            <p>{t('table.empty')}</p>
           </div>
         ) : (
           <>
@@ -278,11 +280,11 @@ export function UsersPage() {
               <table className="w-full">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nome</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Ações</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('table.name')}</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('table.email')}</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('table.role')}</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('table.status')}</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">{t('table.actions')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -302,7 +304,7 @@ export function UsersPage() {
                             ? 'bg-blue-100 text-blue-700'
                             : 'bg-gray-100 text-gray-700'
                         }`}>
-                          {user.role === 'ADMIN' ? 'Admin' : user.role === 'HR' ? 'RH' : 'Padrão'}
+                          {user.role === 'ADMIN' ? t('roles.adminShort') : user.role === 'HR' ? t('roles.hrShort') : t('roles.standardShort')}
                         </span>
                       </td>
                       <td className="px-4 py-3">
@@ -311,7 +313,7 @@ export function UsersPage() {
                             ? 'bg-green-100 text-green-700'
                             : 'bg-red-100 text-red-700'
                         }`}>
-                          {user.isActive ? 'Ativo' : 'Inativo'}
+                          {user.isActive ? t('status.active') : t('status.inactive')}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-right">
@@ -319,14 +321,14 @@ export function UsersPage() {
                           <button
                             onClick={() => openEditModal(user)}
                             className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                            title="Editar"
+                            title={t('actions.edit')}
                           >
                             <Edit2 size={16} />
                           </button>
                           <button
                             onClick={() => handleDelete(user)}
                             className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                            title="Desativar"
+                            title={t('actions.deactivate')}
                           >
                             <Trash2 size={16} />
                           </button>
@@ -342,7 +344,7 @@ export function UsersPage() {
             {data.totalPages > 1 && (
               <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200">
                 <div className="text-sm text-gray-500">
-                  Página {data.page} de {data.totalPages} ({data.total} usuários)
+                  {t('table.pagination', { page: data.page, totalPages: data.totalPages, total: data.total })}
                 </div>
                 <div className="flex items-center gap-2">
                   <button
@@ -373,7 +375,7 @@ export function UsersPage() {
             {/* Header do modal */}
             <div className="px-6 py-4 border-b border-gray-200">
               <h2 className="text-lg font-semibold text-gray-900">
-                {editingUser ? 'Editar Usuário' : 'Novo Usuário'}
+                {editingUser ? t('modal.editTitle') : t('modal.createTitle')}
               </h2>
             </div>
 
@@ -382,7 +384,7 @@ export function UsersPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Primeiro Nome
+                    {t('modal.firstName')}
                   </label>
                   <input
                     type="text"
@@ -394,7 +396,7 @@ export function UsersPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Sobrenome
+                    {t('modal.lastName')}
                   </label>
                   <input
                     type="text"
@@ -407,7 +409,7 @@ export function UsersPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('modal.email')}</label>
                 <input
                   type="email"
                   required
@@ -419,7 +421,7 @@ export function UsersPage() {
 
               {!editingUser && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Senha</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('modal.password')}</label>
                   <input
                     type="password"
                     required
@@ -432,15 +434,15 @@ export function UsersPage() {
               )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('modal.role')}</label>
                 <select
                   value={formData.role}
                   onChange={(e) => setFormData({ ...formData, role: e.target.value as any })}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  <option value="STANDARD">Padrão</option>
-                  <option value="HR">Recursos Humanos</option>
-                  <option value="ADMIN">Administrador</option>
+                  <option value="STANDARD">{t('roles.STANDARD')}</option>
+                  <option value="HR">{t('roles.HR')}</option>
+                  <option value="ADMIN">{t('roles.ADMIN')}</option>
                 </select>
               </div>
 
@@ -451,14 +453,14 @@ export function UsersPage() {
                   onClick={closeModal}
                   className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                 >
-                  Cancelar
+                  {t('modal.cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={createMutation.isPending || updateMutation.isPending}
                   className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50"
                 >
-                  {editingUser ? 'Salvar' : 'Criar'}
+                  {editingUser ? t('modal.save') : t('modal.create')}
                 </button>
               </div>
             </form>

@@ -1,0 +1,91 @@
+{
+  "title": "Logs do Sistema",
+  "subtitle": "Monitoramento e auditoria em tempo real",
+  "stats": {
+    "total": "Total",
+    "errors": "Erros",
+    "warnings": "Avisos",
+    "critical": "Críticos"
+  },
+  "search": {
+    "placeholder": "Buscar por mensagem, usuário...",
+    "button": "Buscar",
+    "filters": "Filtros",
+    "clear": "Limpar"
+  },
+  "filters": {
+    "action": "Ação",
+    "severity": "Severidade",
+    "startDate": "Data inicial",
+    "endDate": "Data final",
+    "all": "Todas"
+  },
+  "table": {
+    "date": "Data",
+    "level": "Nível",
+    "request": "Request",
+    "status": "Status",
+    "duration": "Duração",
+    "action": "Ação",
+    "user": "Usuário",
+    "records": "{{count}} registros",
+    "loading": "Carregando logs...",
+    "empty": "Nenhum log encontrado",
+    "emptyHint": "Tente ajustar os filtros",
+    "page": "Página {{page}} de {{totalPages}}",
+    "previous": "Anterior",
+    "next": "Próxima"
+  },
+  "details": {
+    "ipAddress": "IP Address",
+    "userAgent": "User Agent",
+    "entity": "Entidade",
+    "message": "Mensagem",
+    "details": "Detalhes"
+  },
+  "severity": {
+    "info": "Info",
+    "warning": "Aviso",
+    "error": "Erro",
+    "critical": "Crítico"
+  },
+  "actions": {
+    "LOGIN": "Login",
+    "LOGOUT": "Logout",
+    "LOGIN_FAILED": "Login Falhou",
+    "PASSWORD_CHANGE": "Alteração de Senha",
+    "PASSWORD_RESET": "Reset de Senha",
+    "USER_CREATE": "Criar Usuário",
+    "USER_UPDATE": "Atualizar Usuário",
+    "USER_DELETE": "Excluir Usuário",
+    "USER_DEACTIVATE": "Desativar Usuário",
+    "USER_REACTIVATE": "Reativar Usuário",
+    "USER_ROLE_CHANGE": "Alterar Role",
+    "PROFILE_UPDATE": "Atualizar Perfil",
+    "PROFILE_VIEW": "Visualizar Perfil",
+    "PHONE_ADD": "Adicionar Telefone",
+    "PHONE_UPDATE": "Atualizar Telefone",
+    "PHONE_DELETE": "Excluir Telefone",
+    "CERTIFICATION_ADD": "Adicionar Certificação",
+    "CERTIFICATION_UPDATE": "Atualizar Certificação",
+    "CERTIFICATION_DELETE": "Excluir Certificação",
+    "LANGUAGE_ADD": "Adicionar Idioma",
+    "LANGUAGE_UPDATE": "Atualizar Idioma",
+    "LANGUAGE_DELETE": "Excluir Idioma",
+    "PROJECT_CREATE": "Criar Projeto",
+    "PROJECT_UPDATE": "Atualizar Projeto",
+    "PROJECT_DELETE": "Excluir Projeto",
+    "TURBINE_CREATE": "Criar Turbina",
+    "TURBINE_UPDATE": "Atualizar Turbina",
+    "TURBINE_DELETE": "Excluir Turbina",
+    "TECHNICIAN_CREATE": "Criar Técnico",
+    "TECHNICIAN_UPDATE": "Atualizar Técnico",
+    "TECHNICIAN_DELETE": "Excluir Técnico",
+    "SYSTEM_ERROR": "Erro do Sistema",
+    "API_ERROR": "Erro de API",
+    "ACCESS_DENIED": "Acesso Negado",
+    "DATA_EXPORT": "Exportar Dados",
+    "DATA_IMPORT": "Importar Dados",
+    "OTHER": "Outro"
+  }
+}
