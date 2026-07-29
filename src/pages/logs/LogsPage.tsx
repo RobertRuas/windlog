@@ -125,6 +125,49 @@ function formatDateTime(dateStr: string): string {
   });
 }
 
+/** Gera chave única para agrupar por Request + Usuário. */
+function getRequestUserKey(log: SystemLog): string {
+  const user = log.userEmail || log.userName || 'anonymous';
+  return `${log.method || ''}-${log.url || ''}-${user}`;
+}
+
+/** Tipo para logs agrupados. */
+type LogGroup = {
+  key: string;
+  logs: SystemLog[];
+  method: string | null;
+  url: string | null;
+  user: string;
+};
+
+/** Agrupa logs consecutivos com mesmo Request + Usuário. */
+function groupConsecutiveLogs(logs: SystemLog[]): LogGroup[] {
+  if (logs.length === 0) return [];
+
+  const groups: LogGroup[] = [];
+  let currentGroup: LogGroup | null = null;
+
+  for (const log of logs) {
+    const key = getRequestUserKey(log);
+    const user = log.userEmail || log.userName || '—';
+
+    if (currentGroup && currentGroup.key === key) {
+      currentGroup.logs.push(log);
+    } else {
+      currentGroup = {
+        key,
+        logs: [log],
+        method: log.method,
+        url: log.url,
+        user,
+      };
+      groups.push(currentGroup);
+    }
+  }
+
+  return groups;
+}
+
 /* -------------------------------------------------------------------------- */
 /*  Componente: Linha do log                                                  */
 /* -------------------------------------------------------------------------- */
@@ -248,6 +291,7 @@ export function LogsPage() {
   const [filters, setFilters] = useState<LogFilters>({ page: 1, limit: 50 });
   const [searchInput, setSearchInput] = useState('');
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const [showFilters, setShowFilters] = useState(false);
 
   const { data: logsData, isLoading: logsLoading } = useQuery({
@@ -293,6 +337,21 @@ export function LogsPage() {
       return next;
     });
   }
+
+  function toggleGroup(groupKey: string) {
+    setExpandedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(groupKey)) next.delete(groupKey);
+      else next.add(groupKey);
+      return next;
+    });
+  }
+
+  /** Agrupa logs consecutivos com mesmo Request + Usuário. */
+  const logGroups = useMemo(() => {
+    if (!logsData?.data) return [];
+    return groupConsecutiveLogs(logsData.data);
+  }, [logsData]);
 
   return (
     <AppLayout>
@@ -486,14 +545,99 @@ export function LogsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {logsData.data.map((log) => (
-                    <LogRow
-                      key={log.id}
-                      log={log}
-                      isExpanded={expandedRows.has(log.id)}
-                      onToggle={() => toggleRow(log.id)}
-                    />
-                  ))}
+                  {logGroups.map((group) => {
+                    const isGroupExpanded = expandedGroups.has(group.key);
+                    const isSingleLog = group.logs.length === 1;
+
+                    if (isSingleLog) {
+                      return (
+                        <LogRow
+                          key={group.logs[0].id}
+                          log={group.logs[0]}
+                          isExpanded={expandedRows.has(group.logs[0].id)}
+                          onToggle={() => toggleRow(group.logs[0].id)}
+                        />
+                      );
+                    }
+
+                    const firstLog = group.logs[0];
+                    const severity = SEVERITY_CONFIG[firstLog.severity] || SEVERITY_CONFIG.INFO;
+
+                    return (
+                      <>
+                        {/* Linha do grupo (colapsável) */}
+                        <tr
+                          key={group.key}
+                          onClick={() => toggleGroup(group.key)}
+                          className={`cursor-pointer transition-colors border-b border-gray-100 ${
+                            isGroupExpanded ? 'bg-gray-50' : 'hover:bg-gray-50'
+                          }`}
+                        >
+                          <td className="px-4 py-3 text-xs text-gray-500 font-mono whitespace-nowrap">
+                            {formatDateTime(firstLog.createdAt)}
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${severity.color} ${severity.bg}`}>
+                              {severity.label}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-xs max-w-[240px]">
+                            <div className="flex items-center gap-2">
+                              {firstLog.method && (
+                                <span className={`font-mono font-semibold text-[11px] ${METHOD_COLORS[firstLog.method] || 'text-gray-500'}`}>
+                                  {firstLog.method}
+                                </span>
+                              )}
+                              <span className="text-gray-500 truncate font-mono" title={firstLog.url || undefined}>
+                                {firstLog.url || '—'}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-xs font-mono font-semibold">
+                            <span className={getStatusColor(firstLog.statusCode)}>
+                              {firstLog.statusCode || '—'}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-xs text-gray-500 font-mono">
+                            {formatDuration(firstLog.duration)}
+                          </td>
+                          <td className="px-4 py-3 text-xs text-gray-700">
+                            {ACTION_LABELS[firstLog.action] || firstLog.action}
+                          </td>
+                          <td className="px-4 py-3 text-xs text-gray-500 truncate max-w-[150px]">
+                            {group.user}
+                            <span className="ml-1 text-gray-400">({group.logs.length})</span>
+                          </td>
+                          <td className="px-4 py-3 w-8">
+                            <ChevronDown
+                              size={14}
+                              className={`text-gray-400 transition-transform duration-200 ${isGroupExpanded ? 'rotate-180' : ''}`}
+                            />
+                          </td>
+                        </tr>
+
+                        {/* Logs expandidos do grupo */}
+                        {isGroupExpanded && (
+                          <tr className="bg-gray-50">
+                            <td colSpan={8} className="px-4 py-0">
+                              <div className="ml-3 pl-4 border-l-2 border-gray-200 py-3">
+                                <div className="space-y-2">
+                                  {group.logs.map((log) => (
+                                    <LogRow
+                                      key={log.id}
+                                      log={log}
+                                      isExpanded={expandedRows.has(log.id)}
+                                      onToggle={() => toggleRow(log.id)}
+                                    />
+                                  ))}
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
