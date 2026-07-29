@@ -180,6 +180,12 @@ export class UploadService {
       );
     }
 
+    // PASSO 2.1: Se é um avatar, remove o avatar anterior do usuário.
+    // Cada usuário pode ter apenas UM avatar por vez.
+    if (category === 'avatar') {
+      await this.removeExistingAvatar(userId);
+    }
+
     // PASSO 3: Gera um nome único para o ficheiro
     const folder = this.getCategoryFolder(category);
     const ext = path.extname(file.originalname);
@@ -303,6 +309,39 @@ export class UploadService {
     });
 
     this.logger.log(`File record deleted: ${fileId}`);
+  }
+
+  /**
+   * Remove o avatar existente de um usuário (físico + banco de dados).
+   * Chamado automaticamente antes de criar um novo avatar, garantindo
+   * que cada usuário tenha apenas UM avatar por vez.
+   *
+   * @param userId - ID do usuário cujo avatar será removido
+   */
+  private async removeExistingAvatar(userId: string): Promise<void> {
+    const existingAvatars = await this.prisma.uploadedFile.findMany({
+      where: { userId, category: 'avatar' },
+    });
+
+    for (const avatar of existingAvatars) {
+      // Remove o ficheiro físico do disco
+      const absolutePath = path.join(this.uploadsDir, avatar.path);
+      if (fs.existsSync(absolutePath)) {
+        fs.unlinkSync(absolutePath);
+        this.logger.log(`Old avatar deleted from disk: ${avatar.path}`);
+      }
+
+      // Remove o registo do banco de dados
+      await this.prisma.uploadedFile.delete({
+        where: { id: avatar.id },
+      });
+    }
+
+    if (existingAvatars.length > 0) {
+      this.logger.log(
+        `Removed ${existingAvatars.length} old avatar(s) for user ${userId}`,
+      );
+    }
   }
 
   /**
