@@ -4,7 +4,8 @@
     "home": "Início",
     "profile": "Perfil",
     "settings": "Configurações",
-    "users": "Usuários"
+    "users": "Usuários",
+    "projects": "Projetos"
   },
   "buttons": {
     "save": "Salvar",

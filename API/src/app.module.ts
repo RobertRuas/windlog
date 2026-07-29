@@ -35,6 +35,7 @@ import { EnvironmentVariables } from './config/env.validation.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { SystemLogModule } from './modules/system-log/system-log.module.js';
 import { UsersModule } from './modules/users/users.module.js';
+import { ProjectsModule } from './modules/projects/projects.module.js';
 
 @Module({
   imports: [
@@ -74,6 +75,11 @@ import { UsersModule } from './modules/users/users.module.js';
     // USERS MODULE - Gestão de Usuários
     // -------------------------------------------------------------------------
     UsersModule,
+
+    // -------------------------------------------------------------------------
+    // PROJECTS MODULE - Gestão de Projetos
+    // -------------------------------------------------------------------------
+    ProjectsModule,
 
     // -------------------------------------------------------------------------
     // PRÓXIMOS MÓDULOS SERÃO ADICIONADOS AQUI

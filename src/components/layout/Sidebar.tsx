@@ -31,6 +31,7 @@ import {
   Menu,
   X,
   Users,
+  FolderOpen,
 } from 'lucide-react';
 
 import { logout } from '@/services/auth.service';
@@ -50,6 +51,7 @@ interface SidebarProps {
 const NAV_ITEMS = [
   { icon: Home, labelKey: 'nav.home', path: '/', end: true, roles: [] },
   { icon: Users, labelKey: 'nav.users', path: '/users', end: false, roles: ['ADMIN', 'HR'] },
+  { icon: FolderOpen, labelKey: 'nav.projects', path: '/projects', end: false, roles: ['ADMIN', 'HR'] },
   { icon: Settings, labelKey: 'nav.settings', path: '/settings', end: false, roles: [] },
 ] as const;
 

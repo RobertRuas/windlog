@@ -40,6 +40,8 @@ import { ProfilePage } from '@/pages/profile/ProfilePage';
 import { LogsPage } from '@/pages/logs/LogsPage';
 import { SettingsPage } from '@/pages/settings/SettingsPage';
 import { UsersPage } from '@/pages/users/UsersPage';
+import { ProjectsPage } from '@/pages/projects/ProjectsPage';
+import { ProjectDetailPage } from '@/pages/projects/detail/ProjectDetailPage';
 
 // Serviço de autenticação
 import { isAuthenticated } from '@/services/auth.service';
@@ -241,6 +243,26 @@ export default function App() {
             element={
               <AdminOrHRRoute>
                 <UsersPage />
+              </AdminOrHRRoute>
+            }
+          />
+
+          {/* Rota protegida - gestão de projetos (ADMIN ou HR) */}
+          <Route
+            path="/projects"
+            element={
+              <AdminOrHRRoute>
+                <ProjectsPage />
+              </AdminOrHRRoute>
+            }
+          />
+
+          {/* Rota protegida - detalhes do projeto (ADMIN ou HR) */}
+          <Route
+            path="/projects/:id"
+            element={
+              <AdminOrHRRoute>
+                <ProjectDetailPage />
               </AdminOrHRRoute>
             }
           />

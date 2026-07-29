@@ -199,6 +199,7 @@ model User {
   certifications  UserCertification[]
   languages       UserLanguage[]
   documents       UserDocument[]
+  projectMembers  ProjectMember[]
 }
 
 // ---------------------------------------------------------------------------
@@ -369,6 +370,149 @@ model UserLanguage {
 
   @@index([userId])
   @@unique([userId, language])
+}
+
+// ---------------------------------------------------------------------------
+// ENUM: PROJECT STATUS (Status do Projeto)
+// ---------------------------------------------------------------------------
+// Define os possíveis status de um projeto no sistema
+// ---------------------------------------------------------------------------
+enum ProjectStatus {
+  PLANNING      // Planeamento
+  IN_PROGRESS   // Em progresso
+  ON_HOLD       // Em espera
+  COMPLETED     // Concluído
+  CANCELLED     // Cancelado
+}
+
+// ---------------------------------------------------------------------------
+// ENUM: TURBINE STATUS (Status da Turbina)
+// ---------------------------------------------------------------------------
+// Define os possíveis status de uma turbina
+// ---------------------------------------------------------------------------
+enum TurbineStatus {
+  OPERATIONAL   // Operacional
+  MAINTENANCE   // Em manutenção
+  OFFLINE       // Offline
+  DECOMMISSIONED // Descomissionada
+}
+
+// ---------------------------------------------------------------------------
+// MODEL: PROJECT (Projeto)
+// ---------------------------------------------------------------------------
+// Representa um projeto de manutenção/instalação de turbinas eólicas.
+// Um projeto agrupa turbinas e técnicos para um trabalho específico.
+//
+// CAMPOS OBRIGATÓRIOS (criação mínima):
+// - name, client, location
+//
+// CAMPOS OPCIONAIS (preenchidos posteriormente):
+// - scope, description, coordinates, startDate, status
+// ---------------------------------------------------------------------------
+model Project {
+  id        String   @id @default(uuid())
+
+  // Informações básicas (obrigatórias)
+  /// Nome do projeto (ex: "Parque Eólico Serra do Mar")
+  name        String
+  /// Cliente/proprietário do projeto (ex: "EDP Renewables")
+  client      String
+  /// Localização geral do projeto (ex: "Serra do Mar, Portugal")
+  location    String
+
+  // Informações complementares (opcionais)
+  /// Escopo do projeto (ex: "Manutenção preventiva", "Instalação")
+  scope       String?
+  /// Descrição detalhada do projeto
+  description String?
+  /// Latitude do centro do projeto (coordenadas geográficas)
+  latitude    Float?
+  /// Longitude do centro do projeto (coordenadas geográficas)
+  longitude   Float?
+  /// Data de início do projeto
+  startDate   DateTime?
+  /// Status atual do projeto (enum ProjectStatus)
+  status      ProjectStatus @default(PLANNING)
+
+  // Controle de acesso
+  isActive    Boolean  @default(true)
+
+  // Timestamps (datas em UTC)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+
+  // Relações
+  turbines    ProjectTurbine[]
+  members     ProjectMember[]
+}
+
+// ---------------------------------------------------------------------------
+// MODEL: PROJECT TURBINE (Turbina do Projeto)
+// ---------------------------------------------------------------------------
+// Representa uma turbina associada a um projeto.
+// Cada turbina tem informações básicas de localização e modelo.
+// ---------------------------------------------------------------------------
+model ProjectTurbine {
+  id        String   @id @default(uuid())
+
+  // Dados da turbina
+  /// Nome/identificação da turbina (ex: "T-001", "Vestas V100 #3")
+  name        String
+  /// Localização específica da turbina
+  location    String?
+  /// Fabricante (ex: "Vestas", "Siemens Gamesa", "GE Renewable Energy")
+  manufacturer String?
+  /// Modelo da turbina (ex: "V100-1.8 MW", "SG 4.5-145")
+  model       String?
+  /// Altura do nacelle (em metros)
+  nacelleHeight Float?
+  /// Latitude da turbina (coordenadas geográficas)
+  latitude    Float?
+  /// Longitude da turbina (coordenadas geográficas)
+  longitude   Float?
+  /// Status atual da turbina (enum TurbineStatus)
+  status      TurbineStatus @default(OPERATIONAL)
+
+  // Relação com o projeto
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  // Timestamps
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+
+  @@index([projectId])
+}
+
+// ---------------------------------------------------------------------------
+// MODEL: PROJECT MEMBER (Membro do Projeto)
+// ---------------------------------------------------------------------------
+// Associa usuários (técnicos) a projetos.
+// Permite saber quais técnicos estão atribuídos a cada projeto.
+// ---------------------------------------------------------------------------
+model ProjectMember {
+  id        String   @id @default(uuid())
+
+  // Relação com o projeto
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  // Relação com o usuário
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Função do membro no projeto (ex: "Lead Technician", "Technician")
+  role      String?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([projectId, userId])
+  @@index([projectId])
+  @@index([userId])
 }
 
 // ---------------------------------------------------------------------------

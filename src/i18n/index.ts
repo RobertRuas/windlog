@@ -49,6 +49,7 @@ import ptHome from './locales/pt/home.json';
 import ptLogs from './locales/pt/logs.json';
 import ptSettings from './locales/pt/settings.json';
 import ptUsers from './locales/pt/users.json';
+import ptProjects from './locales/pt/projects.json';
 
 /**
  * Inicializa o i18next com as configurações do projeto.
@@ -65,6 +66,7 @@ i18n
         logs: ptLogs,        // Traduções da página de logs
         settings: ptSettings,// Traduções da página de configurações
         users: ptUsers,      // Traduções da página de usuários
+        projects: ptProjects, // Traduções da página de projetos
       },
       // Futuramente, adicione novos idiomas aqui:
       // en: {

@@ -1,0 +1,126 @@
+{
+  "title": "Projetos",
+  "subtitle": "Gerencie todos os projetos do sistema",
+  "newProject": "Novo Projeto",
+  "search": {
+    "placeholder": "Buscar por nome ou cliente..."
+  },
+  "filter": {
+    "allStatuses": "Todos os status"
+  },
+  "table": {
+    "name": "Nome",
+    "client": "Cliente",
+    "location": "Localização",
+    "status": "Status",
+    "turbines": "Turbinas",
+    "members": "Membros",
+    "actions": "Ações",
+    "loading": "Carregando...",
+    "empty": "Nenhum projeto encontrado",
+    "pagination": "Página {{page}} de {{totalPages}} ({{total}} projetos)"
+  },
+  "status": {
+    "PLANNING": "Planeamento",
+    "IN_PROGRESS": "Em Progresso",
+    "ON_HOLD": "Em Espera",
+    "COMPLETED": "Concluído",
+    "CANCELLED": "Cancelado"
+  },
+  "turbineStatus": {
+    "OPERATIONAL": "Operacional",
+    "MAINTENANCE": "Em Manutenção",
+    "OFFLINE": "Offline",
+    "DECOMMISSIONED": "Descomissionada"
+  },
+  "actions": {
+    "edit": "Editar",
+    "delete": "Excluir",
+    "viewDetails": "Ver Detalhes",
+    "backToList": "Voltar para Projetos",
+    "addTurbine": "Nova Turbina",
+    "addMember": "Adicionar Membro",
+    "confirmDelete": "Tem certeza que deseja excluir o projeto \"{{name}}\"?",
+    "confirmDeleteTurbine": "Tem certeza que deseja excluir a turbina \"{{name}}\"?",
+    "confirmRemoveMember": "Tem certeza que deseja remover {{name}} do projeto?"
+  },
+  "tabs": {
+    "info": "Informações",
+    "turbines": "Turbinas",
+    "members": "Equipe"
+  },
+  "modal": {
+    "editTitle": "Editar Projeto",
+    "createTitle": "Novo Projeto",
+    "basicInfo": "Informações Básicas",
+    "additionalInfo": "Informações Complementares",
+    "name": "Nome do Projeto",
+    "client": "Cliente",
+    "location": "Localização",
+    "scope": "Escopo",
+    "description": "Descrição",
+    "latitude": "Latitude",
+    "longitude": "Longitude",
+    "startDate": "Data de Início",
+    "status": "Status",
+    "cancel": "Cancelar",
+    "save": "Salvar",
+    "create": "Criar"
+  },
+  "turbineTable": {
+    "name": "Nome",
+    "location": "Localização",
+    "manufacturer": "Fabricante",
+    "model": "Modelo",
+    "nacelleHeight": "Altura Nacelle",
+    "status": "Status",
+    "empty": "Nenhuma turbina cadastrada neste projeto"
+  },
+  "turbineModal": {
+    "createTitle": "Nova Turbina",
+    "editTitle": "Editar Turbina",
+    "name": "Nome da Turbina",
+    "location": "Localização",
+    "manufacturer": "Fabricante",
+    "model": "Modelo",
+    "nacelleHeight": "Altura Nacelle (m)",
+    "latitude": "Latitude",
+    "longitude": "Longitude",
+    "status": "Status"
+  },
+  "memberTable": {
+    "name": "Nome",
+    "email": "Email",
+    "role": "Role",
+    "projectRole": "Função no Projeto",
+    "empty": "Nenhum membro associado a este projeto"
+  },
+  "memberModal": {
+    "title": "Adicionar Membro",
+    "user": "Usuário",
+    "selectUser": "Selecione um usuário",
+    "role": "Função no Projeto",
+    "rolePlaceholder": "Ex: Lead Technician"
+  },
+  "errors": {
+    "notFound": "Projeto não encontrado"
+  },
+  "toast": {
+    "createSuccess": "Projeto criado com sucesso",
+    "createError": "Erro ao criar projeto",
+    "updateSuccess": "Projeto atualizado com sucesso",
+    "updateError": "Erro ao atualizar projeto",
+    "deleteSuccess": "Projeto excluído com sucesso",
+    "deleteError": "Erro ao excluir projeto",
+    "turbineCreateSuccess": "Turbina adicionada com sucesso",
+    "turbineCreateError": "Erro ao adicionar turbina",
+    "turbineUpdateSuccess": "Turbina atualizada com sucesso",
+    "turbineUpdateError": "Erro ao atualizar turbina",
+    "turbineDeleteSuccess": "Turbina removida com sucesso",
+    "turbineDeleteError": "Erro ao remover turbina",
+    "memberAddSuccess": "Membro adicionado com sucesso",
+    "memberAddError": "Erro ao adicionar membro",
+    "memberRemoveSuccess": "Membro removido com sucesso",
+    "memberRemoveError": "Erro ao remover membro"
+  }
+}
