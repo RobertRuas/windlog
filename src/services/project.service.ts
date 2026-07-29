@@ -326,7 +326,7 @@ export async function addMember(projectId: string, payload: AddMemberPayload): P
  * Atualiza a função de um membro no projeto.
  */
 export async function updateMember(projectId: string, memberId: string, payload: UpdateMemberPayload): Promise<ProjectMember> {
-  const response = await api.put<ApiResponse<ProjectMember>>(`/api/v1/projects/${projectId}/members/${memberId}`, payload);
+  const response = await api.patch<ApiResponse<ProjectMember>>(`/api/v1/projects/${projectId}/members/${memberId}`, payload);
   return response.data;
 }
 

@@ -151,6 +151,10 @@ export const api = {
   put: <T>(url: string, body: unknown) =>
     apiRequest<T>(url, { method: 'PUT', body }),
 
+  /** Requisição PATCH - usada para atualizações parciais */
+  patch: <T>(url: string, body: unknown) =>
+    apiRequest<T>(url, { method: 'PATCH', body }),
+
   /** Requisição DELETE - usada para remover recursos */
   delete: <T>(url: string) =>
     apiRequest<T>(url, { method: 'DELETE' }),
