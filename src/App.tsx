@@ -42,6 +42,7 @@ import { SettingsPage } from '@/pages/settings/SettingsPage';
 import { UsersPage } from '@/pages/users/UsersPage';
 import { ProjectsPage } from '@/pages/projects/ProjectsPage';
 import { ProjectDetailPage } from '@/pages/projects/detail/ProjectDetailPage';
+import { ErrorPage } from '@/pages/error/ErrorPage';
 
 // Serviço de autenticação
 import { isAuthenticated } from '@/services/auth.service';
@@ -266,6 +267,9 @@ export default function App() {
               </AdminOrHRRoute>
             }
           />
+
+          {/* Rota pública - página de erro (estilo vintage terminal) */}
+          <Route path="/error" element={<ErrorPage />} />
 
           {/* Qualquer outra rota redireciona para a página inicial ou login */}
           <Route path="*" element={<Navigate to="/" replace />} />

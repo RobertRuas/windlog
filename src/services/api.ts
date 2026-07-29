@@ -52,9 +52,9 @@ function handleUnauthorized(): void {
   // Remove o token do localStorage
   localStorage.removeItem('accessToken');
 
-  // Redireciona para a página de login
+  // Redireciona para a página de erro vintage
   // Usa window.location.href para forçar recarregamento completo
-  window.location.href = '/login';
+  window.location.href = '/error?msg=Token+n%C3%A3o+fornecido';
 
   // Reseta a flag após um tempo (caso o redirect falhe)
   setTimeout(() => {
