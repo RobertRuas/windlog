@@ -31,6 +31,7 @@ import {
   Download,
   Calendar,
   Paperclip,
+  Eye,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { ProjectDetail, ProjectFile } from '@/services/project.service';
@@ -186,6 +187,13 @@ export function ProjectFilesTab({ project }: ProjectFilesTabProps) {
   }
 
   /**
+   * Visualiza um ficheiro numa nova aba.
+   */
+  function handleView(projectFile: ProjectFile) {
+    window.open(projectFile.file.url, '_blank');
+  }
+
+  /**
    * Faz download de um ficheiro.
    */
   function handleDownload(projectFile: ProjectFile) {
@@ -250,8 +258,17 @@ export function ProjectFilesTab({ project }: ProjectFilesTabProps) {
     {
       header: t('table.actions'),
       align: 'right',
+      sticky: true,
+      minWidth: '150px',
       render: (projectFile) => (
         <div className="flex items-center justify-end gap-1">
+          <button
+            onClick={() => handleView(projectFile)}
+            className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+            title={t('actions.view')}
+          >
+            <Eye size={15} />
+          </button>
           <button
             onClick={() => handleDownload(projectFile)}
             className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"

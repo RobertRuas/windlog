@@ -48,7 +48,8 @@
     "confirmDeleteTurbine": "Tem certeza que deseja excluir a turbina \"{{name}}\"?",
     "confirmRemoveMember": "Tem certeza que deseja remover {{name}} do projeto?",
     "confirmDeleteFile": "Tem certeza que deseja excluir o ficheiro \"{{name}}\"?",
-    "download": "Download"
+    "download": "Download",
+    "view": "Visualizar"
   },
   "tabs": {
     "info": "Informações",
