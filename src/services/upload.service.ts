@@ -187,10 +187,13 @@ export async function removeFile(fileId: string): Promise<void> {
 
 /**
  * Retorna a URL completa para acessar um ficheiro no servidor.
+ * Inclui o token JWT como query param para permitir acesso direto no browser.
  *
  * @param path - Caminho relativo do ficheiro (ex: "documents/xxx.jpg")
- * @returns URL completa (ex: "/api/v1/uploads/documents/xxx.jpg")
+ * @returns URL completa com token (ex: "/api/v1/uploads/documents/xxx.jpg?token=...")
  */
 export function getFileUrl(path: string): string {
-  return `/api/v1/uploads/${path}`;
+  const token = localStorage.getItem('accessToken');
+  const baseUrl = `/api/v1/uploads/${path}`;
+  return token ? `${baseUrl}?token=${encodeURIComponent(token)}` : baseUrl;
 }

@@ -137,12 +137,23 @@ async function bootstrap() {
   }
 
   httpApp.use('/api/v1/uploads', (req: Request, res: Response, next: NextFunction) => {
+    // Aceita token tanto via header (Authorization: Bearer <token>)
+    // quanto via query param (?token=...) para acesso direto no browser
     const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    const queryToken = req.query.token as string | undefined;
+
+    let token: string | undefined;
+
+    if (authHeader?.startsWith('Bearer ')) {
+      token = authHeader.split(' ')[1];
+    } else if (queryToken) {
+      token = queryToken;
+    }
+
+    if (!token) {
       return res.status(401).json({ message: 'Token não fornecido' });
     }
 
-    const token = authHeader.split(' ')[1];
     try {
       jwt.verify(token, jwtSecret);
       // Token válido → serve o ficheiro estático
