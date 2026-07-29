@@ -102,12 +102,12 @@ export function ProjectDetailPage() {
     });
   }
 
-  function handleCreateTurbine(payload: Parameters<typeof createTurbineMutation.mutate>[0]) {
-    createTurbineMutation.mutate(payload);
+  function handleCreateTurbine(payload: Parameters<typeof createTurbineMutation.mutate>[0], options?: { onSuccess: () => void }) {
+    createTurbineMutation.mutate(payload, options);
   }
 
-  function handleUpdateTurbine(turbineId: string, payload: Parameters<typeof updateTurbineMutation.mutate>[0]['payload']) {
-    updateTurbineMutation.mutate({ turbineId, payload });
+  function handleUpdateTurbine(turbineId: string, payload: Parameters<typeof updateTurbineMutation.mutate>[0]['payload'], options?: { onSuccess: () => void }) {
+    updateTurbineMutation.mutate({ turbineId, payload }, options);
   }
 
   function handleDeleteTurbine(turbineId: string) {

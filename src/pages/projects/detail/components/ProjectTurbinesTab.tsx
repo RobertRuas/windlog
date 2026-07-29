@@ -21,8 +21,8 @@ import { TurbineModal } from './TurbineModal';
  */
 interface ProjectTurbinesTabProps {
   project: ProjectDetail;
-  onCreateTurbine: (payload: CreateTurbinePayload) => void;
-  onUpdateTurbine: (turbineId: string, payload: UpdateTurbinePayload) => void;
+  onCreateTurbine: (payload: CreateTurbinePayload, options?: { onSuccess: () => void }) => void;
+  onUpdateTurbine: (turbineId: string, payload: UpdateTurbinePayload, options?: { onSuccess: () => void }) => void;
   onDeleteTurbine: (turbineId: string) => void;
   isCreatePending: boolean;
   isUpdatePending: boolean;
@@ -62,9 +62,13 @@ export function ProjectTurbinesTab({
 
   function handleSubmit(payload: CreateTurbinePayload | UpdateTurbinePayload) {
     if (editingTurbine) {
-      onUpdateTurbine(editingTurbine.id, payload as UpdateTurbinePayload);
+      onUpdateTurbine(editingTurbine.id, payload as UpdateTurbinePayload, {
+        onSuccess: () => closeModal(),
+      });
     } else {
-      onCreateTurbine(payload as CreateTurbinePayload);
+      onCreateTurbine(payload as CreateTurbinePayload, {
+        onSuccess: () => closeModal(),
+      });
     }
   }
 
