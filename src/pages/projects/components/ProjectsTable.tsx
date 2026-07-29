@@ -10,7 +10,7 @@
  * ============================================================================
  */
 
-import { FolderOpen, ChevronLeft, ChevronRight, Edit2, Trash2, Eye, MapPin, Wind, Users as UsersIcon } from 'lucide-react';
+import { FolderOpen, ChevronLeft, ChevronRight, Edit2, Trash2, Eye, MapPin, Wind, Users as UsersIcon, Paperclip } from 'lucide-react';
 import type { ProjectListItem } from '@/services/project.service';
 
 /**
@@ -124,7 +124,7 @@ export function ProjectsTable({
                         </span>
                       </td>
 
-                      {/* Turbinas + Membros (coluna unificada) */}
+                      {/* Turbinas + Membros + Ficheiros (coluna unificada) */}
                       <td className="px-5 py-3.5">
                         <div className="flex items-center justify-center gap-3">
                           <span className="inline-flex items-center gap-1 text-sm text-gray-500" title={t('table.turbines')}>
@@ -134,6 +134,10 @@ export function ProjectsTable({
                           <span className="inline-flex items-center gap-1 text-sm text-gray-500" title={t('table.members')}>
                             <UsersIcon size={14} className="text-gray-400" />
                             {project._count?.members || 0}
+                          </span>
+                          <span className="inline-flex items-center gap-1 text-sm text-gray-500" title={t('table.files')}>
+                            <Paperclip size={14} className="text-gray-400" />
+                            {project._count?.files || 0}
                           </span>
                         </div>
                       </td>

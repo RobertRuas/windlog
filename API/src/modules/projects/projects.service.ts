@@ -133,7 +133,7 @@ export class ProjectsService {
         take: limit,
         include: {
           _count: {
-            select: { turbines: { where: { deletedAt: null } }, members: true },
+            select: { turbines: { where: { deletedAt: null } }, members: true, files: true },
           },
         },
       }),

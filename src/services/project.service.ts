@@ -62,6 +62,7 @@ export interface ProjectListItem {
   _count?: {
     turbines: number;
     members: number;
+    files: number;
   };
 }
 

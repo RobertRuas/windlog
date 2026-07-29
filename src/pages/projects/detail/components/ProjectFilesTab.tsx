@@ -10,7 +10,7 @@
  *
  * FUNCIONALIDADES:
  * ----------------
- * - Listar ficheiros em grid com preview de imagens
+ * - Listar ficheiros em formato de lista
  * - Upload de novos ficheiros (drag & drop + botão)
  * - Download de ficheiros
  * - Remoção de ficheiros
@@ -28,6 +28,7 @@ import {
   FileText,
   Download,
   FolderOpen,
+  Calendar,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { ProjectDetail, ProjectFile } from '@/services/project.service';
@@ -64,10 +65,10 @@ function isImage(mimeType: string): boolean {
 /**
  * Retorna o ícone adequado para o tipo de ficheiro.
  */
-function getFileIcon(mimeType: string) {
-  if (isImage(mimeType)) return <ImageIcon size={32} className="text-blue-500" />;
-  if (mimeType === 'application/pdf') return <FileText size={32} className="text-red-500" />;
-  return <FileIcon size={32} className="text-gray-400" />;
+function getFileIcon(mimeType: string, size = 20) {
+  if (isImage(mimeType)) return <ImageIcon size={size} className="text-blue-500" />;
+  if (mimeType === 'application/pdf') return <FileText size={size} className="text-red-500" />;
+  return <FileIcon size={size} className="text-gray-400" />;
 }
 
 /**
@@ -230,69 +231,90 @@ export function ProjectFilesTab({ project }: ProjectFilesTabProps) {
         </p>
       </div>
 
-      {/* Grid de ficheiros ou estado vazio */}
+      {/* Lista de ficheiros ou estado vazio */}
       {isLoading ? (
         <div className="p-8 text-center text-gray-500">
           <p>{t('table.loading')}</p>
         </div>
       ) : files.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-          {files.map((projectFile) => (
-            <div
-              key={projectFile.id}
-              className="group relative bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
-            >
-              {/* Preview do ficheiro */}
-              <div className="aspect-square bg-gray-50 flex items-center justify-center overflow-hidden">
-                {isImage(projectFile.file.mimeType) ? (
-                  <img
-                    src={projectFile.file.url}
-                    alt={projectFile.file.originalName}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  getFileIcon(projectFile.file.mimeType)
-                )}
-              </div>
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <table className="w-full">
+            <thead className="bg-gray-50 border-b border-gray-200">
+              <tr>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('filesTable.name')}</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('filesTable.type')}</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('filesTable.size')}</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('filesTable.date')}</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">{t('table.actions')}</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {files.map((projectFile) => (
+                <tr key={projectFile.id} className="hover:bg-gray-50 group">
+                  {/* Nome com ícone */}
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      {isImage(projectFile.file.mimeType) ? (
+                        <img
+                          src={projectFile.file.url}
+                          alt={projectFile.file.originalName}
+                          className="w-8 h-8 rounded object-cover flex-shrink-0"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 rounded bg-gray-50 flex items-center justify-center flex-shrink-0">
+                          {getFileIcon(projectFile.file.mimeType, 18)}
+                        </div>
+                      )}
+                      <span
+                        className="text-sm font-medium text-gray-900 truncate max-w-[250px]"
+                        title={projectFile.file.originalName}
+                      >
+                        {projectFile.file.originalName}
+                      </span>
+                    </div>
+                  </td>
 
-              {/* Info do ficheiro */}
-              <div className="p-2">
-                <p
-                  className="text-xs font-medium text-gray-900 truncate"
-                  title={projectFile.file.originalName}
-                >
-                  {projectFile.file.originalName}
-                </p>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  {formatFileSize(projectFile.file.size)}
-                </p>
-              </div>
+                  {/* Tipo MIME */}
+                  <td className="px-4 py-3">
+                    <span className="text-sm text-gray-500 uppercase">{projectFile.file.mimeType.split('/')[1]}</span>
+                  </td>
 
-              {/* Ações (aparecem no hover) */}
-              <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDownload(projectFile);
-                  }}
-                  className="p-1.5 bg-white/90 hover:bg-white text-gray-600 hover:text-blue-600 rounded-lg shadow-sm transition-colors"
-                  title={t('actions.download')}
-                >
-                  <Download size={14} />
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDelete(projectFile);
-                  }}
-                  className="p-1.5 bg-white/90 hover:bg-white text-gray-600 hover:text-red-600 rounded-lg shadow-sm transition-colors"
-                  title={t('actions.delete')}
-                >
-                  <Trash2 size={14} />
-                </button>
-              </div>
-            </div>
-          ))}
+                  {/* Tamanho */}
+                  <td className="px-4 py-3">
+                    <span className="text-sm text-gray-500">{formatFileSize(projectFile.file.size)}</span>
+                  </td>
+
+                  {/* Data */}
+                  <td className="px-4 py-3">
+                    <span className="inline-flex items-center gap-1.5 text-sm text-gray-500">
+                      <Calendar size={13} className="text-gray-400" />
+                      {new Date(projectFile.createdAt).toLocaleDateString('pt-BR')}
+                    </span>
+                  </td>
+
+                  {/* Ações */}
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-end gap-1">
+                      <button
+                        onClick={() => handleDownload(projectFile)}
+                        className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        title={t('actions.download')}
+                      >
+                        <Download size={15} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(projectFile)}
+                        className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        title={t('actions.delete')}
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       ) : (
         <div className="p-8 text-center text-gray-500 bg-white rounded-xl border border-gray-200">
