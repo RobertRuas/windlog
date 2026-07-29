@@ -24,6 +24,16 @@
  * 3. Use getFileById() para buscar informações
  * 4. Use removeFile() para remover
  *
+ * ESTRUTURA DE DIRETÓRIOS:
+ * ------------------------
+ * Os ficheiros são organizados por categoria e por usuário:
+ *   uploads/
+ *     avatars/<userId>/        - Fotos de perfil
+ *     documents/<userId>/      - Documentos pessoais
+ *     certifications/<userId>/ - Certificações
+ *     banks/<userId>/          - Comprovantes bancários
+ *     other/<userId>/          - Outros ficheiros
+ *
  * CATEGORIAS DISPONÍVEIS:
  * -----------------------
  * - avatar:       Fotos de perfil do usuário
@@ -115,19 +125,12 @@ export class UploadService {
   }
 
   /**
-   * Garante que a pasta de uploads existe.
-   * Cria subpastas para cada categoria se não existirem.
+   * Garante que a pasta base de uploads existe.
+   * As subpastas por categoria/usuário são criadas dinamicamente no upload.
    */
   private ensureUploadsDir() {
-    const categories = ['avatars', 'documents', 'certifications', 'banks', 'other'];
     if (!fs.existsSync(this.uploadsDir)) {
       fs.mkdirSync(this.uploadsDir, { recursive: true });
-    }
-    for (const cat of categories) {
-      const catDir = path.join(this.uploadsDir, cat);
-      if (!fs.existsSync(catDir)) {
-        fs.mkdirSync(catDir, { recursive: true });
-      }
     }
   }
 
@@ -151,10 +154,11 @@ export class UploadService {
    * PASSO A PASSO:
    * 1. Valida o tamanho do ficheiro (máx. 3 MB)
    * 2. Valida o tipo MIME do ficheiro
-   * 3. Gera um nome único (UUID + nome original)
-   * 4. Guarda o ficheiro no disco (API/uploads/<categoria>/)
-   * 5. Regista no banco de dados (modelo UploadedFile)
-   * 6. Retorna informações do ficheiro (incluindo URL de acesso)
+   * 3. Se avatar, remove o avatar anterior do usuário
+   * 4. Gera um nome único (UUID + extensão)
+   * 5. Guarda o ficheiro em API/uploads/<categoria>/<userId>/
+   * 6. Regista no banco de dados (modelo UploadedFile)
+   * 7. Retorna informações do ficheiro (incluindo URL de acesso)
    *
    * @param file - Ficheiro recebido (buffer + metadados do multer)
    * @param userId - ID do usuário que está fazendo o upload
@@ -186,12 +190,19 @@ export class UploadService {
       await this.removeExistingAvatar(userId);
     }
 
-    // PASSO 3: Gera um nome único para o ficheiro
+    // PASSO 3: Gera um nome único e monta o caminho por usuário
+    // Estrutura: uploads/<categoria>/<userId>/<uuid>.<ext>
     const folder = this.getCategoryFolder(category);
     const ext = path.extname(file.originalname);
     const uniqueName = `${uuidv4()}${ext}`;
-    const relativePath = `${folder}/${uniqueName}`;
-    const absolutePath = path.join(this.uploadsDir, relativePath);
+    const relativePath = `${folder}/${userId}/${uniqueName}`;
+    const absoluteDir = path.join(this.uploadsDir, folder, userId);
+    const absolutePath = path.join(absoluteDir, uniqueName);
+
+    // Garante que o diretório do usuário existe (cria se necessário)
+    if (!fs.existsSync(absoluteDir)) {
+      fs.mkdirSync(absoluteDir, { recursive: true });
+    }
 
     // PASSO 4: Guarda o ficheiro no disco
     fs.writeFileSync(absolutePath, file.buffer);
