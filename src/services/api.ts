@@ -73,6 +73,8 @@ interface ApiOptions {
   body?: unknown;
   /** Headers adicionais (além do Content-Type e Authorization) */
   headers?: Record<string, string>;
+  /** Se true, não define Content-Type (usado para FormData/multipart) */
+  isFormData?: boolean;
 }
 
 /**
@@ -96,7 +98,9 @@ async function apiRequest<T>(url: string, options: ApiOptions = {}): Promise<T> 
 
   // Monta os headers da requisição
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
+    // Só define Content-Type como JSON se NÃO for FormData
+    // Para FormData, o browser define automaticamente com o boundary correto
+    ...(options.isFormData ? {} : { 'Content-Type': 'application/json' }),
     ...options.headers,
   };
 
@@ -111,7 +115,9 @@ async function apiRequest<T>(url: string, options: ApiOptions = {}): Promise<T> 
   const response = await fetch(url, {
     method: options.method || 'GET',
     headers,
-    body: options.body ? JSON.stringify(options.body) : undefined,
+    body: options.body
+      ? (options.isFormData ? options.body as FormData : JSON.stringify(options.body))
+      : undefined,
   });
 
   // Se a resposta for 401 (Unauthorized), o token expirou ou é inválido
@@ -138,6 +144,7 @@ async function apiRequest<T>(url: string, options: ApiOptions = {}): Promise<T> 
  * Uso:
  *   api.get('/endpoint')
  *   api.post('/endpoint', { data })
+ *   api.upload('/endpoint', formData)  // Para upload de ficheiros
  */
 export const api = {
   /** Requisição GET - usada para buscar dados */
@@ -158,4 +165,20 @@ export const api = {
   /** Requisição DELETE - usada para remover recursos */
   delete: <T>(url: string) =>
     apiRequest<T>(url, { method: 'DELETE' }),
+
+  /**
+   * Upload de ficheiro via multipart/form-data.
+   * NÃO adiciona Content-Type (o browser define automaticamente com o boundary).
+   *
+   * @param url - Endpoint da API
+   * @param formData - FormData com o ficheiro e demais dados
+   * @returns Promise com os dados da resposta
+   */
+  upload: <T>(url: string, formData: FormData) =>
+    apiRequest<T>(url, {
+      method: 'POST',
+      body: formData,
+      headers: {}, // Não definir Content-Type - o browser faz isso
+      isFormData: true,
+    }),
 };

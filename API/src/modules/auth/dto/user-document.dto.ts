@@ -17,6 +17,8 @@
  * - WORK_PERMIT:      Permissão de trabalho
  * - VISA:             Visto
  * - DRIVERS_LICENSE:  Carta de condução
+ * - POSTING_ORDER:    Destacamento (A1)
+ * - MEDICAL_EXAM:     Exame médico
  * - OTHER:            Outro documento
  *
  * VALIDAÇÕES:
@@ -28,8 +30,9 @@
  * ============================================================================
  */
 
-import { IsString, IsNotEmpty, IsOptional, IsDateString, IsEnum } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsDateString, IsEnum, IsArray, ValidateNested } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 
 /**
  * Enum local para tipos de documento.
@@ -43,7 +46,28 @@ export enum DocumentType {
   WORK_PERMIT = 'WORK_PERMIT',
   VISA = 'VISA',
   DRIVERS_LICENSE = 'DRIVERS_LICENSE',
+  POSTING_ORDER = 'POSTING_ORDER',
+  MEDICAL_EXAM = 'MEDICAL_EXAM',
   OTHER = 'OTHER',
+}
+
+/**
+ * DTO para ficheiro anexado a um documento.
+ */
+export class DocumentFileDto {
+  @ApiProperty({
+    description: 'ID do ficheiro uploadado (via endpoint de upload)',
+    example: 'uuid-do-ficheiro',
+  })
+  @IsString()
+  uploadedFileId: string;
+
+  @ApiPropertyOptional({
+    description: 'Ordem do ficheiro (0 = frente, 1 = verso, etc.)',
+    example: 0,
+  })
+  @IsOptional()
+  order?: number;
 }
 
 /**
@@ -99,36 +123,14 @@ export class CreateDocumentDto {
   description?: string;
 
   @ApiPropertyOptional({
-    description: 'URL/caminho do ficheiro digitalizado (frente)',
-    example: '/uploads/documents/passport_front.pdf',
+    description: 'Lista de ficheiros anexados ao documento',
+    type: [DocumentFileDto],
   })
   @IsOptional()
-  @IsString()
-  filePath?: string;
-
-  @ApiPropertyOptional({
-    description: 'URL/caminho do ficheiro digitalizado (verso)',
-    example: '/uploads/documents/passport_back.pdf',
-  })
-  @IsOptional()
-  @IsString()
-  filePathBack?: string;
-
-  @ApiPropertyOptional({
-    description: 'Nome original do ficheiro carregado',
-    example: 'passaporte.pdf',
-  })
-  @IsOptional()
-  @IsString()
-  fileName?: string;
-
-  @ApiPropertyOptional({
-    description: 'Tipo MIME do ficheiro',
-    example: 'application/pdf',
-  })
-  @IsOptional()
-  @IsString()
-  fileType?: string;
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => DocumentFileDto)
+  files?: DocumentFileDto[];
 }
 
 /**
@@ -166,23 +168,13 @@ export class UpdateDocumentDto {
   @IsString()
   description?: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({
+    description: 'Lista de ficheiros anexados ao documento',
+    type: [DocumentFileDto],
+  })
   @IsOptional()
-  @IsString()
-  filePath?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  filePathBack?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  fileName?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  fileType?: string;
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => DocumentFileDto)
+  files?: DocumentFileDto[];
 }

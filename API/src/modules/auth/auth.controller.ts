@@ -63,6 +63,7 @@ import { CreatePhoneDto, UpdatePhoneDto } from './dto/user-phone.dto.js';
 import { CreateCertificationDto, UpdateCertificationDto } from './dto/user-certification.dto.js';
 import { CreateLanguageDto, UpdateLanguageDto } from './dto/user-language.dto.js';
 import { CreateDocumentDto, UpdateDocumentDto } from './dto/user-document.dto.js';
+import { CreateBankAccountDto, UpdateBankAccountDto } from './dto/user-bank-account.dto.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
 import type { JwtPayload } from './strategies/jwt.strategy.js';
 import {
@@ -348,5 +349,34 @@ export class AuthController {
   @ApiBearerAuth()
   removeDocument(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
     return this.authService.removeDocument(user.sub, id);
+  }
+
+  // ==========================================================================
+  // BANK ACCOUNTS ENDPOINTS
+  // ==========================================================================
+
+  @Post('bank-accounts')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  addBankAccount(@CurrentUser() user: JwtPayload, @Body() dto: CreateBankAccountDto) {
+    return this.authService.addBankAccount(user.sub, dto);
+  }
+
+  @Put('bank-accounts/:id')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  updateBankAccount(
+    @CurrentUser() user: JwtPayload,
+    @Param('id') id: string,
+    @Body() dto: UpdateBankAccountDto,
+  ) {
+    return this.authService.updateBankAccount(user.sub, id, dto);
+  }
+
+  @Delete('bank-accounts/:id')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  removeBankAccount(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
+    return this.authService.removeBankAccount(user.sub, id);
   }
 }

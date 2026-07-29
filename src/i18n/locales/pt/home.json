@@ -4,7 +4,7 @@
   "homeSubtitle": "Aqui está um resumo do seu perfil.",
   "profileCard": {
     "title": "Editar Perfil",
-    "description": "Atualize suas informações pessoais, telefones, certificações e idiomas.",
+    "description": "Atualize suas informações pessoais, contatos, certificações e idiomas.",
     "action": "Ir para Perfil"
   },
   "sections": {
@@ -49,10 +49,14 @@
     "position": "Cargo",
     "bio": "Biografia",
     "role": "Acesso",
-    "photoUrl": "URL da Foto"
+    "photoUrl": "URL da Foto",
+    "avatar": "Foto de Perfil",
+    "avatarUpload": "Enviar Foto",
+    "avatarCamera": "Usar Câmera",
+    "avatarHint": "Foto 3x4 (JPEG, PNG ou WebP, máx. 3 MB)"
   },
   "phones": {
-    "title": "Números de Telefone",
+    "title": "Contato",
     "add": "Adicionar Telefone",
     "empty": "Nenhum número de telefone cadastrado",
     "countryCode": "Código do País",
@@ -119,10 +123,12 @@
     "descriptionPlaceholder": "Ex: Visto tipo D, Permissão de residência...",
     "expired": "Expirado",
     "confirmDelete": "Tem certeza que deseja remover este documento?",
-    "fileUpload": "Cópia Digitalizada",
-    "fileUploadBack": "Cópia Digitalizada (Verso)",
-    "fileName": "Nome do Ficheiro",
-    "noFile": "Nenhum ficheiro carregado",
+    "fileUpload": "Anexar Ficheiros",
+    "fileUploadHint": "JPEG, PNG ou PDF (máx. 3 MB cada)",
+    "fileUploadMultiple": "Pode anexar múltiplos ficheiros",
+    "noFiles": "Nenhum ficheiro anexado",
+    "filesAttached": "{{count}} ficheiro(s) anexado(s)",
+    "removeFile": "Remover ficheiro",
     "types": {
       "passport": "Passaporte",
       "id_card": "Cartão de Identidade",
@@ -131,8 +137,24 @@
       "work_permit": "Permissão de Trabalho",
       "visa": "Visto",
       "drivers_license": "Carta de Condução",
+      "posting_order": "Destacamento (A1)",
+      "medical_exam": "Exame Médico",
       "other": "Outro"
     }
+  },
+  "bankAccounts": {
+    "title": "Dados Bancários",
+    "add": "Adicionar Conta Bancária",
+    "empty": "Nenhuma conta bancária cadastrada",
+    "bankName": "Nome do Banco",
+    "iban": "IBAN",
+    "bicSwift": "BIC/SWIFT",
+    "accountHolder": "Titular da Conta",
+    "isPrimary": "Conta Principal",
+    "description": "Descrição",
+    "descriptionPlaceholder": "Ex: Conta salário, Conta pessoal...",
+    "confirmDelete": "Tem certeza que deseja remover esta conta bancária?",
+    "primary": "Principal"
   },
   "actions": {
     "edit": "Editar",
@@ -148,7 +170,8 @@
   "validation": {
     "minLength": "Mínimo de {{count}} caracteres",
     "required": "Campo obrigatório",
-    "invalidDate": "Data inválida"
+    "invalidDate": "Data inválida",
+    "selectOption": "Selecione..."
   },
   "roles": {
     "ADMIN": "Administrador",

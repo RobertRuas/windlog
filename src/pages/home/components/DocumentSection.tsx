@@ -11,19 +11,20 @@
  * FUNCIONALIDADES:
  * ----------------
  * - Lista todos os documentos (passaporte, ID, NIF, visto, etc.)
- * - Adiciona novo documento com tipo, número, datas e cópia digitalizada
+ * - Adiciona novo documento com tipo, número, datas
+ * - Suporte a upload de múltiplos ficheiros (máx. 3 MB cada)
  * - Edita documentos existentes
  * - Remove documentos com confirmação
  * - Mostra alertas para documentos expirados
- * - Suporte a upload de cópias digitalizadas (frente e verso)
  * ============================================================================
  */
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Plus, Pencil, Trash2, X, Check, AlertCircle, FileText, Upload } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, Check, AlertCircle, FileText, Upload, Paperclip, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import type { UserDocument } from '@/services/auth.service';
+import type { UserDocument, DocumentFile } from '@/services/auth.service';
+import { uploadMultipleFiles, type UploadResult } from '@/services/upload.service';
 
 // Constantes
 import { PREDEFINED_COUNTRIES } from '@/constants/countries';
@@ -43,10 +44,13 @@ interface DocumentSectionProps {
  */
 export function DocumentSection({ documents, onAdd, onUpdate, onRemove }: DocumentSectionProps) {
   const { t } = useTranslation('home');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Estado para controlar qual item está sendo editado
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   // Estado do formulário
   const [formData, setFormData] = useState<Omit<UserDocument, 'id'>>({
@@ -56,11 +60,11 @@ export function DocumentSection({ documents, onAdd, onUpdate, onRemove }: Docume
     issueDate: '',
     expiryDate: '',
     description: '',
-    filePath: '',
-    filePathBack: '',
-    fileName: '',
-    fileType: '',
+    files: [],
   });
+
+  // Ficheiros selecionados para upload (ainda não enviados)
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
 
   /**
    * Verifica se um documento está expirado.
@@ -82,6 +86,8 @@ export function DocumentSection({ documents, onAdd, onUpdate, onRemove }: Docume
       WORK_PERMIT: t('documents.types.work_permit'),
       VISA: t('documents.types.visa'),
       DRIVERS_LICENSE: t('documents.types.drivers_license'),
+      POSTING_ORDER: t('documents.types.posting_order'),
+      MEDICAL_EXAM: t('documents.types.medical_exam'),
       OTHER: t('documents.types.other'),
     };
     return types[type] || type;
@@ -104,6 +110,15 @@ export function DocumentSection({ documents, onAdd, onUpdate, onRemove }: Docume
   };
 
   /**
+   * Formata o tamanho do ficheiro para exibição.
+   */
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
+  /**
    * Inicia a edição de um documento.
    */
   const handleEdit = (doc: UserDocument) => {
@@ -115,11 +130,10 @@ export function DocumentSection({ documents, onAdd, onUpdate, onRemove }: Docume
       issueDate: doc.issueDate ? doc.issueDate.split('T')[0] : '',
       expiryDate: doc.expiryDate ? doc.expiryDate.split('T')[0] : '',
       description: doc.description || '',
-      filePath: doc.filePath || '',
-      filePathBack: doc.filePathBack || '',
-      fileName: doc.fileName || '',
-      fileType: doc.fileType || '',
+      files: doc.files || [],
     });
+    setPendingFiles([]);
+    setUploadError(null);
   };
 
   /**
@@ -135,11 +149,58 @@ export function DocumentSection({ documents, onAdd, onUpdate, onRemove }: Docume
       issueDate: '',
       expiryDate: '',
       description: '',
-      filePath: '',
-      filePathBack: '',
-      fileName: '',
-      fileType: '',
+      files: [],
     });
+    setPendingFiles([]);
+    setUploadError(null);
+  };
+
+  /**
+   * Processa os ficheiros selecionados para upload.
+   */
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    // Valida cada ficheiro
+    const errors: string[] = [];
+    const validFiles: File[] = [];
+
+    for (const file of files) {
+      // Valida tamanho (3 MB)
+      if (file.size > 3 * 1024 * 1024) {
+        errors.push(`${file.name}: ${(file.size / 1024 / 1024).toFixed(2)} MB (máx. 3 MB)`);
+        continue;
+      }
+
+      // Valida tipo
+      if (!['image/jpeg', 'image/png', 'image/webp', 'application/pdf'].includes(file.type)) {
+        errors.push(`${file.name}: tipo não suportado`);
+        continue;
+      }
+
+      validFiles.push(file);
+    }
+
+    if (errors.length > 0) {
+      setUploadError(errors.join('\n'));
+    } else {
+      setUploadError(null);
+    }
+
+    setPendingFiles((prev) => [...prev, ...validFiles]);
+
+    // Limpa o input para permitir selecionar o mesmo ficheiro novamente
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  /**
+   * Remove um ficheiro pendente da lista.
+   */
+  const removePendingFile = (index: number) => {
+    setPendingFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
   /**
@@ -147,19 +208,38 @@ export function DocumentSection({ documents, onAdd, onUpdate, onRemove }: Docume
    */
   const handleSave = async () => {
     if (editingId) {
-      await onUpdate(editingId, {
-        ...formData,
-        expiryDate: formData.expiryDate || undefined,
-        issueDate: formData.issueDate || undefined,
-        description: formData.description || undefined,
-        documentNumber: formData.documentNumber || undefined,
-        issuingCountry: formData.issuingCountry || undefined,
-        filePath: formData.filePath || undefined,
-        filePathBack: formData.filePathBack || undefined,
-        fileName: formData.fileName || undefined,
-        fileType: formData.fileType || undefined,
-      });
-      setEditingId(null);
+      setIsUploading(true);
+      try {
+        // Faz upload dos ficheiros pendentes (se houver)
+        let newFiles: UploadResult[] = [];
+        if (pendingFiles.length > 0) {
+          newFiles = await uploadMultipleFiles(pendingFiles, 'document');
+        }
+
+        // Monta a lista de ficheiros (existentes + novos)
+        const allFiles = [
+          ...(formData.files || []).map((f, i) => ({ uploadedFileId: f.id, order: i })),
+          ...newFiles.map((f, i) => ({ uploadedFileId: f.id, order: (formData.files?.length || 0) + i })),
+        ];
+
+        await onUpdate(editingId, {
+          type: formData.type,
+          documentNumber: formData.documentNumber || undefined,
+          issuingCountry: formData.issuingCountry || undefined,
+          issueDate: formData.issueDate || undefined,
+          expiryDate: formData.expiryDate || undefined,
+          description: formData.description || undefined,
+          files: allFiles as unknown as DocumentFile[],
+        });
+
+        setEditingId(null);
+        setPendingFiles([]);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : t('feedback.error');
+        setUploadError(message);
+      } finally {
+        setIsUploading(false);
+      }
     }
   };
 
@@ -167,20 +247,32 @@ export function DocumentSection({ documents, onAdd, onUpdate, onRemove }: Docume
    * Adiciona um novo documento.
    */
   const handleAdd = async () => {
-    await onAdd({
-      ...formData,
-      expiryDate: formData.expiryDate || undefined,
-      issueDate: formData.issueDate || undefined,
-      description: formData.description || undefined,
-      documentNumber: formData.documentNumber || undefined,
-      issuingCountry: formData.issuingCountry || undefined,
-      filePath: formData.filePath || undefined,
-      filePathBack: formData.filePathBack || undefined,
-      fileName: formData.fileName || undefined,
-      fileType: formData.fileType || undefined,
-    });
-    setIsAdding(false);
-    handleCancel();
+    setIsUploading(true);
+    try {
+      // Faz upload dos ficheiros (se houver)
+      let uploadedFiles: UploadResult[] = [];
+      if (pendingFiles.length > 0) {
+        uploadedFiles = await uploadMultipleFiles(pendingFiles, 'document');
+      }
+
+      await onAdd({
+        type: formData.type,
+        documentNumber: formData.documentNumber || undefined,
+        issuingCountry: formData.issuingCountry || undefined,
+        issueDate: formData.issueDate || undefined,
+        expiryDate: formData.expiryDate || undefined,
+        description: formData.description || undefined,
+        files: uploadedFiles.map((f, i) => ({ uploadedFileId: f.id, order: i })),
+      } as unknown as Omit<UserDocument, 'id'>);
+
+      setIsAdding(false);
+      handleCancel();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : t('feedback.error');
+      setUploadError(message);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   /**
@@ -190,22 +282,6 @@ export function DocumentSection({ documents, onAdd, onUpdate, onRemove }: Docume
     if (window.confirm(t('documents.confirmDelete'))) {
       await onRemove(id);
     }
-  };
-
-  /**
-   * Simula o upload de um ficheiro (guarda metadados).
-   * Num futuro, isto fará upload real para o servidor.
-   */
-  const handleFileSelect = (field: 'filePath' | 'filePathBack') => {
-    // Placeholder: num futuro, isto abrirá um file picker e fará upload
-    // Por agora, apenas guarda o nome do ficheiro como simulação
-    const fakeName = field === 'filePath' ? 'documento_frente.pdf' : 'documento_verso.pdf';
-    setFormData((prev) => ({
-      ...prev,
-      [field]: `/uploads/documents/${fakeName}`,
-      fileName: fakeName,
-      fileType: 'application/pdf',
-    }));
   };
 
   /**
@@ -228,6 +304,8 @@ export function DocumentSection({ documents, onAdd, onUpdate, onRemove }: Docume
             <option value="WORK_PERMIT">{t('documents.types.work_permit')}</option>
             <option value="VISA">{t('documents.types.visa')}</option>
             <option value="DRIVERS_LICENSE">{t('documents.types.drivers_license')}</option>
+            <option value="POSTING_ORDER">{t('documents.types.posting_order')}</option>
+            <option value="MEDICAL_EXAM">{t('documents.types.medical_exam')}</option>
             <option value="OTHER">{t('documents.types.other')}</option>
           </select>
         </div>
@@ -288,42 +366,82 @@ export function DocumentSection({ documents, onAdd, onUpdate, onRemove }: Docume
         </div>
       </div>
 
-      {/* Upload de cópias digitalizadas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="form-label">{t('documents.fileUpload')}</label>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => handleFileSelect('filePath')}
-              className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors"
-            >
-              <Upload size={14} />
-              {formData.filePath ? formData.fileName || 'Ficheiro' : t('documents.noFile')}
-            </button>
+      {/* Upload de múltiplos ficheiros */}
+      <div>
+        <label className="form-label">{t('documents.fileUpload')}</label>
+        <p className="text-xs text-gray-500 mb-2">{t('documents.fileUploadMultiple')}</p>
+
+        {/* Ficheiros já anexados (existentes) */}
+        {formData.files && formData.files.length > 0 && (
+          <div className="space-y-1 mb-2">
+            {formData.files.map((file: DocumentFile) => (
+              <div key={file.id} className="flex items-center gap-2 text-sm text-gray-600 bg-white px-2 py-1 rounded border">
+                <FileText size={14} className="text-blue-500 flex-shrink-0" />
+                <span className="truncate flex-1">{file.originalName}</span>
+                <span className="text-xs text-gray-400">{formatFileSize(file.size)}</span>
+              </div>
+            ))}
           </div>
-        </div>
-        <div>
-          <label className="form-label">{t('documents.fileUploadBack')}</label>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => handleFileSelect('filePathBack')}
-              className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors"
-            >
-              <Upload size={14} />
-              {formData.filePathBack ? 'Verso' : t('documents.noFile')}
-            </button>
+        )}
+
+        {/* Ficheiros pendentes de upload */}
+        {pendingFiles.length > 0 && (
+          <div className="space-y-1 mb-2">
+            {pendingFiles.map((file, index) => (
+              <div key={index} className="flex items-center gap-2 text-sm text-blue-600 bg-blue-50 px-2 py-1 rounded border border-blue-200">
+                <Paperclip size={14} className="flex-shrink-0" />
+                <span className="truncate flex-1">{file.name}</span>
+                <span className="text-xs text-blue-400">{formatFileSize(file.size)}</span>
+                <button
+                  type="button"
+                  onClick={() => removePendingFile(index)}
+                  className="text-blue-400 hover:text-blue-600"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ))}
           </div>
-        </div>
+        )}
+
+        {/* Botão para selecionar ficheiros */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          multiple
+          accept="image/jpeg,image/png,image/webp,application/pdf"
+          onChange={handleFileSelect}
+          className="hidden"
+        />
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+        >
+          <Upload size={14} />
+          {t('documents.fileUpload')}
+        </button>
+        <p className="text-xs text-gray-400 mt-1">{t('documents.fileUploadHint')}</p>
+
+        {/* Erro de upload */}
+        {uploadError && (
+          <div className="flex items-center gap-2 mt-2 text-sm text-red-600">
+            <AlertCircle size={14} />
+            <pre className="whitespace-pre-wrap font-sans">{uploadError}</pre>
+          </div>
+        )}
       </div>
 
       <div className="flex gap-2">
-        <Button size="sm" onClick={isAddMode ? handleAdd : handleSave}>
-          <Check className="w-4 h-4 mr-1" />
+        <Button size="sm" onClick={isAddMode ? handleAdd : handleSave} disabled={isUploading}>
+          {isUploading ? (
+            <RefreshCw className="w-4 h-4 mr-1 animate-spin" />
+          ) : (
+            <Check className="w-4 h-4 mr-1" />
+          )}
           {isAddMode ? t('actions.add') : t('actions.save')}
         </Button>
-        <Button size="sm" variant="secondary" onClick={handleCancel}>
+        <Button size="sm" variant="secondary" onClick={handleCancel} disabled={isUploading}>
           <X className="w-4 h-4 mr-1" />
           {t('actions.cancel')}
         </Button>
@@ -399,11 +517,22 @@ export function DocumentSection({ documents, onAdd, onUpdate, onRemove }: Docume
                   {doc.description && (
                     <p className="text-sm text-gray-500 mt-1">{doc.description}</p>
                   )}
-                  {doc.filePath && (
-                    <div className="flex items-center gap-1 mt-1 text-xs text-blue-600">
-                      <FileText size={12} />
-                      <span>{doc.fileName || 'Documento'}</span>
-                      {doc.filePathBack && <span className="text-gray-400 ml-1">(+ verso)</span>}
+                  {/* Ficheiros anexados */}
+                  {doc.files && doc.files.length > 0 && (
+                    <div className="mt-2 space-y-1">
+                      {doc.files.map((file) => (
+                        <a
+                          key={file.id}
+                          href={file.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 text-xs text-blue-600 hover:text-blue-800 transition-colors"
+                        >
+                          <Paperclip size={12} />
+                          <span className="truncate">{file.originalName}</span>
+                          <span className="text-gray-400">({formatFileSize(file.size)})</span>
+                        </a>
+                      ))}
                     </div>
                   )}
                 </div>

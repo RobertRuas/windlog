@@ -210,10 +210,16 @@ export interface UserDocument {
   issueDate?: string;
   expiryDate?: string;
   description?: string;
-  filePath?: string;
-  filePathBack?: string;
-  fileName?: string;
-  fileType?: string;
+  files?: DocumentFile[];
+}
+
+export interface DocumentFile {
+  id: string;
+  url: string;
+  originalName: string;
+  mimeType: string;
+  size: number;
+  order: number;
 }
 
 export async function addDocument(data: Omit<UserDocument, 'id'>): Promise<UserDocument> {
@@ -228,4 +234,32 @@ export async function updateDocument(id: string, data: Partial<UserDocument>): P
 
 export async function removeDocument(id: string): Promise<void> {
   await api.delete(`/api/v1/auth/documents/${id}`);
+}
+
+// ============================================================================
+// BANK ACCOUNTS - Gerenciamento de Contas Bancárias
+// ============================================================================
+
+export interface BankAccount {
+  id: string;
+  bankName: string;
+  iban: string;
+  bicSwift?: string;
+  accountHolder: string;
+  isPrimary: boolean;
+  description?: string;
+}
+
+export async function addBankAccount(data: Omit<BankAccount, 'id'>): Promise<BankAccount> {
+  const response = await api.post<ApiResponse<BankAccount>>('/api/v1/auth/bank-accounts', data);
+  return response.data;
+}
+
+export async function updateBankAccount(id: string, data: Partial<BankAccount>): Promise<BankAccount> {
+  const response = await api.put<ApiResponse<BankAccount>>(`/api/v1/auth/bank-accounts/${id}`, data);
+  return response.data;
+}
+
+export async function removeBankAccount(id: string): Promise<void> {
+  await api.delete(`/api/v1/auth/bank-accounts/${id}`);
 }

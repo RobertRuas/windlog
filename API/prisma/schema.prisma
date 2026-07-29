@@ -104,6 +104,8 @@ enum DocumentType {
   WORK_PERMIT
   VISA
   DRIVERS_LICENSE
+  POSTING_ORDER      // Destacamento (A1)
+  MEDICAL_EXAM       // Exame médico
   OTHER
 }
 
@@ -199,6 +201,8 @@ model User {
   certifications  UserCertification[]
   languages       UserLanguage[]
   documents       UserDocument[]
+  bankAccounts    UserBankAccount[]
+  uploadedFiles   UploadedFile[]
   projectMembers  ProjectMember[]
 }
 
@@ -233,15 +237,8 @@ model UserDocument {
   /// Descrição ou notas adicionais (ex: "Visto tipo D", "Permissão de residência")
   description String?
 
-  // Ficheiro digitalizado (cópia do documento)
-  /// Caminho/URL do ficheiro com a cópia digitalizada (frente)
-  filePath    String?
-  /// Caminho/URL do ficheiro com a cópia digitalizada (verso, se aplicável)
-  filePathBack String?
-  /// Nome original do ficheiro carregado
-  fileName    String?
-  /// Tipo MIME do ficheiro (ex: "application/pdf", "image/jpeg")
-  fileType    String?
+  // Ficheiros anexados ao documento (múltiplos ficheiros suportados)
+  files       UserDocumentFile[]
 
   // Relação com o usuário
   userId    String
@@ -253,6 +250,101 @@ model UserDocument {
 
   @@index([userId])
   @@index([expiryDate])
+}
+
+// ---------------------------------------------------------------------------
+// MODEL: USER DOCUMENT FILE (Ficheiros Anexados a Documentos)
+// ---------------------------------------------------------------------------
+// Relação entre documentos e ficheiros uploadados.
+// Permite múltiplos ficheiros por documento (frente, verso, anexos).
+// ---------------------------------------------------------------------------
+model UserDocumentFile {
+  id           String   @id @default(uuid())
+
+  // Relação com o documento
+  documentId   String
+  document     UserDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  // Relação com o ficheiro uploadado
+  uploadedFileId String
+  uploadedFile   UploadedFile @relation(fields: [uploadedFileId], references: [id], onDelete: Cascade)
+
+  // Ordem do ficheiro (ex: 0 = frente, 1 = verso)
+  order        Int      @default(0)
+
+  // Timestamps
+  createdAt    DateTime @default(now())
+
+  @@index([documentId])
+  @@index([uploadedFileId])
+}
+
+// ---------------------------------------------------------------------------
+// MODEL: UPLOADED FILE (Armazenamento Centralizado de Ficheiros)
+// ---------------------------------------------------------------------------
+// Regista TODOS os ficheiros uploadados no sistema.
+// Usado como repositório central para avatares, documentos, etc.
+// Os ficheiros físicos são guardados em API/uploads/
+// ---------------------------------------------------------------------------
+model UploadedFile {
+  id             String   @id @default(uuid())
+
+  /// Caminho relativo do ficheiro no servidor (ex: "documents/uuid-file.pdf")
+  path           String
+  /// Nome original do ficheiro quando foi carregado
+  originalName   String
+  /// Tipo MIME do ficheiro (ex: "application/pdf", "image/jpeg")
+  mimeType       String
+  /// Tamanho do ficheiro em bytes
+  size           Int
+  /// Categoria do ficheiro (avatar, document, certification, etc.)
+  category       String
+
+  // Relação com o usuário que fez o upload
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Relação com documentos (se aplicável)
+  documentFiles  UserDocumentFile[]
+
+  // Timestamps
+  createdAt      DateTime @default(now())
+
+  @@index([userId])
+  @@index([category])
+}
+
+// ---------------------------------------------------------------------------
+// MODEL: USER BANK ACCOUNT (Contas Bancárias do Usuário)
+// ---------------------------------------------------------------------------
+// Regista as contas bancárias do usuário para processamento de pagamentos.
+// Um usuário pode ter múltiplas contas bancárias.
+// ---------------------------------------------------------------------------
+model UserBankAccount {
+  id              String   @id @default(uuid())
+
+  /// Nome do banco (ex: "Millennium BCP", "Caixa Geral de Depósitos")
+  bankName        String
+  /// IBAN (International Bank Account Number)
+  iban            String
+  /// Código BIC/SWIFT
+  bicSwift        String?
+  /// Nome completo do titular da conta
+  accountHolder   String
+  /// Se é a conta principal do usuário
+  isPrimary       Boolean  @default(false)
+  /// Descrição opcional (ex: "Conta salário", "Conta pessoal")
+  description     String?
+
+  // Relação com o usuário
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId])
 }
 
 // ---------------------------------------------------------------------------

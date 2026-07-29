@@ -1,0 +1,324 @@
+/**
+ * ============================================================================
+ * UPLOAD SERVICE - Serviço Centralizado de Upload de Ficheiros
+ * ============================================================================
+ *
+ * O QUE É ESTE SERVIÇO?
+ * ---------------------
+ * Serviço centralizado que gerencia TODOS os uploads de ficheiros do sistema.
+ * Os ficheiros são guardados no disco do servidor (pasta API/uploads/).
+ *
+ * FUNCIONALIDADES:
+ * ----------------
+ * - Upload de ficheiros com validação de tamanho e tipo
+ * - Geração de nomes únicos para evitar conflitos
+ * - Organização por categorias (avatars, documents, certifications, etc.)
+ * - Busca de ficheiros por ID ou categoria
+ * - Remoção de ficheiros (físico + banco de dados)
+ * - Listagem de ficheiros do usuário
+ *
+ * COMO USAR:
+ * ----------
+ * 1. Injete o UploadService no seu módulo
+ * 2. Chame uploadFile() para fazer upload
+ * 3. Use getFileById() para buscar informações
+ * 4. Use removeFile() para remover
+ *
+ * CATEGORIAS DISPONÍVEIS:
+ * -----------------------
+ * - avatar:       Fotos de perfil do usuário
+ * - document:     Documentos pessoais (passaporte, ID, etc.)
+ * - certification: Certificações profissionais
+ * - other:        Outros ficheiros
+ * ============================================================================
+ */
+
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
+import * as fs from 'fs';
+import * as path from 'path';
+import { v4 as uuidv4 } from 'uuid';
+
+import { PrismaService } from '../../database/prisma.service.js';
+
+/**
+ * Categorias válidas para upload de ficheiros.
+ */
+export type FileCategory = 'avatar' | 'document' | 'certification' | 'bank' | 'other';
+
+/**
+ * Resultado de um upload bem-sucedido.
+ */
+export interface UploadResult {
+  /** ID do ficheiro no banco de dados */
+  id: string;
+  /** Caminho relativo para acessar o ficheiro (ex: /api/v1/uploads/avatars/xxx.jpg) */
+  url: string;
+  /** Caminho relativo no servidor */
+  path: string;
+  /** Nome original do ficheiro */
+  originalName: string;
+  /** Tipo MIME do ficheiro */
+  mimeType: string;
+  /** Tamanho em bytes */
+  size: number;
+}
+
+/**
+ * Informações completas de um ficheiro uploadado.
+ */
+export interface FileInfo {
+  id: string;
+  path: string;
+  url: string;
+  originalName: string;
+  mimeType: string;
+  size: number;
+  category: string;
+  userId: string;
+  createdAt: Date;
+}
+
+/**
+ * Tamanho máximo de upload: 3 MB (em bytes).
+ */
+const MAX_FILE_SIZE = 3 * 1024 * 1024;
+
+/**
+ * Tipos MIME permitidos para upload.
+ */
+const ALLOWED_MIME_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'application/pdf',
+];
+
+@Injectable()
+export class UploadService {
+  private readonly logger = new Logger(UploadService.name);
+
+  /**
+   * Pasta base onde os ficheiros são guardados.
+   * Resolve para API/uploads/
+   */
+  private readonly uploadsDir: string;
+
+  constructor(private readonly prisma: PrismaService) {
+    // Resolve o caminho absoluto para a pasta uploads/
+    this.uploadsDir = path.resolve(process.cwd(), 'uploads');
+    this.ensureUploadsDir();
+  }
+
+  /**
+   * Garante que a pasta de uploads existe.
+   * Cria subpastas para cada categoria se não existirem.
+   */
+  private ensureUploadsDir() {
+    const categories = ['avatars', 'documents', 'certifications', 'banks', 'other'];
+    if (!fs.existsSync(this.uploadsDir)) {
+      fs.mkdirSync(this.uploadsDir, { recursive: true });
+    }
+    for (const cat of categories) {
+      const catDir = path.join(this.uploadsDir, cat);
+      if (!fs.existsSync(catDir)) {
+        fs.mkdirSync(catDir, { recursive: true });
+      }
+    }
+  }
+
+  /**
+   * Retorna o nome da subpasta para uma categoria.
+   */
+  private getCategoryFolder(category: FileCategory): string {
+    const folders: Record<FileCategory, string> = {
+      avatar: 'avatars',
+      document: 'documents',
+      certification: 'certifications',
+      bank: 'banks',
+      other: 'other',
+    };
+    return folders[category] || 'other';
+  }
+
+  /**
+   * Faz upload de um ficheiro para o servidor.
+   *
+   * PASSO A PASSO:
+   * 1. Valida o tamanho do ficheiro (máx. 3 MB)
+   * 2. Valida o tipo MIME do ficheiro
+   * 3. Gera um nome único (UUID + nome original)
+   * 4. Guarda o ficheiro no disco (API/uploads/<categoria>/)
+   * 5. Regista no banco de dados (modelo UploadedFile)
+   * 6. Retorna informações do ficheiro (incluindo URL de acesso)
+   *
+   * @param file - Ficheiro recebido (buffer + metadados do multer)
+   * @param userId - ID do usuário que está fazendo o upload
+   * @param category - Categoria do ficheiro (avatar, document, etc.)
+   * @returns Informações do ficheiro uploadado
+   */
+  async uploadFile(
+    file: Express.Multer.File,
+    userId: string,
+    category: FileCategory = 'other',
+  ): Promise<UploadResult> {
+    // PASSO 1: Valida o tamanho do ficheiro
+    if (file.size > MAX_FILE_SIZE) {
+      throw new BadRequestException(
+        `Ficheiro muito grande. Tamanho máximo: 3 MB. Recebido: ${(file.size / 1024 / 1024).toFixed(2)} MB`,
+      );
+    }
+
+    // PASSO 2: Valida o tipo MIME
+    if (!ALLOWED_MIME_TYPES.includes(file.mimetype)) {
+      throw new BadRequestException(
+        `Tipo de ficheiro não permitido. Tipos aceitos: JPEG, PNG, WebP, PDF. Recebido: ${file.mimetype}`,
+      );
+    }
+
+    // PASSO 3: Gera um nome único para o ficheiro
+    const folder = this.getCategoryFolder(category);
+    const ext = path.extname(file.originalname);
+    const uniqueName = `${uuidv4()}${ext}`;
+    const relativePath = `${folder}/${uniqueName}`;
+    const absolutePath = path.join(this.uploadsDir, relativePath);
+
+    // PASSO 4: Guarda o ficheiro no disco
+    fs.writeFileSync(absolutePath, file.buffer);
+
+    this.logger.log(`File uploaded: ${relativePath} (${file.size} bytes)`);
+
+    // PASSO 5: Regista no banco de dados
+    const uploadedFile = await this.prisma.uploadedFile.create({
+      data: {
+        path: relativePath,
+        originalName: file.originalname,
+        mimeType: file.mimetype,
+        size: file.size,
+        category,
+        userId,
+      },
+    });
+
+    // PASSO 6: Retorna informações do ficheiro
+    return {
+      id: uploadedFile.id,
+      url: `/api/v1/uploads/${relativePath}`,
+      path: relativePath,
+      originalName: uploadedFile.originalName,
+      mimeType: uploadedFile.mimeType,
+      size: uploadedFile.size,
+    };
+  }
+
+  /**
+   * Busca informações de um ficheiro pelo ID.
+   *
+   * @param fileId - ID do ficheiro no banco de dados
+   * @returns Informações completas do ficheiro
+   * @throws NotFoundException se o ficheiro não existir
+   */
+  async getFileById(fileId: string): Promise<FileInfo> {
+    const file = await this.prisma.uploadedFile.findUnique({
+      where: { id: fileId },
+    });
+
+    if (!file) {
+      throw new NotFoundException(`Ficheiro não encontrado: ${fileId}`);
+    }
+
+    return {
+      id: file.id,
+      path: file.path,
+      url: `/api/v1/uploads/${file.path}`,
+      originalName: file.originalName,
+      mimeType: file.mimeType,
+      size: file.size,
+      category: file.category,
+      userId: file.userId,
+      createdAt: file.createdAt,
+    };
+  }
+
+  /**
+   * Lista todos os ficheiros de um usuário, opcionalmente filtrados por categoria.
+   *
+   * @param userId - ID do usuário
+   * @param category - Categoria para filtrar (opcional)
+   * @returns Lista de ficheiros encontrados
+   */
+  async getUserFiles(userId: string, category?: FileCategory): Promise<FileInfo[]> {
+    const where: Record<string, unknown> = { userId };
+    if (category) {
+      where.category = category;
+    }
+
+    const files = await this.prisma.uploadedFile.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return files.map((file) => ({
+      id: file.id,
+      path: file.path,
+      url: `/api/v1/uploads/${file.path}`,
+      originalName: file.originalName,
+      mimeType: file.mimeType,
+      size: file.size,
+      category: file.category,
+      userId: file.userId,
+      createdAt: file.createdAt,
+    }));
+  }
+
+  /**
+   * Remove um ficheiro do sistema (físico + banco de dados).
+   *
+   * @param fileId - ID do ficheiro no banco de dados
+   * @throws NotFoundException se o ficheiro não existir
+   */
+  async removeFile(fileId: string): Promise<void> {
+    const file = await this.prisma.uploadedFile.findUnique({
+      where: { id: fileId },
+    });
+
+    if (!file) {
+      throw new NotFoundException(`Ficheiro não encontrado: ${fileId}`);
+    }
+
+    // Remove o ficheiro físico do disco
+    const absolutePath = path.join(this.uploadsDir, file.path);
+    if (fs.existsSync(absolutePath)) {
+      fs.unlinkSync(absolutePath);
+      this.logger.log(`File deleted from disk: ${file.path}`);
+    }
+
+    // Remove o registo do banco de dados
+    await this.prisma.uploadedFile.delete({
+      where: { id: fileId },
+    });
+
+    this.logger.log(`File record deleted: ${fileId}`);
+  }
+
+  /**
+   * Remove todos os ficheiros de uma lista de IDs.
+   * Útil para limpeza em massa (ex: ao remover um documento com múltiplos anexos).
+   *
+   * @param fileIds - Lista de IDs de ficheiros para remover
+   */
+  async removeMultipleFiles(fileIds: string[]): Promise<void> {
+    for (const fileId of fileIds) {
+      try {
+        await this.removeFile(fileId);
+      } catch (error) {
+        // Se o ficheiro não existir, apenas loga e continua
+        this.logger.warn(`Could not delete file ${fileId}: ${error}`);
+      }
+    }
+  }
+}

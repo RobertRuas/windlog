@@ -11,10 +11,12 @@
  *
  * SEÇÕES DO PERFIL:
  * -----------------
- * 1. Informações Pessoais e Profissionais (unificada)
- * 2. Números de Telefone (acordeão)
- * 3. Certificações (acordeão)
- * 4. Idiomas (acordeão)
+ * 1. Informações Pessoais e Profissionais (com avatar)
+ * 2. Documentos Pessoais (logo após informações pessoais)
+ * 3. Contato (telefones)
+ * 4. Dados Bancários
+ * 5. Certificações
+ * 6. Idiomas
  *
  * LAYOUT:
  * -------
@@ -24,7 +26,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { Phone, Award, Globe, User, Mail, MapPin, Briefcase, FileText, CreditCard } from 'lucide-react';
+import { Phone, Award, Globe, User, Mail, MapPin, Briefcase, FileText, CreditCard, Landmark } from 'lucide-react';
 
 // Layout
 import { AppLayout } from '@/components/layout/AppLayout';
@@ -35,6 +37,8 @@ import { PhoneNumberSection } from '@/pages/home/components/PhoneNumberSection';
 import { CertificationSection } from '@/pages/home/components/CertificationSection';
 import { LanguageSection } from '@/pages/home/components/LanguageSection';
 import { DocumentSection } from '@/pages/home/components/DocumentSection';
+import { BankAccountSection } from '@/pages/home/components/BankAccountSection';
+import { AvatarUpload } from '@/pages/home/components/AvatarUpload';
 import { Accordion } from '@/components/ui/Accordion';
 
 // Hooks
@@ -48,6 +52,7 @@ import {
   type Certification,
   type Language,
   type UserDocument,
+  type BankAccount,
 } from '@/services/auth.service';
 
 // Constantes
@@ -69,6 +74,7 @@ export function ProfilePage() {
     certMutation,
     langMutation,
     docMutation,
+    bankMutation,
   } = useProfileMutations();
 
   const countryOptions = PREDEFINED_COUNTRIES.map((c: { code: string; name: string }) => ({
@@ -196,6 +202,16 @@ export function ProfilePage() {
     await docMutation.mutateAsync({ action: 'remove', id });
   }
 
+  async function handleAddBankAccount(data: Omit<BankAccount, 'id'>) {
+    await bankMutation.mutateAsync({ action: 'add', data });
+  }
+  async function handleUpdateBankAccount(id: string, data: Partial<BankAccount>) {
+    await bankMutation.mutateAsync({ action: 'update', id, data });
+  }
+  async function handleRemoveBankAccount(id: string) {
+    await bankMutation.mutateAsync({ action: 'remove', id });
+  }
+
   if (isLoading) {
     return (
       <AppLayout>
@@ -218,14 +234,26 @@ export function ProfilePage() {
 
   return (
     <AppLayout>
-      {/* Título da página */}
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">
-        {t('title')}, {data!.firstName}!
-      </h1>
+      {/* Cabeçalho com Avatar + Nome */}
+      <div className="flex items-center gap-4 mb-6">
+        <AvatarUpload
+          currentPhotoUrl={data?.photoUrl}
+          onSuccess={() => profileMutation.mutate({})}
+          compact
+        />
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">
+            {t('title')}, {data!.firstName}!
+          </h1>
+          <p className="text-sm text-gray-500 mt-0.5">
+            {data?.position || data?.department || t('sections.personal.description')}
+          </p>
+        </div>
+      </div>
 
       {/* Seções do perfil */}
       <div className="flex flex-col gap-6">
-        {/* Informações Pessoais, Profissionais e Endereço */}
+        {/* 1. Informações Pessoais, Profissionais e Endereço (com Avatar) */}
         <ProfileSection
           title={t('sections.personal.title')}
           description={t('sections.personal.description')}
@@ -236,7 +264,22 @@ export function ProfilePage() {
           isLoading={profileMutation.isPending}
         />
 
-        {/* Números de Telefone */}
+
+        {/* 2. Documentos Pessoais (logo após informações pessoais) */}
+        <Accordion
+          title={t('documents.title')}
+          icon={<CreditCard className="w-5 h-5 text-rose-600" />}
+          defaultOpen={false}
+        >
+          <DocumentSection
+            documents={(data?.documents || []) as unknown as UserDocument[]}
+            onAdd={handleAddDocument}
+            onUpdate={handleUpdateDocument}
+            onRemove={handleRemoveDocument}
+          />
+        </Accordion>
+
+        {/* 3. Contato (telefones) */}
         <Accordion
           title={t('phones.title')}
           icon={<Phone className="w-5 h-5 text-blue-600" />}
@@ -250,7 +293,21 @@ export function ProfilePage() {
           />
         </Accordion>
 
-        {/* Certificações */}
+        {/* 4. Dados Bancários */}
+        <Accordion
+          title={t('bankAccounts.title')}
+          icon={<Landmark className="w-5 h-5 text-green-600" />}
+          defaultOpen={false}
+        >
+          <BankAccountSection
+            accounts={(data?.bankAccounts || []) as unknown as BankAccount[]}
+            onAdd={handleAddBankAccount}
+            onUpdate={handleUpdateBankAccount}
+            onRemove={handleRemoveBankAccount}
+          />
+        </Accordion>
+
+        {/* 5. Certificações */}
         <Accordion
           title={t('certifications.title')}
           icon={<Award className="w-5 h-5 text-purple-600" />}
@@ -264,7 +321,7 @@ export function ProfilePage() {
           />
         </Accordion>
 
-        {/* Idiomas */}
+        {/* 6. Idiomas */}
         <Accordion
           title={t('languages.title')}
           icon={<Globe className="w-5 h-5 text-green-600" />}
@@ -275,20 +332,6 @@ export function ProfilePage() {
             onAdd={handleAddLanguage}
             onUpdate={handleUpdateLanguage}
             onRemove={handleRemoveLanguage}
-          />
-        </Accordion>
-
-        {/* Documentos Pessoais */}
-        <Accordion
-          title={t('documents.title')}
-          icon={<CreditCard className="w-5 h-5 text-rose-600" />}
-          defaultOpen={false}
-        >
-          <DocumentSection
-            documents={(data?.documents || []) as unknown as UserDocument[]}
-            onAdd={handleAddDocument}
-            onUpdate={handleUpdateDocument}
-            onRemove={handleRemoveDocument}
           />
         </Accordion>
       </div>

@@ -6,7 +6,8 @@
  * O QUE É ESTE ARQUIVO?
  * ---------------------
  * Hook customizado que encapsula todas as mutations do perfil.
- * Inclui mutations para perfil, telefones, certificações, idiomas e documentos.
+ * Inclui mutations para perfil, telefones, certificações, idiomas,
+ * documentos e contas bancárias.
  *
  * RETORNA:
  * --------
@@ -15,6 +16,7 @@
  * - certMutation: mutation para certificações
  * - langMutation: mutation para idiomas
  * - docMutation: mutation para documentos
+ * - bankMutation: mutation para contas bancárias
  * ============================================================================
  */
 
@@ -35,10 +37,14 @@ import {
   addDocument,
   updateDocument,
   removeDocument,
+  addBankAccount,
+  updateBankAccount,
+  removeBankAccount,
   type PhoneNumber,
   type Certification,
   type Language,
   type UserDocument,
+  type BankAccount,
 } from '@/services/auth.service';
 
 /**
@@ -119,11 +125,27 @@ export function useProfileMutations() {
     },
   });
 
+  const bankMutation = useMutation({
+    mutationFn: async ({ action, id, data }: { action: 'add' | 'update' | 'remove'; id?: string; data?: Omit<BankAccount, 'id'> | Partial<BankAccount> }) => {
+      if (action === 'add') return addBankAccount(data as Omit<BankAccount, 'id'>);
+      if (action === 'update') return updateBankAccount(id!, data as Partial<BankAccount>);
+      return removeBankAccount(id!);
+    },
+    onSuccess: () => {
+      toast.success(t('feedback.success'));
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+    },
+    onError: () => {
+      toast.error(t('feedback.error'));
+    },
+  });
+
   return {
     profileMutation,
     phoneMutation,
     certMutation,
     langMutation,
     docMutation,
+    bankMutation,
   };
 }

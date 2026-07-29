@@ -76,6 +76,8 @@ export interface User {
   phoneNumbers?: UserPhoneNumber[];
   /** Documentos pessoais do usuário */
   documents?: UserDocument[];
+  /** Contas bancárias do usuário */
+  bankAccounts?: UserBankAccount[];
 }
 
 /**
@@ -166,12 +168,44 @@ export interface UserDocument {
   expiryDate?: string | null;
   /** Descrição ou notas adicionais */
   description?: string | null;
-  /** URL/caminho do ficheiro digitalizado (frente) */
-  filePath?: string | null;
-  /** URL/caminho do ficheiro digitalizado (verso) */
-  filePathBack?: string | null;
+  /** Ficheiros anexados ao documento */
+  files?: DocumentFile[];
+}
+
+/**
+ * Interface DocumentFile - Ficheiro anexado a um documento.
+ */
+export interface DocumentFile {
+  /** ID do ficheiro uploadado */
+  id: string;
+  /** URL do ficheiro */
+  url: string;
   /** Nome original do ficheiro */
-  fileName?: string | null;
+  originalName: string;
   /** Tipo MIME do ficheiro */
-  fileType?: string | null;
+  mimeType: string;
+  /** Tamanho em bytes */
+  size: number;
+  /** Ordem do ficheiro */
+  order: number;
+}
+
+/**
+ * Interface UserBankAccount - Conta bancária do usuário.
+ */
+export interface UserBankAccount {
+  /** ID único da conta */
+  id: string;
+  /** Nome do banco */
+  bankName: string;
+  /** IBAN */
+  iban: string;
+  /** Código BIC/SWIFT */
+  bicSwift?: string | null;
+  /** Nome do titular da conta */
+  accountHolder: string;
+  /** Se é a conta principal */
+  isPrimary: boolean;
+  /** Descrição opcional */
+  description?: string | null;
 }

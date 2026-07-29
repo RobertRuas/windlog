@@ -38,6 +38,7 @@ import { CreatePhoneDto, UpdatePhoneDto } from './dto/user-phone.dto.js';
 import { CreateCertificationDto, UpdateCertificationDto } from './dto/user-certification.dto.js';
 import { CreateLanguageDto, UpdateLanguageDto } from './dto/user-language.dto.js';
 import { CreateDocumentDto, UpdateDocumentDto } from './dto/user-document.dto.js';
+import { CreateBankAccountDto, UpdateBankAccountDto } from './dto/user-bank-account.dto.js';
 import { JwtPayload } from './strategies/jwt.strategy.js';
 
 /**
@@ -214,7 +215,16 @@ export class AuthService {
         languages: true,
         documents: {
           orderBy: { expiryDate: 'asc' },
+          include: {
+            files: {
+              include: {
+                uploadedFile: true,
+              },
+              orderBy: { order: 'asc' },
+            },
+          },
         },
+        bankAccounts: true,
       },
     });
 
@@ -247,7 +257,24 @@ export class AuthService {
       phoneNumbers: user.phoneNumbers,
       certifications: user.certifications,
       languages: user.languages,
-      documents: user.documents,
+      documents: user.documents.map((doc) => ({
+        id: doc.id,
+        type: doc.type,
+        documentNumber: doc.documentNumber,
+        issuingCountry: doc.issuingCountry,
+        issueDate: doc.issueDate,
+        expiryDate: doc.expiryDate,
+        description: doc.description,
+        files: doc.files.map((f) => ({
+          id: f.uploadedFile.id,
+          url: `/api/v1/uploads/${f.uploadedFile.path}`,
+          originalName: f.uploadedFile.originalName,
+          mimeType: f.uploadedFile.mimeType,
+          size: f.uploadedFile.size,
+          order: f.order,
+        })),
+      })),
+      bankAccounts: user.bankAccounts,
     };
   }
 
@@ -304,7 +331,16 @@ export class AuthService {
         languages: true,
         documents: {
           orderBy: { expiryDate: 'asc' },
+          include: {
+            files: {
+              include: {
+                uploadedFile: true,
+              },
+              orderBy: { order: 'asc' },
+            },
+          },
         },
+        bankAccounts: true,
       },
     });
 
@@ -336,7 +372,24 @@ export class AuthService {
       phoneNumbers: updatedUser.phoneNumbers,
       certifications: updatedUser.certifications,
       languages: updatedUser.languages,
-      documents: updatedUser.documents,
+      documents: updatedUser.documents.map((doc) => ({
+        id: doc.id,
+        type: doc.type,
+        documentNumber: doc.documentNumber,
+        issuingCountry: doc.issuingCountry,
+        issueDate: doc.issueDate,
+        expiryDate: doc.expiryDate,
+        description: doc.description,
+        files: doc.files.map((f) => ({
+          id: f.uploadedFile.id,
+          url: `/api/v1/uploads/${f.uploadedFile.path}`,
+          originalName: f.uploadedFile.originalName,
+          mimeType: f.uploadedFile.mimeType,
+          size: f.uploadedFile.size,
+          order: f.order,
+        })),
+      })),
+      bankAccounts: updatedUser.bankAccounts,
     };
   }
 
@@ -524,6 +577,7 @@ export class AuthService {
 
   /**
    * Adiciona um novo documento pessoal ao usuário.
+   * Suporta múltiplos ficheiros anexados via relação UserDocumentFile.
    */
   async addDocument(userId: string, dto: CreateDocumentDto) {
     return this.prisma.userDocument.create({
@@ -535,16 +589,28 @@ export class AuthService {
         issueDate: dto.issueDate ? new Date(dto.issueDate) : null,
         expiryDate: dto.expiryDate ? new Date(dto.expiryDate) : null,
         description: dto.description,
-        filePath: dto.filePath,
-        filePathBack: dto.filePathBack,
-        fileName: dto.fileName,
-        fileType: dto.fileType,
+        // Cria os ficheiros anexados (se houver)
+        files: dto.files?.length ? {
+          create: dto.files.map((f, index) => ({
+            uploadedFileId: f.uploadedFileId,
+            order: f.order ?? index,
+          })),
+        } : undefined,
+      },
+      include: {
+        files: {
+          include: {
+            uploadedFile: true,
+          },
+          orderBy: { order: 'asc' },
+        },
       },
     });
   }
 
   /**
    * Atualiza um documento existente.
+   * Se files for fornecido, substitui todos os ficheiros anexados.
    */
   async updateDocument(userId: string, documentId: string, dto: UpdateDocumentDto) {
     // Verifica se o documento pertence ao usuário
@@ -563,19 +629,42 @@ export class AuthService {
     if (dto.issueDate !== undefined) updateData.issueDate = dto.issueDate ? new Date(dto.issueDate) : null;
     if (dto.expiryDate !== undefined) updateData.expiryDate = dto.expiryDate ? new Date(dto.expiryDate) : null;
     if (dto.description !== undefined) updateData.description = dto.description;
-    if (dto.filePath !== undefined) updateData.filePath = dto.filePath;
-    if (dto.filePathBack !== undefined) updateData.filePathBack = dto.filePathBack;
-    if (dto.fileName !== undefined) updateData.fileName = dto.fileName;
-    if (dto.fileType !== undefined) updateData.fileType = dto.fileType;
+
+    // Se files for fornecido, substitui todos os ficheiros anexados
+    if (dto.files !== undefined) {
+      // Remove os ficheiros antigos
+      await this.prisma.userDocumentFile.deleteMany({
+        where: { documentId },
+      });
+
+      // Cria os novos ficheiros
+      if (dto.files.length > 0) {
+        updateData.files = {
+          create: dto.files.map((f, index) => ({
+            uploadedFileId: f.uploadedFileId,
+            order: f.order ?? index,
+          })),
+        };
+      }
+    }
 
     return this.prisma.userDocument.update({
       where: { id: documentId },
       data: updateData,
+      include: {
+        files: {
+          include: {
+            uploadedFile: true,
+          },
+          orderBy: { order: 'asc' },
+        },
+      },
     });
   }
 
   /**
    * Remove um documento pessoal.
+   * Os ficheiros anexados são removidos automaticamente (onDelete: Cascade).
    */
   async removeDocument(userId: string, documentId: string) {
     // Verifica se o documento pertence ao usuário
@@ -589,6 +678,72 @@ export class AuthService {
 
     return this.prisma.userDocument.delete({
       where: { id: documentId },
+    });
+  }
+
+  // ==========================================================================
+  // BANK ACCOUNTS - Gerenciamento de Contas Bancárias
+  // ==========================================================================
+
+  /**
+   * Adiciona uma nova conta bancária ao usuário.
+   */
+  async addBankAccount(userId: string, dto: CreateBankAccountDto) {
+    return this.prisma.userBankAccount.create({
+      data: {
+        userId,
+        bankName: dto.bankName,
+        iban: dto.iban,
+        bicSwift: dto.bicSwift,
+        accountHolder: dto.accountHolder,
+        isPrimary: dto.isPrimary ?? false,
+        description: dto.description,
+      },
+    });
+  }
+
+  /**
+   * Atualiza uma conta bancária existente.
+   */
+  async updateBankAccount(userId: string, accountId: string, dto: UpdateBankAccountDto) {
+    // Verifica se a conta pertence ao usuário
+    const account = await this.prisma.userBankAccount.findFirst({
+      where: { id: accountId, userId },
+    });
+
+    if (!account) {
+      throw new UnauthorizedException('Bank account not found');
+    }
+
+    const updateData: Record<string, unknown> = {};
+    if (dto.bankName !== undefined) updateData.bankName = dto.bankName;
+    if (dto.iban !== undefined) updateData.iban = dto.iban;
+    if (dto.bicSwift !== undefined) updateData.bicSwift = dto.bicSwift;
+    if (dto.accountHolder !== undefined) updateData.accountHolder = dto.accountHolder;
+    if (dto.isPrimary !== undefined) updateData.isPrimary = dto.isPrimary;
+    if (dto.description !== undefined) updateData.description = dto.description;
+
+    return this.prisma.userBankAccount.update({
+      where: { id: accountId },
+      data: updateData,
+    });
+  }
+
+  /**
+   * Remove uma conta bancária.
+   */
+  async removeBankAccount(userId: string, accountId: string) {
+    // Verifica se a conta pertence ao usuário
+    const account = await this.prisma.userBankAccount.findFirst({
+      where: { id: accountId, userId },
+    });
+
+    if (!account) {
+      throw new UnauthorizedException('Bank account not found');
+    }
+
+    return this.prisma.userBankAccount.delete({
+      where: { id: accountId },
     });
   }
 }

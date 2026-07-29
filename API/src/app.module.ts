@@ -36,6 +36,7 @@ import { AuthModule } from './modules/auth/auth.module.js';
 import { SystemLogModule } from './modules/system-log/system-log.module.js';
 import { UsersModule } from './modules/users/users.module.js';
 import { ProjectsModule } from './modules/projects/projects.module.js';
+import { UploadModule } from './modules/upload/upload.module.js';
 
 @Module({
   imports: [
@@ -80,6 +81,11 @@ import { ProjectsModule } from './modules/projects/projects.module.js';
     // PROJECTS MODULE - Gestão de Projetos
     // -------------------------------------------------------------------------
     ProjectsModule,
+
+    // -------------------------------------------------------------------------
+    // UPLOAD MODULE - Upload Centralizado de Ficheiros
+    // -------------------------------------------------------------------------
+    UploadModule,
 
     // -------------------------------------------------------------------------
     // PRÓXIMOS MÓDULOS SERÃO ADICIONADOS AQUI
