@@ -173,8 +173,8 @@ export function DataTable<T>({
                   {columns.map((col, i) => (
                     <th
                       key={i}
-                      className={`px-5 py-3 ${getAlignClass(col.align)} text-[11px] font-semibold text-gray-400 uppercase tracking-wider${col.sticky ? ' sticky right-0 bg-gray-100 z-10 shadow-[-2px_0_4px_rgba(0,0,0,0.04)] whitespace-nowrap' : ''}`}
-                      style={col.sticky ? { width: '1%', minWidth: col.minWidth } : col.minWidth ? { minWidth: col.minWidth } : undefined}
+                      className={`${col.sticky ? 'sticky right-0 bg-gray-100 z-10 shadow-[-2px_0_4px_rgba(0,0,0,0.04)] whitespace-nowrap px-3' : `px-5`} py-3 ${getAlignClass(col.align)} text-[11px] font-semibold text-gray-400 uppercase tracking-wider`}
+                      style={col.sticky ? { width: '1%' } : col.minWidth ? { minWidth: col.minWidth } : undefined}
                     >
                       {col.header}
                     </th>
@@ -190,7 +190,7 @@ export function DataTable<T>({
                     {columns.map((col, colIndex) => (
                       <td
                         key={colIndex}
-                        className={`px-5 py-3.5${col.sticky ? ' sticky right-0 bg-gray-50 group-hover:bg-gray-100/80 z-10 shadow-[-2px_0_4px_rgba(0,0,0,0.04)] whitespace-nowrap' : ''}`}
+                        className={`${col.sticky ? 'sticky right-0 bg-gray-50 group-hover:bg-gray-100/80 z-10 shadow-[-2px_0_4px_rgba(0,0,0,0.04)] whitespace-nowrap px-3' : `px-5`} py-3.5`}
                         style={col.sticky ? { width: '1%' } : undefined}
                       >
                         <div className={getJustifyClass(col.align)}>
