@@ -30,6 +30,7 @@ import {
   LogOut,
   Menu,
   X,
+  Users,
 } from 'lucide-react';
 
 import { logout } from '@/services/auth.service';
@@ -44,12 +45,31 @@ interface SidebarProps {
 
 /**
  * Itens de navegação do menu.
- * Cada item tem: ícone, label de tradução, rota e padrão de.match.
+ * Cada item tem: ícone, label de tradução, rota, padrão de match e roles permitidos.
  */
 const NAV_ITEMS = [
-  { icon: Home, labelKey: 'nav.home', path: '/', end: true },
-  { icon: Settings, labelKey: 'nav.settings', path: '/settings', end: false },
+  { icon: Home, labelKey: 'nav.home', path: '/', end: true, roles: [] },
+  { icon: Users, labelKey: 'nav.users', path: '/users', end: false, roles: ['ADMIN', 'HR'] },
+  { icon: Settings, labelKey: 'nav.settings', path: '/settings', end: false, roles: [] },
 ] as const;
+
+/**
+ * Verifica se o usuário atual tem um dos roles permitidos.
+ * Se roles estiver vazio, permite acesso para qualquer role.
+ */
+function hasRoleAccess(roles: readonly string[]): boolean {
+  // Se não há restrição de roles, permite acesso
+  if (roles.length === 0) return true;
+
+  try {
+    const token = localStorage.getItem('accessToken');
+    if (!token) return false;
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return roles.includes(payload.role);
+  } catch {
+    return false;
+  }
+}
 
 /**
  * Componente Sidebar - menu lateral esquerdo responsivo.
@@ -116,7 +136,7 @@ export function Sidebar({ userName }: SidebarProps) {
 
         {/* ── Navegação ────────────────────────────────────────── */}
         <nav className="flex-1 px-3 py-4 space-y-1">
-          {NAV_ITEMS.map(({ icon: Icon, labelKey, path, end }) => {
+          {NAV_ITEMS.filter(({ roles }) => hasRoleAccess(roles)).map(({ icon: Icon, labelKey, path, end }) => {
             const active = isActive(path, end);
             return (
               <button

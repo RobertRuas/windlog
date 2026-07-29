@@ -3,7 +3,8 @@
   "nav": {
     "home": "Início",
     "profile": "Perfil",
-    "settings": "Configurações"
+    "settings": "Configurações",
+    "users": "Usuários"
   },
   "buttons": {
     "save": "Salvar",

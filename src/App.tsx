@@ -39,6 +39,7 @@ import { HomePage } from '@/pages/home/HomePage';
 import { ProfilePage } from '@/pages/profile/ProfilePage';
 import { LogsPage } from '@/pages/logs/LogsPage';
 import { SettingsPage } from '@/pages/settings/SettingsPage';
+import { UsersPage } from '@/pages/users/UsersPage';
 
 // Serviço de autenticação
 import { isAuthenticated } from '@/services/auth.service';
@@ -134,6 +135,47 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
 }
 
 /**
+ * Componente AdminOrHRRoute - Rota protegida para ADMIN ou HR.
+ *
+ * Verifica se o usuário está autenticado E tem role ADMIN ou HR.
+ * Se não tiver nenhum desses roles, redireciona para a página inicial.
+ *
+ * @param children - componente a ser exibido se for ADMIN ou HR
+ */
+function AdminOrHRRoute({ children }: { children: React.ReactNode }) {
+  // Verifica se existe um token JWT no localStorage
+  const authenticated = isAuthenticated();
+  const expired = isTokenExpired();
+
+  // Se o token existe mas está expirado, faz logout automático
+  if (authenticated && expired) {
+    localStorage.removeItem('accessToken');
+    return <Navigate to="/login" replace />;
+  }
+
+  // Se não autenticado, redireciona para /login
+  if (!authenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // Busca o perfil do usuário para verificar o role
+  try {
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      // Permite acesso apenas para ADMIN ou HR
+      if (payload.role !== 'ADMIN' && payload.role !== 'HR') {
+        return <Navigate to="/" replace />;
+      }
+    }
+  } catch {
+    return <Navigate to="/" replace />;
+  }
+
+  return <>{children}</>;
+}
+
+/**
  * Componente App - raiz da aplicação.
  *
  * Envolve toda a aplicação com os providers necessários
@@ -190,6 +232,16 @@ export default function App() {
               <AdminRoute>
                 <LogsPage />
               </AdminRoute>
+            }
+          />
+
+          {/* Rota protegida - gestão de usuários (ADMIN ou HR) */}
+          <Route
+            path="/users"
+            element={
+              <AdminOrHRRoute>
+                <UsersPage />
+              </AdminOrHRRoute>
             }
           />
 
