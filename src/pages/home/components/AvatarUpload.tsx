@@ -205,53 +205,62 @@ export function AvatarUpload({ currentPhotoUrl, onSuccess, compact = false }: Av
   // MODO COMPACTO - Avatar circular pequeno para header
   // ===========================================================================
   if (compact) {
-    // Se expandido, mostra a interface completa de upload
-    if (isExpanded) {
-      return (
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900">{t('profile.avatar')}</h2>
-              <p className="text-sm text-gray-500 mt-0.5">{t('profile.avatarHint')}</p>
-            </div>
-            <button
-              onClick={() => { handleCancelPreview(); }}
-              className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 transition-colors"
-            >
-              <X size={14} />
-              {t('actions.cancel')}
-            </button>
-          </div>
-          <div className="px-6 py-6 flex justify-center">
-            {renderFullUpload()}
-          </div>
-        </div>
-      );
-    }
-
-    // Estado colapsado - mostra apenas o avatar circular pequeno
     return (
-      <button
-        onClick={() => setIsExpanded(true)}
-        className="relative group flex-shrink-0"
-        title={t('profile.avatarUpload')}
-      >
-        {currentPhotoUrl ? (
-          <img
-            src={currentPhotoUrl}
-            alt="Avatar"
-            className="w-14 h-14 rounded-full object-cover border-2 border-white shadow-md ring-2 ring-blue-100"
-          />
-        ) : (
-          <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white shadow-md ring-2 ring-blue-100">
-            <Camera size={20} />
+      <>
+        {/* Avatar circular clicável */}
+        <button
+          onClick={() => setIsExpanded(true)}
+          className="relative group flex-shrink-0"
+          title={t('profile.avatarUpload')}
+        >
+          {currentPhotoUrl ? (
+            <img
+              src={currentPhotoUrl}
+              alt="Avatar"
+              className="w-14 h-14 rounded-full object-cover border-2 border-white shadow-md ring-2 ring-blue-100"
+            />
+          ) : (
+            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white shadow-md ring-2 ring-blue-100">
+              <Camera size={20} />
+            </div>
+          )}
+          {/* Overlay de edição ao hover */}
+          <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+            <Camera size={16} className="text-white" />
+          </div>
+        </button>
+
+        {/* Modal de upload */}
+        {isExpanded && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            {/* Backdrop */}
+            <div
+              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              onClick={handleCancelPreview}
+            />
+            {/* Conteúdo do modal */}
+            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden animate-in fade-in zoom-in duration-200">
+              {/* Header do modal */}
+              <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900">{t('profile.avatar')}</h2>
+                  <p className="text-sm text-gray-500 mt-0.5">{t('profile.avatarHint')}</p>
+                </div>
+                <button
+                  onClick={handleCancelPreview}
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+              {/* Corpo do modal */}
+              <div className="px-6 py-6 flex justify-center">
+                {renderFullUpload()}
+              </div>
+            </div>
           </div>
         )}
-        {/* Overlay de edição ao hover */}
-        <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-          <Camera size={16} className="text-white" />
-        </div>
-      </button>
+      </>
     );
   }
 
