@@ -23,6 +23,10 @@ import { User, Phone, Award, Globe, MapPin, Building, CreditCard } from 'lucide-
 // Layout
 import { AppLayout } from '@/components/layout/AppLayout';
 
+// Componentes
+import { SummaryCards } from './components/SummaryCards';
+import { ProfileCard } from './components/ProfileCard';
+
 // Serviços
 import type { ProfileResponse } from '@/types/user.types';
 import { getProfile } from '@/services/auth.service';
@@ -118,47 +122,15 @@ export function HomePage() {
       </div>
 
       {/* Grid de cards de resumo */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-        {summaryCards.map((card) => {
-          const Icon = card.icon;
-          return (
-            <div
-              key={card.label}
-              className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4"
-            >
-              <div className={`w-10 h-10 rounded-lg ${card.bg} flex items-center justify-center flex-shrink-0`}>
-                <Icon size={20} className={card.color} />
-              </div>
-              <div className="min-w-0">
-                <p className="text-xs text-gray-500 truncate">{card.label}</p>
-                <p className="text-sm font-semibold text-gray-900 truncate">
-                  {card.value}
-                </p>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      <SummaryCards cards={summaryCards} />
 
       {/* Atalho para o perfil */}
-      <div className="bg-white rounded-xl border border-gray-200 p-5">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-sm font-semibold text-gray-900">
-              {t('profileCard.title')}
-            </h2>
-            <p className="text-xs text-gray-500 mt-0.5">
-              {t('profileCard.description')}
-            </p>
-          </div>
-          <button
-            onClick={() => navigate('/profile')}
-            className="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
-          >
-            {t('profileCard.action')}
-          </button>
-        </div>
-      </div>
+      <ProfileCard
+        title={t('profileCard.title')}
+        description={t('profileCard.description')}
+        action={t('profileCard.action')}
+        onAction={() => navigate('/profile')}
+      />
     </AppLayout>
   );
 }

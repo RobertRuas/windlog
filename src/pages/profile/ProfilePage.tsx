@@ -22,9 +22,8 @@
  * ============================================================================
  */
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { toast } from 'sonner';
 import { Phone, Award, Globe, User, Mail, MapPin, Briefcase, FileText, CreditCard } from 'lucide-react';
 
 // Layout
@@ -38,23 +37,13 @@ import { LanguageSection } from '@/pages/home/components/LanguageSection';
 import { DocumentSection } from '@/pages/home/components/DocumentSection';
 import { Accordion } from '@/components/ui/Accordion';
 
+// Hooks
+import { useProfileMutations } from './hooks/useProfileMutations';
+
 // Serviços
 import type { ProfileResponse } from '@/types/user.types';
 import {
   getProfile,
-  updateProfile,
-  addPhone,
-  updatePhone,
-  removePhone,
-  addCertification,
-  updateCertification,
-  removeCertification,
-  addLanguage,
-  updateLanguage,
-  removeLanguage,
-  addDocument,
-  updateDocument,
-  removeDocument,
   type PhoneNumber,
   type Certification,
   type Language,
@@ -69,83 +58,18 @@ import { PREDEFINED_COUNTRIES } from '@/constants/countries';
  */
 export function ProfilePage() {
   const { t } = useTranslation('home');
-  const queryClient = useQueryClient();
-
   const { data, isLoading, isError } = useQuery<ProfileResponse>({
     queryKey: ['profile'],
     queryFn: getProfile,
   });
 
-  const mutation = useMutation({
-    mutationFn: updateProfile,
-    onSuccess: () => {
-      toast.success(t('feedback.success'));
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
-    },
-    onError: () => {
-      toast.error(t('feedback.error'));
-    },
-  });
-
-  const phoneMutation = useMutation({
-    mutationFn: async ({ action, id, data }: { action: 'add' | 'update' | 'remove'; id?: string; data?: Omit<PhoneNumber, 'id'> | Partial<PhoneNumber> }) => {
-      if (action === 'add') return addPhone(data as Omit<PhoneNumber, 'id'>);
-      if (action === 'update') return updatePhone(id!, data as Partial<PhoneNumber>);
-      return removePhone(id!);
-    },
-    onSuccess: () => {
-      toast.success(t('feedback.success'));
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
-    },
-    onError: () => {
-      toast.error(t('feedback.error'));
-    },
-  });
-
-  const certMutation = useMutation({
-    mutationFn: async ({ action, id, data }: { action: 'add' | 'update' | 'remove'; id?: string; data?: Omit<Certification, 'id'> | Partial<Certification> }) => {
-      if (action === 'add') return addCertification(data as Omit<Certification, 'id'>);
-      if (action === 'update') return updateCertification(id!, data as Partial<Certification>);
-      return removeCertification(id!);
-    },
-    onSuccess: () => {
-      toast.success(t('feedback.success'));
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
-    },
-    onError: () => {
-      toast.error(t('feedback.error'));
-    },
-  });
-
-  const langMutation = useMutation({
-    mutationFn: async ({ action, id, data }: { action: 'add' | 'update' | 'remove'; id?: string; data?: Omit<Language, 'id'> | Partial<Language> }) => {
-      if (action === 'add') return addLanguage(data as Omit<Language, 'id'>);
-      if (action === 'update') return updateLanguage(id!, data as Partial<Language>);
-      return removeLanguage(id!);
-    },
-    onSuccess: () => {
-      toast.success(t('feedback.success'));
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
-    },
-    onError: () => {
-      toast.error(t('feedback.error'));
-    },
-  });
-
-  const docMutation = useMutation({
-    mutationFn: async ({ action, id, data }: { action: 'add' | 'update' | 'remove'; id?: string; data?: Omit<UserDocument, 'id'> | Partial<UserDocument> }) => {
-      if (action === 'add') return addDocument(data as Omit<UserDocument, 'id'>);
-      if (action === 'update') return updateDocument(id!, data as Partial<UserDocument>);
-      return removeDocument(id!);
-    },
-    onSuccess: () => {
-      toast.success(t('feedback.success'));
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
-    },
-    onError: () => {
-      toast.error(t('feedback.error'));
-    },
-  });
+  const {
+    profileMutation,
+    phoneMutation,
+    certMutation,
+    langMutation,
+    docMutation,
+  } = useProfileMutations();
 
   const countryOptions = PREDEFINED_COUNTRIES.map((c: { code: string; name: string }) => ({
     value: c.code,
@@ -229,7 +153,7 @@ export function ProfilePage() {
   ];
 
   function handleSave(sectionData: Record<string, string | null>) {
-    mutation.mutate(sectionData);
+    profileMutation.mutate(sectionData);
   }
 
   async function handleAddPhone(data: Omit<PhoneNumber, 'id'>) {
@@ -309,7 +233,7 @@ export function ProfilePage() {
           groups={profileGroups}
           data={data as unknown as Record<string, string | null | undefined>}
           onSave={handleSave}
-          isLoading={mutation.isPending}
+          isLoading={profileMutation.isPending}
         />
 
         {/* Números de Telefone */}
