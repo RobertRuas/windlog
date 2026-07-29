@@ -39,6 +39,7 @@ import {
   Get,
   Post,
   Put,
+  Patch,
   Delete,
   Body,
   Param,
@@ -64,6 +65,7 @@ import {
   CreateTurbineDto,
   UpdateTurbineDto,
   AddMemberDto,
+  UpdateMemberDto,
 } from './dto/projects.dto.js';
 import { RolesGuard } from '../../common/guards/roles.guard.js';
 import { Roles, Role } from '../../common/decorators/roles.decorator.js';
@@ -308,6 +310,27 @@ export class ProjectsController {
   @ApiResponse({ status: 409, description: 'Usuário já é membro do projeto' })
   addMember(@Param('id') id: string, @Body() dto: AddMemberDto) {
     return this.projectsService.addMember(id, dto);
+  }
+
+  /**
+   * PATCH /api/v1/projects/:id/members/:memberId
+   *
+   * Atualiza a função de um membro no projeto.
+   */
+  @Patch(':id/members/:memberId')
+  @ApiOperation({
+    summary: 'Atualizar função do membro',
+    description: 'Atualiza a função de um membro em um projeto específico.',
+  })
+  @ApiResponse({ status: 200, description: 'Função atualizada com sucesso' })
+  @ApiResponse({ status: 400, description: 'Dados inválidos' })
+  @ApiResponse({ status: 404, description: 'Membro não encontrado' })
+  updateMember(
+    @Param('id') id: string,
+    @Param('memberId') memberId: string,
+    @Body() dto: UpdateMemberDto,
+  ) {
+    return this.projectsService.updateMember(id, memberId, dto);
   }
 
   /**

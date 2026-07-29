@@ -41,6 +41,8 @@
     "backToList": "Voltar para Projetos",
     "addTurbine": "Nova Turbina",
     "addMember": "Adicionar Membro",
+    "editProject": "Editar Projeto",
+    "editMemberRole": "Editar Função",
     "confirmDelete": "Tem certeza que deseja excluir o projeto \"{{name}}\"?",
     "confirmDeleteTurbine": "Tem certeza que deseja excluir a turbina \"{{name}}\"?",
     "confirmRemoveMember": "Tem certeza que deseja remover {{name}} do projeto?"
@@ -103,6 +105,14 @@
     "role": "Função no Projeto",
     "rolePlaceholder": "Ex: Lead Technician"
   },
+  "editProjectModal": {
+    "title": "Editar Projeto"
+  },
+  "editMemberModal": {
+    "title": "Editar Função do Membro",
+    "role": "Função no Projeto",
+    "rolePlaceholder": "Ex: Lead Technician"
+  },
   "errors": {
     "notFound": "Projeto não encontrado"
   },
@@ -121,6 +131,8 @@
     "turbineDeleteError": "Erro ao remover turbina",
     "memberAddSuccess": "Membro adicionado com sucesso",
     "memberAddError": "Erro ao adicionar membro",
+    "memberUpdateSuccess": "Função do membro atualizada com sucesso",
+    "memberUpdateError": "Erro ao atualizar função do membro",
     "memberRemoveSuccess": "Membro removido com sucesso",
     "memberRemoveError": "Erro ao remover membro"
   }

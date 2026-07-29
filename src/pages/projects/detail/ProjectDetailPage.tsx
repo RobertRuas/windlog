@@ -34,6 +34,7 @@ import {
   updateTurbine,
   deleteTurbine,
   addMember,
+  updateMember,
   removeMember,
   type ProjectDetail,
   type Turbine,
@@ -41,6 +42,7 @@ import {
   type CreateTurbinePayload,
   type UpdateTurbinePayload,
   type AddMemberPayload,
+  type UpdateMemberPayload,
 } from '@/services/project.service';
 import { getUsers as fetchUsers } from '@/services/user.service';
 
@@ -59,7 +61,10 @@ export function ProjectDetailPage() {
   // Estados de modais
   const [isTurbineModalOpen, setIsTurbineModalOpen] = useState(false);
   const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
+  const [isProjectEditModalOpen, setIsProjectEditModalOpen] = useState(false);
+  const [isEditMemberModalOpen, setIsEditMemberModalOpen] = useState(false);
   const [editingTurbine, setEditingTurbine] = useState<Turbine | null>(null);
+  const [editingMember, setEditingMember] = useState<ProjectMember | null>(null);
   const [turbineFormData, setTurbineFormData] = useState<CreateTurbinePayload | UpdateTurbinePayload>({
     name: '',
     location: '',
@@ -72,6 +77,20 @@ export function ProjectDetailPage() {
   });
   const [selectedUserId, setSelectedUserId] = useState('');
   const [memberRole, setMemberRole] = useState('');
+  const [editMemberRole, setEditMemberRole] = useState('');
+
+  // Estados para edição do projeto
+  const [projectFormData, setProjectFormData] = useState({
+    name: '',
+    client: '',
+    location: '',
+    scope: '',
+    description: '',
+    latitude: undefined as number | undefined,
+    longitude: undefined as number | undefined,
+    startDate: '',
+    status: 'PLANNING' as 'PLANNING' | 'IN_PROGRESS' | 'ON_HOLD' | 'COMPLETED' | 'CANCELLED',
+  });
 
   // Buscar dados do projeto
   const { data: project, isLoading } = useQuery({
@@ -146,6 +165,19 @@ export function ProjectDetailPage() {
     },
   });
 
+  const updateMemberMutation = useMutation({
+    mutationFn: ({ memberId, payload }: { memberId: string; payload: UpdateMemberPayload }) =>
+      updateMember(id!, memberId, payload),
+    onSuccess: () => {
+      toast.success(t('toast.memberUpdateSuccess'));
+      queryClient.invalidateQueries({ queryKey: ['project', id] });
+      closeEditMemberModal();
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || t('toast.memberUpdateError'));
+    },
+  });
+
   const removeMemberMutation = useMutation({
     mutationFn: (memberId: string) => removeMember(id!, memberId),
     onSuccess: () => {
@@ -205,6 +237,38 @@ export function ProjectDetailPage() {
     setMemberRole('');
   }
 
+  function openProjectEditModal() {
+    if (!project) return;
+    setProjectFormData({
+      name: project.name,
+      client: project.client,
+      location: project.location,
+      scope: project.scope || '',
+      description: project.description || '',
+      latitude: project.latitude,
+      longitude: project.longitude,
+      startDate: project.startDate ? project.startDate.split('T')[0] : '',
+      status: project.status,
+    });
+    setIsProjectEditModalOpen(true);
+  }
+
+  function closeProjectEditModal() {
+    setIsProjectEditModalOpen(false);
+  }
+
+  function openEditMemberModal(member: ProjectMember) {
+    setEditingMember(member);
+    setEditMemberRole(member.role || '');
+    setIsEditMemberModalOpen(true);
+  }
+
+  function closeEditMemberModal() {
+    setIsEditMemberModalOpen(false);
+    setEditingMember(null);
+    setEditMemberRole('');
+  }
+
   function handleTurbineSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (editingTurbine) {
@@ -236,6 +300,30 @@ export function ProjectDetailPage() {
     if (confirm(t('actions.confirmRemoveMember', { name: `${member.user.firstName} ${member.user.lastName}` }))) {
       removeMemberMutation.mutate(member.id);
     }
+  }
+
+  function handleProjectEditSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    updateProjectMutation.mutate({
+      name: projectFormData.name,
+      client: projectFormData.client,
+      location: projectFormData.location,
+      scope: projectFormData.scope || undefined,
+      description: projectFormData.description || undefined,
+      latitude: projectFormData.latitude,
+      longitude: projectFormData.longitude,
+      startDate: projectFormData.startDate || undefined,
+      status: projectFormData.status,
+    });
+  }
+
+  function handleEditMemberSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editingMember) return;
+    updateMemberMutation.mutate({
+      memberId: editingMember.id,
+      payload: { role: editMemberRole || undefined },
+    });
   }
 
   if (isLoading) {
@@ -274,15 +362,24 @@ export function ProjectDetailPage() {
             <h1 className="text-2xl font-bold text-gray-900">{project.name}</h1>
             <p className="text-sm text-gray-500 mt-1">{project.client} • {project.location}</p>
           </div>
-          <span className={`px-3 py-1 text-sm font-medium rounded-full ${
-            project.status === 'PLANNING' ? 'bg-gray-100 text-gray-700' :
-            project.status === 'IN_PROGRESS' ? 'bg-blue-100 text-blue-700' :
-            project.status === 'ON_HOLD' ? 'bg-yellow-100 text-yellow-700' :
-            project.status === 'COMPLETED' ? 'bg-green-100 text-green-700' :
-            'bg-red-100 text-red-700'
-          }`}>
-            {t(`status.${project.status}`)}
-          </span>
+          <div className="flex items-center gap-3">
+            <span className={`px-3 py-1 text-sm font-medium rounded-full ${
+              project.status === 'PLANNING' ? 'bg-gray-100 text-gray-700' :
+              project.status === 'IN_PROGRESS' ? 'bg-blue-100 text-blue-700' :
+              project.status === 'ON_HOLD' ? 'bg-yellow-100 text-yellow-700' :
+              project.status === 'COMPLETED' ? 'bg-green-100 text-green-700' :
+              'bg-red-100 text-red-700'
+            }`}>
+              {t(`status.${project.status}`)}
+            </span>
+            <button
+              onClick={openProjectEditModal}
+              className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+              title={t('actions.editProject')}
+            >
+              <Edit2 size={18} />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -482,12 +579,21 @@ export function ProjectDetailPage() {
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-600">{member.role || '-'}</td>
                       <td className="px-4 py-3 text-right">
-                        <button
-                          onClick={() => handleRemoveMember(member)}
-                          className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                        >
-                          <Trash2 size={16} />
-                        </button>
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => openEditMemberModal(member)}
+                            className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                            title={t('actions.editMemberRole')}
+                          >
+                            <Edit2 size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleRemoveMember(member)}
+                            className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -685,6 +791,198 @@ export function ProjectDetailPage() {
                 <button
                   type="submit"
                   disabled={addMemberMutation.isPending}
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50"
+                >
+                  {t('modal.save')}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Edição do Projeto */}
+      {isProjectEditModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900">
+                {t('editProjectModal.title')}
+              </h2>
+            </div>
+            <form onSubmit={handleProjectEditSubmit} className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {t('modal.name')} *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={projectFormData.name}
+                    onChange={(e) => setProjectFormData({ ...projectFormData, name: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {t('modal.client')} *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={projectFormData.client}
+                    onChange={(e) => setProjectFormData({ ...projectFormData, client: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {t('modal.location')} *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={projectFormData.location}
+                  onChange={(e) => setProjectFormData({ ...projectFormData, location: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {t('modal.scope')}
+                </label>
+                <input
+                  type="text"
+                  value={projectFormData.scope}
+                  onChange={(e) => setProjectFormData({ ...projectFormData, scope: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {t('modal.description')}
+                </label>
+                <textarea
+                  value={projectFormData.description}
+                  onChange={(e) => setProjectFormData({ ...projectFormData, description: e.target.value })}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {t('modal.latitude')}
+                  </label>
+                  <input
+                    type="number"
+                    step="any"
+                    value={projectFormData.latitude ?? ''}
+                    onChange={(e) => setProjectFormData({ ...projectFormData, latitude: e.target.value ? parseFloat(e.target.value) : undefined })}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {t('modal.longitude')}
+                  </label>
+                  <input
+                    type="number"
+                    step="any"
+                    value={projectFormData.longitude ?? ''}
+                    onChange={(e) => setProjectFormData({ ...projectFormData, longitude: e.target.value ? parseFloat(e.target.value) : undefined })}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {t('modal.startDate')}
+                  </label>
+                  <input
+                    type="date"
+                    value={projectFormData.startDate}
+                    onChange={(e) => setProjectFormData({ ...projectFormData, startDate: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {t('modal.status')}
+                  </label>
+                  <select
+                    value={projectFormData.status}
+                    onChange={(e) => setProjectFormData({ ...projectFormData, status: e.target.value as typeof projectFormData.status })}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="PLANNING">{t('status.PLANNING')}</option>
+                    <option value="IN_PROGRESS">{t('status.IN_PROGRESS')}</option>
+                    <option value="ON_HOLD">{t('status.ON_HOLD')}</option>
+                    <option value="COMPLETED">{t('status.COMPLETED')}</option>
+                    <option value="CANCELLED">{t('status.CANCELLED')}</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={closeProjectEditModal}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  {t('modal.cancel')}
+                </button>
+                <button
+                  type="submit"
+                  disabled={updateProjectMutation.isPending}
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50"
+                >
+                  {t('modal.save')}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Edição de Função do Membro */}
+      {isEditMemberModalOpen && editingMember && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md mx-4">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900">
+                {t('editMemberModal.title')}
+              </h2>
+              <p className="text-sm text-gray-500 mt-1">
+                {editingMember.user.firstName} {editingMember.user.lastName}
+              </p>
+            </div>
+            <form onSubmit={handleEditMemberSubmit} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {t('editMemberModal.role')}
+                </label>
+                <input
+                  type="text"
+                  value={editMemberRole}
+                  onChange={(e) => setEditMemberRole(e.target.value)}
+                  placeholder={t('editMemberModal.rolePlaceholder')}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={closeEditMemberModal}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  {t('modal.cancel')}
+                </button>
+                <button
+                  type="submit"
+                  disabled={updateMemberMutation.isPending}
                   className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50"
                 >
                   {t('modal.save')}

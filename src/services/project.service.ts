@@ -207,6 +207,13 @@ export interface AddMemberPayload {
   role?: string;
 }
 
+/**
+ * Interface UpdateMemberPayload - Dados para atualizar função do membro.
+ */
+export interface UpdateMemberPayload {
+  role?: string;
+}
+
 // =========================================================================
 // API CALLS - PROJECT
 // =========================================================================
@@ -312,6 +319,14 @@ export async function getProjectMembers(projectId: string): Promise<ProjectMembe
  */
 export async function addMember(projectId: string, payload: AddMemberPayload): Promise<ProjectMember> {
   const response = await api.post<ApiResponse<ProjectMember>>(`/api/v1/projects/${projectId}/members`, payload);
+  return response.data;
+}
+
+/**
+ * Atualiza a função de um membro no projeto.
+ */
+export async function updateMember(projectId: string, memberId: string, payload: UpdateMemberPayload): Promise<ProjectMember> {
+  const response = await api.put<ApiResponse<ProjectMember>>(`/api/v1/projects/${projectId}/members/${memberId}`, payload);
   return response.data;
 }
 

@@ -270,3 +270,13 @@ export class AddMemberDto {
   @IsString()
   role?: string;
 }
+
+/**
+ * DTO para atualizar função de um membro no projeto.
+ */
+export class UpdateMemberDto {
+  @ApiPropertyOptional({ description: 'Função do membro no projeto', example: 'Lead Technician' })
+  @IsOptional()
+  @IsString()
+  role?: string;
+}

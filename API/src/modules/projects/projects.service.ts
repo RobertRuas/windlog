@@ -33,6 +33,7 @@ import {
   CreateTurbineDto,
   UpdateTurbineDto,
   AddMemberDto,
+  UpdateMemberDto,
 } from './dto/projects.dto.js';
 
 /**
@@ -532,5 +533,46 @@ export class ProjectsService {
     });
 
     this.logger.log(`Member removed: ${memberId} from project ${projectId}`);
+  }
+
+  /**
+   * Atualiza a função de um membro no projeto.
+   *
+   * @param projectId - ID do projeto
+   * @param memberId - ID da associação membro
+   * @param dto - Dados a atualizar (UpdateMemberDto)
+   * @returns Promise com o membro atualizado
+   * @throws NotFoundException se o membro não existir
+   */
+  async updateMember(projectId: string, memberId: string, dto: UpdateMemberDto) {
+    // Verifica se o membro existe e pertence ao projeto
+    const member = await this.prisma.projectMember.findFirst({
+      where: { id: memberId, projectId },
+    });
+
+    if (!member) {
+      throw new NotFoundException('Project member not found');
+    }
+
+    // Atualiza a função do membro
+    const updatedMember = await this.prisma.projectMember.update({
+      where: { id: memberId },
+      data: { role: dto.role },
+      include: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            role: true,
+          },
+        },
+      },
+    });
+
+    this.logger.log(`Member updated: ${memberId} in project ${projectId}`);
+
+    return updatedMember;
   }
 }
