@@ -12,6 +12,10 @@
       "title": "Informações Pessoais e Profissionais",
       "description": "Seus dados pessoais, endereço e informações na empresa"
     },
+    "documents": {
+      "title": "Documentos Pessoais",
+      "description": "Passaporte, identificação fiscal, cartão de cidadão e outros documentos"
+    },
     "address": {
       "title": "Endereço",
       "description": "Seu endereço residencial"
@@ -26,6 +30,7 @@
     "contact": "Contato",
     "location": "Localização",
     "professional": "Profissional",
+    "documents": "Documentos",
     "about": "Sobre"
   },
   "profile": {
@@ -43,7 +48,8 @@
     "department": "Departamento",
     "position": "Cargo",
     "bio": "Biografia",
-    "role": "Acesso"
+    "role": "Acesso",
+    "photoUrl": "URL da Foto"
   },
   "phones": {
     "title": "Números de Telefone",
@@ -98,6 +104,34 @@
       "c1": "C1 - Avançado",
       "c2": "C2 - Proficiente",
       "native": "Nativo"
+    }
+  },
+  "documents": {
+    "title": "Documentos Pessoais",
+    "add": "Adicionar Documento",
+    "empty": "Nenhum documento cadastrado",
+    "type": "Tipo de Documento",
+    "documentNumber": "Número do Documento",
+    "issuingCountry": "País Emissor",
+    "issueDate": "Data de Expedição",
+    "expiryDate": "Data de Validade",
+    "description": "Descrição",
+    "descriptionPlaceholder": "Ex: Visto tipo D, Permissão de residência...",
+    "expired": "Expirado",
+    "confirmDelete": "Tem certeza que deseja remover este documento?",
+    "fileUpload": "Cópia Digitalizada",
+    "fileUploadBack": "Cópia Digitalizada (Verso)",
+    "fileName": "Nome do Ficheiro",
+    "noFile": "Nenhum ficheiro carregado",
+    "types": {
+      "passport": "Passaporte",
+      "id_card": "Cartão de Identidade",
+      "tax_id": "Identificação Fiscal (NIF/TIN)",
+      "social_security": "Segurança Social",
+      "work_permit": "Permissão de Trabalho",
+      "visa": "Visto",
+      "drivers_license": "Carta de Condução",
+      "other": "Outro"
     }
   },
   "actions": {

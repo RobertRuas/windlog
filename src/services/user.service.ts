@@ -113,6 +113,14 @@ export interface CreateUserPayload {
   department?: string;
   /** Cargo (opcional) */
   position?: string;
+  /** Número do passaporte (opcional) */
+  passportNumber?: string;
+  /** Número de identificação fiscal (opcional) */
+  taxIdNumber?: string;
+  /** Número do cartão de identidade (opcional) */
+  idCardNumber?: string;
+  /** Número de segurança social (opcional) */
+  socialSecurityNumber?: string;
 }
 
 /**
@@ -131,6 +139,10 @@ export interface UpdateUserPayload {
   nationality?: string;
   department?: string;
   position?: string;
+  passportNumber?: string;
+  taxIdNumber?: string;
+  idCardNumber?: string;
+  socialSecurityNumber?: string;
 }
 
 /**

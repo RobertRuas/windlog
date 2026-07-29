@@ -25,7 +25,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { Phone, Award, Globe, User, Mail, MapPin, Briefcase, FileText } from 'lucide-react';
+import { Phone, Award, Globe, User, Mail, MapPin, Briefcase, FileText, CreditCard } from 'lucide-react';
 
 // Layout
 import { AppLayout } from '@/components/layout/AppLayout';
@@ -35,6 +35,7 @@ import { ProfileSection, type FieldConfig, type FieldGroup } from '@/pages/home/
 import { PhoneNumberSection } from '@/pages/home/components/PhoneNumberSection';
 import { CertificationSection } from '@/pages/home/components/CertificationSection';
 import { LanguageSection } from '@/pages/home/components/LanguageSection';
+import { DocumentSection } from '@/pages/home/components/DocumentSection';
 import { Accordion } from '@/components/ui/Accordion';
 
 // Serviços
@@ -51,9 +52,13 @@ import {
   addLanguage,
   updateLanguage,
   removeLanguage,
+  addDocument,
+  updateDocument,
+  removeDocument,
   type PhoneNumber,
   type Certification,
   type Language,
+  type UserDocument,
 } from '@/services/auth.service';
 
 // Constantes
@@ -117,6 +122,21 @@ export function ProfilePage() {
       if (action === 'add') return addLanguage(data as Omit<Language, 'id'>);
       if (action === 'update') return updateLanguage(id!, data as Partial<Language>);
       return removeLanguage(id!);
+    },
+    onSuccess: () => {
+      toast.success(t('feedback.success'));
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+    },
+    onError: () => {
+      toast.error(t('feedback.error'));
+    },
+  });
+
+  const docMutation = useMutation({
+    mutationFn: async ({ action, id, data }: { action: 'add' | 'update' | 'remove'; id?: string; data?: Omit<UserDocument, 'id'> | Partial<UserDocument> }) => {
+      if (action === 'add') return addDocument(data as Omit<UserDocument, 'id'>);
+      if (action === 'update') return updateDocument(id!, data as Partial<UserDocument>);
+      return removeDocument(id!);
     },
     onSuccess: () => {
       toast.success(t('feedback.success'));
@@ -242,6 +262,16 @@ export function ProfilePage() {
     await langMutation.mutateAsync({ action: 'remove', id });
   }
 
+  async function handleAddDocument(data: Omit<UserDocument, 'id'>) {
+    await docMutation.mutateAsync({ action: 'add', data });
+  }
+  async function handleUpdateDocument(id: string, data: Partial<UserDocument>) {
+    await docMutation.mutateAsync({ action: 'update', id, data });
+  }
+  async function handleRemoveDocument(id: string) {
+    await docMutation.mutateAsync({ action: 'remove', id });
+  }
+
   if (isLoading) {
     return (
       <AppLayout>
@@ -321,6 +351,20 @@ export function ProfilePage() {
             onAdd={handleAddLanguage}
             onUpdate={handleUpdateLanguage}
             onRemove={handleRemoveLanguage}
+          />
+        </Accordion>
+
+        {/* Documentos Pessoais */}
+        <Accordion
+          title={t('documents.title')}
+          icon={<CreditCard className="w-5 h-5 text-rose-600" />}
+          defaultOpen={false}
+        >
+          <DocumentSection
+            documents={(data?.documents || []) as unknown as UserDocument[]}
+            onAdd={handleAddDocument}
+            onUpdate={handleUpdateDocument}
+            onRemove={handleRemoveDocument}
           />
         </Accordion>
       </div>

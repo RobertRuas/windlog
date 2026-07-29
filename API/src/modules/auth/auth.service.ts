@@ -37,6 +37,7 @@ import { UpdateProfileDto } from './dto/update-profile.dto.js';
 import { CreatePhoneDto, UpdatePhoneDto } from './dto/user-phone.dto.js';
 import { CreateCertificationDto, UpdateCertificationDto } from './dto/user-certification.dto.js';
 import { CreateLanguageDto, UpdateLanguageDto } from './dto/user-language.dto.js';
+import { CreateDocumentDto, UpdateDocumentDto } from './dto/user-document.dto.js';
 import { JwtPayload } from './strategies/jwt.strategy.js';
 
 /**
@@ -211,6 +212,9 @@ export class AuthService {
           orderBy: { expiryDate: 'asc' },
         },
         languages: true,
+        documents: {
+          orderBy: { expiryDate: 'asc' },
+        },
       },
     });
 
@@ -237,11 +241,13 @@ export class AuthService {
       hireDate: user.hireDate,
       employeeId: user.employeeId,
       bio: user.bio,
+      photoUrl: user.photoUrl,
       role: user.role,
       createdAt: user.createdAt,
       phoneNumbers: user.phoneNumbers,
       certifications: user.certifications,
       languages: user.languages,
+      documents: user.documents,
     };
   }
 
@@ -284,6 +290,7 @@ export class AuthService {
     if (dto.department !== undefined) updateData.department = dto.department;
     if (dto.position !== undefined) updateData.position = dto.position;
     if (dto.bio !== undefined) updateData.bio = dto.bio;
+    if (dto.photoUrl !== undefined) updateData.photoUrl = dto.photoUrl;
 
     // Atualiza o usuário no banco de dados
     const updatedUser = await this.prisma.user.update({
@@ -295,6 +302,9 @@ export class AuthService {
           orderBy: { expiryDate: 'asc' },
         },
         languages: true,
+        documents: {
+          orderBy: { expiryDate: 'asc' },
+        },
       },
     });
 
@@ -320,11 +330,13 @@ export class AuthService {
       hireDate: updatedUser.hireDate,
       employeeId: updatedUser.employeeId,
       bio: updatedUser.bio,
+      photoUrl: updatedUser.photoUrl,
       role: updatedUser.role,
       createdAt: updatedUser.createdAt,
       phoneNumbers: updatedUser.phoneNumbers,
       certifications: updatedUser.certifications,
       languages: updatedUser.languages,
+      documents: updatedUser.documents,
     };
   }
 
@@ -503,6 +515,80 @@ export class AuthService {
 
     return this.prisma.userLanguage.delete({
       where: { id: languageId },
+    });
+  }
+
+  // ==========================================================================
+  // DOCUMENTS - Gerenciamento de Documentos Pessoais
+  // ==========================================================================
+
+  /**
+   * Adiciona um novo documento pessoal ao usuário.
+   */
+  async addDocument(userId: string, dto: CreateDocumentDto) {
+    return this.prisma.userDocument.create({
+      data: {
+        userId,
+        type: dto.type,
+        documentNumber: dto.documentNumber,
+        issuingCountry: dto.issuingCountry,
+        issueDate: dto.issueDate ? new Date(dto.issueDate) : null,
+        expiryDate: dto.expiryDate ? new Date(dto.expiryDate) : null,
+        description: dto.description,
+        filePath: dto.filePath,
+        filePathBack: dto.filePathBack,
+        fileName: dto.fileName,
+        fileType: dto.fileType,
+      },
+    });
+  }
+
+  /**
+   * Atualiza um documento existente.
+   */
+  async updateDocument(userId: string, documentId: string, dto: UpdateDocumentDto) {
+    // Verifica se o documento pertence ao usuário
+    const doc = await this.prisma.userDocument.findFirst({
+      where: { id: documentId, userId },
+    });
+
+    if (!doc) {
+      throw new UnauthorizedException('Document not found');
+    }
+
+    const updateData: Record<string, unknown> = {};
+    if (dto.type !== undefined) updateData.type = dto.type;
+    if (dto.documentNumber !== undefined) updateData.documentNumber = dto.documentNumber;
+    if (dto.issuingCountry !== undefined) updateData.issuingCountry = dto.issuingCountry;
+    if (dto.issueDate !== undefined) updateData.issueDate = dto.issueDate ? new Date(dto.issueDate) : null;
+    if (dto.expiryDate !== undefined) updateData.expiryDate = dto.expiryDate ? new Date(dto.expiryDate) : null;
+    if (dto.description !== undefined) updateData.description = dto.description;
+    if (dto.filePath !== undefined) updateData.filePath = dto.filePath;
+    if (dto.filePathBack !== undefined) updateData.filePathBack = dto.filePathBack;
+    if (dto.fileName !== undefined) updateData.fileName = dto.fileName;
+    if (dto.fileType !== undefined) updateData.fileType = dto.fileType;
+
+    return this.prisma.userDocument.update({
+      where: { id: documentId },
+      data: updateData,
+    });
+  }
+
+  /**
+   * Remove um documento pessoal.
+   */
+  async removeDocument(userId: string, documentId: string) {
+    // Verifica se o documento pertence ao usuário
+    const doc = await this.prisma.userDocument.findFirst({
+      where: { id: documentId, userId },
+    });
+
+    if (!doc) {
+      throw new UnauthorizedException('Document not found');
+    }
+
+    return this.prisma.userDocument.delete({
+      where: { id: documentId },
     });
   }
 }

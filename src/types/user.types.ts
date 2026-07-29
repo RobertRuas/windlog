@@ -64,6 +64,8 @@ export interface User {
   employeeId?: string | null;
   /** Biografia/resumo */
   bio?: string | null;
+  /** URL da foto do usuário */
+  photoUrl?: string | null;
   /** Data de criação da conta (formato ISO) */
   createdAt?: string;
   /** Idiomas que o usuário fala */
@@ -72,6 +74,8 @@ export interface User {
   certifications?: UserCertification[];
   /** Números de telefone do usuário */
   phoneNumbers?: UserPhoneNumber[];
+  /** Documentos pessoais do usuário */
+  documents?: UserDocument[];
 }
 
 /**
@@ -142,4 +146,32 @@ export interface UserPhoneNumber {
   number: string;
   /** Tipo do número (MOBILE, HOME, WORK) */
   type: string;
+}
+
+/**
+ * Interface UserDocument - Documento pessoal do usuário.
+ */
+export interface UserDocument {
+  /** ID único do documento */
+  id: string;
+  /** Tipo de documento (PASSPORT, ID_CARD, TAX_ID, etc.) */
+  type: string;
+  /** Número do documento */
+  documentNumber?: string | null;
+  /** País emissor (código ISO) */
+  issuingCountry?: string | null;
+  /** Data de expedição (formato ISO) */
+  issueDate?: string | null;
+  /** Data de validade (formato ISO) */
+  expiryDate?: string | null;
+  /** Descrição ou notas adicionais */
+  description?: string | null;
+  /** URL/caminho do ficheiro digitalizado (frente) */
+  filePath?: string | null;
+  /** URL/caminho do ficheiro digitalizado (verso) */
+  filePathBack?: string | null;
+  /** Nome original do ficheiro */
+  fileName?: string | null;
+  /** Tipo MIME do ficheiro */
+  fileType?: string | null;
 }

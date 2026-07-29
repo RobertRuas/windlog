@@ -153,4 +153,13 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsString()
   bio?: string;
+
+  @ApiProperty({
+    description: 'URL da foto do usuário',
+    example: '/uploads/photos/user-123.jpg',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  photoUrl?: string;
 }

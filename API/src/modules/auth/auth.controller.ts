@@ -62,6 +62,7 @@ import { UpdateProfileDto } from './dto/update-profile.dto.js';
 import { CreatePhoneDto, UpdatePhoneDto } from './dto/user-phone.dto.js';
 import { CreateCertificationDto, UpdateCertificationDto } from './dto/user-certification.dto.js';
 import { CreateLanguageDto, UpdateLanguageDto } from './dto/user-language.dto.js';
+import { CreateDocumentDto, UpdateDocumentDto } from './dto/user-document.dto.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
 import type { JwtPayload } from './strategies/jwt.strategy.js';
 import {
@@ -318,5 +319,34 @@ export class AuthController {
   @ApiBearerAuth()
   removeLanguage(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
     return this.authService.removeLanguage(user.sub, id);
+  }
+
+  // ==========================================================================
+  // DOCUMENTS ENDPOINTS
+  // ==========================================================================
+
+  @Post('documents')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  addDocument(@CurrentUser() user: JwtPayload, @Body() dto: CreateDocumentDto) {
+    return this.authService.addDocument(user.sub, dto);
+  }
+
+  @Put('documents/:id')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  updateDocument(
+    @CurrentUser() user: JwtPayload,
+    @Param('id') id: string,
+    @Body() dto: UpdateDocumentDto,
+  ) {
+    return this.authService.updateDocument(user.sub, id, dto);
+  }
+
+  @Delete('documents/:id')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  removeDocument(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
+    return this.authService.removeDocument(user.sub, id);
   }
 }

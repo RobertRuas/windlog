@@ -90,6 +90,24 @@ enum LanguageLevel {
 }
 
 // ---------------------------------------------------------------------------
+// ENUM: DOCUMENT TYPE (Tipo de Documento Pessoal)
+// ---------------------------------------------------------------------------
+// Classifica os documentos pessoais dos funcionários multinacionais.
+// Cada trabalhador internacional precisa de diversos documentos válidos
+// para trabalhar legalmente em diferentes países.
+// ---------------------------------------------------------------------------
+enum DocumentType {
+  PASSPORT
+  ID_CARD
+  TAX_ID
+  SOCIAL_SECURITY
+  WORK_PERMIT
+  VISA
+  DRIVERS_LICENSE
+  OTHER
+}
+
+// ---------------------------------------------------------------------------
 // ENUM: CERTIFICATION TYPE (Tipo de Certificação)
 // ---------------------------------------------------------------------------
 // Classifica o tipo de certificação/cursos dos funcionários
@@ -161,6 +179,12 @@ model User {
   /// Biografia/resumo profissional
   bio             String?
 
+  // Documentos pessoais
+  // Os documentos são geridos como relação (UserDocument) para suportar
+  // múltiplos documentos de cada tipo com uploads de cópias.
+  /// URL da foto do usuário (ficheiro alojado)
+  photoUrl            String?
+
   // Controle de acesso (RBAC)
   role      Role     @default(STANDARD)
   isActive  Boolean  @default(true)
@@ -174,6 +198,60 @@ model User {
   phoneNumbers    UserPhoneNumber[]
   certifications  UserCertification[]
   languages       UserLanguage[]
+  documents       UserDocument[]
+}
+
+// ---------------------------------------------------------------------------
+// MODEL: USER DOCUMENT (Documentos Pessoais do Usuário)
+// ---------------------------------------------------------------------------
+// Registra todos os documentos pessoais do usuário.
+// Contexto multinacional: funcionários trabalham em vários países e
+// precisam manter documentos válidos com cópias digitalizadas.
+//
+// EXEMPLOS:
+// - Passaporte português com validade até 2030
+// - Cartão de identidade espanhol
+// - NIF (Número de Identificação Fiscal) de Portugal
+// - Visto de trabalho para a Alemanha
+// - Permissão de residência na França
+// ---------------------------------------------------------------------------
+model UserDocument {
+  id        String   @id @default(uuid())
+
+  // Dados do documento
+  /// Tipo de documento (enum DocumentType)
+  type        DocumentType
+  /// Número do documento (ex: "AB123456", "123456789")
+  documentNumber String?
+  /// País emissor (código ISO 3166-1 alpha-2, ex: "PT", "FR", "DE")
+  issuingCountry String?
+  /// Data de expedição do documento
+  issueDate   DateTime?
+  /// Data de validade/expiração do documento
+  expiryDate  DateTime?
+  /// Descrição ou notas adicionais (ex: "Visto tipo D", "Permissão de residência")
+  description String?
+
+  // Ficheiro digitalizado (cópia do documento)
+  /// Caminho/URL do ficheiro com a cópia digitalizada (frente)
+  filePath    String?
+  /// Caminho/URL do ficheiro com a cópia digitalizada (verso, se aplicável)
+  filePathBack String?
+  /// Nome original do ficheiro carregado
+  fileName    String?
+  /// Tipo MIME do ficheiro (ex: "application/pdf", "image/jpeg")
+  fileType    String?
+
+  // Relação com o usuário
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([expiryDate])
 }
 
 // ---------------------------------------------------------------------------
@@ -333,6 +411,11 @@ enum LogAction {
   LANGUAGE_ADD
   LANGUAGE_UPDATE
   LANGUAGE_DELETE
+  
+  // Documentos
+  DOCUMENT_ADD
+  DOCUMENT_UPDATE
+  DOCUMENT_DELETE
   
   // Projetos
   PROJECT_CREATE

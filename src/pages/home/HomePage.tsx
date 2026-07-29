@@ -18,7 +18,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { User, Phone, Award, Globe, MapPin, Building } from 'lucide-react';
+import { User, Phone, Award, Globe, MapPin, Building, CreditCard } from 'lucide-react';
 
 // Layout
 import { AppLayout } from '@/components/layout/AppLayout';
@@ -95,6 +95,13 @@ export function HomePage() {
       value: data?.languages?.length ?? 0,
       color: 'text-teal-600',
       bg: 'bg-teal-50',
+    },
+    {
+      icon: CreditCard,
+      label: t('groups.documents'),
+      value: data?.documents?.length ?? 0,
+      color: 'text-rose-600',
+      bg: 'bg-rose-50',
     },
   ];
 

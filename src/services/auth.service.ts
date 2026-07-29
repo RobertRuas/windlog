@@ -197,3 +197,35 @@ export function logout(): void {
 export function isAuthenticated(): boolean {
   return !!localStorage.getItem('accessToken');
 }
+
+// ============================================================================
+// DOCUMENTS - Gerenciamento de Documentos Pessoais
+// ============================================================================
+
+export interface UserDocument {
+  id: string;
+  type: string;
+  documentNumber?: string;
+  issuingCountry?: string;
+  issueDate?: string;
+  expiryDate?: string;
+  description?: string;
+  filePath?: string;
+  filePathBack?: string;
+  fileName?: string;
+  fileType?: string;
+}
+
+export async function addDocument(data: Omit<UserDocument, 'id'>): Promise<UserDocument> {
+  const response = await api.post<ApiResponse<UserDocument>>('/api/v1/auth/documents', data);
+  return response.data;
+}
+
+export async function updateDocument(id: string, data: Partial<UserDocument>): Promise<UserDocument> {
+  const response = await api.put<ApiResponse<UserDocument>>(`/api/v1/auth/documents/${id}`, data);
+  return response.data;
+}
+
+export async function removeDocument(id: string): Promise<void> {
+  await api.delete(`/api/v1/auth/documents/${id}`);
+}
