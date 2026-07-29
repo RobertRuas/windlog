@@ -31,10 +31,6 @@ import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import compression from 'compression';
 import helmet from 'helmet';
-import * as express from 'express';
-import * as path from 'path';
-import * as jwt from 'jsonwebtoken';
-import type { Request, Response, NextFunction } from 'express';
 
 import { AppModule } from './app.module.js';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter.js';
@@ -107,49 +103,14 @@ async function bootstrap() {
   });
 
   // -------------------------------------------------------------------------
-  // 4.1. FICHEIROS ESTÁTICOS (uploads) - PROTEGIDOS POR JWT
+  // 4.1. FICHEIROS PRIVADOS (uploads)
   // -------------------------------------------------------------------------
-  // Serve ficheiros uploadados pelos usuários ANTES do pipeline NestJS.
-  // Isto é necessário porque o TransformInterceptor global envolve TODAS
-  // as respostas em JSON, o que corromperia ficheiros binários (imagens, PDFs).
-  //
-  // SEGURANÇA: Um middleware verifica o token JWT antes de servir o ficheiro.
-  // Aceita token via header (Authorization: Bearer <token>) ou query param (?token=...).
-  //
-  // NOTA: Usamos o ConfigService do NestJS para obter o JWT_SECRET, garantindo
-  // que o mesmo valor é usado tanto aqui quanto no JwtModule (auth.module.ts).
-  const uploadsDir = path.resolve(process.cwd(), 'uploads');
-  const httpApp = app.getHttpAdapter().getInstance();
-
-  // Obtém o JWT_SECRET via ConfigService (mesmo valor usado para assinar tokens)
-  const jwtSecret = configService.getOrThrow<string>('JWT_SECRET');
-
-  httpApp.use('/api/v1/uploads', (req: Request, res: Response, next: NextFunction) => {
-    // Aceita token tanto via header (Authorization: Bearer <token>)
-    // quanto via query param (?token=...) para acesso direto no browser
-    const authHeader = req.headers.authorization;
-    const queryToken = req.query.token as string | undefined;
-
-    let token: string | undefined;
-
-    if (authHeader?.startsWith('Bearer ')) {
-      token = authHeader.split(' ')[1];
-    } else if (queryToken) {
-      token = queryToken;
-    }
-
-    if (!token) {
-      return res.status(401).json({ message: 'Token não fornecido' });
-    }
-
-    try {
-      jwt.verify(token, jwtSecret);
-      // Token válido → serve o ficheiro estático
-      express.static(uploadsDir)(req, res, next);
-    } catch {
-      return res.status(401).json({ message: 'Token inválido ou expirado' });
-    }
-  });
+  // Os ficheiros são servidos exclusivamente pelo endpoint NestJS:
+  //   GET /api/v1/upload/file/:id
+  // Este endpoint valida JWT (header ou query param), verifica propriedade
+  // do ficheiro (ou role ADMIN) e retorna via StreamableFile.
+  // NÃO existe nenhuma URL pública ou estática para os uploads.
+  // -------------------------------------------------------------------------
 
   // -------------------------------------------------------------------------
   // 5. PREFIXO GLOBAL DAS ROTAS

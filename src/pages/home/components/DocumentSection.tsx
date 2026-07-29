@@ -24,7 +24,7 @@ import { useTranslation } from 'react-i18next';
 import { Plus, Pencil, Trash2, X, Check, AlertCircle, FileText, Upload, Paperclip, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import type { UserDocument, DocumentFile } from '@/services/auth.service';
-import { uploadMultipleFiles, type UploadResult } from '@/services/upload.service';
+import { uploadMultipleFiles, getAuthFileUrl, type UploadResult } from '@/services/upload.service';
 
 // Constantes
 import { PREDEFINED_COUNTRIES } from '@/constants/countries';
@@ -523,7 +523,7 @@ export function DocumentSection({ documents, onAdd, onUpdate, onRemove }: Docume
                       {doc.files.map((file) => (
                         <a
                           key={file.id}
-                          href={file.url}
+                          href={getAuthFileUrl(file.url)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center gap-2 text-xs text-blue-600 hover:text-blue-800 transition-colors"

@@ -267,7 +267,7 @@ export class AuthService {
         description: doc.description,
         files: doc.files.map((f) => ({
           id: f.uploadedFile.id,
-          url: `/api/v1/uploads/${f.uploadedFile.path}`,
+          url: `/api/v1/upload/file/${f.uploadedFile.id}`,
           originalName: f.uploadedFile.originalName,
           mimeType: f.uploadedFile.mimeType,
           size: f.uploadedFile.size,
@@ -382,7 +382,7 @@ export class AuthService {
         description: doc.description,
         files: doc.files.map((f) => ({
           id: f.uploadedFile.id,
-          url: `/api/v1/uploads/${f.uploadedFile.path}`,
+          url: `/api/v1/upload/file/${f.uploadedFile.id}`,
           originalName: f.uploadedFile.originalName,
           mimeType: f.uploadedFile.mimeType,
           size: f.uploadedFile.size,

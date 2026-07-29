@@ -10,14 +10,14 @@
  *
  * COMO FUNCIONA?
  * --------------
- * 1. O hook recebe uma URL (ex: "/api/v1/uploads/avatars/xxx.jpg")
+ * 1. O hook recebe uma URL (nova: "/api/v1/upload/file/:id" ou antiga: "/api/v1/uploads/...")
  * 2. Adiciona o token JWT como query param via getAuthFileUrl()
  * 3. Retorna a URL completa para uso em <img src>
  * 4. Se a URL for null/undefined, retorna null
  *
  * USO:
  * ----
- * const imageUrl = useAuthImage('/api/v1/uploads/avatars/xxx.jpg');
+ * const imageUrl = useAuthImage(user.photoUrl);
  * return <img src={imageUrl} alt="Avatar" />;
  * ============================================================================
  */
@@ -28,10 +28,9 @@ import { getAuthFileUrl } from '@/services/upload.service';
 /**
  * Retorna a URL da imagem com o token JWT incluído.
  *
- * @param url - URL da imagem (ex: "/api/v1/uploads/avatars/xxx.jpg")
+ * @param url - URL da imagem (nova: "/api/v1/upload/file/:id" ou antiga: "/api/v1/uploads/...")
  *              Se null/undefined, retorna null imediatamente.
- * @returns URL com token (ex: "/api/v1/uploads/avatars/xxx.jpg?token=eyJ...")
- *          ou null se a URL for null/undefined.
+ * @returns URL com token JWT para acesso autenticado
  */
 export function useAuthImage(url: string | null | undefined): string | null {
   // useMemo evita recalcular a URL em cada render

@@ -14,17 +14,24 @@
  * - uploadMultipleFiles(): Faz upload de múltiplos ficheiros
  * - getUserFiles(): Lista ficheiros do usuário por categoria
  * - removeFile(): Remove um ficheiro
- * - getFileUrl(): Retorna a URL completa de um ficheiro
+ * - getAuthFileUrl(): Retorna URL autenticada para acesso ao ficheiro
+ *
+ * ACESSO A FICHEIROS:
+ * --------------------
+ * Os ficheiros são completamente privados no servidor.
+ * O acesso é feito exclusivamente pela API, que valida JWT e propriedade.
+ * O frontend NUNCA acede ficheiros diretamente por URL estática.
+ * Use SEMPRE getAuthFileUrl() para construir URLs de acesso.
  *
  * COMO USAR:
  * ----------
- * import { uploadFile, getFileUrl } from '@/services/upload.service';
+ * import { uploadFile, getAuthFileUrl } from '@/services/upload.service';
  *
  * // Upload de um ficheiro
  * const result = await uploadFile(file, 'document');
  *
- * // Obter URL do ficheiro
- * const url = getFileUrl(result.path);
+ * // Aceder ao ficheiro (com autenticação)
+ * <img src={getAuthFileUrl(result.url)} />
  * ============================================================================
  */
 
@@ -46,9 +53,9 @@ interface ApiResponse<T> {
 export interface UploadResult {
   /** ID do ficheiro no banco de dados */
   id: string;
-  /** URL completa para acessar o ficheiro (ex: /api/v1/uploads/documents/xxx.jpg) */
+  /** URL da API para download do ficheiro (ex: /api/v1/upload/file/{id}) */
   url: string;
-  /** Caminho relativo no servidor */
+  /** Caminho relativo no servidor (interno, não usar diretamente) */
   path: string;
   /** Nome original do ficheiro */
   originalName: string;
@@ -190,11 +197,12 @@ export async function removeFile(fileId: string): Promise<void> {
  * Use esta função SEMPRE que precisar construir um URL para acessar ficheiros.
  *
  * FUNCIONA COM:
- * - URLs completas da API: "/api/v1/uploads/other/xxx/file.pdf"
- * - Caminhos relativos: "other/xxx/file.pdf"
+ * - URLs novas (por ID): "/api/v1/upload/file/xxx" → adiciona ?token=
+ * - URLs antigas (por path): "/api/v1/uploads/avatars/..." → converte para
+ *   "/api/v1/upload/file/by-path?path=avatars/...&token="
  *
- * @param url - URL ou caminho do ficheiro
- * @returns URL com token JWT incluido (ex: "...?token=eyJ...")
+ * @param url - URL do ficheiro (nova ou antiga)
+ * @returns URL com token JWT incluído
  *
  * @example
  * // Num <img src>, window.open(), <a href>, etc.
@@ -205,18 +213,21 @@ export function getAuthFileUrl(url: string): string {
   const token = localStorage.getItem('accessToken');
   if (!token || !url) return url;
 
-  // Se já tem query params, adiciona token; senão, cria query string
+  // URL nova (por ID): /api/v1/upload/file/:id
+  // Basta adicionar o token como query param
+  if (url.includes('/api/v1/upload/file/')) {
+    const separator = url.includes('?') ? '&' : '?';
+    return `${url}${separator}token=${encodeURIComponent(token)}`;
+  }
+
+  // URL antiga (por path): /api/v1/uploads/<path>
+  // Converte para o endpoint seguro /api/v1/upload/file/by-path?path=<path>
+  if (url.includes('/api/v1/uploads/')) {
+    const relativePath = url.replace('/api/v1/uploads/', '');
+    return `/api/v1/upload/file/by-path?path=${encodeURIComponent(relativePath)}&token=${encodeURIComponent(token)}`;
+  }
+
+  // Fallback: adiciona token normalmente
   const separator = url.includes('?') ? '&' : '?';
   return `${url}${separator}token=${encodeURIComponent(token)}`;
-}
-
-/**
- * Retorna a URL completa para acessar um ficheiro no servidor.
- * Inclui o token JWT como query param para permitir acesso direto no browser.
- *
- * @param path - Caminho relativo do ficheiro (ex: "documents/xxx.jpg")
- * @returns URL completa com token (ex: "/api/v1/uploads/documents/xxx.jpg?token=...")
- */
-export function getFileUrl(path: string): string {
-  return getAuthFileUrl(`/api/v1/uploads/${path}`);
 }
