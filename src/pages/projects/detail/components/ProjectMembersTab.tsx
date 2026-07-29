@@ -10,7 +10,7 @@
  * ============================================================================
  */
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plus, Edit2, Trash2, Users } from 'lucide-react';
 import type { ProjectDetail, ProjectMember, AddMemberPayload, UpdateMemberPayload } from '@/services/project.service';
@@ -110,6 +110,38 @@ export function ProjectMembersTab({
     }
   }
 
+  // =========================================================================
+  // AGRUPAMENTO DE MEMBROS
+  // =========================================================================
+
+  /**
+   * Agrupa membros por função no projeto (role).
+   * Membros sem função ficam no grupo "Sem função definida".
+   */
+  const groupedMembers = useMemo(() => {
+    if (!project.members?.length) return {};
+
+    const groups: Record<string, ProjectMember[]> = {};
+
+    project.members.forEach((member) => {
+      const key = member.role || '__no_role__';
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(member);
+    });
+
+    return groups;
+  }, [project.members]);
+
+  /**
+   * Ordena os grupos: grupos com função primeiro (alfabética), sem função por último.
+   */
+  const sortedGroupKeys = useMemo(() => {
+    const keys = Object.keys(groupedMembers);
+    const withRole = keys.filter((k) => k !== '__no_role__').sort();
+    const noRole = keys.filter((k) => k === '__no_role__');
+    return [...withRole, ...noRole];
+  }, [groupedMembers]);
+
   return (
     <>
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
@@ -124,57 +156,73 @@ export function ProjectMembersTab({
           </button>
         </div>
 
-        {/* Tabela ou estado vazio */}
+        {/* Lista agrupada ou estado vazio */}
         {project.members?.length ? (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('memberTable.name')}</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('memberTable.email')}</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('memberTable.role')}</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('memberTable.projectRole')}</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">{t('table.actions')}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {project.members.map((member) => (
-                  <tr key={member.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                      {member.user.firstName} {member.user.lastName}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">{member.user.email}</td>
-                    <td className="px-4 py-3">
-                      <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                        member.user.role === 'ADMIN' ? 'bg-purple-100 text-purple-700' :
-                        member.user.role === 'HR' ? 'bg-blue-100 text-blue-700' :
-                        'bg-gray-100 text-gray-700'
-                      }`}>
-                        {member.user.role}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">{member.role || '-'}</td>
-                    <td className="px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => openEditModal(member)}
-                          className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                          title={t('actions.editMemberRole')}
-                        >
-                          <Edit2 size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleRemove(member)}
-                          className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                        >
-                          <Trash2 size={16} />
-                        </button>
+          <div className="p-4 space-y-4">
+            {sortedGroupKeys.map((groupKey) => {
+              const members = groupedMembers[groupKey];
+              const groupLabel = groupKey === '__no_role__' ? t('memberTable.noRole') : groupKey;
+
+              return (
+                <div key={groupKey} className="border border-gray-100 rounded-lg overflow-hidden">
+                  {/* Cabeçalho do grupo */}
+                  <div className="px-4 py-2.5 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold text-gray-700">{groupLabel}</span>
+                      <span className="text-xs text-gray-400">{t('memberTable.membersCount', { count: members.length })}</span>
+                    </div>
+                  </div>
+
+                  {/* Membros do grupo */}
+                  <div className="divide-y divide-gray-50">
+                    {members.map((member) => (
+                      <div key={member.id} className="px-4 py-3 flex items-center justify-between hover:bg-gray-50/50 transition-colors">
+                        {/* Informações do membro */}
+                        <div className="flex items-center gap-3">
+                          {/* Avatar */}
+                          <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-semibold text-gray-600">
+                            {member.user.firstName[0]}{member.user.lastName[0]}
+                          </div>
+                          {/* Nome e email */}
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">
+                              {member.user.firstName} {member.user.lastName}
+                            </p>
+                            <p className="text-xs text-gray-500">{member.user.email}</p>
+                          </div>
+                        </div>
+
+                        {/* Role do sistema + Ações */}
+                        <div className="flex items-center gap-3">
+                          <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                            member.user.role === 'ADMIN' ? 'bg-purple-100 text-purple-700' :
+                            member.user.role === 'HR' ? 'bg-blue-100 text-blue-700' :
+                            'bg-gray-100 text-gray-700'
+                          }`}>
+                            {member.user.role}
+                          </span>
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => openEditModal(member)}
+                              className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                              title={t('actions.editMemberRole')}
+                            >
+                              <Edit2 size={14} />
+                            </button>
+                            <button
+                              onClick={() => handleRemove(member)}
+                              className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </div>
                       </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         ) : (
           <div className="p-8 text-center text-gray-500">

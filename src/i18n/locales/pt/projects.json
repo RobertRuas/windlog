@@ -96,7 +96,9 @@
     "email": "Email",
     "role": "Role",
     "projectRole": "Função no Projeto",
-    "empty": "Nenhum membro associado a este projeto"
+    "empty": "Nenhum membro associado a este projeto",
+    "noRole": "Sem função definida",
+    "membersCount": "{{count}} membro(s)"
   },
   "memberModal": {
     "title": "Adicionar Membro",
