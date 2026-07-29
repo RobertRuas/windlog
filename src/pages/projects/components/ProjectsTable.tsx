@@ -84,7 +84,7 @@ export function ProjectsTable({
                   <th className="px-5 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">{t('table.status')}</th>
                   <th className="px-5 py-3 text-center text-[11px] font-semibold text-gray-400 uppercase tracking-wider">{t('table.turbines')}</th>
                   <th className="px-5 py-3 text-center text-[11px] font-semibold text-gray-400 uppercase tracking-wider">{t('table.members')}</th>
-                  <th className="px-5 py-3 text-right text-[11px] font-semibold text-gray-400 uppercase tracking-wider">{t('table.actions')}</th>
+                  <th className="px-5 py-3 text-right text-[11px] font-semibold text-gray-400 uppercase tracking-wider sticky right-0 bg-gray-50 z-10 min-w-[120px]">{t('table.actions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
@@ -141,9 +141,9 @@ export function ProjectsTable({
                         </span>
                       </td>
 
-                      {/* Ações */}
-                      <td className="px-5 py-3.5">
-                        <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+                      {/* Ações (coluna fixa) */}
+                      <td className="px-5 py-3.5 sticky right-0 bg-white group-hover:bg-gray-50/80 z-10">
+                        <div className="flex items-center justify-end gap-1">
                           <button
                             onClick={() => onViewDetails(project)}
                             className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
