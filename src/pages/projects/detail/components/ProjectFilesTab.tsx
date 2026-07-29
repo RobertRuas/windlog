@@ -40,7 +40,7 @@ import {
   addProjectFile,
   removeProjectFile,
 } from '@/services/project.service';
-import { validateFile } from '@/services/upload.service';
+import { validateFile, getAuthFileUrl } from '@/services/upload.service';
 import { DataTable, type DataTableColumn } from '@/components/ui/DataTable';
 
 /**
@@ -190,7 +190,7 @@ export function ProjectFilesTab({ project }: ProjectFilesTabProps) {
    * Visualiza um ficheiro numa nova aba.
    */
   function handleView(projectFile: ProjectFile) {
-    window.open(projectFile.file.url, '_blank');
+    window.open(getAuthFileUrl(projectFile.file.url), '_blank');
   }
 
   /**
@@ -198,7 +198,7 @@ export function ProjectFilesTab({ project }: ProjectFilesTabProps) {
    */
   function handleDownload(projectFile: ProjectFile) {
     const link = document.createElement('a');
-    link.href = projectFile.file.url;
+    link.href = getAuthFileUrl(projectFile.file.url);
     link.download = projectFile.file.originalName;
     link.target = '_blank';
     document.body.appendChild(link);
@@ -216,7 +216,7 @@ export function ProjectFilesTab({ project }: ProjectFilesTabProps) {
         <div className="flex items-center gap-3">
           {isImage(projectFile.file.mimeType) ? (
             <img
-              src={projectFile.file.url}
+              src={getAuthFileUrl(projectFile.file.url)}
               alt={projectFile.file.originalName}
               className="w-8 h-8 rounded object-cover flex-shrink-0"
             />

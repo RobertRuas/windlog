@@ -186,6 +186,31 @@ export async function removeFile(fileId: string): Promise<void> {
 }
 
 /**
+ * Adiciona o token JWT a qualquer URL de ficheiro para autenticação.
+ * Use esta função SEMPRE que precisar construir um URL para acessar ficheiros.
+ *
+ * FUNCIONA COM:
+ * - URLs completas da API: "/api/v1/uploads/other/xxx/file.pdf"
+ * - Caminhos relativos: "other/xxx/file.pdf"
+ *
+ * @param url - URL ou caminho do ficheiro
+ * @returns URL com token JWT incluido (ex: "...?token=eyJ...")
+ *
+ * @example
+ * // Num <img src>, window.open(), <a href>, etc.
+ * <img src={getAuthFileUrl(file.url)} />
+ * window.open(getAuthFileUrl(file.url));
+ */
+export function getAuthFileUrl(url: string): string {
+  const token = localStorage.getItem('accessToken');
+  if (!token || !url) return url;
+
+  // Se já tem query params, adiciona token; senão, cria query string
+  const separator = url.includes('?') ? '&' : '?';
+  return `${url}${separator}token=${encodeURIComponent(token)}`;
+}
+
+/**
  * Retorna a URL completa para acessar um ficheiro no servidor.
  * Inclui o token JWT como query param para permitir acesso direto no browser.
  *
@@ -193,7 +218,5 @@ export async function removeFile(fileId: string): Promise<void> {
  * @returns URL completa com token (ex: "/api/v1/uploads/documents/xxx.jpg?token=...")
  */
 export function getFileUrl(path: string): string {
-  const token = localStorage.getItem('accessToken');
-  const baseUrl = `/api/v1/uploads/${path}`;
-  return token ? `${baseUrl}?token=${encodeURIComponent(token)}` : baseUrl;
+  return getAuthFileUrl(`/api/v1/uploads/${path}`);
 }
