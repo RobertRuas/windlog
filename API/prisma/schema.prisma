@@ -307,6 +307,9 @@ model UploadedFile {
   // Relação com documentos (se aplicável)
   documentFiles  UserDocumentFile[]
 
+  // Relação com projetos (ficheiros de projeto)
+  projectFiles   ProjectFile[]
+
   // Timestamps
   createdAt      DateTime @default(now())
 
@@ -537,6 +540,7 @@ model Project {
   // Relações
   turbines    ProjectTurbine[]
   members     ProjectMember[]
+  files       ProjectFile[]
 }
 
 // ---------------------------------------------------------------------------
@@ -608,6 +612,33 @@ model ProjectMember {
 }
 
 // ---------------------------------------------------------------------------
+// MODEL: PROJECT FILE (Ficheiros do Projeto)
+// ---------------------------------------------------------------------------
+// Associa ficheiros uploadados a um projeto.
+// Permite guardar fotos, documentos e outros ficheiros ligados ao projeto.
+// ---------------------------------------------------------------------------
+model ProjectFile {
+  id           String   @id @default(uuid())
+
+  // Relação com o projeto
+  projectId    String
+  project      Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  // Relação com o ficheiro uploadado
+  uploadedFileId String
+  uploadedFile   UploadedFile @relation(fields: [uploadedFileId], references: [id], onDelete: Cascade)
+
+  // Descrição opcional do ficheiro no contexto do projeto
+  description  String?
+
+  // Timestamps
+  createdAt    DateTime @default(now())
+
+  @@index([projectId])
+  @@index([uploadedFileId])
+}
+
+// ---------------------------------------------------------------------------
 // ENUM: LOG ACTION (Ações Registradas no Log)
 // ---------------------------------------------------------------------------
 // Define todas as ações que podem ser registradas no log do sistema.
@@ -667,6 +698,10 @@ enum LogAction {
   TECHNICIAN_CREATE
   TECHNICIAN_UPDATE
   TECHNICIAN_DELETE
+  
+  // Ficheiros de Projeto
+  PROJECT_FILE_CREATE
+  PROJECT_FILE_DELETE
   
   // Sistema
   SYSTEM_ERROR

@@ -43,6 +43,7 @@ import { getUsers as fetchUsers } from '@/services/user.service';
 import { ProjectInfoTab } from './components/ProjectInfoTab';
 import { ProjectTurbinesTab } from './components/ProjectTurbinesTab';
 import { ProjectMembersTab } from './components/ProjectMembersTab';
+import { ProjectFilesTab } from './components/ProjectFilesTab';
 import { ProjectEditModal } from './components/ProjectEditModal';
 
 // Hooks
@@ -57,7 +58,7 @@ export function ProjectDetailPage() {
   const { t } = useTranslation('projects');
 
   // Estado de aba
-  const [activeTab, setActiveTab] = useState<'info' | 'turbines' | 'members'>('info');
+  const [activeTab, setActiveTab] = useState<'info' | 'turbines' | 'members' | 'files'>('info');
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   // Buscar dados do projeto
@@ -224,6 +225,16 @@ export function ProjectDetailPage() {
           >
             {t('tabs.members')} ({project.members?.length || 0})
           </button>
+          <button
+            onClick={() => setActiveTab('files')}
+            className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === 'files'
+                ? 'border-blue-600 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            {t('tabs.files')}
+          </button>
         </nav>
       </div>
 
@@ -253,6 +264,10 @@ export function ProjectDetailPage() {
           isAddPending={addMemberMutation.isPending}
           isUpdatePending={updateMemberMutation.isPending}
         />
+      )}
+
+      {activeTab === 'files' && (
+        <ProjectFilesTab project={project} />
       )}
 
       {/* Modal de Edição do Projeto */}

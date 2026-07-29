@@ -26,6 +26,7 @@ import {
 } from '@nestjs/common';
 
 import { PrismaService } from '../../database/prisma.service.js';
+import { UploadService, type FileCategory } from '../upload/upload.service.js';
 import {
   CreateProjectDto,
   UpdateProjectDto,
@@ -44,7 +45,10 @@ export class ProjectsService {
   // Logger para registrar operações de gestão de projetos
   private readonly logger = new Logger(ProjectsService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly uploadService: UploadService,
+  ) {}
 
   // =========================================================================
   // PROJECT CRUD
@@ -574,5 +578,139 @@ export class ProjectsService {
     this.logger.log(`Member updated: ${memberId} in project ${projectId}`);
 
     return updatedMember;
+  }
+
+  // =========================================================================
+  // PROJECT FILE MANAGEMENT
+  // =========================================================================
+
+  /**
+   * Faz upload de um ficheiro e associa-o a um projeto.
+   *
+   * PASSO A PASSO:
+   * 1. Verifica se o projeto existe
+   * 2. Faz upload do ficheiro via UploadService (categoria 'project')
+   * 3. Associa o ficheiro ao projeto via tabela ProjectFile
+   * 4. Retorna informações do ficheiro
+   *
+   * @param projectId - ID do projeto
+   * @param file - Ficheiro recebido (do multer)
+   * @param userId - ID do usuário que fez o upload
+   * @param description - Descrição opcional do ficheiro
+   * @returns Informações do ficheiro associado ao projeto
+   */
+  async addProjectFile(
+    projectId: string,
+    file: Express.Multer.File,
+    userId: string,
+    description?: string,
+  ) {
+    // Verifica se o projeto existe
+    const project = await this.prisma.project.findFirst({
+      where: { id: projectId, deletedAt: null },
+    });
+
+    if (!project) {
+      throw new NotFoundException('Project not found');
+    }
+
+    // Faz upload do ficheiro (categoria 'other' por ora, pois 'project' não existe no FileCategory)
+    const uploadResult = await this.uploadService.uploadFile(file, userId, 'other');
+
+    // Associa o ficheiro ao projeto
+    const projectFile = await this.prisma.projectFile.create({
+      data: {
+        projectId,
+        uploadedFileId: uploadResult.id,
+        description,
+      },
+      include: {
+        uploadedFile: true,
+      },
+    });
+
+    this.logger.log(`File added to project ${projectId}: ${uploadResult.originalName}`);
+
+    return {
+      id: projectFile.id,
+      projectId: projectFile.projectId,
+      description: projectFile.description,
+      createdAt: projectFile.createdAt,
+      file: {
+        id: uploadResult.id,
+        path: uploadResult.path,
+        url: `/api/v1/uploads/${uploadResult.path}`,
+        originalName: uploadResult.originalName,
+        mimeType: uploadResult.mimeType,
+        size: uploadResult.size,
+      },
+    };
+  }
+
+  /**
+   * Lista todos os ficheiros associados a um projeto.
+   *
+   * @param projectId - ID do projeto
+   * @returns Lista de ficheiros do projeto
+   */
+  async findFilesByProject(projectId: string) {
+    // Verifica se o projeto existe
+    const project = await this.prisma.project.findFirst({
+      where: { id: projectId, deletedAt: null },
+    });
+
+    if (!project) {
+      throw new NotFoundException('Project not found');
+    }
+
+    const projectFiles = await this.prisma.projectFile.findMany({
+      where: { projectId },
+      include: {
+        uploadedFile: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return projectFiles.map((pf) => ({
+      id: pf.id,
+      projectId: pf.projectId,
+      description: pf.description,
+      createdAt: pf.createdAt,
+      file: {
+        id: pf.uploadedFile.id,
+        path: pf.uploadedFile.path,
+        url: `/api/v1/uploads/${pf.uploadedFile.path}`,
+        originalName: pf.uploadedFile.originalName,
+        mimeType: pf.uploadedFile.mimeType,
+        size: pf.uploadedFile.size,
+      },
+    }));
+  }
+
+  /**
+   * Remove um ficheiro de um projeto (físico + banco de dados).
+   *
+   * @param projectId - ID do projeto
+   * @param fileId - ID da associação ProjectFile
+   * @returns void
+   * @throws NotFoundException se o ficheiro não existir
+   */
+  async removeProjectFile(projectId: string, fileId: string) {
+    // Verifica se o ficheiro existe e pertence ao projeto
+    const projectFile = await this.prisma.projectFile.findFirst({
+      where: { id: fileId, projectId },
+    });
+
+    if (!projectFile) {
+      throw new NotFoundException('Project file not found');
+    }
+
+    // Remove o ficheiro físico e o registo do UploadedFile
+    await this.uploadService.removeFile(projectFile.uploadedFileId);
+
+    // Remove a associação ProjectFile
+    await this.prisma.projectFile.delete({ where: { id: fileId } });
+
+    this.logger.log(`File removed from project ${projectId}: ${fileId}`);
   }
 }
