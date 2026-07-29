@@ -25,6 +25,7 @@ import { Camera, Upload, X, Check, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { uploadFile } from '@/services/upload.service';
 import { updateProfile } from '@/services/auth.service';
+import { useAuthImage } from '@/hooks/useAuthImage';
 import { toast } from 'sonner';
 
 /**
@@ -47,6 +48,10 @@ export function AvatarUpload({ currentPhotoUrl, onSuccess, compact = false }: Av
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  // Busca a imagem do avatar com autenticação JWT (retorna blob URL)
+  // Necessário porque <img src> não envia header Authorization
+  const authImageUrl = useAuthImage(currentPhotoUrl);
 
   const [isUploading, setIsUploading] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
@@ -213,9 +218,9 @@ export function AvatarUpload({ currentPhotoUrl, onSuccess, compact = false }: Av
           className="relative group flex-shrink-0"
           title={t('profile.avatarUpload')}
         >
-          {currentPhotoUrl ? (
+          {authImageUrl ? (
             <img
-              src={currentPhotoUrl}
+              src={authImageUrl}
               alt="Avatar"
               className="w-14 h-14 rounded-full object-cover border-2 border-white shadow-md ring-2 ring-blue-100"
             />
@@ -336,9 +341,9 @@ export function AvatarUpload({ currentPhotoUrl, onSuccess, compact = false }: Av
         ) : (
           /* Estado inicial - mostra foto atual ou placeholder */
           <div className="relative">
-            {currentPhotoUrl ? (
+            {authImageUrl ? (
               <img
-                src={currentPhotoUrl}
+                src={authImageUrl}
                 alt="Avatar"
                 className="w-32 h-42 object-cover rounded-xl border-2 border-gray-200"
                 style={{ width: '128px', height: '168px' }}

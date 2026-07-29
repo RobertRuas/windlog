@@ -33,6 +33,8 @@ import compression from 'compression';
 import helmet from 'helmet';
 import * as express from 'express';
 import * as path from 'path';
+import * as jwt from 'jsonwebtoken';
+import type { Request, Response, NextFunction } from 'express';
 
 import { AppModule } from './app.module.js';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter.js';
@@ -105,15 +107,34 @@ async function bootstrap() {
   });
 
   // -------------------------------------------------------------------------
-  // 4.1. FICHEIROS ESTÁTICOS (uploads)
+  // 4.1. FICHEIROS ESTÁTICOS (uploads) - PROTEGIDOS POR JWT
   // -------------------------------------------------------------------------
   // Serve ficheiros uploadados pelos usuários ANTES do pipeline NestJS.
   // Isto é necessário porque o TransformInterceptor global envolve TODAS
   // as respostas em JSON, o que corromperia ficheiros binários (imagens, PDFs).
-  // O express.static serve os ficheiros diretamente, sem passar por interceptors.
+  //
+  // SEGURANÇA: Um middleware verifica o token JWT antes de servir o ficheiro.
+  // O frontend deve enviar o header Authorization: Bearer <token> ao buscar
+  // imagens (via fetch + blob URL, pois <img src> não envia headers).
   const uploadsDir = path.resolve(process.cwd(), 'uploads');
   const httpApp = app.getHttpAdapter().getInstance();
-  httpApp.use('/api/v1/uploads', express.static(uploadsDir));
+  const jwtSecret = configService.get<string>('JWT_SECRET') ?? '';
+
+  httpApp.use('/api/v1/uploads', (req: Request, res: Response, next: NextFunction) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ message: 'Token não fornecido' });
+    }
+
+    const token = authHeader.split(' ')[1];
+    try {
+      jwt.verify(token, jwtSecret);
+      // Token válido → serve o ficheiro estático
+      express.static(uploadsDir)(req, res, next);
+    } catch {
+      return res.status(401).json({ message: 'Token inválido ou expirado' });
+    }
+  });
 
   // -------------------------------------------------------------------------
   // 5. PREFIXO GLOBAL DAS ROTAS
