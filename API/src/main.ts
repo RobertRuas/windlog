@@ -31,6 +31,8 @@ import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import compression from 'compression';
 import helmet from 'helmet';
+import * as express from 'express';
+import * as path from 'path';
 
 import { AppModule } from './app.module.js';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter.js';
@@ -101,6 +103,17 @@ async function bootstrap() {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
+
+  // -------------------------------------------------------------------------
+  // 4.1. FICHEIROS ESTÁTICOS (uploads)
+  // -------------------------------------------------------------------------
+  // Serve ficheiros uploadados pelos usuários ANTES do pipeline NestJS.
+  // Isto é necessário porque o TransformInterceptor global envolve TODAS
+  // as respostas em JSON, o que corromperia ficheiros binários (imagens, PDFs).
+  // O express.static serve os ficheiros diretamente, sem passar por interceptors.
+  const uploadsDir = path.resolve(process.cwd(), 'uploads');
+  const httpApp = app.getHttpAdapter().getInstance();
+  httpApp.use('/api/v1/uploads', express.static(uploadsDir));
 
   // -------------------------------------------------------------------------
   // 5. PREFIXO GLOBAL DAS ROTAS

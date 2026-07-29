@@ -12,7 +12,14 @@
  * ----------
  * POST   /api/v1/upload              - Upload de ficheiro (multipart/form-data)
  * GET    /api/v1/upload              - Listar ficheiros do usuário
- * GET    /api/v1/uploads/*           - Servir ficheiro estático (público)
+ * GET    /api/v1/upload/:id          - Buscar ficheiro por ID
+ * DELETE /api/v1/upload/:id          - Remover ficheiro
+ *
+ * FICHEIROS ESTÁTICOS:
+ * --------------------
+ * Os ficheiros são servidos via middleware Express (express.static) em main.ts,
+ * na rota /api/v1/uploads/*. Isto evita que o TransformInterceptor global
+ * envolva a resposta binária em JSON.
  *
  * COMO FUNCIONA O UPLOAD:
  * -----------------------
@@ -38,7 +45,6 @@ import {
   UseGuards,
   UseInterceptors,
   UploadedFile,
-  Res,
   HttpStatus,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -51,9 +57,6 @@ import {
   ApiConsumes,
   ApiQuery,
 } from '@nestjs/swagger';
-import type { Response } from 'express';
-import * as path from 'path';
-import * as fs from 'fs';
 
 import { UploadService, type FileCategory } from './upload.service.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
@@ -187,58 +190,5 @@ export class UploadController {
   async removeFile(@Param('id') id: string) {
     await this.uploadService.removeFile(id);
     return { message: 'Ficheiro removido com sucesso' };
-  }
-}
-
-/**
- * Controller para servir ficheiros estáticos.
- * Este endpoint é PÚBLICO (não requer autenticação).
- *
- * GET /api/v1/uploads/* - Serve qualquer ficheiro da pasta uploads/
- */
-@ApiTags('uploads-static')
-@Controller('uploads')
-export class UploadStaticController {
-  /**
-   * Pasta base dos uploads.
-   */
-  private readonly uploadsDir: string;
-
-  constructor() {
-    this.uploadsDir = path.resolve(process.cwd(), 'uploads');
-  }
-
-  /**
-   * GET /api/v1/uploads/*
-   *
-   * Serve ficheiros estáticos da pasta uploads/.
-   * O caminho completo após /uploads/ é usado para localizar o ficheiro.
-   *
-   * Exemplo: GET /api/v1/uploads/avatars/xxx.jpg
-   * → Serve: API/uploads/avatars/xxx.jpg
-   */
-  @Get('*')
-  serveFile(@Param() params: Record<string, string>, @Res() res: Response) {
-    // Extrai o caminho do ficheiro da URL
-    // O params contém o caminho após /uploads/
-    const filePath = Object.values(params).join('/');
-
-    if (!filePath) {
-      return res.status(HttpStatus.NOT_FOUND).json({ message: 'Ficheiro não encontrado' });
-    }
-
-    // Segurança: previne path traversal attacks
-    const absolutePath = path.resolve(this.uploadsDir, filePath);
-    if (!absolutePath.startsWith(this.uploadsDir)) {
-      return res.status(HttpStatus.FORBIDDEN).json({ message: 'Acesso negado' });
-    }
-
-    // Verifica se o ficheiro existe
-    if (!fs.existsSync(absolutePath)) {
-      return res.status(HttpStatus.NOT_FOUND).json({ message: 'Ficheiro não encontrado' });
-    }
-
-    // Envia o ficheiro
-    return res.sendFile(absolutePath);
   }
 }

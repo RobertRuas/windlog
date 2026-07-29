@@ -23,13 +23,13 @@
  */
 
 import { Module } from '@nestjs/common';
-import { UploadController, UploadStaticController } from './upload.controller.js';
+import { UploadController } from './upload.controller.js';
 import { UploadService } from './upload.service.js';
 import { PrismaService } from '../../database/prisma.service.js';
 
 @Module({
   // Controllers deste módulo
-  controllers: [UploadController, UploadStaticController],
+  controllers: [UploadController],
 
   // Serviços deste módulo
   providers: [UploadService, PrismaService],
