@@ -33,7 +33,6 @@ import compression from 'compression';
 import helmet from 'helmet';
 import * as express from 'express';
 import * as path from 'path';
-import * as fs from 'fs';
 import * as jwt from 'jsonwebtoken';
 import type { Request, Response, NextFunction } from 'express';
 
@@ -115,26 +114,15 @@ async function bootstrap() {
   // as respostas em JSON, o que corromperia ficheiros binários (imagens, PDFs).
   //
   // SEGURANÇA: Um middleware verifica o token JWT antes de servir o ficheiro.
-  // O frontend deve enviar o header Authorization: Bearer <token> ao buscar
-  // imagens (via fetch + blob URL, pois <img src> não envia headers).
+  // Aceita token via header (Authorization: Bearer <token>) ou query param (?token=...).
   //
-  // NOTA: O JWT_SECRET é lido diretamente do ficheiro .env para garantir
-  // que o valor correto seja usado (configService pode não estar disponível
-  // neste ponto do bootstrap).
+  // NOTA: Usamos o ConfigService do NestJS para obter o JWT_SECRET, garantindo
+  // que o mesmo valor é usado tanto aqui quanto no JwtModule (auth.module.ts).
   const uploadsDir = path.resolve(process.cwd(), 'uploads');
   const httpApp = app.getHttpAdapter().getInstance();
 
-  // Lê o JWT_SECRET diretamente do .env (garante valor correto)
-  let jwtSecret = '';
-  const envPath = path.resolve(process.cwd(), '.env');
-  if (fs.existsSync(envPath)) {
-    const envContent = fs.readFileSync(envPath, 'utf-8');
-    const match = envContent.match(/^JWT_SECRET=(.+)$/m);
-    if (match) {
-      // Remove aspas se presentes (dotenv faz o mesmo)
-      jwtSecret = match[1].replace(/^["']|["']$/g, '').trim();
-    }
-  }
+  // Obtém o JWT_SECRET via ConfigService (mesmo valor usado para assinar tokens)
+  const jwtSecret = configService.getOrThrow<string>('JWT_SECRET');
 
   httpApp.use('/api/v1/uploads', (req: Request, res: Response, next: NextFunction) => {
     // Aceita token tanto via header (Authorization: Bearer <token>)
