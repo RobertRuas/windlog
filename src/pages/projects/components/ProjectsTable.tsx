@@ -82,8 +82,7 @@ export function ProjectsTable({
                   <th className="px-5 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">{t('table.client')}</th>
                   <th className="px-5 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">{t('table.location')}</th>
                   <th className="px-5 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">{t('table.status')}</th>
-                  <th className="px-5 py-3 text-center text-[11px] font-semibold text-gray-400 uppercase tracking-wider">{t('table.turbines')}</th>
-                  <th className="px-5 py-3 text-center text-[11px] font-semibold text-gray-400 uppercase tracking-wider">{t('table.members')}</th>
+                  <th className="px-5 py-3 text-center text-[11px] font-semibold text-gray-400 uppercase tracking-wider">{t('table.resources')}</th>
                   <th className="px-5 py-3 text-right text-[11px] font-semibold text-gray-400 uppercase tracking-wider sticky right-0 bg-gray-50 z-10 min-w-[120px]">{t('table.actions')}</th>
                 </tr>
               </thead>
@@ -125,20 +124,18 @@ export function ProjectsTable({
                         </span>
                       </td>
 
-                      {/* Turbinas com ícone */}
-                      <td className="px-5 py-3.5 text-center">
-                        <span className="inline-flex items-center gap-1 text-sm text-gray-500">
-                          <Wind size={14} className="text-gray-400" />
-                          {project._count?.turbines || 0}
-                        </span>
-                      </td>
-
-                      {/* Membros com ícone */}
-                      <td className="px-5 py-3.5 text-center">
-                        <span className="inline-flex items-center gap-1 text-sm text-gray-500">
-                          <UsersIcon size={14} className="text-gray-400" />
-                          {project._count?.members || 0}
-                        </span>
+                      {/* Turbinas + Membros (coluna unificada) */}
+                      <td className="px-5 py-3.5">
+                        <div className="flex items-center justify-center gap-3">
+                          <span className="inline-flex items-center gap-1 text-sm text-gray-500" title={t('table.turbines')}>
+                            <Wind size={14} className="text-gray-400" />
+                            {project._count?.turbines || 0}
+                          </span>
+                          <span className="inline-flex items-center gap-1 text-sm text-gray-500" title={t('table.members')}>
+                            <UsersIcon size={14} className="text-gray-400" />
+                            {project._count?.members || 0}
+                          </span>
+                        </div>
                       </td>
 
                       {/* Ações (coluna fixa) */}
