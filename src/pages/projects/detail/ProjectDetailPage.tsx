@@ -36,7 +36,7 @@ import { ArrowLeft, Edit2 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 
 // Serviços
-import { getProjectById, type UpdateProjectPayload } from '@/services/project.service';
+import { getProjectById, getProjectFiles, type UpdateProjectPayload } from '@/services/project.service';
 import { getUsers as fetchUsers } from '@/services/user.service';
 
 // Componentes
@@ -65,6 +65,13 @@ export function ProjectDetailPage() {
   const { data: project, isLoading } = useQuery({
     queryKey: ['project', id],
     queryFn: () => getProjectById(id!),
+    enabled: !!id,
+  });
+
+  // Buscar contagem de ficheiros do projeto (para o badge da aba)
+  const { data: projectFiles = [] } = useQuery({
+    queryKey: ['project-files', id],
+    queryFn: () => getProjectFiles(id!),
     enabled: !!id,
   });
 
@@ -233,7 +240,7 @@ export function ProjectDetailPage() {
                 : 'border-transparent text-gray-500 hover:text-gray-700'
             }`}
           >
-            {t('tabs.files')}
+            {t('tabs.files')} ({projectFiles.length})
           </button>
         </nav>
       </div>

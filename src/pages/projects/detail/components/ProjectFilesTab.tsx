@@ -7,10 +7,12 @@
  * ---------------------
  * Componente que exibe todos os ficheiros (fotos, documentos, etc.)
  * associados a um projeto. Permite upload de novos ficheiros e remoção.
+ * Utiliza o componente reutilizável DataTable para manter o estilo
+ * padronizado com a lista de projetos.
  *
  * FUNCIONALIDADES:
  * ----------------
- * - Listar ficheiros em formato de lista
+ * - Listar ficheiros em formato de tabela (DataTable)
  * - Upload de novos ficheiros (drag & drop + botão)
  * - Download de ficheiros
  * - Remoção de ficheiros
@@ -27,8 +29,8 @@ import {
   Image as ImageIcon,
   FileText,
   Download,
-  FolderOpen,
   Calendar,
+  Paperclip,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { ProjectDetail, ProjectFile } from '@/services/project.service';
@@ -38,6 +40,7 @@ import {
   removeProjectFile,
 } from '@/services/project.service';
 import { validateFile } from '@/services/upload.service';
+import { DataTable, type DataTableColumn } from '@/components/ui/DataTable';
 
 /**
  * Props do componente ProjectFilesTab.
@@ -195,6 +198,79 @@ export function ProjectFilesTab({ project }: ProjectFilesTabProps) {
     document.body.removeChild(link);
   }
 
+  /**
+   * Colunas da tabela de ficheiros.
+   */
+  const columns: DataTableColumn<ProjectFile>[] = [
+    {
+      header: t('filesTable.name'),
+      render: (projectFile) => (
+        <div className="flex items-center gap-3">
+          {isImage(projectFile.file.mimeType) ? (
+            <img
+              src={projectFile.file.url}
+              alt={projectFile.file.originalName}
+              className="w-8 h-8 rounded object-cover flex-shrink-0"
+            />
+          ) : (
+            <div className="w-8 h-8 rounded bg-gray-50 flex items-center justify-center flex-shrink-0">
+              {getFileIcon(projectFile.file.mimeType, 18)}
+            </div>
+          )}
+          <span
+            className="text-sm font-medium text-gray-900 truncate max-w-[250px]"
+            title={projectFile.file.originalName}
+          >
+            {projectFile.file.originalName}
+          </span>
+        </div>
+      ),
+    },
+    {
+      header: t('filesTable.type'),
+      render: (projectFile) => (
+        <span className="text-sm text-gray-500 uppercase">{projectFile.file.mimeType.split('/')[1]}</span>
+      ),
+    },
+    {
+      header: t('filesTable.size'),
+      render: (projectFile) => (
+        <span className="text-sm text-gray-500">{formatFileSize(projectFile.file.size)}</span>
+      ),
+    },
+    {
+      header: t('filesTable.date'),
+      render: (projectFile) => (
+        <span className="inline-flex items-center gap-1.5 text-sm text-gray-500">
+          <Calendar size={13} className="text-gray-400" />
+          {new Date(projectFile.createdAt).toLocaleDateString('pt-BR')}
+        </span>
+      ),
+    },
+    {
+      header: t('table.actions'),
+      align: 'right',
+      render: (projectFile) => (
+        <div className="flex items-center justify-end gap-1">
+          <button
+            onClick={() => handleDownload(projectFile)}
+            className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+            title={t('actions.download')}
+          >
+            <Download size={15} />
+          </button>
+          <button
+            onClick={() => handleDelete(projectFile)}
+            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            title={t('actions.delete')}
+          >
+            <Trash2 size={15} />
+          </button>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <div className="space-y-4">
       {/* Input hidden para ficheiros */}
@@ -231,97 +307,15 @@ export function ProjectFilesTab({ project }: ProjectFilesTabProps) {
         </p>
       </div>
 
-      {/* Lista de ficheiros ou estado vazio */}
-      {isLoading ? (
-        <div className="p-8 text-center text-gray-500">
-          <p>{t('table.loading')}</p>
-        </div>
-      ) : files.length > 0 ? (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('filesTable.name')}</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('filesTable.type')}</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('filesTable.size')}</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('filesTable.date')}</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">{t('table.actions')}</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {files.map((projectFile) => (
-                <tr key={projectFile.id} className="hover:bg-gray-50 group">
-                  {/* Nome com ícone */}
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      {isImage(projectFile.file.mimeType) ? (
-                        <img
-                          src={projectFile.file.url}
-                          alt={projectFile.file.originalName}
-                          className="w-8 h-8 rounded object-cover flex-shrink-0"
-                        />
-                      ) : (
-                        <div className="w-8 h-8 rounded bg-gray-50 flex items-center justify-center flex-shrink-0">
-                          {getFileIcon(projectFile.file.mimeType, 18)}
-                        </div>
-                      )}
-                      <span
-                        className="text-sm font-medium text-gray-900 truncate max-w-[250px]"
-                        title={projectFile.file.originalName}
-                      >
-                        {projectFile.file.originalName}
-                      </span>
-                    </div>
-                  </td>
-
-                  {/* Tipo MIME */}
-                  <td className="px-4 py-3">
-                    <span className="text-sm text-gray-500 uppercase">{projectFile.file.mimeType.split('/')[1]}</span>
-                  </td>
-
-                  {/* Tamanho */}
-                  <td className="px-4 py-3">
-                    <span className="text-sm text-gray-500">{formatFileSize(projectFile.file.size)}</span>
-                  </td>
-
-                  {/* Data */}
-                  <td className="px-4 py-3">
-                    <span className="inline-flex items-center gap-1.5 text-sm text-gray-500">
-                      <Calendar size={13} className="text-gray-400" />
-                      {new Date(projectFile.createdAt).toLocaleDateString('pt-BR')}
-                    </span>
-                  </td>
-
-                  {/* Ações */}
-                  <td className="px-4 py-3">
-                    <div className="flex items-center justify-end gap-1">
-                      <button
-                        onClick={() => handleDownload(projectFile)}
-                        className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                        title={t('actions.download')}
-                      >
-                        <Download size={15} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(projectFile)}
-                        className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        title={t('actions.delete')}
-                      >
-                        <Trash2 size={15} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        <div className="p-8 text-center text-gray-500 bg-white rounded-xl border border-gray-200">
-          <FolderOpen size={48} className="mx-auto mb-3 text-gray-300" />
-          <p>{t('files.empty')}</p>
-        </div>
-      )}
+      {/* Tabela de ficheiros (mesmo estilo da lista de projetos via DataTable) */}
+      <DataTable
+        columns={columns}
+        data={files}
+        isLoading={isLoading}
+        emptyIcon={Paperclip}
+        emptyMessage={t('files.empty')}
+        loadingMessage={t('table.loading')}
+      />
     </div>
   );
 }
