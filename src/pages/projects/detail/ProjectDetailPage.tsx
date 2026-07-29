@@ -97,7 +97,9 @@ export function ProjectDetailPage() {
   }
 
   function handleProjectEdit(payload: UpdateProjectPayload) {
-    updateProjectMutation.mutate(payload);
+    updateProjectMutation.mutate(payload, {
+      onSuccess: () => closeEditModal(),
+    });
   }
 
   function handleCreateTurbine(payload: Parameters<typeof createTurbineMutation.mutate>[0]) {
@@ -112,12 +114,12 @@ export function ProjectDetailPage() {
     deleteTurbineMutation.mutate(turbineId);
   }
 
-  function handleAddMember(payload: Parameters<typeof addMemberMutation.mutate>[0]) {
-    addMemberMutation.mutate(payload);
+  function handleAddMember(payload: Parameters<typeof addMemberMutation.mutate>[0], options?: { onSuccess: () => void }) {
+    addMemberMutation.mutate(payload, options);
   }
 
-  function handleUpdateMemberRole(memberId: string, payload: Parameters<typeof updateMemberMutation.mutate>[0]['payload']) {
-    updateMemberMutation.mutate({ memberId, payload });
+  function handleUpdateMemberRole(memberId: string, payload: Parameters<typeof updateMemberMutation.mutate>[0]['payload'], options?: { onSuccess: () => void }) {
+    updateMemberMutation.mutate({ memberId, payload }, options);
   }
 
   function handleRemoveMember(memberId: string) {

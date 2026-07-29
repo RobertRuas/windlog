@@ -21,8 +21,8 @@ import type { ProjectDetail, ProjectMember, AddMemberPayload, UpdateMemberPayloa
 interface ProjectMembersTabProps {
   project: ProjectDetail;
   users: { id: string; firstName: string; lastName: string; email: string }[];
-  onAddMember: (payload: AddMemberPayload) => void;
-  onUpdateMemberRole: (memberId: string, payload: UpdateMemberPayload) => void;
+  onAddMember: (payload: AddMemberPayload, options?: { onSuccess: () => void }) => void;
+  onUpdateMemberRole: (memberId: string, payload: UpdateMemberPayload, options?: { onSuccess: () => void }) => void;
   onRemoveMember: (memberId: string) => void;
   isAddPending: boolean;
   isUpdatePending: boolean;
@@ -71,7 +71,9 @@ export function ProjectMembersTab({
   function handleAddSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!selectedUserId) return;
-    onAddMember({ userId: selectedUserId, role: memberRole || undefined });
+    onAddMember({ userId: selectedUserId, role: memberRole || undefined }, {
+      onSuccess: () => closeAddModal(),
+    });
   }
 
   // =========================================================================
@@ -93,7 +95,9 @@ export function ProjectMembersTab({
   function handleEditSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!editingMember) return;
-    onUpdateMemberRole(editingMember.id, { role: editMemberRole || undefined });
+    onUpdateMemberRole(editingMember.id, { role: editMemberRole || undefined }, {
+      onSuccess: () => closeEditModal(),
+    });
   }
 
   // =========================================================================
