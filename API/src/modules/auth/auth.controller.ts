@@ -270,6 +270,7 @@ export class AuthController {
       createMulterConfig(
         process.env['UPLOAD_DIR'] || './uploads',
         Number(process.env['MAX_FILE_SIZE']) || 10485760,
+        'avatars',
       ),
     ),
   )

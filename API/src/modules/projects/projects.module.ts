@@ -20,21 +20,17 @@ import { Module } from '@nestjs/common';
 import { ProjectsController } from './projects.controller.js';
 import { ProjectsService } from './projects.service.js';
 import { PrismaService } from '../../database/prisma.service.js';
+import { UploadModule } from '../upload/upload.module.js';
 
 /**
  * Módulo ProjectsModule - Gerencia operações CRUD de projetos.
  *
- * Este módulo é importado no AppModule para disponibilizar os endpoints
- * de gestão de projetos em toda a aplicação.
+ * Importa UploadModule para poder usar UploadService nos endpoints de ficheiros.
  */
 @Module({
-  // Controllers deste módulo
+  imports: [UploadModule],
   controllers: [ProjectsController],
-
-  // Serviços deste módulo
   providers: [ProjectsService, PrismaService],
-
-  // Exporta o serviço para que outros módulos possam usá-lo
   exports: [ProjectsService],
 })
 export class ProjectsModule {}

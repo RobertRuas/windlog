@@ -45,16 +45,23 @@ import {
   Param,
   Query,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
   HttpCode,
   HttpStatus,
+  BadRequestException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiTags,
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
   ApiQuery,
+  ApiConsumes,
+  ApiBody,
+  ApiParam,
 } from '@nestjs/swagger';
 
 import { ProjectsService } from './projects.service.js';
@@ -69,6 +76,10 @@ import {
 } from './dto/projects.dto.js';
 import { RolesGuard } from '../../common/guards/roles.guard.js';
 import { Roles, Role } from '../../common/decorators/roles.decorator.js';
+import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
+import type { JwtPayload } from '../auth/strategies/jwt.strategy.js';
+import { UploadService } from '../upload/upload.service.js';
+import { createMulterConfig } from '../upload/multer.config.js';
 
 /**
  * Controller ProjectsController - Gerencia endpoints de projetos.
@@ -85,7 +96,10 @@ import { Roles, Role } from '../../common/decorators/roles.decorator.js';
 @UseGuards(AuthGuard('jwt'), RolesGuard)
 @Roles(Role.ADMIN, Role.HR)
 export class ProjectsController {
-  constructor(private readonly projectsService: ProjectsService) {}
+  constructor(
+    private readonly projectsService: ProjectsService,
+    private readonly uploadService: UploadService,
+  ) {}
 
   // =========================================================================
   // PROJECT ENDPOINTS
@@ -353,5 +367,122 @@ export class ProjectsController {
     return this.projectsService.removeMember(id, memberId);
   }
 
+  // =========================================================================
+  // FILE ENDPOINTS
+  // =========================================================================
+
+  /**
+   * POST /api/v1/projects/:id/files
+   *
+   * Faz upload de um ficheiro e associa ao projeto.
+   * Usa UploadService para guardar o ficheiro e ProjectsService para registar no DB.
+   */
+  @Post(':id/files')
+  @ApiOperation({
+    summary: 'Upload file to project',
+    description: 'Faz upload de um ficheiro e associa ao projeto. O ficheiro é guardado em uploads/{userId}/projects/.',
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: { type: 'string', format: 'binary' },
+        category: { type: 'string', description: 'Categoria opcional (ex: Relatório, Foto)' },
+      },
+    },
+  })
+  @ApiParam({ name: 'id', description: 'ID do projeto' })
+  @ApiResponse({ status: 201, description: 'Ficheiro enviado e registado com sucesso' })
+  @ApiResponse({ status: 400, description: 'Ficheiro inválido ou projeto não encontrado' })
+  @UseInterceptors(
+    FileInterceptor(
+      'file',
+      createMulterConfig(
+        process.env['UPLOAD_DIR'] || './uploads',
+        Number(process.env['MAX_FILE_SIZE']) || 10485760,
+        'projects',
+      ),
+    ),
+  )
+  async uploadFile(
+    @CurrentUser() user: JwtPayload,
+    @Param('id') projectId: string,
+    @UploadedFile() file: Express.Multer.File,
+    @Body('category') category?: string,
+  ) {
+    if (!file) {
+      throw new BadRequestException('No file provided. Use "file" field in multipart form.');
+    }
+
+    // Processa o upload via UploadService
+    const uploadResult = await this.uploadService.processUpload(
+      user.sub,
+      file,
+      'projects',
+    );
+
+    // Regista o ficheiro no DB associado ao projeto
+    return this.projectsService.addFile(projectId, user.sub, {
+      filePath: uploadResult.filePath,
+      originalName: uploadResult.originalName,
+      mimeType: uploadResult.mimeType,
+      size: uploadResult.size,
+      category,
+    });
+  }
+
+  /**
+   * GET /api/v1/projects/:id/files
+   *
+   * Lista todos os ficheiros de um projeto.
+   */
+  @Get(':id/files')
+  @ApiOperation({
+    summary: 'Listar ficheiros do projeto',
+    description: 'Retorna todos os ficheiros associados a um projeto específico.',
+  })
+  @ApiResponse({ status: 200, description: 'Ficheiros retornados com sucesso' })
+  @ApiResponse({ status: 404, description: 'Projeto não encontrado' })
+  findFiles(@Param('id') id: string) {
+    return this.projectsService.findFilesByProject(id);
+  }
+
+  /**
+   * DELETE /api/v1/projects/:id/files/:fileId
+   *
+   * Remove um ficheiro de projeto (soft delete no DB + delete físico).
+   */
+  @Delete(':id/files/:fileId')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Remover ficheiro do projeto',
+    description: 'Remove um ficheiro de projeto (soft delete no DB e delete físico do disco).',
+  })
+  @ApiResponse({ status: 200, description: 'Ficheiro removido com sucesso' })
+  @ApiResponse({ status: 403, description: 'Não autorizado (só o dono ou ADMIN)' })
+  @ApiResponse({ status: 404, description: 'Ficheiro não encontrado' })
+  async removeFile(
+    @CurrentUser() user: JwtPayload,
+    @Param('id') projectId: string,
+    @Param('fileId') fileId: string,
+  ) {
+    // Primeiro, soft delete no DB (valida ownership)
+    const file = await this.projectsService.removeFile(
+      projectId,
+      fileId,
+      user.sub,
+      user.role,
+    );
+
+    // Depois, remove o ficheiro físico do disco
+    try {
+      await this.uploadService.deleteFile(user.sub, user.role, file.filePath);
+    } catch {
+      // Se o ficheiro físico já não existe, ignora (soft delete já foi feito)
+    }
+
+    return { message: 'File removed successfully' };
+  }
 
 }

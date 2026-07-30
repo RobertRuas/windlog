@@ -203,6 +203,7 @@ model User {
   documents       UserDocument[]
   bankAccounts    UserBankAccount[]
   projectMembers  ProjectMember[]
+  projectFiles    ProjectFile[]
 }
 // ---------------------------------------------------------------------------
 // MODEL: USER DOCUMENT (Documentos Pessoais do Usuário)
@@ -474,6 +475,7 @@ model Project {
   // Relações
   turbines    ProjectTurbine[]
   members     ProjectMember[]
+  files       ProjectFile[]
 }
 
 // ---------------------------------------------------------------------------
@@ -542,6 +544,42 @@ model ProjectMember {
   @@unique([projectId, userId])
   @@index([projectId])
   @@index([userId])
+}
+
+// ---------------------------------------------------------------------------
+// MODEL: PROJECT FILE (Ficheiros do Projeto)
+// ---------------------------------------------------------------------------
+// Registra os ficheiros anexados a um projeto (relatórios, fotos, etc.).
+// O caminho real do ficheiro está em uploads/{userId}/projects/{filename}.
+// ---------------------------------------------------------------------------
+model ProjectFile {
+  id        String   @id @default(uuid())
+
+  /// Nome original do ficheiro (ex: "relatorio_janeiro.pdf")
+  originalName String
+  /// Caminho relativo ao diretório uploads/ (ex: "userId/projects/uuid.pdf")
+  filePath     String
+  /// Tipo MIME do ficheiro (ex: "application/pdf", "image/jpeg")
+  mimeType     String
+  /// Tamanho do ficheiro em bytes
+  size         Int
+  /// Categoria/descrição opcional (ex: "Relatório", "Foto", "Certificado")
+  category     String?
+
+  // Relações
+  projectId    String
+  project      Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  /// ID do usuário que fez o upload
+  uploadedBy   String
+  user         User    @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
+
+  // Timestamps
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  deletedAt    DateTime?
+
+  @@index([projectId])
+  @@index([uploadedBy])
 }
 
 // ---------------------------------------------------------------------------

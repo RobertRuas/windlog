@@ -66,11 +66,34 @@ export interface ProjectListItem {
 }
 
 /**
- * Interface ProjectDetail - Projeto completo com turbinas e membros.
+ * Interface ProjectDetail - Projeto completo com turbinas, membros e ficheiros.
  */
 export interface ProjectDetail extends Omit<ProjectListItem, '_count'> {
   turbines: Turbine[];
   members: ProjectMember[];
+  files: ProjectFile[];
+}
+
+/**
+ * Interface ProjectFile - Representa um ficheiro associado a um projeto.
+ */
+export interface ProjectFile {
+  id: string;
+  originalName: string;
+  filePath: string;
+  mimeType: string;
+  size: number;
+  category?: string;
+  projectId: string;
+  uploadedBy: string;
+  createdAt: string;
+  updatedAt: string;
+  user: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
 }
 
 /**
@@ -238,6 +261,7 @@ export async function getProjects(filters?: ProjectFilters): Promise<ProjectsRes
 
 /**
  * Busca um projeto específico por ID.
+ * Inclui turbinas, membros e ficheiros associados.
  */
 export async function getProjectById(id: string): Promise<ProjectDetail> {
   const response = await api.get<ApiResponse<ProjectDetail>>(`/api/v1/projects/${id}`);
@@ -335,4 +359,49 @@ export async function updateMember(projectId: string, memberId: string, payload:
  */
 export async function removeMember(projectId: string, memberId: string): Promise<void> {
   await api.delete(`/api/v1/projects/${projectId}/members/${memberId}`);
+}
+
+// =========================================================================
+// API CALLS - PROJECT FILES
+// =========================================================================
+
+/**
+ * Faz upload de um ficheiro para um projeto.
+ * Envia via multipart/form-data e registra no DB.
+ */
+export async function uploadProjectFile(
+  projectId: string,
+  file: File,
+  category?: string,
+): Promise<ProjectFile> {
+  const formData = new FormData();
+  formData.append('file', file);
+  if (category) formData.append('category', category);
+
+  const response = await api.post<ApiResponse<ProjectFile>>(
+    `/api/v1/projects/${projectId}/files`,
+    formData,
+    { isFormData: true },
+  );
+  return response.data;
+}
+
+/**
+ * Lista todos os ficheiros de um projeto.
+ */
+export async function getProjectFiles(projectId: string): Promise<ProjectFile[]> {
+  const response = await api.get<ApiResponse<ProjectFile[]>>(
+    `/api/v1/projects/${projectId}/files`,
+  );
+  return response.data;
+}
+
+/**
+ * Remove um ficheiro de projeto (soft delete DB + delete físico).
+ */
+export async function deleteProjectFile(
+  projectId: string,
+  fileId: string,
+): Promise<void> {
+  await api.delete(`/api/v1/projects/${projectId}/files/${fileId}`);
 }

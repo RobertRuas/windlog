@@ -22,6 +22,7 @@ import {
   Injectable,
   ConflictException,
   NotFoundException,
+  ForbiddenException,
   Logger,
 } from '@nestjs/common';
 
@@ -180,6 +181,20 @@ export class ProjectsService {
             },
           },
           orderBy: { createdAt: 'asc' },
+        },
+        files: {
+          where: { deletedAt: null },
+          orderBy: { createdAt: 'desc' },
+          include: {
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
+            },
+          },
         },
       },
     });
@@ -578,5 +593,132 @@ export class ProjectsService {
     return updatedMember;
   }
 
+  // =========================================================================
+  // PROJECT FILES
+  // =========================================================================
+
+  /**
+   * Registra um ficheiro já enviado (via UploadService) no banco de dados.
+   *
+   * @param projectId - ID do projeto
+   * @param userId - ID do usuário que fez o upload
+   * @param fileData - Dados do ficheiro (filePath, originalName, mimeType, size)
+   * @returns Promise com o registo do ficheiro criado
+   */
+  async addFile(
+    projectId: string,
+    userId: string,
+    fileData: {
+      filePath: string;
+      originalName: string;
+      mimeType: string;
+      size: number;
+      category?: string;
+    },
+  ) {
+    const project = await this.prisma.project.findFirst({
+      where: { id: projectId, deletedAt: null },
+    });
+
+    if (!project) {
+      throw new NotFoundException('Project not found');
+    }
+
+    const file = await this.prisma.projectFile.create({
+      data: {
+        projectId,
+        uploadedBy: userId,
+        filePath: fileData.filePath,
+        originalName: fileData.originalName,
+        mimeType: fileData.mimeType,
+        size: fileData.size,
+        category: fileData.category,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    this.logger.log(`File added to project ${projectId}: ${fileData.originalName}`);
+
+    return file;
+  }
+
+  /**
+   * Lista todos os ficheiros de um projeto.
+   *
+   * @param projectId - ID do projeto
+   * @returns Promise com lista de ficheiros
+   */
+  async findFilesByProject(projectId: string) {
+    const project = await this.prisma.project.findFirst({
+      where: { id: projectId, deletedAt: null },
+    });
+
+    if (!project) {
+      throw new NotFoundException('Project not found');
+    }
+
+    return this.prisma.projectFile.findMany({
+      where: { projectId, deletedAt: null },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
+      },
+    });
+  }
+
+  /**
+   * Remove um ficheiro de projeto (soft delete no DB).
+   * O ficheiro físico deve ser removido separadamente via UploadService.
+   *
+   * @param projectId - ID do projeto
+   * @param fileId - ID do ficheiro
+   * @param userId - ID do usuário que solicita
+   * @param userRole - Role do usuário (ADMIN pode apagar qualquer ficheiro)
+   * @returns Promise com o ficheiro marcado como deletado
+   */
+  async removeFile(
+    projectId: string,
+    fileId: string,
+    userId: string,
+    userRole: string,
+  ) {
+    const file = await this.prisma.projectFile.findFirst({
+      where: { id: fileId, projectId, deletedAt: null },
+    });
+
+    if (!file) {
+      throw new NotFoundException('File not found');
+    }
+
+    // Valida ownership (exceto ADMIN)
+    if (userRole !== 'ADMIN' && file.uploadedBy !== userId) {
+      throw new ForbiddenException('You can only delete your own files');
+    }
+
+    const deletedFile = await this.prisma.projectFile.update({
+      where: { id: fileId },
+      data: { deletedAt: new Date() },
+    });
+
+    this.logger.log(`File deleted from project ${projectId}: ${file.originalName}`);
+
+    return deletedFile;
+  }
 
 }

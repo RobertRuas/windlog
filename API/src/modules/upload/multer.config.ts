@@ -106,11 +106,13 @@ export function isValidCategory(category: string): category is UploadCategory {
  *
  * @param uploadDir - diretório base de uploads (do env UPLOAD_DIR)
  * @param maxFileSize - tamanho máximo em bytes (do env MAX_FILE_SIZE)
+ * @param fixedCategory - categoria fixa (usada quando a rota não tem :category param)
  * @returns MulterOptions pronto para usar no FileInterceptor
  */
 export function createMulterConfig(
   uploadDir: string,
   maxFileSize: number,
+  fixedCategory?: UploadCategory,
 ): MulterOptions {
   return {
     // Disk storage: stream direto para disco (não carrega na memória)
@@ -130,8 +132,9 @@ export function createMulterConfig(
           return cb(new BadRequestException('User not authenticated'), '');
         }
 
-        // Extrai e valida a categoria do parâmetro da rota
-        const category = (req.params as Record<string, string>)?.['category'];
+        // Extrai e valida a categoria: usa fixedCategory se fornecido,
+        // senão extrai do parâmetro da rota :category
+        const category = fixedCategory || (req.params as Record<string, string>)?.['category'];
         if (!category || !isValidCategory(category)) {
           return cb(
             new BadRequestException(
