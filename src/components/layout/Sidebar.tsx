@@ -35,7 +35,6 @@ import {
 } from 'lucide-react';
 
 import { logout } from '@/services/auth.service';
-import { NotificationBell } from '@/components/notifications/NotificationBell';
 
 /**
  * Props do componente Sidebar.
@@ -161,13 +160,8 @@ export function Sidebar({ userName }: SidebarProps) {
           })}
         </nav>
 
-        {/* ── Rodapé: notificações + usuário + logout ───────────── */}
+        {/* ── Rodapé: usuário + logout ─────────────────────────── */}
         <div className="border-t border-gray-200 px-3 py-4 space-y-2">
-          {/* Sino de notificações */}
-          <div className="flex items-center justify-between px-3 py-1.5">
-            <span className="text-xs text-gray-500">{t('notifications.title')}</span>
-            <NotificationBell />
-          </div>
           {/* Nome do usuário (se disponível) */}
           {userName && (
             <div className="px-3 py-1.5 text-xs text-gray-500 truncate" title={userName}>
