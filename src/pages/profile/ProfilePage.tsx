@@ -41,6 +41,10 @@ import { BankAccountSection } from '@/pages/home/components/BankAccountSection';
 import { AvatarUpload } from '@/pages/home/components/AvatarUpload';
 import { Accordion } from '@/components/ui/Accordion';
 import { ProfileCompleteness } from '@/pages/home/components/ProfileCompleteness';
+import { ProfileWizard } from '@/pages/home/components/ProfileWizard';
+
+// Utilitários
+import { shouldShowWizard } from '@/utils/profileCompleteness';
 
 // Hooks
 import { useProfileMutations } from './hooks/useProfileMutations';
@@ -254,107 +258,110 @@ export function ProfilePage() {
         </div>
       </div>
 
-      {/* Seções do perfil */}
-      <div className="flex flex-col gap-6">
-        {/* 0. Progresso do Perfil (barra + checklist) */}
-        {data && <ProfileCompleteness data={data as unknown as import('@/types/user.types').User} />}
+      {/* Conteúdo principal */}
+      {data && shouldShowWizard(data as unknown as import('@/types/user.types').User) ? (
+        /* MODO WIZARD - Assistente de configuração inicial */
+        <ProfileWizard data={data as unknown as import('@/types/user.types').User} />
+      ) : (
+        /* MODO NORMAL - Visualização completa com seções editáveis */
+        <div className="flex flex-col gap-6">
+          {/* Progresso do Perfil (barra + checklist) */}
+          {data && <ProfileCompleteness data={data as unknown as import('@/types/user.types').User} />}
 
-        {/* 1. Informações Pessoais, Profissionais e Endereço (com Avatar) */}
-        <div id="section-personal">
-        <ProfileSection
-          title={t('sections.personal.title')}
-          description={t('sections.personal.description')}
-          fields={profileFields}
-          groups={profileGroups}
-          data={data as unknown as Record<string, string | null | undefined>}
-          onSave={handleSave}
-          isLoading={profileMutation.isPending}
-        />
+          {/* 1. Informações Pessoais, Profissionais e Endereço */}
+          <div id="section-personal">
+            <ProfileSection
+              title={t('sections.personal.title')}
+              description={t('sections.personal.description')}
+              fields={profileFields}
+              groups={profileGroups}
+              data={data as unknown as Record<string, string | null | undefined>}
+              onSave={handleSave}
+              isLoading={profileMutation.isPending}
+            />
+          </div>
 
+          {/* 2. Documentos Pessoais */}
+          <div id="section-documents">
+            <Accordion
+              title={t('documents.title')}
+              icon={<CreditCard className="w-5 h-5 text-rose-600" />}
+              defaultOpen={false}
+            >
+              <DocumentSection
+                documents={(data?.documents || []) as unknown as UserDocument[]}
+                onAdd={handleAddDocument}
+                onUpdate={handleUpdateDocument}
+                onRemove={handleRemoveDocument}
+              />
+            </Accordion>
+          </div>
 
+          {/* 3. Contato (telefones) */}
+          <div id="section-phones">
+            <Accordion
+              title={t('phones.title')}
+              icon={<Phone className="w-5 h-5 text-blue-600" />}
+              defaultOpen={false}
+            >
+              <PhoneNumberSection
+                phones={(data?.phoneNumbers || []) as unknown as PhoneNumber[]}
+                onAdd={handleAddPhone}
+                onUpdate={handleUpdatePhone}
+                onRemove={handleRemovePhone}
+              />
+            </Accordion>
+          </div>
+
+          {/* 4. Dados Bancários */}
+          <div id="section-bank">
+            <Accordion
+              title={t('bankAccounts.title')}
+              icon={<Landmark className="w-5 h-5 text-green-600" />}
+              defaultOpen={false}
+            >
+              <BankAccountSection
+                accounts={(data?.bankAccounts || []) as unknown as BankAccount[]}
+                onAdd={handleAddBankAccount}
+                onUpdate={handleUpdateBankAccount}
+                onRemove={handleRemoveBankAccount}
+              />
+            </Accordion>
+          </div>
+
+          {/* 5. Certificações */}
+          <div id="section-certifications">
+            <Accordion
+              title={t('certifications.title')}
+              icon={<Award className="w-5 h-5 text-purple-600" />}
+              defaultOpen={false}
+            >
+              <CertificationSection
+                certifications={(data?.certifications || []) as unknown as Certification[]}
+                onAdd={handleAddCertification}
+                onUpdate={handleUpdateCertification}
+                onRemove={handleRemoveCertification}
+              />
+            </Accordion>
+          </div>
+
+          {/* 6. Idiomas */}
+          <div id="section-languages">
+            <Accordion
+              title={t('languages.title')}
+              icon={<Globe className="w-5 h-5 text-green-600" />}
+              defaultOpen={false}
+            >
+              <LanguageSection
+                languages={(data?.languages || []) as unknown as Language[]}
+                onAdd={handleAddLanguage}
+                onUpdate={handleUpdateLanguage}
+                onRemove={handleRemoveLanguage}
+              />
+            </Accordion>
+          </div>
         </div>
-
-
-        {/* 2. Documentos Pessoais (logo após informações pessoais) */}
-        <div id="section-documents">
-        <Accordion
-          title={t('documents.title')}
-          icon={<CreditCard className="w-5 h-5 text-rose-600" />}
-          defaultOpen={false}
-        >
-          <DocumentSection
-            documents={(data?.documents || []) as unknown as UserDocument[]}
-            onAdd={handleAddDocument}
-            onUpdate={handleUpdateDocument}
-            onRemove={handleRemoveDocument}
-          />
-        </Accordion>
-        </div>
-
-        {/* 3. Contato (telefones) */}
-        <div id="section-phones">
-        <Accordion
-          title={t('phones.title')}
-          icon={<Phone className="w-5 h-5 text-blue-600" />}
-          defaultOpen={false}
-        >
-          <PhoneNumberSection
-            phones={(data?.phoneNumbers || []) as unknown as PhoneNumber[]}
-            onAdd={handleAddPhone}
-            onUpdate={handleUpdatePhone}
-            onRemove={handleRemovePhone}
-          />
-        </Accordion>
-        </div>
-
-        {/* 4. Dados Bancários */}
-        <div id="section-bank">
-        <Accordion
-          title={t('bankAccounts.title')}
-          icon={<Landmark className="w-5 h-5 text-green-600" />}
-          defaultOpen={false}
-        >
-          <BankAccountSection
-            accounts={(data?.bankAccounts || []) as unknown as BankAccount[]}
-            onAdd={handleAddBankAccount}
-            onUpdate={handleUpdateBankAccount}
-            onRemove={handleRemoveBankAccount}
-          />
-        </Accordion>
-        </div>
-
-        {/* 5. Certificações */}
-        <div id="section-certifications">
-        <Accordion
-          title={t('certifications.title')}
-          icon={<Award className="w-5 h-5 text-purple-600" />}
-          defaultOpen={false}
-        >
-          <CertificationSection
-            certifications={(data?.certifications || []) as unknown as Certification[]}
-            onAdd={handleAddCertification}
-            onUpdate={handleUpdateCertification}
-            onRemove={handleRemoveCertification}
-          />
-        </Accordion>
-        </div>
-
-        {/* 6. Idiomas */}
-        <div id="section-languages">
-        <Accordion
-          title={t('languages.title')}
-          icon={<Globe className="w-5 h-5 text-green-600" />}
-          defaultOpen={false}
-        >
-          <LanguageSection
-            languages={(data?.languages || []) as unknown as Language[]}
-            onAdd={handleAddLanguage}
-            onUpdate={handleUpdateLanguage}
-            onRemove={handleRemoveLanguage}
-          />
-        </Accordion>
-        </div>
-      </div>
+      )}
     </AppLayout>
   );
 }

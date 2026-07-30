@@ -250,3 +250,61 @@ export function calculateProfileCompleteness(data: User): CompletenessResult {
     requiredMissingSections: hasRequiredMissing,
   };
 }
+
+/**
+ * Verifica se o wizard deve ser exibido.
+ * O wizard aparece quando faltam dados ESENCIAIS:
+ * - Passaporte (OBRIGATÓRIO)
+ * - Pelo menos um telefone OU localização básica (país + cidade)
+ *
+ * Se esses requisitos não forem atendidos, o wizard é mostrado.
+ * Uma vez atendidos, o usuário pode completar o resto no modo normal.
+ *
+ * @param data - Dados completos do perfil
+ * @returns true se o wizard deve ser exibido
+ */
+export function shouldShowWizard(data: User): boolean {
+  // Passaporte é obrigatório - se não tem, mostra wizard
+  const hasPassport = data.documents?.some(doc => doc.type === 'PASSPORT') ?? false;
+  if (!hasPassport) return true;
+
+  // Precisa de pelo menos um telefone
+  const hasPhone = (data.phoneNumbers?.length ?? 0) > 0 || !!data.phone;
+  if (!hasPhone) return true;
+
+  // Precisa de localização básica (país + cidade)
+  const hasBasicLocation = !!data.country && !!data.city;
+  if (!hasBasicLocation) return true;
+
+  // Tudo essencial preenchido - não mostra wizard
+  return false;
+}
+
+/**
+ * Determina qual passo do wizard deve ser exibido com base nos dados preenchidos.
+ * Pula etapas já completas para ir direto à próxima pendente.
+ *
+ * @param data - Dados completos do perfil
+ * @returns ID do passo atual (identity, contact, location, professional, documents)
+ */
+export function getWizardStep(data: User): string {
+  // Step 1: Identidade (dateOfBirth, nationality)
+  if (!data.dateOfBirth || !data.nationality) return 'identity';
+
+  // Step 2: Contato (telefone)
+  const hasPhone = (data.phoneNumbers?.length ?? 0) > 0 || !!data.phone;
+  if (!hasPhone) return 'contact';
+
+  // Step 3: Localização (país + cidade)
+  if (!data.country || !data.city) return 'location';
+
+  // Step 4: Profissional (departamento + cargo)
+  if (!data.department || !data.position) return 'professional';
+
+  // Step 5: Documentos (passaporte - obrigatório)
+  const hasPassport = data.documents?.some(doc => doc.type === 'PASSPORT') ?? false;
+  if (!hasPassport) return 'documents';
+
+  // Tudo preenchido - volta para o primeiro passo
+  return 'identity';
+}

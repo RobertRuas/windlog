@@ -209,6 +209,33 @@
       "message": "Faltam dados importantes no seu perfil. Toque para completar."
     }
   },
+  "wizard": {
+    "welcome": "Vamos configurar o seu perfil",
+    "subtitle": "Preencha as informações essenciais para começar",
+    "step": "Passo {{current}} de {{total}}",
+    "next": "Continuar",
+    "previous": "Voltar",
+    "skip": "Pular esta etapa",
+    "finish": "Começar a usar",
+    "steps": {
+      "identity": "Sobre você",
+      "contact": "Como entrar em contato",
+      "location": "Onde você está",
+      "professional": "Sua função",
+      "documents": "Documentos"
+    },
+    "descriptions": {
+      "identity": "Conte-nos um pouco mais sobre você",
+      "contact": "Adicione um número de telefone para contato",
+      "location": "Informe sua localização atual",
+      "professional": "Informe seus dados profissionais na empresa",
+      "documents": "Adicione seu passaporte (obrigatório)"
+    },
+    "passportRequired": "O passaporte é obrigatório para continuar",
+    "phoneAdded": "Telefone adicionado com sucesso!",
+    "allDone": "Perfil configurado!",
+    "allDoneDesc": "Você já pode usar o sistema. Complete os restantes quando quiser."
+  },
   "roles": {
     "ADMIN": "Administrador",
     "HR": "Recursos Humanos",
