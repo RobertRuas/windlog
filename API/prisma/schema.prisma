@@ -235,7 +235,9 @@ model UserDocument {
   /// Descrição ou notas adicionais (ex: "Visto tipo D", "Permissão de residência")
   description String?
 
-  // Ficheiros anexados ao documento (removido - sistema de upload será reimplementado)
+  // Ficheiro anexado ao documento (caminho relativo ao diretório uploads/)
+  /// Caminho do ficheiro anexado ao documento (relativo a uploads/{userId}/documents/)
+  filePath  String?
 
   // Relação com o usuário
   userId    String

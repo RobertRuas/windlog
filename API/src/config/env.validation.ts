@@ -30,6 +30,7 @@ import {
   IsNumber,
   IsOptional,
   IsEnum,
+  Min,
 } from 'class-validator';
 
 /**
@@ -85,4 +86,22 @@ export class EnvironmentVariables {
   @IsString()
   @IsOptional()
   JWT_REFRESH_EXPIRES_IN: string = '7d';
+
+  // -------------------------------------------------------------------------
+  // UPLOAD DE FICHEIROS
+  // -------------------------------------------------------------------------
+
+  @IsString()
+  @IsOptional()
+  UPLOAD_DIR: string = './uploads';
+
+  @IsNumber()
+  @IsOptional()
+  @Min(1)
+  MAX_FILE_SIZE: number = 10485760;
+
+  @IsNumber()
+  @IsOptional()
+  @Min(60)
+  FILE_TOKEN_TTL: number = 300;
 }
