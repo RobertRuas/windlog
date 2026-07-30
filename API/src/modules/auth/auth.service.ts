@@ -346,6 +346,37 @@ export class AuthService {
   }
 
   // ==========================================================================
+  // AVATAR - Gestão da Foto do Perfil
+  // ==========================================================================
+
+  /**
+   * Atualiza a foto (avatar) do usuário.
+   * Armazena o caminho relativo do ficheiro no campo photoUrl.
+   *
+   * @param userId - ID do usuário
+   * @param filePath - Caminho relativo do ficheiro (ex: "userId/avatars/uuid.jpg")
+   * @returns photoUrl atualizado
+   */
+  async updateAvatar(userId: string, filePath: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    const updatedUser = await this.prisma.user.update({
+      where: { id: userId },
+      data: { photoUrl: filePath },
+    });
+
+    this.logger.log(`Avatar updated for user: ${user.email} (${user.id})`);
+
+    return { photoUrl: updatedUser.photoUrl };
+  }
+
+  // ==========================================================================
   // PHONE NUMBERS - Gerenciamento de Números de Telefone
   // ==========================================================================
 

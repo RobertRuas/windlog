@@ -46,13 +46,19 @@ import {
   HttpCode,
   HttpStatus,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiTags,
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
+  ApiConsumes,
+  ApiBody,
 } from '@nestjs/swagger';
 
 import { AuthService } from './auth.service.js';
@@ -72,6 +78,8 @@ import {
   AuthResponseDataDto,
   UserProfileResponseDto,
 } from '../../common/dto/swagger-response.dto.js';
+import { UploadService } from '../upload/upload.service.js';
+import { createMulterConfig } from '../upload/multer.config.js';
 
 /**
  * Controller do módulo de autenticação.
@@ -82,7 +90,10 @@ import {
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly uploadService: UploadService,
+  ) {}
 
   /**
    * POST /api/v1/auth/register
@@ -233,6 +244,53 @@ export class AuthController {
     @Body() dto: UpdateProfileDto,
   ) {
     return this.authService.updateProfile(user.sub, dto);
+  }
+
+  // ==========================================================================
+  // AVATAR ENDPOINT
+  // ==========================================================================
+
+  @ApiOperation({
+    summary: 'Upload user avatar',
+    description: 'Faz upload da foto de perfil do usuário autenticado.',
+  })
+  @ApiResponse({ status: 200, description: 'Avatar atualizado com sucesso' })
+  @ApiBearerAuth()
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: { file: { type: 'string', format: 'binary' } },
+    },
+  })
+  @UseGuards(AuthGuard('jwt'))
+  @UseInterceptors(
+    FileInterceptor(
+      'file',
+      createMulterConfig(
+        process.env['UPLOAD_DIR'] || './uploads',
+        Number(process.env['MAX_FILE_SIZE']) || 10485760,
+      ),
+    ),
+  )
+  @Post('avatar')
+  async uploadAvatar(
+    @CurrentUser() user: JwtPayload,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (!file) {
+      throw new BadRequestException('No file provided. Use "file" field in multipart form.');
+    }
+
+    // Processa o upload via UploadService
+    const uploadResult = await this.uploadService.processUpload(
+      user.sub,
+      file,
+      'avatars',
+    );
+
+    // Atualiza o photoUrl do usuário
+    return this.authService.updateAvatar(user.sub, uploadResult.filePath);
   }
 
   // ==========================================================================

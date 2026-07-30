@@ -34,6 +34,8 @@ const KNOWN_MESSAGES: Record<string, string> = {
   'Token não fornecido': 'Authentication token is missing. Please log in.',
   'Token expirado. Faça login novamente.': 'Session expired. Authentication required.',
   'Sessão expirada. Faça login novamente.': 'Your session has ended. Please sign in again.',
+  'Link expirado ou inválido': 'This file link has expired or is no longer valid. Please go back and refresh the page to get a new link.',
+  'Erro ao carregar ficheiro': 'An error occurred while loading the file. Please try again.',
 };
 
 /**
@@ -52,6 +54,10 @@ export function ErrorPage() {
 
   // Traduz para mensagem amigável se for conhecida
   const message = KNOWN_MESSAGES[rawMessage] || rawMessage;
+
+  // Determina o código de status baseado na mensagem
+  const isFileError = rawMessage === 'Link expirado ou inválido' || rawMessage === 'Erro ao carregar ficheiro';
+  const statusCode = isFileError ? '404' : '401';
 
   // Estado para o efeito de "typing" (digitação)
   const [displayedText, setDisplayedText] = useState('');
@@ -148,7 +154,7 @@ export function ErrorPage() {
             className="text-xs tracking-widest mb-4"
             style={{ color: '#00ff4180', fontFamily: '"Courier New", Courier, monospace' }}
           >
-            STATUS: 401
+            STATUS: {statusCode}
           </div>
 
           {/* Separador */}

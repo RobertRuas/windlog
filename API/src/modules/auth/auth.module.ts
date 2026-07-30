@@ -38,11 +38,15 @@ import { AuthController } from './auth.controller.js';
 import { AuthService } from './auth.service.js';
 import { JwtStrategy } from './strategies/jwt.strategy.js';
 import { PrismaService } from '../../database/prisma.service.js';
+import { UploadModule } from '../upload/upload.module.js';
 
 @Module({
   imports: [
     // PassportModule: base para estratégias de autenticação
     PassportModule.register({ defaultStrategy: 'jwt' }),
+
+    // UploadModule: disponibiliza UploadService para upload de avatar
+    UploadModule,
 
     // JwtModule: configura a geração e validação de tokens JWT
     JwtModule.registerAsync({

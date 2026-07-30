@@ -24,6 +24,8 @@ import { useTranslation } from 'react-i18next';
 import { Camera, Upload, X, Check, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { toast } from 'sonner';
+import { uploadFile } from '@/services/upload.service';
+import { SecureImage } from '@/components/ui/SecureImage';
 
 /**
  * Props do componente AvatarUpload.
@@ -40,13 +42,13 @@ interface AvatarUploadProps {
 /**
  * Componente AvatarUpload - Upload de foto de perfil com câmera.
  */
-export function AvatarUpload({ currentPhotoUrl, compact = false }: AvatarUploadProps) {
+export function AvatarUpload({ currentPhotoUrl, onSuccess, compact = false }: AvatarUploadProps) {
   const { t } = useTranslation('home');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const [isUploading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -176,11 +178,28 @@ export function AvatarUpload({ currentPhotoUrl, compact = false }: AvatarUploadP
 
   /**
    * Faz o upload da foto para o servidor.
-   * TODO: Reimplementar quando o novo sistema de upload estiver pronto.
+   * Usa o novo sistema de upload (POST /api/v1/upload/avatars).
    */
   const handleUpload = async () => {
     if (!previewFile) return;
-    toast.info('Sistema de upload em manutenção. Tente novamente mais tarde.');
+
+    setIsUploading(true);
+    try {
+      // Envia o ficheiro para o servidor
+      await uploadFile(previewFile, 'avatars');
+
+      // Sucesso — notifica e chama callback
+      toast.success(t('profile.avatarUpload') + ' — OK');
+      handleCancelPreview();
+
+      // Chama o callback de sucesso (para refetch do perfil)
+      if (onSuccess) onSuccess();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Upload failed';
+      toast.error(message);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   // ===========================================================================
@@ -196,8 +215,8 @@ export function AvatarUpload({ currentPhotoUrl, compact = false }: AvatarUploadP
           title={t('profile.avatarUpload')}
         >
           {currentPhotoUrl ? (
-            <img
-              src={currentPhotoUrl}
+            <SecureImage
+              filePath={currentPhotoUrl}
               alt="Avatar"
               className="w-14 h-14 rounded-full object-cover border-2 border-white shadow-md ring-2 ring-blue-100"
             />
@@ -319,11 +338,12 @@ export function AvatarUpload({ currentPhotoUrl, compact = false }: AvatarUploadP
           /* Estado inicial - mostra foto atual ou placeholder */
           <div className="relative">
             {currentPhotoUrl ? (
-              <img
-                src={currentPhotoUrl}
+              <SecureImage
+                filePath={currentPhotoUrl}
                 alt="Avatar"
                 className="w-32 h-42 object-cover rounded-xl border-2 border-gray-200"
-                style={{ width: '128px', height: '168px' }}
+                width={128}
+                height={168}
               />
             ) : (
               <div

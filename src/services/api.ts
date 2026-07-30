@@ -150,8 +150,8 @@ export const api = {
   get: <T>(url: string) => apiRequest<T>(url),
 
   /** Requisição POST - usada para criar recursos ou enviar dados */
-  post: <T>(url: string, body: unknown) =>
-    apiRequest<T>(url, { method: 'POST', body }),
+  post: <T>(url: string, body: unknown, options?: { isFormData?: boolean }) =>
+    apiRequest<T>(url, { method: 'POST', body, ...options }),
 
   /** Requisição PUT - usada para atualizar recursos existentes */
   put: <T>(url: string, body: unknown) =>
