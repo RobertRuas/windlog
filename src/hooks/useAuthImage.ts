@@ -5,15 +5,14 @@
  *
  * O QUE É ESTE HOOK?
  * ------------------
- * Hook React que retorna a URL de uma imagem com o token JWT incluído.
- * Usa a função getAuthFileUrl() para adicionar o token automaticamente.
+ * Hook React que carrega uma imagem privada via API autenticada
+ * e retorna uma blob URL para uso em <img src>.
  *
- * COMO FUNCIONA?
- * --------------
- * 1. O hook recebe uma URL (nova: "/api/v1/upload/file/:id" ou antiga: "/api/v1/uploads/...")
- * 2. Adiciona o token JWT como query param via getAuthFileUrl()
- * 3. Retorna a URL completa para uso em <img src>
- * 4. Se a URL for null/undefined, retorna null
+ * POR QUE BLOB URL?
+ * -----------------
+ * Tags <img src> NÃO enviam headers (Authorization).
+ * Então fazemos fetch da imagem via api (com JWT no header),
+ * criamos um Blob e geramos uma URL local (blob:http://...).
  *
  * USO:
  * ----
@@ -22,20 +21,54 @@
  * ============================================================================
  */
 
-import { useMemo } from 'react';
-import { getAuthFileUrl } from '@/services/upload.service';
+import { useState, useEffect } from 'react';
+import { api } from '@/services/api';
 
 /**
- * Retorna a URL da imagem com o token JWT incluído.
+ * Carrega uma imagem privada via API e retorna uma blob URL.
  *
- * @param url - URL da imagem (nova: "/api/v1/upload/file/:id" ou antiga: "/api/v1/uploads/...")
- *              Se null/undefined, retorna null imediatamente.
- * @returns URL com token JWT para acesso autenticado
+ * @param url - URL do ficheiro na API (ex: "/api/v1/upload/file/:id")
+ *              ou URL antiga ("/api/v1/uploads/...")
+ * @returns Blob URL para uso em <img src>, ou null se URL for inválida.
  */
 export function useAuthImage(url: string | null | undefined): string | null {
-  // useMemo evita recalcular a URL em cada render
-  return useMemo(() => {
-    if (!url) return null;
-    return getAuthFileUrl(url);
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!url) {
+      setBlobUrl(null);
+      return;
+    }
+
+    let cancelled = false;
+
+    // Converte URL antiga para formato do endpoint
+    let fetchUrl = url;
+    if (url.includes('/api/v1/uploads/')) {
+      const relativePath = url.replace('/api/v1/uploads/', '');
+      fetchUrl = `/api/v1/upload/${relativePath}`;
+    }
+
+    // Busca a imagem via API autenticada e cria blob URL
+    api.getBlob(fetchUrl).then((blob) => {
+      if (!cancelled) {
+        setBlobUrl(URL.createObjectURL(blob));
+      }
+    }).catch(() => {
+      if (!cancelled) {
+        setBlobUrl(null);
+      }
+    });
+
+    // Limpa a blob URL ao desmontar (evita memory leak)
+    return () => {
+      cancelled = true;
+      setBlobUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return null;
+      });
+    };
   }, [url]);
+
+  return blobUrl;
 }

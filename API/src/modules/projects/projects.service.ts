@@ -639,7 +639,7 @@ export class ProjectsService {
       file: {
         id: uploadResult.id,
         path: uploadResult.path,
-        url: `/api/v1/upload/file/${uploadResult.id}`,
+        url: `/api/v1/upload/${uploadResult.id}/file`,
         originalName: uploadResult.originalName,
         mimeType: uploadResult.mimeType,
         size: uploadResult.size,
@@ -679,7 +679,7 @@ export class ProjectsService {
       file: {
         id: pf.uploadedFile.id,
         path: pf.uploadedFile.path,
-        url: `/api/v1/upload/file/${pf.uploadedFile.id}`,
+        url: `/api/v1/upload/${pf.uploadedFile.id}/file`,
         originalName: pf.uploadedFile.originalName,
         mimeType: pf.uploadedFile.mimeType,
         size: pf.uploadedFile.size,

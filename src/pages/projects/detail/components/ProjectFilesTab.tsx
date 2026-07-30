@@ -41,6 +41,7 @@ import {
   removeProjectFile,
 } from '@/services/project.service';
 import { validateFile, getAuthFileUrl } from '@/services/upload.service';
+import { useAuthImage } from '@/hooks/useAuthImage';
 import { DataTable, type DataTableColumn } from '@/components/ui/DataTable';
 
 /**
@@ -73,6 +74,29 @@ function getFileIcon(mimeType: string, size = 20) {
   if (isImage(mimeType)) return <ImageIcon size={size} className="text-blue-500" />;
   if (mimeType === 'application/pdf') return <FileText size={size} className="text-red-500" />;
   return <FileIcon size={size} className="text-gray-400" />;
+}
+
+/**
+ * Thumbnail de ficheiro - usa blob URL para imagens privadas.
+ */
+function FileThumbnail({ url, name, mimeType }: { url: string; name: string; mimeType: string }) {
+  const blobUrl = useAuthImage(isImage(mimeType) ? url : null);
+
+  if (isImage(mimeType) && blobUrl) {
+    return (
+      <img
+        src={blobUrl}
+        alt={name}
+        className="w-8 h-8 rounded object-cover flex-shrink-0"
+      />
+    );
+  }
+
+  return (
+    <div className="w-8 h-8 rounded bg-gray-50 flex items-center justify-center flex-shrink-0">
+      {getFileIcon(mimeType, 18)}
+    </div>
+  );
 }
 
 /**
@@ -214,17 +238,11 @@ export function ProjectFilesTab({ project }: ProjectFilesTabProps) {
       header: t('filesTable.name'),
       render: (projectFile) => (
         <div className="flex items-center gap-3">
-          {isImage(projectFile.file.mimeType) ? (
-            <img
-              src={getAuthFileUrl(projectFile.file.url)}
-              alt={projectFile.file.originalName}
-              className="w-8 h-8 rounded object-cover flex-shrink-0"
-            />
-          ) : (
-            <div className="w-8 h-8 rounded bg-gray-50 flex items-center justify-center flex-shrink-0">
-              {getFileIcon(projectFile.file.mimeType, 18)}
-            </div>
-          )}
+          <FileThumbnail
+            url={projectFile.file.url}
+            name={projectFile.file.originalName}
+            mimeType={projectFile.file.mimeType}
+          />
           <span
             className="text-sm font-medium text-gray-900 truncate max-w-[250px]"
             title={projectFile.file.originalName}

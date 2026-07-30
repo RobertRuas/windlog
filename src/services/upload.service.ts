@@ -193,41 +193,26 @@ export async function removeFile(fileId: string): Promise<void> {
 }
 
 /**
- * Adiciona o token JWT a qualquer URL de ficheiro para autenticação.
- * Use esta função SEMPRE que precisar construir um URL para acessar ficheiros.
+ * Adiciona o token JWT a uma URL de ficheiro para autenticação.
+ * Use SEMPRE esta função para aceder a ficheiros via URL direta.
  *
- * FUNCIONA COM:
- * - URLs novas (por ID): "/api/v1/upload/file/xxx" → adiciona ?token=
- * - URLs antigas (por path): "/api/v1/uploads/avatars/..." → converte para
- *   "/api/v1/upload/file/by-path?path=avatars/...&token="
+ * NOTA: Para <img src>, use o hook useAuthImage() que carrega
+ * via fetch + blob URL (tags <img> não enviam headers).
  *
- * @param url - URL do ficheiro (nova ou antiga)
- * @returns URL com token JWT incluído
- *
- * @example
- * // Num <img src>, window.open(), <a href>, etc.
- * <img src={getAuthFileUrl(file.url)} />
- * window.open(getAuthFileUrl(file.url));
+ * @param url - URL do ficheiro (ex: /api/v1/upload/file/:id)
+ * @returns URL com token JWT como query param
  */
 export function getAuthFileUrl(url: string): string {
   const token = localStorage.getItem('accessToken');
   if (!token || !url) return url;
 
-  // URL nova (por ID): /api/v1/upload/file/:id
-  // Basta adicionar o token como query param
-  if (url.includes('/api/v1/upload/file/')) {
-    const separator = url.includes('?') ? '&' : '?';
-    return `${url}${separator}token=${encodeURIComponent(token)}`;
-  }
-
-  // URL antiga (por path): /api/v1/uploads/<path>
-  // Converte para o endpoint seguro /api/v1/upload/file/by-path?path=<path>
+  // Converte URLs antigas para o formato do endpoint
+  let apiUrl = url;
   if (url.includes('/api/v1/uploads/')) {
     const relativePath = url.replace('/api/v1/uploads/', '');
-    return `/api/v1/upload/file/by-path?path=${encodeURIComponent(relativePath)}&token=${encodeURIComponent(token)}`;
+    apiUrl = `/api/v1/upload/${relativePath}`;
   }
 
-  // Fallback: adiciona token normalmente
-  const separator = url.includes('?') ? '&' : '?';
-  return `${url}${separator}token=${encodeURIComponent(token)}`;
+  const separator = apiUrl.includes('?') ? '&' : '?';
+  return `${apiUrl}${separator}token=${encodeURIComponent(token)}`;
 }

@@ -237,7 +237,7 @@ export class UploadService {
     // URL aponta para o endpoint de download por ID (nunca expõe o caminho real)
     return {
       id: uploadedFile.id,
-      url: `/api/v1/upload/file/${uploadedFile.id}`,
+      url: `/api/v1/upload/${uploadedFile.id}/file`,
       path: relativePath,
       originalName: uploadedFile.originalName,
       mimeType: uploadedFile.mimeType,
@@ -264,7 +264,7 @@ export class UploadService {
     return {
       id: file.id,
       path: file.path,
-      url: `/api/v1/upload/file/${file.id}`,
+      url: `/api/v1/upload/${file.id}/file`,
       originalName: file.originalName,
       mimeType: file.mimeType,
       size: file.size,
@@ -295,7 +295,7 @@ export class UploadService {
     return files.map((file) => ({
       id: file.id,
       path: file.path,
-      url: `/api/v1/upload/file/${file.id}`,
+      url: `/api/v1/upload/${file.id}/file`,
       originalName: file.originalName,
       mimeType: file.mimeType,
       size: file.size,
@@ -369,91 +369,32 @@ export class UploadService {
   }
 
   /**
-   * Faz o download seguro de um ficheiro.
+   * Download seguro de um ficheiro.
    *
-   * REGRAS DE ACESSO:
-   * - O usuário autenticado deve ser o PROPRIETÁRIO do ficheiro
-   * - OU ter role ADMIN (acesso total)
+   * Tenta encontrar por ID primeiro. Se não for UUID válido,
+   * tenta por caminho (compatibilidade com URLs antigas).
    *
-   * O ficheiro é retornado como StreamableFile (stream), nunca expõe
-   * o caminho real do diretório.
-   *
-   * @param fileId - ID do ficheiro no banco de dados
-   * @param userId - ID do usuário autenticado
-   * @param userRole - Role do usuário autenticado
-   * @returns StreamableFile + metadados para headers HTTP
-   * @throws NotFoundException se o ficheiro não existir
-   * @throws ForbiddenException se o usuário não tiver permissão
+   * REGRAS: proprietário ou ADMIN.
    */
   async downloadFile(
-    fileId: string,
+    idOrPath: string,
     userId: string,
     userRole: string,
   ): Promise<FileDownloadResult> {
-    // Busca o registo do ficheiro no banco
-    const file = await this.prisma.uploadedFile.findUnique({
-      where: { id: fileId },
+    // Tenta buscar por ID (formato novo)
+    let file = await this.prisma.uploadedFile.findUnique({
+      where: { id: idOrPath },
     });
 
+    // Fallback: tenta por path (URLs antigas salvas no banco)
     if (!file) {
-      throw new NotFoundException(`Ficheiro não encontrado: ${fileId}`);
+      file = await this.prisma.uploadedFile.findFirst({
+        where: { path: idOrPath },
+      });
     }
-
-    // Verifica autorização: proprietário ou ADMIN
-    const isOwner = file.userId === userId;
-    const isAdmin = userRole === 'ADMIN';
-
-    if (!isOwner && !isAdmin) {
-      throw new ForbiddenException(
-        'Não tem permissão para acessar este ficheiro',
-      );
-    }
-
-    // Monta o caminho absoluto do ficheiro no disco
-    const absolutePath = path.join(this.uploadsDir, file.path);
-
-    // Verifica se o ficheiro físico existe
-    if (!fs.existsSync(absolutePath)) {
-      throw new NotFoundException(
-        `Ficheiro não encontrado no servidor: ${fileId}`,
-      );
-    }
-
-    // Cria o stream do ficheiro (não expõe o caminho ao cliente)
-    const fileStream = fs.createReadStream(absolutePath);
-
-    return {
-      file: new StreamableFile(fileStream),
-      mimeType: file.mimeType,
-      originalName: file.originalName,
-      size: file.size,
-    };
-  }
-
-  /**
-   * Download seguro por caminho relativo (compatibilidade com URLs antigas).
-   *
-   * Usado para ficheiros cuja URL no banco ainda tem o formato antigo
-   * (ex: /api/v1/uploads/avatars/userId/uuid.jpg).
-   * Mesma segurança do downloadFile: proprietário ou ADMIN.
-   *
-   * @param filePath - Caminho relativo do ficheiro (ex: avatars/userId/uuid.jpg)
-   * @param userId - ID do usuário autenticado
-   * @param userRole - Role do usuário autenticado
-   * @returns StreamableFile + metadados
-   */
-  async downloadFileByPath(
-    filePath: string,
-    userId: string,
-    userRole: string,
-  ): Promise<FileDownloadResult> {
-    // Busca o ficheiro pelo caminho relativo no banco
-    const file = await this.prisma.uploadedFile.findFirst({
-      where: { path: filePath },
-    });
 
     if (!file) {
-      throw new NotFoundException(`Ficheiro não encontrado: ${filePath}`);
+      throw new NotFoundException(`Ficheiro não encontrado`);
     }
 
     // Verifica autorização: proprietário ou ADMIN
@@ -469,9 +410,7 @@ export class UploadService {
     const absolutePath = path.join(this.uploadsDir, file.path);
 
     if (!fs.existsSync(absolutePath)) {
-      throw new NotFoundException(
-        `Ficheiro não encontrado no servidor: ${filePath}`,
-      );
+      throw new NotFoundException('Ficheiro não encontrado no servidor');
     }
 
     const fileStream = fs.createReadStream(absolutePath);

@@ -181,4 +181,29 @@ export const api = {
       headers: {}, // Não definir Content-Type - o browser faz isso
       isFormData: true,
     }),
+
+  /**
+   * GET que retorna Blob (para download de ficheiros binários).
+   * Usa o mesmo sistema de autenticação (header Authorization).
+   */
+  getBlob: async (url: string): Promise<Blob> => {
+    const token = localStorage.getItem('accessToken');
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(url, { headers });
+
+    if (response.status === 401) {
+      handleUnauthorized();
+      throw new Error('Sessão expirada.');
+    }
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return response.blob();
+  },
 };
