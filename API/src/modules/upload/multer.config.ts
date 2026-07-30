@@ -32,6 +32,7 @@ import { Request } from 'express';
 import { BadRequestException } from '@nestjs/common';
 import { extname, join } from 'path';
 import { randomUUID } from 'crypto';
+import { mkdirSync } from 'fs';
 
 /**
  * Categorias válidas para upload.
@@ -145,7 +146,9 @@ export function createMulterConfig(
         }
 
         // Monta o caminho: uploads/{userId}/{category}/
+        // Cria o diretório se não existir (recursive: true não falha se já existir)
         const dest = join(uploadDir, userId, category);
+        mkdirSync(dest, { recursive: true });
         cb(null, dest);
       },
 
