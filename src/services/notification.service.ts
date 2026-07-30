@@ -115,6 +115,17 @@ export interface NotificationFilters {
 }
 
 /**
+ * Busca uma notificação específica por ID.
+ *
+ * @param id - ID da notificação
+ * @returns Promise com a notificação
+ */
+export async function getNotificationById(id: string): Promise<Notification> {
+  const response = await api.get<ApiResponse<Notification>>(`/api/v1/notifications/${id}`);
+  return response.data;
+}
+
+/**
  * Busca notificações paginadas do usuário autenticado.
  *
  * @param filters - Filtros de busca (opcional)

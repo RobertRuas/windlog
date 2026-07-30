@@ -7,21 +7,22 @@
  * ---------------------
  * Página dedicada que exibe todas as notificações do usuário,
  * funcionando como uma "caixa de email" onde cada notificação
- * pode ser aberta para ver detalhes completos.
+ * pode ser clicada para ver detalhes completos numa página dedicada.
  *
  * FUNCIONALIDADES:
  * ----------------
  * - Lista todas as notificações com filtros (lidas/não lidas)
- * - Ao clicar numa notificação, abre modal com detalhes completos
+ * - Ao clicar numa notificação, navega para /notifications/:id
  * - Marcar como lida/não lida
  * - Marcar todas como lidas
  * - Apagar notificações
- * - Paginação para muitas notificações
+ * - Design limpo e minimalista
  * ============================================================================
  */
 
-import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 import {
   Bell,
   Check,
@@ -34,9 +35,9 @@ import {
   Filter,
   Mail,
   MailOpen,
+  ChevronRight,
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { NotificationDetailModal } from '@/components/notifications/NotificationDetailModal';
 import {
   getNotifications,
   markAsRead,
@@ -75,17 +76,17 @@ function getNotificationIcon(type: NotificationType) {
     case NotificationType.DOCUMENT_EXPIRING:
     case NotificationType.CERTIFICATION_EXPIRING:
     case NotificationType.PASSWORD_EXPIRING:
-      return { icon: AlertCircle, color: 'text-red-500', bg: 'bg-red-100' };
+      return { icon: AlertCircle, color: 'text-red-500', bg: 'bg-red-50' };
     case NotificationType.WARNING:
-      return { icon: AlertTriangle, color: 'text-amber-500', bg: 'bg-amber-100' };
+      return { icon: AlertTriangle, color: 'text-amber-500', bg: 'bg-amber-50' };
     case NotificationType.ERROR:
-      return { icon: X, color: 'text-red-600', bg: 'bg-red-100' };
+      return { icon: X, color: 'text-red-600', bg: 'bg-red-50' };
     case NotificationType.SUCCESS:
-      return { icon: Check, color: 'text-green-500', bg: 'bg-green-100' };
+      return { icon: Check, color: 'text-green-500', bg: 'bg-green-50' };
     case NotificationType.PROFILE_INCOMPLETE:
-      return { icon: Info, color: 'text-blue-500', bg: 'bg-blue-100' };
+      return { icon: Info, color: 'text-blue-500', bg: 'bg-blue-50' };
     default:
-      return { icon: Info, color: 'text-blue-500', bg: 'bg-blue-100' };
+      return { icon: Info, color: 'text-blue-500', bg: 'bg-blue-50' };
   }
 }
 
@@ -134,9 +135,9 @@ type FilterType = 'all' | 'unread' | 'read';
  * Componente NotificationsPage - Página de notificações.
  */
 export function NotificationsPage() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [filter, setFilter] = useState<FilterType>('all');
-  const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);
 
   /**
    * Busca notificações.
@@ -197,13 +198,10 @@ export function NotificationsPage() {
   });
 
   /**
-   * Handle click em uma notificação.
+   * Navega para a página de detalhes da notificação.
    */
   const handleNotificationClick = (notification: Notification) => {
-    if (!notification.isRead) {
-      markAsReadMutation.mutate(notification.id);
-    }
-    setSelectedNotification(notification);
+    navigate(`/notifications/${notification.id}`);
   };
 
   return (
@@ -212,92 +210,104 @@ export function NotificationsPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <Bell size={28} className="text-blue-600" />
-            <h1 className="text-2xl font-bold text-gray-900">Notificações</h1>
-            {data && (
-              <span className="text-sm text-gray-500">
-                ({data.total} {data.total === 1 ? 'notificação' : 'notificações'})
-              </span>
-            )}
+            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+              <Bell size={20} className="text-blue-600" />
+            </div>
+            <div>
+              <h1 className="text-xl font-semibold text-gray-900">Notificações</h1>
+              {data && (
+                <p className="text-sm text-gray-500">
+                  {data.total} {data.total === 1 ? 'notificação' : 'notificações'}
+                </p>
+              )}
+            </div>
           </div>
 
-          {/* Ações */}
-          <div className="flex items-center gap-2">
+          {/* Ações rápidas */}
+          <div className="flex items-center gap-1">
             <button
               onClick={() => markAllAsReadMutation.mutate()}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+              className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
               title="Marcar todas como lidas"
             >
-              <CheckCheck size={16} />
-              <span className="hidden sm:inline">Marcar todas como lidas</span>
+              <CheckCheck size={18} />
             </button>
             <button
               onClick={() => deleteReadMutation.mutate()}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
               title="Limpar lidas"
             >
-              <Trash2 size={16} />
-              <span className="hidden sm:inline">Limpar lidas</span>
+              <Trash2 size={18} />
             </button>
           </div>
         </div>
 
         {/* Filtros */}
-        <div className="flex items-center gap-2 mb-4">
-          <Filter size={16} className="text-gray-400" />
-          <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
-            <button
-              onClick={() => setFilter('all')}
-              className={`px-3 py-1 text-sm rounded-md transition-colors ${
-                filter === 'all' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              Todas
-            </button>
-            <button
-              onClick={() => setFilter('unread')}
-              className={`px-3 py-1 text-sm rounded-md transition-colors ${
-                filter === 'unread' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              <span className="flex items-center gap-1">
-                <Mail size={14} />
-                Não lidas
-              </span>
-            </button>
-            <button
-              onClick={() => setFilter('read')}
-              className={`px-3 py-1 text-sm rounded-md transition-colors ${
-                filter === 'read' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              <span className="flex items-center gap-1">
-                <MailOpen size={14} />
-                Lidas
-              </span>
-            </button>
-          </div>
+        <div className="flex gap-1 mb-5 p-1 bg-gray-100 rounded-xl w-fit">
+          <button
+            onClick={() => setFilter('all')}
+            className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all ${
+              filter === 'all'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Todas
+          </button>
+          <button
+            onClick={() => setFilter('unread')}
+            className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all flex items-center gap-1.5 ${
+              filter === 'unread'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <Mail size={14} />
+            Não lidas
+          </button>
+          <button
+            onClick={() => setFilter('read')}
+            className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all flex items-center gap-1.5 ${
+              filter === 'read'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <MailOpen size={14} />
+            Lidas
+          </button>
         </div>
 
         {/* Lista de notificações */}
         {isLoading ? (
-          <div className="text-center py-12 text-gray-500">A carregar...</div>
+          <div className="text-center py-16">
+            <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+            <p className="text-gray-500 text-sm">A carregar notificações...</p>
+          </div>
         ) : isError ? (
-          <div className="text-center py-12 text-red-500">Erro ao carregar notificações</div>
+          <div className="text-center py-16">
+            <AlertCircle size={48} className="text-red-400 mx-auto mb-3" />
+            <p className="text-gray-500">Erro ao carregar notificações</p>
+          </div>
         ) : notifications.length === 0 ? (
-          <div className="text-center py-12">
-            <Bell size={48} className="text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500">
+          <div className="text-center py-16">
+            <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+              <Bell size={32} className="text-gray-400" />
+            </div>
+            <p className="text-gray-500 font-medium">
               {filter === 'all'
                 ? 'Nenhuma notificação'
                 : filter === 'unread'
                 ? 'Nenhuma notificação não lida'
                 : 'Nenhuma notificação lida'}
             </p>
+            <p className="text-gray-400 text-sm mt-1">
+              {filter === 'all' && 'Quando tiver notificações, elas aparecerão aqui'}
+            </p>
           </div>
         ) : (
           <div className="space-y-2">
-            {notifications.map((notification: Notification) => {
+            {notifications.map((notification) => {
               const { icon: Icon, color, bg } = getNotificationIcon(notification.type);
               const priorityBorder = getPriorityBorder(notification.priority);
 
@@ -305,35 +315,35 @@ export function NotificationsPage() {
                 <div
                   key={notification.id}
                   onClick={() => handleNotificationClick(notification)}
-                  className={`relative flex items-start gap-3 p-4 bg-white rounded-xl border border-gray-200 border-l-4 ${priorityBorder} cursor-pointer hover:bg-gray-50 transition-colors ${
-                    !notification.isRead ? 'ring-1 ring-blue-200' : ''
+                  className={`group relative flex items-center gap-4 p-4 bg-white rounded-xl border border-gray-200 border-l-4 ${priorityBorder} cursor-pointer hover:bg-gray-50 hover:border-gray-300 transition-all ${
+                    !notification.isRead ? 'ring-1 ring-blue-100' : ''
                   }`}
                 >
                   {/* Ícone */}
                   <div className={`w-10 h-10 rounded-full ${bg} flex items-center justify-center flex-shrink-0`}>
-                    <Icon size={20} className={color} />
+                    <Icon size={18} className={color} />
                   </div>
 
                   {/* Conteúdo */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
-                      <h3 className={`text-sm font-semibold truncate ${!notification.isRead ? 'text-gray-900' : 'text-gray-700'}`}>
+                      <h3 className={`text-sm font-medium truncate ${!notification.isRead ? 'text-gray-900' : 'text-gray-700'}`}>
                         {notification.title}
                       </h3>
                       {!notification.isRead && (
                         <span className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0" />
                       )}
                     </div>
-                    <p className="text-sm text-gray-600 line-clamp-2">{notification.message}</p>
-                    <div className="flex items-center gap-2 mt-1.5">
+                    <p className="text-sm text-gray-500 line-clamp-1">{notification.message}</p>
+                    <div className="flex items-center gap-2 mt-1">
                       <span className="text-xs text-gray-400">{getTypeLabel(notification.type)}</span>
                       <span className="text-xs text-gray-300">•</span>
                       <span className="text-xs text-gray-400">{formatRelativeDate(notification.createdAt)}</span>
                     </div>
                   </div>
 
-                  {/* Ações */}
-                  <div className="flex items-center gap-1 flex-shrink-0">
+                  {/* Seta e ações */}
+                  <div className="flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                     {!notification.isRead && (
                       <button
                         onClick={(e) => {
@@ -343,7 +353,7 @@ export function NotificationsPage() {
                         className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-blue-500 transition-colors"
                         title="Marcar como lida"
                       >
-                        <Check size={16} />
+                        <Check size={14} />
                       </button>
                     )}
                     <button
@@ -354,8 +364,9 @@ export function NotificationsPage() {
                       className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-red-500 transition-colors"
                       title="Apagar"
                     >
-                      <Trash2 size={16} />
+                      <Trash2 size={14} />
                     </button>
+                    <ChevronRight size={16} className="text-gray-400 ml-1" />
                   </div>
                 </div>
               );
@@ -363,14 +374,6 @@ export function NotificationsPage() {
           </div>
         )}
       </div>
-
-      {/* Modal de detalhes da notificação */}
-      {selectedNotification && (
-        <NotificationDetailModal
-          notification={selectedNotification}
-          onClose={() => setSelectedNotification(null)}
-        />
-      )}
     </AppLayout>
   );
 }
