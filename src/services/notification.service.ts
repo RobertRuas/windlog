@@ -22,6 +22,21 @@
 import { api } from './api';
 
 /**
+ * Interface para a resposta padrão da API.
+ * O TransformInterceptor do NestJS envolve todos os dados no campo 'data'.
+ */
+interface ApiResponse<T> {
+  /** Dados da resposta (o que realmente interessa) */
+  data: T;
+  /** Mensagem de status */
+  message: string;
+  /** Código HTTP de status */
+  statusCode: number;
+  /** Timestamp da resposta */
+  timestamp: string;
+}
+
+/**
  * Tipos de notificação.
  */
 export const NotificationType = {
@@ -118,7 +133,8 @@ export async function getNotifications(filters?: NotificationFilters): Promise<N
   if (filters?.limit) params.append('limit', String(filters.limit));
 
   const queryString = params.toString();
-  return api.get<NotificationPaginatedResponse>(`/api/v1/notifications${queryString ? `?${queryString}` : ''}`);
+  const response = await api.get<ApiResponse<NotificationPaginatedResponse>>(`/api/v1/notifications${queryString ? `?${queryString}` : ''}`);
+  return response.data;
 }
 
 /**
@@ -127,7 +143,8 @@ export async function getNotifications(filters?: NotificationFilters): Promise<N
  * @returns Promise com contagem de não lidas
  */
 export async function getUnreadCount(): Promise<{ count: number }> {
-  return api.get<{ count: number }>('/api/v1/notifications/unread');
+  const response = await api.get<ApiResponse<{ count: number }>>('/api/v1/notifications/unread');
+  return response.data;
 }
 
 /**
@@ -137,7 +154,8 @@ export async function getUnreadCount(): Promise<{ count: number }> {
  * @returns Promise com notificação atualizada
  */
 export async function markAsRead(id: string): Promise<Notification> {
-  return api.patch<Notification>(`/api/v1/notifications/${id}`, { isRead: true });
+  const response = await api.patch<ApiResponse<Notification>>(`/api/v1/notifications/${id}`, { isRead: true });
+  return response.data;
 }
 
 /**
@@ -146,7 +164,8 @@ export async function markAsRead(id: string): Promise<Notification> {
  * @returns Promise com contagem de notificações atualizadas
  */
 export async function markAllAsRead(): Promise<{ count: number }> {
-  return api.patch<{ count: number }>('/api/v1/notifications/read-all', {});
+  const response = await api.patch<ApiResponse<{ count: number }>>('/api/v1/notifications/read-all', {});
+  return response.data;
 }
 
 /**
@@ -156,7 +175,8 @@ export async function markAllAsRead(): Promise<{ count: number }> {
  * @returns Promise com notificação removida
  */
 export async function deleteNotification(id: string): Promise<Notification> {
-  return api.delete<Notification>(`/api/v1/notifications/${id}`);
+  const response = await api.delete<ApiResponse<Notification>>(`/api/v1/notifications/${id}`);
+  return response.data;
 }
 
 /**
@@ -165,5 +185,6 @@ export async function deleteNotification(id: string): Promise<Notification> {
  * @returns Promise com contagem de notificações removidas
  */
 export async function deleteRead(): Promise<{ count: number }> {
-  return api.delete<{ count: number }>('/api/v1/notifications/read');
+  const response = await api.delete<ApiResponse<{ count: number }>>('/api/v1/notifications/read');
+  return response.data;
 }
