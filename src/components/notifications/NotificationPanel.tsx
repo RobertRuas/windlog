@@ -19,8 +19,9 @@
  */
 
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Check, CheckCheck, Trash2, AlertCircle, Info, AlertTriangle, X } from 'lucide-react';
+import { Check, CheckCheck, Trash2, AlertCircle, Info, AlertTriangle, X, ArrowRight } from 'lucide-react';
 import {
   getNotifications,
   markAsRead,
@@ -104,8 +105,17 @@ function getPriorityBorder(priority: NotificationPriority): string {
  * Componente NotificationPanel - Dropdown de notificações.
  */
 export function NotificationPanel({ onClose, onMarkAllRead }: NotificationPanelProps) {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);
+
+  /**
+   * Navega para a página de notificações.
+   */
+  const goToNotificationsPage = () => {
+    navigate('/notifications');
+    onClose();
+  };
 
   /**
    * Busca notificações (últimas 10).
@@ -176,6 +186,14 @@ export function NotificationPanel({ onClose, onMarkAllRead }: NotificationPanelP
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50">
         <h3 className="text-sm font-semibold text-gray-900">Notificações</h3>
         <div className="flex items-center gap-2">
+          <button
+            onClick={goToNotificationsPage}
+            className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+            title="Ver todas as notificações"
+          >
+            <span>Ver todas</span>
+            <ArrowRight size={12} />
+          </button>
           {hasUnread && (
             <button
               onClick={onMarkAllRead}

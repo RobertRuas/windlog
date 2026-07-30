@@ -43,6 +43,7 @@ import { UsersPage } from '@/pages/users/UsersPage';
 import { ProjectsPage } from '@/pages/projects/ProjectsPage';
 import { ProjectDetailPage } from '@/pages/projects/detail/ProjectDetailPage';
 import { ChangeTempPasswordPage } from '@/pages/change-password/ChangeTempPasswordPage';
+import { NotificationsPage } from '@/pages/notifications/NotificationsPage';
 import { ErrorPage } from '@/pages/error/ErrorPage';
 
 // Serviço de autenticação
@@ -225,6 +226,16 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Rota protegida - notificações (requer autenticação) */}
+          <Route
+            path="/notifications"
+            element={
+              <ProtectedRoute>
+                <NotificationsPage />
               </ProtectedRoute>
             }
           />
