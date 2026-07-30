@@ -238,7 +238,7 @@ export function ProjectDetailPage() {
                 : 'border-transparent text-gray-500 hover:text-gray-700'
             }`}
           >
-            {t('tabs.files')}
+            {t('tabs.files')} ({project.files?.length || 0})
           </button>
         </nav>
       </div>
