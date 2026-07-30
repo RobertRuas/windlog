@@ -55,9 +55,9 @@ export interface User {
   /** País */
   country?: string | null;
   /** Departamento */
-  department?: string;
+  department?: string | null;
   /** Cargo/função profissional */
-  position?: string;
+  position?: string | null;
   /** Data de contratação (formato ISO) */
   hireDate?: string | null;
   /** ID do funcionário */

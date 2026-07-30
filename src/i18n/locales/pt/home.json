@@ -47,6 +47,7 @@
     "country": "País",
     "department": "Departamento",
     "position": "Cargo",
+    "hireDate": "Data de Contratação",
     "bio": "Biografia",
     "role": "Acesso",
     "photoUrl": "URL da Foto",

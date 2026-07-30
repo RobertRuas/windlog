@@ -83,11 +83,16 @@ export interface SectionResult {
 
 /**
  * Helper: verifica se um valor é considerado "preenchido".
- * Considera strings vazias, null e undefined como não preenchidos.
+ * Considera strings vazias, null, undefined e strings apenas com espaços como não preenchidos.
  */
 function isFilled(value: unknown): boolean {
+  // Null ou undefined
   if (value === null || value === undefined) return false;
+  // String vazia ou apenas espaços
   if (typeof value === 'string' && value.trim() === '') return false;
+  // Array vazio
+  if (Array.isArray(value) && value.length === 0) return false;
+  // Tudo o resto é considerado preenchido
   return true;
 }
 

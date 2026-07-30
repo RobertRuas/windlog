@@ -146,6 +146,7 @@ export function ProfilePage() {
     // Profissional
     { key: 'department', label: t('profile.department'), category: 'professional' },
     { key: 'position', label: t('profile.position'), category: 'professional' },
+    { key: 'hireDate', label: t('profile.hireDate'), type: 'date', category: 'professional' },
     {
       key: 'role',
       label: t('profile.role'),
