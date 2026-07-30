@@ -11,7 +11,7 @@
  * ============================================================================
  */
 
-import { MapPin, Wind, Users as UsersIcon, Paperclip, Eye, Edit2, Trash2 } from 'lucide-react';
+import { MapPin, Wind, Users as UsersIcon, Eye, Edit2, Trash2 } from 'lucide-react';
 import type { ProjectListItem } from '@/services/project.service';
 import { DataTable, type DataTableColumn } from '@/components/ui/DataTable';
 
@@ -113,10 +113,6 @@ export function ProjectsTable({
           <span className="inline-flex items-center gap-1 text-sm text-gray-500" title={t('table.members')}>
             <UsersIcon size={14} className="text-gray-400" />
             {project._count?.members || 0}
-          </span>
-          <span className="inline-flex items-center gap-1 text-sm text-gray-500" title={t('table.files')}>
-            <Paperclip size={14} className="text-gray-400" />
-            {project._count?.files || 0}
           </span>
         </div>
       ),

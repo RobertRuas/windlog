@@ -103,16 +103,6 @@ async function bootstrap() {
   });
 
   // -------------------------------------------------------------------------
-  // 4.1. FICHEIROS PRIVADOS (uploads)
-  // -------------------------------------------------------------------------
-  // Os ficheiros são servidos exclusivamente pelo endpoint NestJS:
-  //   GET /api/v1/upload/file/:id
-  // Este endpoint valida JWT (header ou query param), verifica propriedade
-  // do ficheiro (ou role ADMIN) e retorna via StreamableFile.
-  // NÃO existe nenhuma URL pública ou estática para os uploads.
-  // -------------------------------------------------------------------------
-
-  // -------------------------------------------------------------------------
   // 5. PREFIXO GLOBAL DAS ROTAS
   // -------------------------------------------------------------------------
   // Todas as rotas terão o prefixo /api/v1

@@ -168,26 +168,6 @@ export interface UserDocument {
   expiryDate?: string | null;
   /** Descrição ou notas adicionais */
   description?: string | null;
-  /** Ficheiros anexados ao documento */
-  files?: DocumentFile[];
-}
-
-/**
- * Interface DocumentFile - Ficheiro anexado a um documento.
- */
-export interface DocumentFile {
-  /** ID do ficheiro uploadado */
-  id: string;
-  /** URL do ficheiro */
-  url: string;
-  /** Nome original do ficheiro */
-  originalName: string;
-  /** Tipo MIME do ficheiro */
-  mimeType: string;
-  /** Tamanho em bytes */
-  size: number;
-  /** Ordem do ficheiro */
-  order: number;
 }
 
 /**

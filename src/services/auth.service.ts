@@ -210,16 +210,6 @@ export interface UserDocument {
   issueDate?: string;
   expiryDate?: string;
   description?: string;
-  files?: DocumentFile[];
-}
-
-export interface DocumentFile {
-  id: string;
-  url: string;
-  originalName: string;
-  mimeType: string;
-  size: number;
-  order: number;
 }
 
 export async function addDocument(data: Omit<UserDocument, 'id'>): Promise<UserDocument> {

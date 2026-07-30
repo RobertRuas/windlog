@@ -36,7 +36,7 @@ import { ArrowLeft, Edit2 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 
 // Serviços
-import { getProjectById, getProjectFiles, type UpdateProjectPayload } from '@/services/project.service';
+import { getProjectById, type UpdateProjectPayload } from '@/services/project.service';
 import { getUsers as fetchUsers } from '@/services/user.service';
 
 // Componentes
@@ -69,11 +69,7 @@ export function ProjectDetailPage() {
   });
 
   // Buscar contagem de ficheiros do projeto (para o badge da aba)
-  const { data: projectFiles = [] } = useQuery({
-    queryKey: ['project-files', id],
-    queryFn: () => getProjectFiles(id!),
-    enabled: !!id,
-  });
+  // TODO: Reimplementar quando o sistema de ficheiros estiver pronto
 
   // Buscar usuários disponíveis
   const { data: usersData } = useQuery({
@@ -240,7 +236,7 @@ export function ProjectDetailPage() {
                 : 'border-transparent text-gray-500 hover:text-gray-700'
             }`}
           >
-            {t('tabs.files')} ({projectFiles.length})
+            {t('tabs.files')}
           </button>
         </nav>
       </div>

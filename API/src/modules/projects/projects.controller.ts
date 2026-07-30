@@ -45,12 +45,9 @@ import {
   Param,
   Query,
   UseGuards,
-  UseInterceptors,
-  UploadedFile,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '@nestjs/passport';
 import {
   ApiTags,
@@ -58,7 +55,6 @@ import {
   ApiResponse,
   ApiBearerAuth,
   ApiQuery,
-  ApiConsumes,
 } from '@nestjs/swagger';
 
 import { ProjectsService } from './projects.service.js';
@@ -73,8 +69,6 @@ import {
 } from './dto/projects.dto.js';
 import { RolesGuard } from '../../common/guards/roles.guard.js';
 import { Roles, Role } from '../../common/decorators/roles.decorator.js';
-import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
-import type { JwtPayload } from '../auth/strategies/jwt.strategy.js';
 
 /**
  * Controller ProjectsController - Gerencia endpoints de projetos.
@@ -359,72 +353,5 @@ export class ProjectsController {
     return this.projectsService.removeMember(id, memberId);
   }
 
-  // =========================================================================
-  // FILE ENDPOINTS
-  // =========================================================================
 
-  /**
-   * GET /api/v1/projects/:id/files
-   *
-   * Lista todos os ficheiros de um projeto.
-   */
-  @Get(':id/files')
-  @ApiOperation({
-    summary: 'Listar ficheiros do projeto',
-    description: 'Retorna todos os ficheiros associados a um projeto específico.',
-  })
-  @ApiResponse({ status: 200, description: 'Ficheiros retornados com sucesso' })
-  @ApiResponse({ status: 404, description: 'Projeto não encontrado' })
-  findFiles(@Param('id') id: string) {
-    return this.projectsService.findFilesByProject(id);
-  }
-
-  /**
-   * POST /api/v1/projects/:id/files
-   *
-   * Faz upload de um ficheiro e associa-o ao projeto.
-   */
-  @Post(':id/files')
-  @ApiOperation({
-    summary: 'Adicionar ficheiro ao projeto',
-    description: 'Faz upload de um ficheiro e associa-o a um projeto específico. Tamanho máximo: 3 MB. Tipos aceitos: JPEG, PNG, WebP, PDF.',
-  })
-  @ApiConsumes('multipart/form-data')
-  @ApiResponse({ status: 201, description: 'Ficheiro adicionado com sucesso' })
-  @ApiResponse({ status: 400, description: 'Ficheiro inválido' })
-  @ApiResponse({ status: 404, description: 'Projeto não encontrado' })
-  @UseGuards(AuthGuard('jwt'))
-  @UseInterceptors(
-    FileInterceptor('file', {
-      limits: { fileSize: 3 * 1024 * 1024 }, // 3 MB
-    }),
-  )
-  addFile(
-    @Param('id') id: string,
-    @UploadedFile() file: Express.Multer.File,
-    @CurrentUser() user: JwtPayload,
-    @Body('description') description?: string,
-  ) {
-    return this.projectsService.addProjectFile(id, file, user.sub, description);
-  }
-
-  /**
-   * DELETE /api/v1/projects/:id/files/:fileId
-   *
-   * Remove um ficheiro de um projeto.
-   */
-  @Delete(':id/files/:fileId')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({
-    summary: 'Remover ficheiro do projeto',
-    description: 'Remove um ficheiro associado a um projeto específico.',
-  })
-  @ApiResponse({ status: 200, description: 'Ficheiro removido com sucesso' })
-  @ApiResponse({ status: 404, description: 'Ficheiro não encontrado' })
-  removeFile(
-    @Param('id') id: string,
-    @Param('fileId') fileId: string,
-  ) {
-    return this.projectsService.removeProjectFile(id, fileId);
-  }
 }

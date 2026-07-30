@@ -202,10 +202,8 @@ model User {
   languages       UserLanguage[]
   documents       UserDocument[]
   bankAccounts    UserBankAccount[]
-  uploadedFiles   UploadedFile[]
   projectMembers  ProjectMember[]
 }
-
 // ---------------------------------------------------------------------------
 // MODEL: USER DOCUMENT (Documentos Pessoais do Usuário)
 // ---------------------------------------------------------------------------
@@ -237,8 +235,7 @@ model UserDocument {
   /// Descrição ou notas adicionais (ex: "Visto tipo D", "Permissão de residência")
   description String?
 
-  // Ficheiros anexados ao documento (múltiplos ficheiros suportados)
-  files       UserDocumentFile[]
+  // Ficheiros anexados ao documento (removido - sistema de upload será reimplementado)
 
   // Relação com o usuário
   userId    String
@@ -250,71 +247,6 @@ model UserDocument {
 
   @@index([userId])
   @@index([expiryDate])
-}
-
-// ---------------------------------------------------------------------------
-// MODEL: USER DOCUMENT FILE (Ficheiros Anexados a Documentos)
-// ---------------------------------------------------------------------------
-// Relação entre documentos e ficheiros uploadados.
-// Permite múltiplos ficheiros por documento (frente, verso, anexos).
-// ---------------------------------------------------------------------------
-model UserDocumentFile {
-  id           String   @id @default(uuid())
-
-  // Relação com o documento
-  documentId   String
-  document     UserDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
-
-  // Relação com o ficheiro uploadado
-  uploadedFileId String
-  uploadedFile   UploadedFile @relation(fields: [uploadedFileId], references: [id], onDelete: Cascade)
-
-  // Ordem do ficheiro (ex: 0 = frente, 1 = verso)
-  order        Int      @default(0)
-
-  // Timestamps
-  createdAt    DateTime @default(now())
-
-  @@index([documentId])
-  @@index([uploadedFileId])
-}
-
-// ---------------------------------------------------------------------------
-// MODEL: UPLOADED FILE (Armazenamento Centralizado de Ficheiros)
-// ---------------------------------------------------------------------------
-// Regista TODOS os ficheiros uploadados no sistema.
-// Usado como repositório central para avatares, documentos, etc.
-// Os ficheiros físicos são guardados em API/uploads/
-// ---------------------------------------------------------------------------
-model UploadedFile {
-  id             String   @id @default(uuid())
-
-  /// Caminho relativo do ficheiro no servidor (ex: "documents/uuid-file.pdf")
-  path           String
-  /// Nome original do ficheiro quando foi carregado
-  originalName   String
-  /// Tipo MIME do ficheiro (ex: "application/pdf", "image/jpeg")
-  mimeType       String
-  /// Tamanho do ficheiro em bytes
-  size           Int
-  /// Categoria do ficheiro (avatar, document, certification, etc.)
-  category       String
-
-  // Relação com o usuário que fez o upload
-  userId         String
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Relação com documentos (se aplicável)
-  documentFiles  UserDocumentFile[]
-
-  // Relação com projetos (ficheiros de projeto)
-  projectFiles   ProjectFile[]
-
-  // Timestamps
-  createdAt      DateTime @default(now())
-
-  @@index([userId])
-  @@index([category])
 }
 
 // ---------------------------------------------------------------------------
@@ -540,7 +472,6 @@ model Project {
   // Relações
   turbines    ProjectTurbine[]
   members     ProjectMember[]
-  files       ProjectFile[]
 }
 
 // ---------------------------------------------------------------------------
@@ -609,33 +540,6 @@ model ProjectMember {
   @@unique([projectId, userId])
   @@index([projectId])
   @@index([userId])
-}
-
-// ---------------------------------------------------------------------------
-// MODEL: PROJECT FILE (Ficheiros do Projeto)
-// ---------------------------------------------------------------------------
-// Associa ficheiros uploadados a um projeto.
-// Permite guardar fotos, documentos e outros ficheiros ligados ao projeto.
-// ---------------------------------------------------------------------------
-model ProjectFile {
-  id           String   @id @default(uuid())
-
-  // Relação com o projeto
-  projectId    String
-  project      Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-
-  // Relação com o ficheiro uploadado
-  uploadedFileId String
-  uploadedFile   UploadedFile @relation(fields: [uploadedFileId], references: [id], onDelete: Cascade)
-
-  // Descrição opcional do ficheiro no contexto do projeto
-  description  String?
-
-  // Timestamps
-  createdAt    DateTime @default(now())
-
-  @@index([projectId])
-  @@index([uploadedFileId])
 }
 
 // ---------------------------------------------------------------------------

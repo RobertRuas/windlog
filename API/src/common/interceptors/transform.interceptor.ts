@@ -43,7 +43,6 @@ import {
   ExecutionContext,
   CallHandler,
   Logger,
-  StreamableFile,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -67,7 +66,7 @@ export interface StandardResponse<T> {
 @Injectable()
 export class TransformInterceptor<T> implements NestInterceptor<
   T,
-  StandardResponse<T> | StreamableFile
+  StandardResponse<T>
 > {
   // Logger para registrar requisições bem-sucedidas
   private readonly logger = new Logger('TransformInterceptor');
@@ -82,7 +81,7 @@ export class TransformInterceptor<T> implements NestInterceptor<
   intercept(
     context: ExecutionContext,
     next: CallHandler,
-  ): Observable<StandardResponse<T> | StreamableFile> {
+  ): Observable<StandardResponse<T>> {
     // Obtém informações da requisição para logging
     const ctx = context.switchToHttp();
     const request = ctx.getRequest<{ method: string; url: string }>();
@@ -95,12 +94,6 @@ export class TransformInterceptor<T> implements NestInterceptor<
 
         // Registra a requisição bem-sucedida no log
         this.logger.log(`${request.method} ${request.url} ${statusCode}`);
-
-        // NÃO transforma respostas binárias (StreamableFile) em JSON.
-        // Ficheiros de download devem ser enviados como stream puro.
-        if (data instanceof StreamableFile) {
-          return data;
-        }
 
         // Monta a resposta no formato padronizado
         return {

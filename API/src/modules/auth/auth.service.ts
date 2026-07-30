@@ -215,14 +215,6 @@ export class AuthService {
         languages: true,
         documents: {
           orderBy: { expiryDate: 'asc' },
-          include: {
-            files: {
-              include: {
-                uploadedFile: true,
-              },
-              orderBy: { order: 'asc' },
-            },
-          },
         },
         bankAccounts: true,
       },
@@ -257,23 +249,7 @@ export class AuthService {
       phoneNumbers: user.phoneNumbers,
       certifications: user.certifications,
       languages: user.languages,
-      documents: user.documents.map((doc) => ({
-        id: doc.id,
-        type: doc.type,
-        documentNumber: doc.documentNumber,
-        issuingCountry: doc.issuingCountry,
-        issueDate: doc.issueDate,
-        expiryDate: doc.expiryDate,
-        description: doc.description,
-        files: doc.files.map((f) => ({
-          id: f.uploadedFile.id,
-          url: `/api/v1/upload/${f.uploadedFile.id}/file`,
-          originalName: f.uploadedFile.originalName,
-          mimeType: f.uploadedFile.mimeType,
-          size: f.uploadedFile.size,
-          order: f.order,
-        })),
-      })),
+      documents: user.documents,
       bankAccounts: user.bankAccounts,
     };
   }
@@ -331,14 +307,6 @@ export class AuthService {
         languages: true,
         documents: {
           orderBy: { expiryDate: 'asc' },
-          include: {
-            files: {
-              include: {
-                uploadedFile: true,
-              },
-              orderBy: { order: 'asc' },
-            },
-          },
         },
         bankAccounts: true,
       },
@@ -372,23 +340,7 @@ export class AuthService {
       phoneNumbers: updatedUser.phoneNumbers,
       certifications: updatedUser.certifications,
       languages: updatedUser.languages,
-      documents: updatedUser.documents.map((doc) => ({
-        id: doc.id,
-        type: doc.type,
-        documentNumber: doc.documentNumber,
-        issuingCountry: doc.issuingCountry,
-        issueDate: doc.issueDate,
-        expiryDate: doc.expiryDate,
-        description: doc.description,
-        files: doc.files.map((f) => ({
-          id: f.uploadedFile.id,
-          url: `/api/v1/upload/${f.uploadedFile.id}/file`,
-          originalName: f.uploadedFile.originalName,
-          mimeType: f.uploadedFile.mimeType,
-          size: f.uploadedFile.size,
-          order: f.order,
-        })),
-      })),
+      documents: updatedUser.documents,
       bankAccounts: updatedUser.bankAccounts,
     };
   }
@@ -577,7 +529,6 @@ export class AuthService {
 
   /**
    * Adiciona um novo documento pessoal ao usuário.
-   * Suporta múltiplos ficheiros anexados via relação UserDocumentFile.
    */
   async addDocument(userId: string, dto: CreateDocumentDto) {
     return this.prisma.userDocument.create({
@@ -589,21 +540,6 @@ export class AuthService {
         issueDate: dto.issueDate ? new Date(dto.issueDate) : null,
         expiryDate: dto.expiryDate ? new Date(dto.expiryDate) : null,
         description: dto.description,
-        // Cria os ficheiros anexados (se houver)
-        files: dto.files?.length ? {
-          create: dto.files.map((f, index) => ({
-            uploadedFileId: f.uploadedFileId,
-            order: f.order ?? index,
-          })),
-        } : undefined,
-      },
-      include: {
-        files: {
-          include: {
-            uploadedFile: true,
-          },
-          orderBy: { order: 'asc' },
-        },
       },
     });
   }
@@ -630,35 +566,9 @@ export class AuthService {
     if (dto.expiryDate !== undefined) updateData.expiryDate = dto.expiryDate ? new Date(dto.expiryDate) : null;
     if (dto.description !== undefined) updateData.description = dto.description;
 
-    // Se files for fornecido, substitui todos os ficheiros anexados
-    if (dto.files !== undefined) {
-      // Remove os ficheiros antigos
-      await this.prisma.userDocumentFile.deleteMany({
-        where: { documentId },
-      });
-
-      // Cria os novos ficheiros
-      if (dto.files.length > 0) {
-        updateData.files = {
-          create: dto.files.map((f, index) => ({
-            uploadedFileId: f.uploadedFileId,
-            order: f.order ?? index,
-          })),
-        };
-      }
-    }
-
     return this.prisma.userDocument.update({
       where: { id: documentId },
       data: updateData,
-      include: {
-        files: {
-          include: {
-            uploadedFile: true,
-          },
-          orderBy: { order: 'asc' },
-        },
-      },
     });
   }
 

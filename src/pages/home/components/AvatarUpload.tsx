@@ -23,9 +23,6 @@ import { useState, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Camera, Upload, X, Check, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { uploadFile } from '@/services/upload.service';
-import { updateProfile } from '@/services/auth.service';
-import { useAuthImage } from '@/hooks/useAuthImage';
 import { toast } from 'sonner';
 
 /**
@@ -35,7 +32,7 @@ interface AvatarUploadProps {
   /** URL atual da foto do usuário */
   currentPhotoUrl?: string | null;
   /** Callback chamado após upload bem-sucedido */
-  onSuccess: () => void;
+  onSuccess?: () => void;
   /** Se true, renderiza como avatar circular compacto (inline no header) */
   compact?: boolean;
 }
@@ -43,17 +40,13 @@ interface AvatarUploadProps {
 /**
  * Componente AvatarUpload - Upload de foto de perfil com câmera.
  */
-export function AvatarUpload({ currentPhotoUrl, onSuccess, compact = false }: AvatarUploadProps) {
+export function AvatarUpload({ currentPhotoUrl, compact = false }: AvatarUploadProps) {
   const { t } = useTranslation('home');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Busca a imagem do avatar com autenticação JWT (retorna blob URL)
-  // Necessário porque <img src> não envia header Authorization
-  const authImageUrl = useAuthImage(currentPhotoUrl);
-
-  const [isUploading, setIsUploading] = useState(false);
+  const [isUploading] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -183,27 +176,11 @@ export function AvatarUpload({ currentPhotoUrl, onSuccess, compact = false }: Av
 
   /**
    * Faz o upload da foto para o servidor.
+   * TODO: Reimplementar quando o novo sistema de upload estiver pronto.
    */
   const handleUpload = async () => {
     if (!previewFile) return;
-
-    setIsUploading(true);
-    try {
-      // Faz upload do ficheiro
-      const result = await uploadFile(previewFile, 'avatar');
-
-      // Atualiza o photoUrl do perfil
-      await updateProfile({ photoUrl: result.url });
-
-      toast.success(t('feedback.success'));
-      handleCancelPreview();
-      onSuccess();
-    } catch (error) {
-      const message = error instanceof Error ? error.message : t('feedback.error');
-      toast.error(message);
-    } finally {
-      setIsUploading(false);
-    }
+    toast.info('Sistema de upload em manutenção. Tente novamente mais tarde.');
   };
 
   // ===========================================================================
@@ -218,9 +195,9 @@ export function AvatarUpload({ currentPhotoUrl, onSuccess, compact = false }: Av
           className="relative group flex-shrink-0"
           title={t('profile.avatarUpload')}
         >
-          {authImageUrl ? (
+          {currentPhotoUrl ? (
             <img
-              src={authImageUrl}
+              src={currentPhotoUrl}
               alt="Avatar"
               className="w-14 h-14 rounded-full object-cover border-2 border-white shadow-md ring-2 ring-blue-100"
             />
@@ -341,9 +318,9 @@ export function AvatarUpload({ currentPhotoUrl, onSuccess, compact = false }: Av
         ) : (
           /* Estado inicial - mostra foto atual ou placeholder */
           <div className="relative">
-            {authImageUrl ? (
+            {currentPhotoUrl ? (
               <img
-                src={authImageUrl}
+                src={currentPhotoUrl}
                 alt="Avatar"
                 className="w-32 h-42 object-cover rounded-xl border-2 border-gray-200"
                 style={{ width: '128px', height: '168px' }}

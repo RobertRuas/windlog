@@ -144,7 +144,6 @@ async function apiRequest<T>(url: string, options: ApiOptions = {}): Promise<T> 
  * Uso:
  *   api.get('/endpoint')
  *   api.post('/endpoint', { data })
- *   api.upload('/endpoint', formData)  // Para upload de ficheiros
  */
 export const api = {
   /** Requisição GET - usada para buscar dados */
@@ -165,45 +164,4 @@ export const api = {
   /** Requisição DELETE - usada para remover recursos */
   delete: <T>(url: string) =>
     apiRequest<T>(url, { method: 'DELETE' }),
-
-  /**
-   * Upload de ficheiro via multipart/form-data.
-   * NÃO adiciona Content-Type (o browser define automaticamente com o boundary).
-   *
-   * @param url - Endpoint da API
-   * @param formData - FormData com o ficheiro e demais dados
-   * @returns Promise com os dados da resposta
-   */
-  upload: <T>(url: string, formData: FormData) =>
-    apiRequest<T>(url, {
-      method: 'POST',
-      body: formData,
-      headers: {}, // Não definir Content-Type - o browser faz isso
-      isFormData: true,
-    }),
-
-  /**
-   * GET que retorna Blob (para download de ficheiros binários).
-   * Usa o mesmo sistema de autenticação (header Authorization).
-   */
-  getBlob: async (url: string): Promise<Blob> => {
-    const token = localStorage.getItem('accessToken');
-    const headers: Record<string, string> = {};
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    const response = await fetch(url, { headers });
-
-    if (response.status === 401) {
-      handleUnauthorized();
-      throw new Error('Sessão expirada.');
-    }
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return response.blob();
-  },
 };
