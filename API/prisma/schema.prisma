@@ -206,6 +206,7 @@ model User {
   bankAccounts    UserBankAccount[]
   projectMembers  ProjectMember[]
   projectFiles    ProjectFile[]
+  notifications   Notification[]
 }
 // ---------------------------------------------------------------------------
 // MODEL: USER DOCUMENT (Documentos Pessoais do Usuário)
@@ -751,4 +752,105 @@ model SystemLog {
   @@index([createdAt])
   @@index([createdAt, action])
   @@index([createdAt, userId])
+}
+
+// ---------------------------------------------------------------------------
+// ENUM: NOTIFICATION TYPE (Tipo de Notificação)
+// ---------------------------------------------------------------------------
+// Classifica o tipo/categoria da notificação enviada ao usuário.
+// Cada tipo representa um contexto diferente do sistema.
+// ---------------------------------------------------------------------------
+enum NotificationType {
+  // Ações obrigatórias (o usuário DEVE agir)
+  ACTION_REQUIRED        // Ação obrigatória geral
+  DOCUMENT_EXPIRING      // Documento a expirar em breve
+  CERTIFICATION_EXPIRING // Certificação a expirar em breve
+  PASSWORD_EXPIRING      // Senha a expirar
+  
+  // Recomendações (o usuário DEVERIA agir)
+  RECOMMENDED_ACTION     // Ação recomendada
+  PROFILE_INCOMPLETE     // Perfil incompleto
+  
+  // Informativas (apenas para conhecimento)
+  INFO                   // Informação geral
+  PROJECT_UPDATE         // Atualização de projeto
+  SYSTEM_UPDATE          // Atualização do sistema
+  SUCCESS                // Ação concluída com sucesso
+  
+  // Alertas
+  WARNING                // Aviso
+  ERROR                  // Erro
+}
+
+// ---------------------------------------------------------------------------
+// ENUM: NOTIFICATION PRIORITY (Prioridade da Notificação)
+// ---------------------------------------------------------------------------
+// Define a urgência/prioridade da notificação.
+// ---------------------------------------------------------------------------
+enum NotificationPriority {
+  LOW       // Baixa prioridade (informativas)
+  MEDIUM    // Prioridade normal (recomendações)
+  HIGH      // Alta prioridade (ações obrigatórias)
+  URGENT    // Urgente (prazos curtos, problemas críticos)
+}
+
+// ---------------------------------------------------------------------------
+// MODEL: NOTIFICATION (Notificações do Usuário)
+// ---------------------------------------------------------------------------
+// Representa uma notificação enviada a um usuário específico.
+// Usado para alertar sobre ações necessárias, recomendações e informações.
+//
+// EXEMPLOS:
+// - "Seu passaporte expira em 30 dias" (ACTION_REQUIRED, HIGH)
+// - "Novo projeto atribuído: Parque Eólico Serra do Mar" (INFO, MEDIUM)
+// - "Certificação GWO BST expirou" (ACTION_REQUIRED, URGENT)
+// - "Perfil incompleto. Adicione seus dados bancários." (RECOMMENDED_ACTION, LOW)
+// ---------------------------------------------------------------------------
+model Notification {
+  id        String   @id @default(uuid())
+
+  // Dados da notificação
+  /// Tipo de notificação (enum NotificationType)
+  type      NotificationType
+  /// Prioridade da notificação (enum NotificationPriority)
+  priority  NotificationPriority @default(MEDIUM)
+  /// Título da notificação (ex: "Documento a expirar")
+  title     String
+  /// Mensagem detalhada da notificação
+  message   String
+  
+  // Estado da notificação
+  /// Se a notificação já foi lida pelo usuário
+  isRead    Boolean  @default(false)
+  /// Data/hora em que foi marcada como lida
+  readAt    DateTime?
+  
+  // Contexto opcional (para navegação direta)
+  /// Entidade relacionada (ex: "Project", "UserDocument", "Certification")
+  entity    String?
+  /// ID da entidade relacionada (para criar links de navegação)
+  entityId  String?
+  
+  // Dados adicionais
+  /// Metadata adicional em JSON (dados extras, links, etc.)
+  metadata  Json?
+
+  // Relação com o usuário
+  /// ID do usuário destinatário da notificação
+  userId    String
+  /// Referência ao usuário
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Índices para performance
+  @@index([userId])
+  @@index([isRead])
+  @@index([type])
+  @@index([priority])
+  @@index([createdAt])
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
 }

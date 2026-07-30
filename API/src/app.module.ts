@@ -37,6 +37,7 @@ import { SystemLogModule } from './modules/system-log/system-log.module.js';
 import { UsersModule } from './modules/users/users.module.js';
 import { ProjectsModule } from './modules/projects/projects.module.js';
 import { UploadModule } from './modules/upload/upload.module.js';
+import { NotificationsModule } from './modules/notifications/notification.module.js';
 
 @Module({
   imports: [
@@ -86,6 +87,11 @@ import { UploadModule } from './modules/upload/upload.module.js';
     // UPLOAD MODULE - Upload e Gestão de Ficheiros
     // -------------------------------------------------------------------------
     UploadModule,
+
+    // -------------------------------------------------------------------------
+    // NOTIFICATIONS MODULE - Sistema de Notificações
+    // -------------------------------------------------------------------------
+    NotificationsModule,
 
     // -------------------------------------------------------------------------
     // PRÓXIMOS MÓDULOS SERÃO ADICIONADOS AQUI

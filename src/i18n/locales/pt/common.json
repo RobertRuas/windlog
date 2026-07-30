@@ -7,6 +7,13 @@
     "users": "Usuários",
     "projects": "Projetos"
   },
+  "notifications": {
+    "title": "Notificações",
+    "mark_all_read": "Marcar todas como lidas",
+    "clear_read": "Limpar lidas",
+    "no_notifications": "Sem notificações",
+    "loading": "A carregar..."
+  },
   "buttons": {
     "save": "Salvar",
     "cancel": "Cancelar",
