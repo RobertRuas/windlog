@@ -40,6 +40,7 @@ import { DocumentSection } from '@/pages/home/components/DocumentSection';
 import { BankAccountSection } from '@/pages/home/components/BankAccountSection';
 import { AvatarUpload } from '@/pages/home/components/AvatarUpload';
 import { Accordion } from '@/components/ui/Accordion';
+import { ProfileCompleteness } from '@/pages/home/components/ProfileCompleteness';
 
 // Hooks
 import { useProfileMutations } from './hooks/useProfileMutations';
@@ -254,7 +255,11 @@ export function ProfilePage() {
 
       {/* Seções do perfil */}
       <div className="flex flex-col gap-6">
+        {/* 0. Progresso do Perfil (barra + checklist) */}
+        {data && <ProfileCompleteness data={data as unknown as import('@/types/user.types').User} />}
+
         {/* 1. Informações Pessoais, Profissionais e Endereço (com Avatar) */}
+        <div id="section-personal">
         <ProfileSection
           title={t('sections.personal.title')}
           description={t('sections.personal.description')}
@@ -266,7 +271,11 @@ export function ProfilePage() {
         />
 
 
+        </div>
+
+
         {/* 2. Documentos Pessoais (logo após informações pessoais) */}
+        <div id="section-documents">
         <Accordion
           title={t('documents.title')}
           icon={<CreditCard className="w-5 h-5 text-rose-600" />}
@@ -279,8 +288,10 @@ export function ProfilePage() {
             onRemove={handleRemoveDocument}
           />
         </Accordion>
+        </div>
 
         {/* 3. Contato (telefones) */}
+        <div id="section-phones">
         <Accordion
           title={t('phones.title')}
           icon={<Phone className="w-5 h-5 text-blue-600" />}
@@ -293,8 +304,10 @@ export function ProfilePage() {
             onRemove={handleRemovePhone}
           />
         </Accordion>
+        </div>
 
         {/* 4. Dados Bancários */}
+        <div id="section-bank">
         <Accordion
           title={t('bankAccounts.title')}
           icon={<Landmark className="w-5 h-5 text-green-600" />}
@@ -307,8 +320,10 @@ export function ProfilePage() {
             onRemove={handleRemoveBankAccount}
           />
         </Accordion>
+        </div>
 
         {/* 5. Certificações */}
+        <div id="section-certifications">
         <Accordion
           title={t('certifications.title')}
           icon={<Award className="w-5 h-5 text-purple-600" />}
@@ -321,8 +336,10 @@ export function ProfilePage() {
             onRemove={handleRemoveCertification}
           />
         </Accordion>
+        </div>
 
         {/* 6. Idiomas */}
+        <div id="section-languages">
         <Accordion
           title={t('languages.title')}
           icon={<Globe className="w-5 h-5 text-green-600" />}
@@ -335,6 +352,7 @@ export function ProfilePage() {
             onRemove={handleRemoveLanguage}
           />
         </Accordion>
+        </div>
       </div>
     </AppLayout>
   );

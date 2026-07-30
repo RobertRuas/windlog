@@ -201,7 +201,12 @@ export function NotificationsPage() {
    * Navega para a página de detalhes da notificação.
    */
   const handleNotificationClick = (notification: Notification) => {
-    navigate(`/notifications/${notification.id}`);
+    // Se for notificação de perfil incompleto, adiciona hash para destacar o widget
+    if (notification.type === 'PROFILE_INCOMPLETE') {
+      navigate('/notifications/' + notification.id + '#complete-profile');
+    } else {
+      navigate(`/notifications/${notification.id}`);
+    }
   };
 
   return (

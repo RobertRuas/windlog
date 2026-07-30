@@ -256,45 +256,89 @@ export class NotificationService {
 
   /**
    * Verifica se o perfil do usuário está completo.
-   * Um perfil é considerado completo quando todos os campos importantes estão preenchidos.
+   * Um perfil é considerado completo quando:
+   * - Tem pelo menos um passaporte registrado (OBRIGATÓRIO)
    *
    * @param userId - ID do usuário
-   * @returns true se o perfil está completo, false caso contrário
+   * @returns Objeto com isComplete (boolean) e missingSections (string[])
    */
-  async isProfileComplete(userId: string): Promise<boolean> {
+  async checkProfileCompleteness(userId: string): Promise<{ isComplete: boolean; missingSections: string[]; percentage: number }> {
     const user = await this.prisma.user.findFirst({
       where: { id: userId, deletedAt: null },
+      include: {
+        documents: true,
+        phoneNumbers: true,
+        bankAccounts: true,
+        languages: true,
+        certifications: true,
+      },
     });
 
-    if (!user) return false;
+    if (!user) return { isComplete: false, missingSections: [], percentage: 0 };
 
-    // Campos importantes que devem estar preenchidos
-    const requiredFields = [
-      user.phone,
-      user.dateOfBirth,
-      user.nationality,
-      user.address,
-      user.city,
-      user.postalCode,
-      user.country,
-      user.department,
-      user.position,
-      user.hireDate,
-    ];
+    const missingSections: string[] = [];
 
-    // Verifica se todos os campos estão preenchidos (não null/undefined)
-    return requiredFields.every((field) => field !== null && field !== undefined);
+    // Verifica cada seção do perfil
+    // Identidade (opcional mas recomendado)
+    if (!user.dateOfBirth) missingSections.push('identity');
+    if (!user.nationality) missingSections.push('identity');
+    if (!user.photoUrl) missingSections.push('identity');
+
+    // Contato
+    if (user.phoneNumbers.length === 0) missingSections.push('contact');
+
+    // Localização
+    if (!user.address) missingSections.push('location');
+    if (!user.city) missingSections.push('location');
+    if (!user.postalCode) missingSections.push('location');
+    if (!user.country) missingSections.push('location');
+
+    // Profissional
+    if (!user.department) missingSections.push('professional');
+    if (!user.position) missingSections.push('professional');
+    if (!user.hireDate) missingSections.push('professional');
+
+    // Sobre
+    if (!user.bio) missingSections.push('about');
+
+    // Documentos - PASSAPORTE É OBRIGATÓRIO
+    const hasPassport = user.documents.some(doc => doc.type === 'PASSPORT');
+    if (!hasPassport) missingSections.push('documents');
+
+    // Dados Bancários
+    if (user.bankAccounts.length === 0) missingSections.push('bankAccounts');
+
+    // Idiomas
+    if (user.languages.length === 0) missingSections.push('languages');
+
+    // Certificações
+    if (user.certifications.length === 0) missingSections.push('certifications');
+
+    // Remove duplicatas
+    const uniqueSections = [...new Set(missingSections)];
+
+    // Calcula percentual simplificado (seções completas / total de seções)
+    const totalSections = 9;
+    const completedSections = totalSections - uniqueSections.length;
+    const percentage = Math.round((completedSections / totalSections) * 100);
+
+    // Perfil completo = sem seções faltantes (incluindo passaporte obrigatório)
+    const isComplete = uniqueSections.length === 0;
+
+    return { isComplete, missingSections: uniqueSections, percentage };
   }
 
   /**
    * Cria notificação de perfil incompleto se o perfil não estiver completo.
    * Se o perfil estiver completo, remove a notificação existente.
+   * A notificação é persistente: reaparece se o usuário a marcar como lida
+   * mas o perfil continuar incompleto.
    *
    * @param userId - ID do usuário
    * @param userName - Nome do usuário (para a mensagem)
    */
   async syncProfileIncompleteNotification(userId: string, userName?: string): Promise<void> {
-    const isComplete = await this.isProfileComplete(userId);
+    const { isComplete, missingSections, percentage } = await this.checkProfileCompleteness(userId);
 
     // Verifica se já existe uma notificação de perfil incompleto
     const existingNotification = await this.prisma.notification.findFirst({
@@ -305,42 +349,74 @@ export class NotificationService {
     });
 
     if (isComplete) {
-      // Perfil completo: remove a notificação se existir
+      // Perfil 100% completo: remove a notificação se existir
       if (existingNotification) {
         await this.prisma.notification.delete({
           where: { id: existingNotification.id },
         });
-        this.logger.debug(`Notificação de perfil incompleto removida para usuário ${userId}`);
+        this.logger.debug(`Perfil completo! Notificação removida para usuário ${userId}`);
       }
     } else {
-      // Perfil incompleto: cria ou atualiza notificação
+      // Monta mensagem dinâmica baseada nas seções faltantes
+      const hasPassportMissing = missingSections.includes('documents');
+      const sectionLabels: Record<string, string> = {
+        identity: 'dados pessoais',
+        contact: 'contato',
+        location: 'localização',
+        professional: 'dados profissionais',
+        about: 'biografia',
+        documents: 'passaporte',
+        bankAccounts: 'dados bancários',
+        languages: 'idiomas',
+        certifications: 'certificações',
+      };
+
+      const missingLabels = [...new Set(missingSections)]
+        .slice(0, 4) // mostra no máximo 4
+        .map(s => sectionLabels[s] || s)
+        .join(', ');
+
+      const moreCount = Math.max(0, [...new Set(missingSections)].length - 4);
+      const moreText = moreCount > 0 ? ` e mais ${moreCount} seção(ões)` : '';
+
+      const title = hasPassportMissing
+        ? '⚠️ Passaporte obrigatório em falta'
+        : `Perfil ${percentage}% completo`;
+
+      const message = hasPassportMissing
+        ? `${userName || 'Olá'}, o seu passaporte é obrigatório. Complete também: ${missingLabels}${moreText}.`
+        : `${userName || 'Olá'}, o seu perfil está ${percentage}% completo. Falta: ${missingLabels}${moreText}.`;
+
       if (!existingNotification) {
         // Cria nova notificação se não existir
         await this.prisma.notification.create({
           data: {
             type: 'PROFILE_INCOMPLETE',
-            priority: 'MEDIUM',
-            title: 'Complete o seu perfil',
-            message: `Olá ${userName || ''}! Por favor, complete todos os dados do seu perfil para continuar a utilizar todas as funcionalidades do sistema.`,
+            priority: hasPassportMissing ? 'HIGH' : 'MEDIUM',
+            title,
+            message,
             userId,
             entity: 'User',
             entityId: userId,
+            metadata: { percentage, missingSections: [...new Set(missingSections)] },
           },
         });
-        this.logger.debug(`Notificação de perfil incompleto criada para usuário ${userId}`);
-      } else if (existingNotification.isRead) {
-        // Se já existe mas foi marcada como lida, volta a marcar como não lida
-        // Isso garante que a notificação persiste até o perfil ser completado
+        this.logger.debug(`Notificação de perfil incompleto criada para usuário ${userId} (${percentage}%)`);
+      } else {
+        // Atualiza a notificação existente com dados frescos
         await this.prisma.notification.update({
           where: { id: existingNotification.id },
           data: {
-            isRead: false,
+            title,
+            message,
+            priority: hasPassportMissing ? 'HIGH' : 'MEDIUM',
+            isRead: false, // Reaparece sempre que o perfil estiver incompleto
             readAt: null,
+            metadata: { percentage, missingSections: [...new Set(missingSections)] },
           },
         });
-        this.logger.debug(`Notificação de perfil incompleto reativada para usuário ${userId}`);
+        this.logger.debug(`Notificação de perfil incompleto atualizada para usuário ${userId} (${percentage}%)`);
       }
-      // Se já existe e está como não lida, não faz nada (evita duplicação)
     }
   }
 }

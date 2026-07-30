@@ -59,6 +59,8 @@ export function useProfileMutations() {
     onSuccess: () => {
       toast.success(t('feedback.success'));
       queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications', 'unread'] });
     },
     onError: () => {
       toast.error(t('feedback.error'));
@@ -74,6 +76,8 @@ export function useProfileMutations() {
     onSuccess: () => {
       toast.success(t('feedback.success'));
       queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications', 'unread'] });
     },
     onError: () => {
       toast.error(t('feedback.error'));
@@ -89,6 +93,8 @@ export function useProfileMutations() {
     onSuccess: () => {
       toast.success(t('feedback.success'));
       queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications', 'unread'] });
     },
     onError: () => {
       toast.error(t('feedback.error'));
@@ -104,6 +110,8 @@ export function useProfileMutations() {
     onSuccess: () => {
       toast.success(t('feedback.success'));
       queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications', 'unread'] });
     },
     onError: () => {
       toast.error(t('feedback.error'));
@@ -119,6 +127,8 @@ export function useProfileMutations() {
     onSuccess: () => {
       toast.success(t('feedback.success'));
       queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications', 'unread'] });
     },
     onError: () => {
       toast.error(t('feedback.error'));
@@ -134,6 +144,8 @@ export function useProfileMutations() {
     onSuccess: () => {
       toast.success(t('feedback.success'));
       queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications', 'unread'] });
     },
     onError: () => {
       toast.error(t('feedback.error'));

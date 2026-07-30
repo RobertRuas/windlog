@@ -437,7 +437,7 @@ export class AuthService {
    * Adiciona um novo número de telefone ao usuário.
    */
   async addPhone(userId: string, dto: CreatePhoneDto) {
-    return this.prisma.userPhoneNumber.create({
+    const result = await this.prisma.userPhoneNumber.create({
       data: {
         userId,
         countryCode: dto.countryCode,
@@ -446,6 +446,8 @@ export class AuthService {
         isPrimary: dto.isPrimary ?? false,
       },
     });
+    await this.syncProfileNotification(userId);
+    return result;
   }
 
   /**
@@ -480,9 +482,11 @@ export class AuthService {
       throw new UnauthorizedException('Phone number not found');
     }
 
-    return this.prisma.userPhoneNumber.delete({
+    const result = await this.prisma.userPhoneNumber.delete({
       where: { id: phoneId },
     });
+    await this.syncProfileNotification(userId);
+    return result;
   }
 
   // ==========================================================================
@@ -493,7 +497,7 @@ export class AuthService {
    * Adiciona uma nova certificação ao usuário.
    */
   async addCertification(userId: string, dto: CreateCertificationDto) {
-    return this.prisma.userCertification.create({
+    const result = await this.prisma.userCertification.create({
       data: {
         userId,
         name: dto.name,
@@ -505,6 +509,8 @@ export class AuthService {
         expiryDate: dto.expiryDate ? new Date(dto.expiryDate) : null,
       },
     });
+    await this.syncProfileNotification(userId);
+    return result;
   }
 
   /**
@@ -548,9 +554,11 @@ export class AuthService {
       throw new UnauthorizedException('Certification not found');
     }
 
-    return this.prisma.userCertification.delete({
+    const result = await this.prisma.userCertification.delete({
       where: { id: certId },
     });
+    await this.syncProfileNotification(userId);
+    return result;
   }
 
   // ==========================================================================
@@ -561,13 +569,15 @@ export class AuthService {
    * Adiciona um novo idioma ao usuário.
    */
   async addLanguage(userId: string, dto: CreateLanguageDto) {
-    return this.prisma.userLanguage.create({
+    const result = await this.prisma.userLanguage.create({
       data: {
         userId,
         language: dto.language,
         level: dto.level,
       },
     });
+    await this.syncProfileNotification(userId);
+    return result;
   }
 
   /**
@@ -602,9 +612,11 @@ export class AuthService {
       throw new UnauthorizedException('Language not found');
     }
 
-    return this.prisma.userLanguage.delete({
+    const result = await this.prisma.userLanguage.delete({
       where: { id: languageId },
     });
+    await this.syncProfileNotification(userId);
+    return result;
   }
 
   // ==========================================================================
@@ -615,7 +627,7 @@ export class AuthService {
    * Adiciona um novo documento pessoal ao usuário.
    */
   async addDocument(userId: string, dto: CreateDocumentDto) {
-    return this.prisma.userDocument.create({
+    const result = await this.prisma.userDocument.create({
       data: {
         userId,
         type: dto.type,
@@ -626,6 +638,8 @@ export class AuthService {
         description: dto.description,
       },
     });
+    await this.syncProfileNotification(userId);
+    return result;
   }
 
   /**
@@ -670,9 +684,11 @@ export class AuthService {
       throw new UnauthorizedException('Document not found');
     }
 
-    return this.prisma.userDocument.delete({
+    const result = await this.prisma.userDocument.delete({
       where: { id: documentId },
     });
+    await this.syncProfileNotification(userId);
+    return result;
   }
 
   // ==========================================================================
@@ -683,7 +699,7 @@ export class AuthService {
    * Adiciona uma nova conta bancária ao usuário.
    */
   async addBankAccount(userId: string, dto: CreateBankAccountDto) {
-    return this.prisma.userBankAccount.create({
+    const result = await this.prisma.userBankAccount.create({
       data: {
         userId,
         bankName: dto.bankName,
@@ -694,6 +710,8 @@ export class AuthService {
         description: dto.description,
       },
     });
+    await this.syncProfileNotification(userId);
+    return result;
   }
 
   /**
@@ -736,8 +754,28 @@ export class AuthService {
       throw new UnauthorizedException('Bank account not found');
     }
 
-    return this.prisma.userBankAccount.delete({
+    const result = await this.prisma.userBankAccount.delete({
       where: { id: accountId },
     });
+    await this.syncProfileNotification(userId);
+    return result;
+  }
+
+  /**
+   * Helper: sincroniza a notificação de perfil incompleto.
+   * Busca o nome do usuário automaticamente.
+   */
+  private async syncProfileNotification(userId: string) {
+    try {
+      const user = await this.prisma.user.findUnique({ where: { id: userId } });
+      if (user) {
+        await this.notificationService.syncProfileIncompleteNotification(
+          userId,
+          `${user.firstName} ${user.lastName}`,
+        );
+      }
+    } catch (err) {
+      this.logger.warn(`Falha ao sincronizar notificação de perfil para ${userId}: ${err.message}`);
+    }
   }
 }

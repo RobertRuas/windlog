@@ -177,7 +177,12 @@ export function NotificationDetailPage() {
         navigate(`/projects/${notification.entityId}`);
         break;
       case 'User':
-        navigate('/profile');
+        // Se for notificação de perfil incompleto, adiciona hash para destacar o widget
+        if (notification.type === 'PROFILE_INCOMPLETE') {
+          navigate('/profile#complete-profile');
+        } else {
+          navigate('/profile');
+        }
         break;
     }
   };
