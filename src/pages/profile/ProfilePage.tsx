@@ -24,7 +24,7 @@
  * ============================================================================
  */
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Phone, Award, Globe, User, Mail, MapPin, Briefcase, FileText, CreditCard, Landmark } from 'lucide-react';
 
@@ -63,6 +63,7 @@ import { PREDEFINED_COUNTRIES } from '@/constants/countries';
  */
 export function ProfilePage() {
   const { t } = useTranslation('home');
+  const queryClient = useQueryClient();
   const { data, isLoading, isError } = useQuery<ProfileResponse>({
     queryKey: ['profile'],
     queryFn: getProfile,
@@ -238,7 +239,7 @@ export function ProfilePage() {
       <div className="flex items-center gap-4 mb-6">
         <AvatarUpload
           currentPhotoUrl={data?.photoUrl}
-          onSuccess={() => profileMutation.mutate({})}
+          onSuccess={() => queryClient.invalidateQueries({ queryKey: ['profile'] })}
           compact
         />
         <div>

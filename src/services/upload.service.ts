@@ -84,6 +84,26 @@ export async function uploadFile(
 }
 
 /**
+ * Faz upload da foto de perfil e atualiza o photoUrl do usuário.
+ * Endpoint específico: POST /api/v1/auth/avatar (upload + update photoUrl).
+ *
+ * @param file - Objeto File do browser (de um <input type="file">)
+ * @returns Resposta com os dados do usuário atualizados
+ */
+export async function uploadAvatar(
+  file: File,
+): Promise<Record<string, unknown>> {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  return api.post<Record<string, unknown>>(
+    '/api/v1/auth/avatar',
+    formData,
+    { isFormData: true },
+  );
+}
+
+/**
  * Gera uma URL temporária para aceder a um ficheiro.
  *
  * @param filePath - Caminho relativo do ficheiro (ex: "userId/avatars/uuid.jpg")
@@ -113,5 +133,5 @@ export function buildFileUrl(token: string): string {
  * @param filePath - Caminho relativo do ficheiro
  */
 export async function deleteFile(filePath: string): Promise<void> {
-  await api.post('/api/v1/upload/delete', { filePath });
+  await api.delete('/api/v1/upload', { filePath });
 }

@@ -161,7 +161,7 @@ export const api = {
   patch: <T>(url: string, body: unknown) =>
     apiRequest<T>(url, { method: 'PATCH', body }),
 
-  /** Requisição DELETE - usada para remover recursos */
-  delete: <T>(url: string) =>
-    apiRequest<T>(url, { method: 'DELETE' }),
+  /** Requisição DELETE - usada para remover recursos (suporta body) */
+  delete: <T>(url: string, body?: unknown) =>
+    apiRequest<T>(url, { method: 'DELETE', body }),
 };

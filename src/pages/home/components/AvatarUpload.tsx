@@ -24,7 +24,7 @@ import { useTranslation } from 'react-i18next';
 import { Camera, Upload, X, Check, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { toast } from 'sonner';
-import { uploadFile } from '@/services/upload.service';
+import { uploadAvatar } from '@/services/upload.service';
 import { SecureImage } from '@/components/ui/SecureImage';
 
 /**
@@ -185,8 +185,9 @@ export function AvatarUpload({ currentPhotoUrl, onSuccess, compact = false }: Av
 
     setIsUploading(true);
     try {
-      // Envia o ficheiro para o servidor
-      await uploadFile(previewFile, 'avatars');
+      // Envia o ficheiro para o servidor (POST /api/v1/auth/avatar)
+      // Este endpoint faz upload E atualiza o photoUrl no banco
+      await uploadAvatar(previewFile);
 
       // Sucesso — notifica e chama callback
       toast.success(t('profile.avatarUpload') + ' — OK');
