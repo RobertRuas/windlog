@@ -198,6 +198,17 @@ export function isAuthenticated(): boolean {
   return !!localStorage.getItem('accessToken');
 }
 
+/**
+ * Troca a senha temporária por uma nova senha definitiva.
+ * Usado quando o usuário faz login pela primeira vez com senha temporária.
+ *
+ * @param newPassword - Nova senha escolhida pelo usuário
+ * @returns Promise void
+ */
+export async function changeTempPassword(newPassword: string): Promise<void> {
+  await api.post<ApiResponse<unknown>>('/api/v1/auth/change-temp-password', { newPassword });
+}
+
 // ============================================================================
 // DOCUMENTS - Gerenciamento de Documentos Pessoais
 // ============================================================================

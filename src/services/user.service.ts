@@ -91,12 +91,11 @@ export interface UsersResponse {
 
 /**
  * Interface CreateUserPayload - Dados para criar novo usuário.
+ * A senha é gerada automaticamente pelo sistema (temporária).
  */
 export interface CreateUserPayload {
   /** Email do usuário */
   email: string;
-  /** Senha (mínimo 6 caracteres) */
-  password: string;
   /** Primeiro nome */
   firstName: string;
   /** Sobrenome */
@@ -113,14 +112,22 @@ export interface CreateUserPayload {
   department?: string;
   /** Cargo (opcional) */
   position?: string;
-  /** Número do passaporte (opcional) */
-  passportNumber?: string;
-  /** Número de identificação fiscal (opcional) */
-  taxIdNumber?: string;
-  /** Número do cartão de identidade (opcional) */
-  idCardNumber?: string;
-  /** Número de segurança social (opcional) */
-  socialSecurityNumber?: string;
+}
+
+/**
+ * Interface CreateUserResponse - Resposta da criação de usuário.
+ * Inclui a senha temporária gerada pelo sistema.
+ */
+export interface CreateUserResponse {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+  isActive: boolean;
+  createdAt: string;
+  /** Senha temporária gerada pelo sistema (deve ser trocada no primeiro login) */
+  temporaryPassword: string;
 }
 
 /**
@@ -198,12 +205,13 @@ export async function getUserById(id: string): Promise<UserListItem> {
 
 /**
  * Cria um novo usuário no sistema.
+ * A senha é gerada automaticamente pelo backend (temporária).
  *
  * @param payload - Dados do usuário (CreateUserPayload)
- * @returns Promise com o usuário criado
+ * @returns Promise com o usuário criado + temporaryPassword
  */
-export async function createUser(payload: CreateUserPayload): Promise<UserListItem> {
-  const response = await api.post<ApiResponse<UserListItem>>('/api/v1/users', payload);
+export async function createUser(payload: CreateUserPayload): Promise<CreateUserResponse> {
+  const response = await api.post<ApiResponse<CreateUserResponse>>('/api/v1/users', payload);
   return response.data;
 }
 
@@ -228,4 +236,15 @@ export async function updateUser(id: string, payload: UpdateUserPayload): Promis
  */
 export async function deleteUser(id: string): Promise<void> {
   await api.delete(`/api/v1/users/${id}`);
+}
+
+/**
+ * Reseta a senha de um usuário, gerando uma nova senha temporária.
+ *
+ * @param id - ID do usuário
+ * @returns Promise com temporaryPassword
+ */
+export async function resetUserPassword(id: string): Promise<{ temporaryPassword: string }> {
+  const response = await api.post<ApiResponse<{ temporaryPassword: string }>>(`/api/v1/users/${id}/reset-password`, {});
+  return response.data;
 }

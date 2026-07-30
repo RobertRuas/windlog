@@ -172,4 +172,24 @@ export class UsersController {
   remove(@Param('id') id: string) {
     return this.usersService.remove(id);
   }
+
+  /**
+   * POST /api/v1/users/:id/reset-password
+   *
+   * Reseta a senha de um usuário, gerando uma nova senha temporária.
+   * O usuário será obrigado a trocar a senha no próximo login.
+   */
+  @Post(':id/reset-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Resetar senha do usuário',
+    description: 'Gera uma nova senha temporária para o usuário. O usuário será obrigado a trocar a senha no próximo login.',
+  })
+  @ApiResponse({ status: 200, description: 'Senha resetada com sucesso. Retorna temporaryPassword.' })
+  @ApiResponse({ status: 401, description: 'Não autenticado' })
+  @ApiResponse({ status: 403, description: 'Não autorizado' })
+  @ApiResponse({ status: 404, description: 'Usuário não encontrado' })
+  resetPassword(@Param('id') id: string) {
+    return this.usersService.resetPassword(id);
+  }
 }

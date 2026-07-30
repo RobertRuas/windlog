@@ -42,6 +42,7 @@ import { SettingsPage } from '@/pages/settings/SettingsPage';
 import { UsersPage } from '@/pages/users/UsersPage';
 import { ProjectsPage } from '@/pages/projects/ProjectsPage';
 import { ProjectDetailPage } from '@/pages/projects/detail/ProjectDetailPage';
+import { ChangeTempPasswordPage } from '@/pages/change-password/ChangeTempPasswordPage';
 import { ErrorPage } from '@/pages/error/ErrorPage';
 
 // Serviço de autenticação
@@ -197,6 +198,16 @@ export default function App() {
         <Routes>
           {/* Rota pública - página de login */}
           <Route path="/login" element={<LoginPage />} />
+
+          {/* Rota protegida - troca de senha temporária (requer autenticação) */}
+          <Route
+            path="/change-password"
+            element={
+              <ProtectedRoute>
+                <ChangeTempPasswordPage />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Rota protegida - página inicial (requer autenticação) */}
           <Route

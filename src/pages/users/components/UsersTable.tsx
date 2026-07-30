@@ -19,7 +19,7 @@
  * ============================================================================
  */
 
-import { Users as UsersIcon, ChevronLeft, ChevronRight, Edit2, Trash2 } from 'lucide-react';
+import { Users as UsersIcon, ChevronLeft, ChevronRight, Edit2, Trash2, KeyRound } from 'lucide-react';
 import type { UserListItem } from '@/services/user.service';
 
 /**
@@ -37,6 +37,7 @@ interface UsersTableProps {
   isLoading: boolean;
   onEdit: (user: UserListItem) => void;
   onDelete: (user: UserListItem) => void;
+  onResetPassword: (user: UserListItem) => void;
   onPageChange: (page: number) => void;
   t: (key: string, options?: Record<string, unknown>) => string;
 }
@@ -49,6 +50,7 @@ export function UsersTable({
   isLoading,
   onEdit,
   onDelete,
+  onResetPassword,
   onPageChange,
   t,
 }: UsersTableProps) {
@@ -111,6 +113,13 @@ export function UsersTable({
                           title={t('actions.edit')}
                         >
                           <Edit2 size={16} />
+                        </button>
+                        <button
+                          onClick={() => onResetPassword(user)}
+                          className="p-1.5 text-gray-500 hover:text-amber-600 hover:bg-amber-50 rounded transition-colors"
+                          title={t('actions.resetPassword')}
+                        >
+                          <KeyRound size={16} />
                         </button>
                         <button
                           onClick={() => onDelete(user)}

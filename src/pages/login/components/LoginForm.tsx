@@ -74,10 +74,15 @@ export function LoginForm() {
 
     try {
       // Chama o serviço de login com email e senha
-      await login({ email, password });
+      const response = await login({ email, password });
 
-      // Login bem-sucedido: redireciona para a página inicial
-      navigate('/');
+      // Se o usuário precisa trocar a senha temporária, redireciona para a página de troca
+      if (response.mustChangePassword) {
+        navigate('/change-password');
+      } else {
+        // Login bem-sucedido: redireciona para a página inicial
+        navigate('/');
+      }
     } catch {
       // Exibe mensagem de erro genérica
       // Em produção, poderíamos tratar diferentes tipos de erro

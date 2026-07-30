@@ -150,7 +150,7 @@
   "files": {
     "empty": "Nenhum ficheiro associado a este projeto",
     "dropzone": "Arraste ficheiros para aqui ou clique para selecionar",
-    "dropzoneHint": "JPEG, PNG, WebP ou PDF até 3 MB"
+    "dropzoneHint": "PDF, Word, Excel, PowerPoint ou JPEG até 10 MB"
   },
   "filesTable": {
     "name": "Nome",

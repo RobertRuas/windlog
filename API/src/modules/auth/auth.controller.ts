@@ -64,6 +64,7 @@ import {
 import { AuthService } from './auth.service.js';
 import { LoginDto } from './dto/login.dto.js';
 import { RegisterDto } from './dto/register.dto.js';
+import { ChangeTempPasswordDto } from './dto/change-temp-password.dto.js';
 import { UpdateProfileDto } from './dto/update-profile.dto.js';
 import { CreatePhoneDto, UpdatePhoneDto } from './dto/user-phone.dto.js';
 import { CreateCertificationDto, UpdateCertificationDto } from './dto/user-certification.dto.js';
@@ -166,8 +167,39 @@ export class AuthController {
   })
   @HttpCode(HttpStatus.OK)
   @Post('login')
-  login(@Body() dto: LoginDto): Promise<{ accessToken: string; user: AuthResponseDataDto['user'] }> {
-    return this.authService.login(dto) as Promise<{ accessToken: string; user: AuthResponseDataDto['user'] }>;
+  login(@Body() dto: LoginDto): Promise<{ accessToken: string; user: AuthResponseDataDto['user']; mustChangePassword: boolean }> {
+    return this.authService.login(dto) as Promise<{ accessToken: string; user: AuthResponseDataDto['user']; mustChangePassword: boolean }>;
+  }
+
+  /**
+   * POST /api/v1/auth/change-temp-password
+   *
+   * Troca a senha temporária por uma nova senha definitiva.
+   * Endpoint PROTEGIDO (requer token JWT válido).
+   * Apenas funciona se o usuário tiver mustChangePassword: true.
+   */
+  @ApiOperation({
+    summary: 'Change temporary password',
+    description:
+      'Troca a senha temporária (gerada pelo admin) por uma nova senha definitiva. Requer token JWT válido e que o usuário tenha mustChangePassword: true.',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Senha trocada com sucesso',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Token inválido ou não é necessário trocar a senha',
+    type: ErrorResponseDto,
+  })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Post('change-temp-password')
+  changeTempPassword(
+    @CurrentUser() user: JwtPayload,
+    @Body() dto: ChangeTempPasswordDto,
+  ) {
+    return this.authService.changeTemporaryPassword(user.sub, dto.newPassword);
   }
 
   /**

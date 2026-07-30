@@ -59,7 +59,29 @@ function formatFileSize(bytes: number): string {
 function getFileIcon(mimeType: string) {
   if (mimeType.startsWith('image/')) return Image;
   if (mimeType === 'application/pdf') return FileText;
+  if (mimeType.includes('word') || mimeType.includes('document')) return FileText;
+  if (mimeType.includes('excel') || mimeType.includes('spreadsheet')) return FileText;
+  if (mimeType.includes('powerpoint') || mimeType.includes('presentation')) return FileText;
   return File;
+}
+
+/**
+ * Converte MIME type para nome legível pelo utilizador.
+ */
+function getFileTypeName(mimeType: string): string {
+  const typeMap: Record<string, string> = {
+    'application/pdf': 'PDF',
+    'application/msword': 'Word',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'Word',
+    'application/vnd.ms-excel': 'Excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'Excel',
+    'application/vnd.ms-powerpoint': 'PowerPoint',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'PowerPoint',
+    'image/jpeg': 'JPEG',
+    'image/png': 'PNG',
+    'image/webp': 'WebP',
+  };
+  return typeMap[mimeType] || mimeType.split('/').pop()?.toUpperCase() || 'Ficheiro';
 }
 
 /**
@@ -168,7 +190,7 @@ export function ProjectFilesTab({
       header: t('filesTable.type'),
       render: (file) => (
         <span className="text-xs text-gray-500">
-          {file.category || file.mimeType.split('/').pop()}
+          {getFileTypeName(file.mimeType)}
         </span>
       ),
     },
@@ -208,7 +230,7 @@ export function ProjectFilesTab({
         ref={fileInputRef}
         type="file"
         multiple
-        accept="image/jpeg,image/png,image/webp,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.webp"
         onChange={handleFileChange}
         className="hidden"
       />

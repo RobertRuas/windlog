@@ -193,7 +193,50 @@ export class AuthService {
         lastName: user.lastName,
         role: user.role,
       },
+      mustChangePassword: user.mustChangePassword,
     };
+  }
+
+  /**
+   * Troca a senha temporária por uma nova senha definitiva.
+   *
+   * PASSO A PASSO:
+   * 1. Busca o usuário pelo ID
+   * 2. Verifica se o usuário tem mustChangePassword: true
+   * 3. Criptografa a nova senha
+   * 4. Atualiza a senha e remove o flag mustChangePassword
+   *
+   * @param userId - ID do usuário (extraído do JWT)
+   * @param newPassword - Nova senha escolhida pelo usuário
+   * @returns Usuário atualizado (sem senha)
+   */
+  async changeTemporaryPassword(userId: string, newPassword: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    if (!user.mustChangePassword) {
+      throw new UnauthorizedException('Password change is not required');
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
+
+    const updatedUser = await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        password: hashedPassword,
+        mustChangePassword: false,
+      },
+    });
+
+    this.logger.log(`Temporary password changed for user: ${user.email} (${user.id})`);
+
+    const { password, ...userWithoutPassword } = updatedUser;
+    return userWithoutPassword;
   }
 
   /**

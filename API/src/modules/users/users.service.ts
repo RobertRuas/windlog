@@ -25,6 +25,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 
 import { PrismaService } from '../../database/prisma.service.js';
 import { CreateUserDto, UpdateUserDto, UserFilterDto } from './dto/users.dto.js';
@@ -50,12 +51,13 @@ export class UsersService {
    *
    * PASSO A PASSO:
    * 1. Verifica se o email já existe
-   * 2. Criptografa a senha
-   * 3. Cria o usuário no banco
-   * 4. Retorna os dados sem a senha
+   * 2. Gera uma senha temporária aleatória
+   * 3. Criptografa a senha temporária
+   * 4. Cria o usuário no banco com mustChangePassword: true
+   * 5. Retorna os dados sem a senha + a senha temporária em texto puro
    *
    * @param dto - Dados do usuário (CreateUserDto)
-   * @returns Promise com o usuário criado (sem senha)
+   * @returns Promise com o usuário criado (sem senha hash) + temporaryPassword
    * @throws ConflictException se o email já estiver em uso
    */
   async create(dto: CreateUserDto) {
@@ -68,10 +70,13 @@ export class UsersService {
       throw new ConflictException('Email already registered');
     }
 
-    // PASSO 2: Criptografa a senha
-    const hashedPassword = await bcrypt.hash(dto.password, SALT_ROUNDS);
+    // PASSO 2: Gera uma senha temporária aleatória (12 caracteres)
+    const temporaryPassword = crypto.randomBytes(6).toString('hex').slice(0, 12);
 
-    // PASSO 3: Cria o usuário no banco
+    // PASSO 3: Criptografa a senha temporária
+    const hashedPassword = await bcrypt.hash(temporaryPassword, SALT_ROUNDS);
+
+    // PASSO 4: Cria o usuário no banco com mustChangePassword: true
     const user = await this.prisma.user.create({
       data: {
         email: dto.email,
@@ -84,14 +89,19 @@ export class UsersService {
         nationality: dto.nationality,
         department: dto.department,
         position: dto.position,
+        mustChangePassword: true,
       },
     });
 
     // Registra a operação no log
-    this.logger.log(`User created: ${user.email} (${user.id})`);
+    this.logger.log(`User created: ${user.email} (${user.id}) with temporary password`);
 
-    // PASSO 4: Retorna sem a senha
-    return this.sanitizeUser(user);
+    // PASSO 5: Retorna sem a senha hash, mas com a senha temporária em texto puro
+    const { password, ...userWithoutPassword } = user;
+    return {
+      ...userWithoutPassword,
+      temporaryPassword,
+    };
   }
 
   /**
@@ -281,6 +291,53 @@ export class UsersService {
     this.logger.log(`User deleted: ${deletedUser.email} (${deletedUser.id})`);
 
     return this.sanitizeUser(deletedUser);
+  }
+
+  /**
+   * Reseta a senha de um usuário, gerando uma nova senha temporária.
+   * O usuário será obrigado a trocar a senha no próximo login.
+   *
+   * PASSO A PASSO:
+   * 1. Verifica se o usuário existe
+   * 2. Gera uma nova senha temporária aleatória
+   * 3. Criptografa a senha temporária
+   * 4. Atualiza o usuário com mustChangePassword: true
+   * 5. Retorna a senha temporária em texto puro
+   *
+   * @param id - ID do usuário
+   * @returns Objeto com temporaryPassword (texto puro)
+   * @throws NotFoundException se o usuário não existir
+   */
+  async resetPassword(id: string) {
+    // PASSO 1: Verifica se o usuário existe
+    const user = await this.prisma.user.findFirst({
+      where: { id, deletedAt: null },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // PASSO 2: Gera uma nova senha temporária aleatória (12 caracteres)
+    const temporaryPassword = crypto.randomBytes(6).toString('hex').slice(0, 12);
+
+    // PASSO 3: Criptografa a senha temporária
+    const hashedPassword = await bcrypt.hash(temporaryPassword, SALT_ROUNDS);
+
+    // PASSO 4: Atualiza o usuário com mustChangePassword: true
+    await this.prisma.user.update({
+      where: { id },
+      data: {
+        password: hashedPassword,
+        mustChangePassword: true,
+      },
+    });
+
+    // Registra a operação no log
+    this.logger.log(`Password reset for user: ${user.email} (${user.id})`);
+
+    // PASSO 5: Retorna a senha temporária em texto puro
+    return { temporaryPassword };
   }
 
   /**

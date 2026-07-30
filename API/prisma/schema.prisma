@@ -190,6 +190,8 @@ model User {
   // Controle de acesso (RBAC)
   role      Role     @default(STANDARD)
   isActive  Boolean  @default(true)
+  /// Indica se o usuário precisa trocar a senha no próximo login (ex: senha temporária)
+  mustChangePassword Boolean @default(false)
 
   // Timestamps (datas em UTC)
   createdAt  DateTime @default(now())

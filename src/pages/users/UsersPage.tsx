@@ -13,8 +13,9 @@
  * - Listar todos os usuários (paginado)
  * - Buscar usuários por nome ou email
  * - Filtrar por role ou status ativo
- * - Criar novo usuário
+ * - Criar novo usuário (senha temporária gerada automaticamente)
  * - Editar usuário existente
+ * - Resetar senha de qualquer usuário (gera nova senha temporária)
  * - Desativar usuário (soft delete)
  *
  * SEGURANÇA:
@@ -45,6 +46,7 @@ import {
   createUser,
   updateUser,
   deleteUser,
+  resetUserPassword,
   type UserListItem,
   type CreateUserPayload,
   type UpdateUserPayload,
@@ -67,10 +69,12 @@ export function UsersPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserListItem | null>(null);
 
+  // Senha temporária gerada (exibida após criar ou resetar)
+  const [temporaryPassword, setTemporaryPassword] = useState<string | null>(null);
+
   // Estados do formulário
   const [formData, setFormData] = useState<CreateUserPayload | UpdateUserPayload>({
     email: '',
-    password: '',
     firstName: '',
     lastName: '',
     role: 'STANDARD',
@@ -94,13 +98,15 @@ export function UsersPage() {
 
   /**
    * Mutation para criar novo usuário.
+   * A senha é gerada automaticamente pelo backend.
    */
   const createMutation = useMutation({
     mutationFn: (payload: CreateUserPayload) => createUser(payload),
-    onSuccess: () => {
+    onSuccess: (result) => {
       toast.success(t('toast.createSuccess'));
       queryClient.invalidateQueries({ queryKey: ['users'] });
-      closeModal();
+      // Exibe a senha temporária no modal
+      setTemporaryPassword(result.temporaryPassword);
     },
     onError: (error: Error) => {
       toast.error(error.message || t('toast.createError'));
@@ -138,13 +144,30 @@ export function UsersPage() {
   });
 
   /**
+   * Mutation para resetar a senha de um usuário.
+   * Gera uma nova senha temporária e exibe para o admin.
+   */
+  const resetPasswordMutation = useMutation({
+    mutationFn: (id: string) => resetUserPassword(id),
+    onSuccess: (result) => {
+      toast.success(t('toast.resetPasswordSuccess'));
+      // Exibe a nova senha temporária no modal
+      setTemporaryPassword(result.temporaryPassword);
+      setIsModalOpen(true);
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || t('toast.resetPasswordError'));
+    },
+  });
+
+  /**
    * Abre o modal para criar novo usuário.
    */
   function openCreateModal() {
     setEditingUser(null);
+    setTemporaryPassword(null);
     setFormData({
       email: '',
-      password: '',
       firstName: '',
       lastName: '',
       role: 'STANDARD',
@@ -157,6 +180,7 @@ export function UsersPage() {
    */
   function openEditModal(user: UserListItem) {
     setEditingUser(user);
+    setTemporaryPassword(null);
     setFormData({
       firstName: user.firstName,
       lastName: user.lastName,
@@ -172,9 +196,9 @@ export function UsersPage() {
   function closeModal() {
     setIsModalOpen(false);
     setEditingUser(null);
+    setTemporaryPassword(null);
     setFormData({
       email: '',
-      password: '',
       firstName: '',
       lastName: '',
       role: 'STANDARD',
@@ -194,7 +218,7 @@ export function UsersPage() {
         payload: formData as UpdateUserPayload,
       });
     } else {
-      // Criar novo usuário
+      // Criar novo usuário (senha gerada pelo backend)
       createMutation.mutate(formData as CreateUserPayload);
     }
   }
@@ -205,6 +229,15 @@ export function UsersPage() {
   function handleDelete(user: UserListItem) {
     if (confirm(t('actions.confirmDeactivate', { name: `${user.firstName} ${user.lastName}` }))) {
       deleteMutation.mutate(user.id);
+    }
+  }
+
+  /**
+   * Confirma e executa o reset de senha do usuário.
+   */
+  function handleResetPassword(user: UserListItem) {
+    if (confirm(t('actions.confirmResetPassword', { name: `${user.firstName} ${user.lastName}` }))) {
+      resetPasswordMutation.mutate(user.id);
     }
   }
 
@@ -248,11 +281,12 @@ export function UsersPage() {
         isLoading={isLoading}
         onEdit={openEditModal}
         onDelete={handleDelete}
+        onResetPassword={handleResetPassword}
         onPageChange={setCurrentPage}
         t={t}
       />
 
-      {/* Modal de criação/edição */}
+      {/* Modal de criação/edição (também exibe senha temporária) */}
       <UserModal
         isOpen={isModalOpen}
         editingUser={editingUser}
@@ -261,6 +295,7 @@ export function UsersPage() {
         onSubmit={handleSubmit}
         onClose={closeModal}
         isPending={createMutation.isPending || updateMutation.isPending}
+        temporaryPassword={temporaryPassword}
         t={t}
       />
     </AppLayout>

@@ -104,6 +104,8 @@ export interface LoginResponse {
   accessToken: string;
   /** Dados do usuário autenticado */
   user: User;
+  /** Indica se o usuário precisa trocar a senha temporária */
+  mustChangePassword: boolean;
 }
 
 /**

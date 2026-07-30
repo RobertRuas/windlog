@@ -6,7 +6,8 @@
  * O QUE É ESTE ARQUIVO?
  * ---------------------
  * Componente modal para criar ou editar um usuário.
- * Inclui formulário com validação.
+ * Na criação, a senha é gerada automaticamente pelo backend (temporária).
+ * Após criar, exibe a senha temporária para o admin copiar e enviar ao usuário.
  *
  * PROPS:
  * ------
@@ -17,10 +18,13 @@
  * - onSubmit: função chamada ao submeter
  * - onClose: função chamada ao fechar
  * - isPending: se está processando
+ * - temporaryPassword: senha temporária gerada (após criação)
  * - t: função de tradução
  * ============================================================================
  */
 
+import { Copy, Check } from 'lucide-react';
+import { useState } from 'react';
 import type { UserListItem, CreateUserPayload, UpdateUserPayload } from '@/services/user.service';
 
 /**
@@ -34,6 +38,7 @@ interface UserModalProps {
   onSubmit: (e: React.FormEvent) => void;
   onClose: () => void;
   isPending: boolean;
+  temporaryPassword: string | null;
   t: (key: string) => string;
 }
 
@@ -48,9 +53,23 @@ export function UserModal({
   onSubmit,
   onClose,
   isPending,
+  temporaryPassword,
   t,
 }: UserModalProps) {
+  const [copied, setCopied] = useState(false);
+
   if (!isOpen) return null;
+
+  /**
+   * Copia a senha temporária para o clipboard.
+   */
+  function handleCopyPassword() {
+    if (temporaryPassword) {
+      navigator.clipboard.writeText(temporaryPassword);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
@@ -62,91 +81,120 @@ export function UserModal({
           </h2>
         </div>
 
-        {/* Formulário */}
-        <form onSubmit={onSubmit} className="p-6 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+        {/* Se acabou de criar e tem senha temporária, exibe a senha */}
+        {temporaryPassword && !editingUser ? (
+          <div className="p-6 space-y-4">
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <p className="text-sm font-medium text-green-800 mb-1">
+                {t('modal.userCreatedSuccess')}
+              </p>
+              <p className="text-xs text-green-700 mb-3">
+                {t('modal.temporaryPasswordInfo')}
+              </p>
+              <div className="flex items-center gap-2">
+                <code className="flex-1 bg-white px-3 py-2 rounded border border-green-300 text-sm font-mono text-gray-900">
+                  {temporaryPassword}
+                </code>
+                <button
+                  type="button"
+                  onClick={handleCopyPassword}
+                  className="p-2 text-green-700 hover:bg-green-100 rounded-lg transition-colors"
+                  title={t('modal.copyPassword')}
+                >
+                  {copied ? <Check size={16} /> : <Copy size={16} />}
+                </button>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end pt-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+              >
+                {t('modal.close')}
+              </button>
+            </div>
+          </div>
+        ) : (
+          /* Formulário normal de criação/edição */
+          <form onSubmit={onSubmit} className="p-6 space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {t('modal.firstName')}
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.firstName}
+                  onChange={(e) => onFormChange({ ...formData, firstName: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {t('modal.lastName')}
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.lastName}
+                  onChange={(e) => onFormChange({ ...formData, lastName: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {t('modal.firstName')}
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('modal.email')}</label>
               <input
-                type="text"
+                type="email"
                 required
-                value={formData.firstName}
-                onChange={(e) => onFormChange({ ...formData, firstName: e.target.value })}
+                value={formData.email}
+                onChange={(e) => onFormChange({ ...formData, email: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
+
+            {!editingUser && (
+              <p className="text-xs text-gray-500 bg-blue-50 p-3 rounded-lg">
+                {t('modal.passwordAutoGenerated')}
+              </p>
+            )}
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {t('modal.lastName')}
-              </label>
-              <input
-                type="text"
-                required
-                value={formData.lastName}
-                onChange={(e) => onFormChange({ ...formData, lastName: e.target.value })}
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('modal.role')}</label>
+              <select
+                value={formData.role}
+                onChange={(e) => onFormChange({ ...formData, role: e.target.value as any })}
                 className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+              >
+                <option value="STANDARD">{t('roles.STANDARD')}</option>
+                <option value="HR">{t('roles.HR')}</option>
+                <option value="ADMIN">{t('roles.ADMIN')}</option>
+              </select>
             </div>
-          </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('modal.email')}</label>
-            <input
-              type="email"
-              required
-              value={formData.email}
-              onChange={(e) => onFormChange({ ...formData, email: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          {!editingUser && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('modal.password')}</label>
-              <input
-                type="password"
-                required
-                minLength={6}
-                value={formData.password}
-                onChange={(e) => onFormChange({ ...formData, password: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+            {/* Botões */}
+            <div className="flex items-center justify-end gap-3 pt-4">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                {t('modal.cancel')}
+              </button>
+              <button
+                type="submit"
+                disabled={isPending}
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50"
+              >
+                {editingUser ? t('modal.save') : t('modal.create')}
+              </button>
             </div>
-          )}
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('modal.role')}</label>
-            <select
-              value={formData.role}
-              onChange={(e) => onFormChange({ ...formData, role: e.target.value as any })}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="STANDARD">{t('roles.STANDARD')}</option>
-              <option value="HR">{t('roles.HR')}</option>
-              <option value="ADMIN">{t('roles.ADMIN')}</option>
-            </select>
-          </div>
-
-          {/* Botões */}
-          <div className="flex items-center justify-end gap-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              {t('modal.cancel')}
-            </button>
-            <button
-              type="submit"
-              disabled={isPending}
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50"
-            >
-              {editingUser ? t('modal.save') : t('modal.create')}
-            </button>
-          </div>
-        </form>
+          </form>
+        )}
       </div>
     </div>
   );

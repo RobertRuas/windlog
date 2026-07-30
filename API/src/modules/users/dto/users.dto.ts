@@ -24,22 +24,19 @@ import {
   IsEnum,
   IsBoolean,
 } from 'class-validator';
+// MinLength ainda usado no UpdateUserDto
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PaginationDto } from '../../../common/dto/pagination.dto.js';
 
 /**
  * DTO para criar novo usuário.
- * Campos obrigatórios: email, password, firstName, lastName
+ * Campos obrigatórios: email, firstName, lastName
+ * A senha é gerada automaticamente pelo sistema (temporária).
  */
 export class CreateUserDto {
   @ApiProperty({ description: 'Email do usuário', example: 'user@windlog.com' })
   @IsEmail({}, { message: 'Email must be valid' })
   email: string;
-
-  @ApiProperty({ description: 'Senha (mínimo 6 caracteres)', example: '123456' })
-  @IsString()
-  @MinLength(6, { message: 'Password must be at least 6 characters' })
-  password: string;
 
   @ApiProperty({ description: 'Primeiro nome', example: 'John' })
   @IsString()

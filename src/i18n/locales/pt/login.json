@@ -15,5 +15,25 @@
     "required_field": "Este campo é obrigatório",
     "invalid_email": "Digite um e-mail válido",
     "generic": "Erro ao fazer login. Tente novamente."
+  },
+  "changeTempPassword": {
+    "title": "Trocar Senha",
+    "subtitle": "Crie uma nova senha para sua conta",
+    "info": "Você está usando uma senha temporária. Crie uma nova senha para continuar.",
+    "newPassword": {
+      "label": "Nova Senha",
+      "placeholder": "Digite sua nova senha"
+    },
+    "confirmPassword": {
+      "label": "Confirmar Senha",
+      "placeholder": "Confirme sua nova senha"
+    },
+    "submit": "Salvar Nova Senha",
+    "errors": {
+      "passwordMismatch": "As senhas não coincidem",
+      "minLength": "A senha deve ter pelo menos 6 caracteres",
+      "generic": "Erro ao trocar senha. Tente novamente."
+    },
+    "success": "Senha alterada com sucesso!"
   }
 }
