@@ -313,8 +313,9 @@ export class NotificationService {
         this.logger.debug(`Notificação de perfil incompleto removida para usuário ${userId}`);
       }
     } else {
-      // Perfil incompleto: cria notificação se não existir
+      // Perfil incompleto: cria ou atualiza notificação
       if (!existingNotification) {
+        // Cria nova notificação se não existir
         await this.prisma.notification.create({
           data: {
             type: 'PROFILE_INCOMPLETE',
@@ -327,7 +328,19 @@ export class NotificationService {
           },
         });
         this.logger.debug(`Notificação de perfil incompleto criada para usuário ${userId}`);
+      } else if (existingNotification.isRead) {
+        // Se já existe mas foi marcada como lida, volta a marcar como não lida
+        // Isso garante que a notificação persiste até o perfil ser completado
+        await this.prisma.notification.update({
+          where: { id: existingNotification.id },
+          data: {
+            isRead: false,
+            readAt: null,
+          },
+        });
+        this.logger.debug(`Notificação de perfil incompleto reativada para usuário ${userId}`);
       }
+      // Se já existe e está como não lida, não faz nada (evita duplicação)
     }
   }
 }

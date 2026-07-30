@@ -18,8 +18,8 @@
  * ============================================================================
  */
 
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
 import { Check, CheckCheck, Trash2, AlertCircle, Info, AlertTriangle, X } from 'lucide-react';
 import {
   getNotifications,
@@ -30,6 +30,7 @@ import {
   NotificationPriority,
   type Notification,
 } from '@/services/notification.service';
+import { NotificationDetailModal } from './NotificationDetailModal';
 
 /**
  * Props do componente NotificationPanel.
@@ -103,8 +104,8 @@ function getPriorityBorder(priority: NotificationPriority): string {
  * Componente NotificationPanel - Dropdown de notificações.
  */
 export function NotificationPanel({ onClose, onMarkAllRead }: NotificationPanelProps) {
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);
 
   /**
    * Busca notificações (últimas 10).
@@ -149,25 +150,15 @@ export function NotificationPanel({ onClose, onMarkAllRead }: NotificationPanelP
 
   /**
    * Handle click em uma notificação.
+   * Abre o modal de detalhes em vez de navegar diretamente.
    */
   const handleNotificationClick = (notification: Notification) => {
     // Marca como lida se não for
     if (!notification.isRead) {
       markAsReadMutation.mutate(notification.id);
     }
-
-    // Navega para entidade relacionada se disponível
-    if (notification.entity && notification.entityId) {
-      switch (notification.entity) {
-        case 'Project':
-          navigate(`/projects/${notification.entityId}`);
-          break;
-        case 'User':
-          navigate(`/profile`);
-          break;
-      }
-      onClose();
-    }
+    // Abre o modal de detalhes
+    setSelectedNotification(notification);
   };
 
   /**
@@ -179,7 +170,8 @@ export function NotificationPanel({ onClose, onMarkAllRead }: NotificationPanelP
   };
 
   return (
-    <div className="absolute right-0 top-full mt-2 w-96 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden z-50">
+    <>
+      <div className="absolute right-0 top-full mt-2 w-96 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden z-50">
       {/* Cabeçalho */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50">
         <h3 className="text-sm font-semibold text-gray-900">Notificações</h3>
@@ -280,5 +272,14 @@ export function NotificationPanel({ onClose, onMarkAllRead }: NotificationPanelP
         </div>
       )}
     </div>
+
+    {/* Modal de detalhes da notificação */}
+    {selectedNotification && (
+      <NotificationDetailModal
+        notification={selectedNotification}
+        onClose={() => setSelectedNotification(null)}
+      />
+    )}
+    </>
   );
 }
