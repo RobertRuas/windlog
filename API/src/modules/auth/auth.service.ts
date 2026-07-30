@@ -31,6 +31,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 
 import { PrismaService } from '../../database/prisma.service.js';
+import { NotificationService } from '../notifications/notification.service.js';
 import { LoginDto } from './dto/login.dto.js';
 import { RegisterDto } from './dto/register.dto.js';
 import { UpdateProfileDto } from './dto/update-profile.dto.js';
@@ -62,6 +63,7 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   /**
@@ -182,6 +184,10 @@ export class AuthService {
 
     // Registra a operação no log
     this.logger.log(`User logged in: ${user.email} (${user.id})`);
+
+    // Sincroniza notificação de perfil incompleto (para usuários existentes)
+    const userName = `${user.firstName} ${user.lastName}`;
+    await this.notificationService.syncProfileIncompleteNotification(user.id, userName);
 
     // Retorna o token e os dados do usuário (sem a senha!)
     return {
@@ -357,6 +363,10 @@ export class AuthService {
 
     // Registra a operação no log
     this.logger.log(`Profile updated for user: ${user.email} (${user.id})`);
+
+    // Sincroniza notificação de perfil incompleto
+    const userName = `${updatedUser.firstName} ${updatedUser.lastName}`;
+    await this.notificationService.syncProfileIncompleteNotification(updatedUser.id, userName);
 
     // Retorna o perfil atualizado
     return {
