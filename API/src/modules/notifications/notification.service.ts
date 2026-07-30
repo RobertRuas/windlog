@@ -253,4 +253,81 @@ export class NotificationService {
     this.logger.debug(`Removidas ${result.count} notificações lidas para usuário ${userId}`);
     return { count: result.count };
   }
+
+  /**
+   * Verifica se o perfil do usuário está completo.
+   * Um perfil é considerado completo quando todos os campos importantes estão preenchidos.
+   *
+   * @param userId - ID do usuário
+   * @returns true se o perfil está completo, false caso contrário
+   */
+  async isProfileComplete(userId: string): Promise<boolean> {
+    const user = await this.prisma.user.findFirst({
+      where: { id: userId, deletedAt: null },
+    });
+
+    if (!user) return false;
+
+    // Campos importantes que devem estar preenchidos
+    const requiredFields = [
+      user.phone,
+      user.dateOfBirth,
+      user.nationality,
+      user.address,
+      user.city,
+      user.postalCode,
+      user.country,
+      user.department,
+      user.position,
+      user.hireDate,
+    ];
+
+    // Verifica se todos os campos estão preenchidos (não null/undefined)
+    return requiredFields.every((field) => field !== null && field !== undefined);
+  }
+
+  /**
+   * Cria notificação de perfil incompleto se o perfil não estiver completo.
+   * Se o perfil estiver completo, remove a notificação existente.
+   *
+   * @param userId - ID do usuário
+   * @param userName - Nome do usuário (para a mensagem)
+   */
+  async syncProfileIncompleteNotification(userId: string, userName?: string): Promise<void> {
+    const isComplete = await this.isProfileComplete(userId);
+
+    // Verifica se já existe uma notificação de perfil incompleto
+    const existingNotification = await this.prisma.notification.findFirst({
+      where: {
+        userId,
+        type: 'PROFILE_INCOMPLETE',
+      },
+    });
+
+    if (isComplete) {
+      // Perfil completo: remove a notificação se existir
+      if (existingNotification) {
+        await this.prisma.notification.delete({
+          where: { id: existingNotification.id },
+        });
+        this.logger.debug(`Notificação de perfil incompleto removida para usuário ${userId}`);
+      }
+    } else {
+      // Perfil incompleto: cria notificação se não existir
+      if (!existingNotification) {
+        await this.prisma.notification.create({
+          data: {
+            type: 'PROFILE_INCOMPLETE',
+            priority: 'MEDIUM',
+            title: 'Complete o seu perfil',
+            message: `Olá ${userName || ''}! Por favor, complete todos os dados do seu perfil para continuar a utilizar todas as funcionalidades do sistema.`,
+            userId,
+            entity: 'User',
+            entityId: userId,
+          },
+        });
+        this.logger.debug(`Notificação de perfil incompleto criada para usuário ${userId}`);
+      }
+    }
+  }
 }
