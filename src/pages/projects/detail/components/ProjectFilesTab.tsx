@@ -5,9 +5,16 @@
  *
  * O QUE É ESTE ARQUIVO?
  * ---------------------
- * Componente placeholder para a aba de ficheiros do projeto.
- * O sistema de upload foi removido e será reimplementado do zero.
- * Os botões e a UI estão mantidos mas sem ação por enquanto.
+ * Componente funcional para upload e listagem de ficheiros do projeto.
+ * Usa o sistema de upload real (POST /projects/:id/files) e exibe
+ * os ficheiros numa tabela com links seguros (SecureFileLink).
+ *
+ * FUNCIONALIDADES:
+ * ----------------
+ * - Upload de ficheiros via drag & drop ou clique
+ * - Listagem de ficheiros com nome, tipo, tamanho e data
+ * - Links seguros para download (URLs temporárias)
+ * - Remoção de ficheiros com confirmação
  * ============================================================================
  */
 
@@ -16,32 +23,91 @@ import { useTranslation } from 'react-i18next';
 import {
   Upload,
   Paperclip,
+  Trash2,
+  FileText,
+  Image,
+  File,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import type { ProjectDetail } from '@/services/project.service';
+import type { ProjectDetail, ProjectFile } from '@/services/project.service';
 import { DataTable, type DataTableColumn } from '@/components/ui/DataTable';
+import { SecureFileLink } from '@/components/ui/SecureFileLink';
+import { Button } from '@/components/ui/Button';
 
 /**
  * Props do componente ProjectFilesTab.
  */
 interface ProjectFilesTabProps {
   project: ProjectDetail;
+  onUploadFile: (file: File, category?: string) => void;
+  onDeleteFile: (fileId: string) => void;
+  isUploading: boolean;
 }
 
 /**
- * Componente ProjectFilesTab - Placeholder (upload desativado).
+ * Formata bytes para formato legível (KB, MB).
  */
-export function ProjectFilesTab({ project: _project }: ProjectFilesTabProps) {
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+/**
+ * Retorna o ícone apropriado para o tipo MIME do ficheiro.
+ */
+function getFileIcon(mimeType: string) {
+  if (mimeType.startsWith('image/')) return Image;
+  if (mimeType === 'application/pdf') return FileText;
+  return File;
+}
+
+/**
+ * Componente ProjectFilesTab - Upload e listagem de ficheiros.
+ */
+export function ProjectFilesTab({
+  project,
+  onUploadFile,
+  onDeleteFile,
+  isUploading,
+}: ProjectFilesTabProps) {
   const { t } = useTranslation('projects');
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Estado para drag & drop (visual apenas)
   const [isDragOver, setIsDragOver] = useState(false);
 
-  const showMaintenance = () => {
-    toast.info('Sistema de ficheiros em manutenção...');
+  // Ficheiros do projeto (vem da query do projeto)
+  const files = project.files || [];
+
+  /**
+   * Abre o seletor de ficheiros.
+   */
+  const handleSelectFiles = () => {
+    fileInputRef.current?.click();
   };
 
+  /**
+   * Processa ficheiros selecionados via input.
+   */
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = e.target.files;
+    if (!selectedFiles?.length) return;
+
+    for (const file of Array.from(selectedFiles)) {
+      // Validação básica de tamanho (10 MB)
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error(`"${file.name}" excede o limite de 10 MB`);
+        continue;
+      }
+      onUploadFile(file);
+    }
+
+    // Limpa o input para poder selecionar o mesmo ficheiro novamente
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  /**
+   * Processa drag & drop.
+   */
   function handleDragOver(e: React.DragEvent) {
     e.preventDefault();
     setIsDragOver(true);
@@ -55,30 +121,104 @@ export function ProjectFilesTab({ project: _project }: ProjectFilesTabProps) {
   function handleDrop(e: React.DragEvent) {
     e.preventDefault();
     setIsDragOver(false);
-    showMaintenance();
+
+    const droppedFiles = e.dataTransfer.files;
+    if (!droppedFiles?.length) return;
+
+    for (const file of Array.from(droppedFiles)) {
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error(`"${file.name}" excede o limite de 10 MB`);
+        continue;
+      }
+      onUploadFile(file);
+    }
   }
 
-  // Colunas vazias - sem dados por enquanto
-  const columns: DataTableColumn<Record<string, never>>[] = [];
+  /**
+   * Confirma e remove um ficheiro.
+   */
+  function handleDelete(file: ProjectFile) {
+    const confirmed = window.confirm(
+      t('actions.confirmDeleteFile', { name: file.originalName }),
+    );
+    if (confirmed) {
+      onDeleteFile(file.id);
+    }
+  }
+
+  // Colunas da tabela de ficheiros
+  const columns: DataTableColumn<ProjectFile>[] = [
+    {
+      header: t('filesTable.name'),
+      render: (file) => {
+        const Icon = getFileIcon(file.mimeType);
+        return (
+          <div className="flex items-center gap-2">
+            <Icon size={16} className="text-gray-400 flex-shrink-0" />
+            <SecureFileLink
+              filePath={file.filePath}
+              fileName={file.originalName}
+              className="text-sm text-blue-600 hover:text-blue-800 truncate max-w-[200px]"
+            />
+          </div>
+        );
+      },
+    },
+    {
+      header: t('filesTable.type'),
+      render: (file) => (
+        <span className="text-xs text-gray-500">
+          {file.category || file.mimeType.split('/').pop()}
+        </span>
+      ),
+    },
+    {
+      header: t('filesTable.size'),
+      render: (file) => (
+        <span className="text-xs text-gray-500">{formatFileSize(file.size)}</span>
+      ),
+    },
+    {
+      header: t('filesTable.date'),
+      render: (file) => (
+        <span className="text-xs text-gray-500">
+          {new Date(file.createdAt).toLocaleDateString('pt-PT')}
+        </span>
+      ),
+    },
+    {
+      header: '',
+      align: 'right',
+      render: (file) => (
+        <button
+          onClick={() => handleDelete(file)}
+          className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+          title={t('actions.delete')}
+        >
+          <Trash2 size={14} />
+        </button>
+      ),
+    },
+  ];
 
   return (
     <div className="space-y-4">
-      {/* Input hidden para ficheiros (desativado) */}
+      {/* Input hidden para ficheiros */}
       <input
         ref={fileInputRef}
         type="file"
         multiple
-        accept="image/jpeg,image/png,image/webp,application/pdf"
-        onChange={() => showMaintenance()}
+        accept="image/jpeg,image/png,image/webp,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        onChange={handleFileChange}
         className="hidden"
       />
 
-      {/* Zona de upload com drag & drop (desativada) */}
+      {/* Zona de upload com drag & drop */}
       <div
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
-        onClick={showMaintenance}
+        onClick={handleSelectFiles}
         className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors ${
           isDragOver
             ? 'border-blue-400 bg-blue-50'
@@ -90,17 +230,17 @@ export function ProjectFilesTab({ project: _project }: ProjectFilesTabProps) {
           className={`mx-auto mb-3 ${isDragOver ? 'text-blue-500' : 'text-gray-400'}`}
         />
         <p className="text-sm text-gray-600 mb-1">
-          {t('files.dropzone')}
+          {isUploading ? 'A enviar...' : t('files.dropzone')}
         </p>
         <p className="text-xs text-gray-400">
           {t('files.dropzoneHint')}
         </p>
       </div>
 
-      {/* Tabela vazia - sem ficheiros */}
+      {/* Tabela de ficheiros */}
       <DataTable
         columns={columns}
-        data={[]}
+        data={files}
         isLoading={false}
         emptyIcon={Paperclip}
         emptyMessage={t('files.empty')}

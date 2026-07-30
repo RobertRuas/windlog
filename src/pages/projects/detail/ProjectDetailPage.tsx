@@ -86,6 +86,8 @@ export function ProjectDetailPage() {
     addMemberMutation,
     updateMemberMutation,
     removeMemberMutation,
+    uploadFileMutation,
+    deleteFileMutation,
   } = useProjectMutations(id!);
 
   // =========================================================================
@@ -270,7 +272,12 @@ export function ProjectDetailPage() {
       )}
 
       {activeTab === 'files' && (
-        <ProjectFilesTab project={project} />
+        <ProjectFilesTab
+          project={project}
+          onUploadFile={(file, category) => uploadFileMutation.mutate({ file, category })}
+          onDeleteFile={(fileId) => deleteFileMutation.mutate(fileId)}
+          isUploading={uploadFileMutation.isPending}
+        />
       )}
 
       {/* Modal de Edição do Projeto */}

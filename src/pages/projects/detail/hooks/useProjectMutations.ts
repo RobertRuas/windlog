@@ -26,6 +26,8 @@ import {
   addMember,
   updateMember,
   removeMember,
+  uploadProjectFile,
+  deleteProjectFile,
   type CreateTurbinePayload,
   type UpdateTurbinePayload,
   type AddMemberPayload,
@@ -138,6 +140,33 @@ export function useProjectMutations(projectId: string) {
     },
   });
 
+  // =========================================================================
+  // FILE MUTATIONS
+  // =========================================================================
+
+  const uploadFileMutation = useMutation({
+    mutationFn: ({ file, category }: { file: File; category?: string }) =>
+      uploadProjectFile(projectId, file, category),
+    onSuccess: () => {
+      toast.success(t('toast.fileUploadSuccess'));
+      invalidateProject();
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || t('toast.fileUploadError'));
+    },
+  });
+
+  const deleteFileMutation = useMutation({
+    mutationFn: (fileId: string) => deleteProjectFile(projectId, fileId),
+    onSuccess: () => {
+      toast.success(t('toast.fileDeleteSuccess'));
+      invalidateProject();
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || t('toast.fileDeleteError'));
+    },
+  });
+
   return {
     // Project
     updateProjectMutation,
@@ -149,5 +178,8 @@ export function useProjectMutations(projectId: string) {
     addMemberMutation,
     updateMemberMutation,
     removeMemberMutation,
+    // Files
+    uploadFileMutation,
+    deleteFileMutation,
   };
 }
