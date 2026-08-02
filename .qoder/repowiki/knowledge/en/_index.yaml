@@ -3,7 +3,7 @@ schema_version: 1
 locale: en-US
 branch: main
 nodes_managed: true
-exported_at: "2026-08-02T21:37:35Z"
+exported_at: "2026-08-02T23:14:42Z"
 modules:
     "":
         dir_name: Windlog Platform (NestJS Backend + React Frontend)
@@ -18,8 +18,8 @@ modules:
         depends_on: []
         related_to: []
     api_backend:
-        dir_name: Windlog API Backend (NestJS)
-        title: Windlog API Backend (NestJS)
+        dir_name: API Backend (NestJS Monorepo)
+        title: API Backend (NestJS Monorepo)
         scope:
             - API/
         source_files: []
@@ -40,10 +40,25 @@ modules:
         depends_on: []
         related_to: []
     api_backend/modules:
-        dir_name: Business Domain Modules (Auth, Users, Projects, Notifications, Upload, System-Lo
-        title: Business Domain Modules (Auth, Users, Projects, Notifications, Upload, System-Log)
+        dir_name: API Business Modules
+        title: API Business Modules
         scope:
             - API/src/modules/
+        source_files: []
+        children:
+            - api_backend/modules/weekly_timesheet
+        depends_on: []
+        related_to:
+            - path: frontend_app/pages_home
+            - path: frontend_app/pages_logs
+            - path: frontend_app/pages_projects
+            - path: frontend_app/pages_settings
+            - path: frontend_app/pages_users
+    api_backend/modules/weekly_timesheet:
+        dir_name: Weekly Timesheet Management Module
+        title: Weekly Timesheet Management Module
+        scope:
+            - API/src/modules/weekly-timesheet/
         source_files: []
         children: []
         depends_on: []
@@ -66,8 +81,8 @@ modules:
         depends_on: []
         related_to: []
     frontend_app/app_shell:
-        dir_name: Application Shell & Bootstrap
-        title: Application Shell & Bootstrap
+        dir_name: Application Bootstrap & Root Shell
+        title: Application Bootstrap & Root Shell
         scope:
             - src/App.tsx
             - src/main.tsx
@@ -78,8 +93,8 @@ modules:
         depends_on: []
         related_to: []
     frontend_app/i18n:
-        dir_name: Internationalization (i18n) with i18next
-        title: Internationalization (i18n) with i18next
+        dir_name: Internationalization (i18n) Configuration & Portuguese Translations
+        title: Internationalization (i18n) Configuration & Portuguese Translations
         scope:
             - src/i18n/
         source_files: []
@@ -94,7 +109,8 @@ modules:
         source_files: []
         children: []
         depends_on: []
-        related_to: []
+        related_to:
+            - path: api_backend/modules
     frontend_app/pages_logs:
         dir_name: System Logs Admin Page
         title: System Logs Admin Page
@@ -103,7 +119,8 @@ modules:
         source_files: []
         children: []
         depends_on: []
-        related_to: []
+        related_to:
+            - path: api_backend/modules
     frontend_app/pages_projects:
         dir_name: Projects Management Pages
         title: Projects Management Pages
@@ -112,7 +129,8 @@ modules:
         source_files: []
         children: []
         depends_on: []
-        related_to: []
+        related_to:
+            - path: api_backend/modules
     frontend_app/pages_settings:
         dir_name: Settings Page & Sections
         title: Settings Page & Sections
@@ -121,7 +139,8 @@ modules:
         source_files: []
         children: []
         depends_on: []
-        related_to: []
+        related_to:
+            - path: api_backend/modules
     frontend_app/pages_users:
         dir_name: Users Management Page
         title: Users Management Page
@@ -130,10 +149,11 @@ modules:
         source_files: []
         children: []
         depends_on: []
-        related_to: []
+        related_to:
+            - path: api_backend/modules
     frontend_app/shared_layers:
-        dir_name: Shared Frontend Layers (Components, Hooks, Services, Utils & Types)
-        title: Shared Frontend Layers (Components, Hooks, Services, Utils & Types)
+        dir_name: Shared Frontend Layers — UI Components, Services & Utilities
+        title: Shared Frontend Layers — UI Components, Services & Utilities
         scope:
             - src/components/
             - src/hooks/

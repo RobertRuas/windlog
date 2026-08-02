@@ -1,1 +1,0 @@
-Reusable frontend building blocks — UI components, layout shell, TanStack Query hooks, typed API services, JWT helpers, and static constants shared across all application pages.

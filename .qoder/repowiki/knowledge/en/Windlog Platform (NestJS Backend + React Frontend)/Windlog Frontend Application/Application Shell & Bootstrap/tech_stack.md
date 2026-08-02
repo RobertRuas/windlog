@@ -1,1 +1,0 @@
-React 18 with `createRoot`, `react-router-dom` for client-side routing, `@tanstack/react-query` for data fetching/caching, `sonner` for toast notifications, Tailwind CSS v4 via `@import "tailwindcss"`, and Inter font from `@fontsource/inter`. JWT handling reads `accessToken` directly from `localStorage`.

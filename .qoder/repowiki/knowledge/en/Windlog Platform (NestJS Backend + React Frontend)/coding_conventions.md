@@ -6,3 +6,4 @@
 - Soft delete is mandatory for business entities (User, Project, Turbine, File) with deletedAt filtering; junction tables may use hard delete.
 - Toast notifications via Sonner are required for all CRUD operations with Portuguese messages following the 'X criado/atualizado/remido com sucesso' pattern.
 - Prisma enums must be mirrored in code and never accessed outside Services; Prisma is the only authoritative type source.
+- LoggingInterceptor mapeia automaticamente URL + método HTTP para LogAction. Novos endpoints devem ter seu LogAction adicionado ao método determineAction().

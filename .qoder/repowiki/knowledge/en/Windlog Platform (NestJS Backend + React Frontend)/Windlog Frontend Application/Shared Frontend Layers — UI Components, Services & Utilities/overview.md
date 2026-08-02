@@ -1,0 +1,1 @@
+Reusable React/TypeScript building blocks shared across all pages: UI primitives, layout shell, TanStack Query hooks, typed NestJS API services, JWT helpers, and static lookup constants.

@@ -1,0 +1,13 @@
+schema_version: 1
+module_path: api_backend/modules
+title: API Business Modules
+scope:
+    - API/src/modules/
+source_files: []
+depends_on: []
+related_to:
+    - path: frontend_app/pages_home
+    - path: frontend_app/pages_logs
+    - path: frontend_app/pages_projects
+    - path: frontend_app/pages_settings
+    - path: frontend_app/pages_users

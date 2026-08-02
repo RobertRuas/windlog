@@ -1,8 +1,0 @@
-schema_version: 1
-module_path: api_backend/modules
-title: Business Domain Modules (Auth, Users, Projects, Notifications, Upload, System-Log)
-scope:
-    - API/src/modules/
-source_files: []
-depends_on: []
-related_to: []

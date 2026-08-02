@@ -1,0 +1,1 @@
+Bootstraps the Vite+React application by mounting the root component, configuring TanStack Query and Sonner toasts, defining all routes with role-based guards (ProtectedRoute, AdminRoute, AdminOrHRRoute), and providing global Tailwind styles.

@@ -18,18 +18,23 @@
  * Se um técnico tiver valores diferentes, um botão "Personalizar" expande
  * os campos extras para aquela linha específica.
  *
- * AO SALVAR:
- * ----------
- * - Os valores comuns são copiados para cada entrada (exceto se personalizada)
- * - O backend recebe o payload completo como antes
+ * FUNCIONALIDADES:
+ * ----------------
+ * - Accordion: primeiro dia aberto, demais recolhidos
+ * - Bordas coloridas: verde = preenchido, laranja = pendente
+ * - Data: somente leitura (gerada pelo sistema)
+ * - Daily Progress: campo obrigatório
+ * - Autocomplete de técnicos: sugere usuários do sistema
+ * - Usuário atual: pré-preenchido como primeiro técnico em todos os dias
  * ============================================================================
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import {
   Plus, Trash2, Save, RotateCcw, ChevronDown, ChevronRight,
-  Settings2, X,
+  Settings2, X, User as UserIcon, Lock,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type {
@@ -38,6 +43,8 @@ import type {
   UpdateDayPayload,
   UpdateEntryPayload,
 } from '@/services/weekly-timesheet.service';
+import { getProfile } from '@/services/auth.service';
+import { getUsers } from '@/services/user.service';
 
 // =========================================================================
 // TYPES
@@ -77,10 +84,9 @@ interface FormState {
 
 interface FormDay {
   id: string;
-  date: string; // DD/MM/YYYY
+  date: string;
   dayName: string;
   progress: string;
-  /** Valores comuns aplicados a todos os técnicos ao salvar */
   shared: Record<SharedFieldKey, string>;
   entries: FormEntry[];
 }
@@ -89,9 +95,9 @@ interface FormEntry {
   id?: string;
   technicianName: string;
   role: string;
-  /** Se true, esta entrada usa valores próprios em vez dos compartilhados */
   customized: boolean;
-  /** Valores personalizados (usados quando customized = true) */
+  /** Se é o entry do usuário atual (bloqueado para remoção) */
+  isCurrentUser?: boolean;
   localTurbineNo: string;
   turbineIdNo: string;
   towerNo: string;
@@ -101,6 +107,14 @@ interface FormEntry {
   travelHrs: string;
   downtimeHrs: string;
   standbyReason: string;
+}
+
+interface SystemUser {
+  id: string;
+  firstName: string;
+  lastName: string;
+  fullName: string;
+  position: string;
 }
 
 // =========================================================================
@@ -122,26 +136,26 @@ function formatDateISO(dateStr: string): string {
 }
 
 /**
- * Detecta os valores comuns de um dia analisando as entradas existentes.
- * Se TODAS as entradas têm o mesmo valor para um campo, esse é o valor comum.
+ * Verifica se um dia está "preenchido" (tem progress + pelo menos 1 entry com nome).
  */
+function isDayFilled(day: FormDay): boolean {
+  const hasProgress = day.progress.trim().length > 0;
+  const hasNamedEntry = day.entries.some((e) => e.technicianName.trim().length > 0);
+  return hasProgress && hasNamedEntry;
+}
+
 function detectSharedValues(
   entries: { [key: string]: any }[],
 ): Record<SharedFieldKey, string> {
   const shared: Record<string, string> = {};
-
   for (const field of SHARED_FIELDS) {
     const values = entries.map((e) => e[field] || '');
     const allSame = values.length > 0 && values.every((v) => v === values[0]);
     shared[field] = allSame ? values[0] : '';
   }
-
   return shared as Record<SharedFieldKey, string>;
 }
 
-/**
- * Converte timesheet → form state.
- */
 function timesheetToFormState(ts: WeeklyTimesheet): FormState {
   return {
     jobNumber: ts.jobNumber || '',
@@ -158,7 +172,6 @@ function timesheetToFormState(ts: WeeklyTimesheet): FormState {
     clientDate: formatDateBR(ts.clientDate),
     days: ts.days.map((day) => {
       const shared = detectSharedValues(day.entries);
-
       return {
         id: day.id,
         date: formatDateBR(day.date),
@@ -166,11 +179,9 @@ function timesheetToFormState(ts: WeeklyTimesheet): FormState {
         progress: day.progress || '',
         shared,
         entries: day.entries.map((e) => {
-          // Verifica se esta entrada tem valores diferentes dos comuns
           const isCustomized = SHARED_FIELDS.some(
             (f) => (e[f as keyof typeof e] || '') !== shared[f],
           );
-
           return {
             id: e.id,
             technicianName: e.technicianName || '',
@@ -192,10 +203,6 @@ function timesheetToFormState(ts: WeeklyTimesheet): FormState {
   };
 }
 
-/**
- * Converte form state → payload de atualização.
- * Copia os valores compartilhados para cada entrada (exceto se personalizada).
- */
 function formStateToPayload(form: FormState): UpdateTimesheetPayload {
   return {
     jobNumber: form.jobNumber || undefined,
@@ -212,15 +219,10 @@ function formStateToPayload(form: FormState): UpdateTimesheetPayload {
     clientDate: form.clientDate ? formatDateISO(form.clientDate) : undefined,
     days: form.days.map((day): UpdateDayPayload => ({
       id: day.id,
-      date: day.date ? formatDateISO(day.date) : undefined,
       dayName: day.dayName,
       progress: day.progress,
       entries: day.entries.map((e): UpdateEntryPayload => {
-        // Se personalizada, usa os valores próprios; senão, usa os compartilhados
-        const vals = e.customized
-          ? e
-          : { ...day.shared };
-
+        const vals = e.customized ? e : { ...day.shared };
         return {
           id: e.id,
           technicianName: e.technicianName,
@@ -245,14 +247,8 @@ function createEmptyEntry(): FormEntry {
     technicianName: '',
     role: '',
     customized: false,
-    localTurbineNo: '',
-    turbineIdNo: '',
-    towerNo: '',
-    bladeNo: '',
-    standbyHrs: '',
-    workingHrs: '',
-    travelHrs: '',
-    downtimeHrs: '',
+    localTurbineNo: '', turbineIdNo: '', towerNo: '', bladeNo: '',
+    standbyHrs: '', workingHrs: '', travelHrs: '', downtimeHrs: '',
     standbyReason: '',
   };
 }
@@ -266,6 +262,105 @@ function emptyShared(): Record<SharedFieldKey, string> {
 }
 
 // =========================================================================
+// AUTOCOMPLETE INPUT COMPONENT
+// =========================================================================
+
+interface TechnicianAutocompleteProps {
+  value: string;
+  onChange: (value: string) => void;
+  onSelectUser: (user: SystemUser) => void;
+  users: SystemUser[];
+  disabled?: boolean;
+  placeholder?: string;
+}
+
+/**
+ * Input com autocomplete para nome do técnico.
+ * Mostra sugestões de usuários do sistema enquanto digita.
+ * Permite digitar nome customizado (não força seleção).
+ */
+function TechnicianAutocomplete({
+  value,
+  onChange,
+  onSelectUser,
+  users,
+  disabled,
+  placeholder,
+}: TechnicianAutocompleteProps) {
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [query, setQuery] = useState(value);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  // Sincroniza valor externo → interno
+  useEffect(() => {
+    setQuery(value);
+  }, [value]);
+
+  // Fecha sugestões ao clicar fora
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const filtered = query.trim().length >= 2
+    ? users.filter((u) =>
+        u.fullName.toLowerCase().includes(query.toLowerCase()),
+      ).slice(0, 5)
+    : [];
+
+  function handleSelect(user: SystemUser) {
+    setQuery(user.fullName);
+    onChange(user.fullName);
+    onSelectUser(user);
+    setShowSuggestions(false);
+  }
+
+  return (
+    <div ref={wrapperRef} className="relative">
+      <input
+        type="text"
+        value={query}
+        onChange={(e) => {
+          setQuery(e.target.value);
+          onChange(e.target.value);
+          setShowSuggestions(true);
+        }}
+        onFocus={() => setShowSuggestions(true)}
+        disabled={disabled}
+        placeholder={placeholder}
+        autoComplete="off"
+        className="w-full px-2 py-1.5 border border-gray-200 rounded text-sm font-medium focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-60"
+      />
+      {showSuggestions && filtered.length > 0 && (
+        <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
+          {filtered.map((user) => (
+            <button
+              key={user.id}
+              type="button"
+              onClick={() => handleSelect(user)}
+              className="w-full text-left px-3 py-2 text-sm hover:bg-blue-50 flex items-center gap-2 transition-colors"
+            >
+              <UserIcon size={14} className="text-gray-400 shrink-0" />
+              <div>
+                <span className="font-medium text-gray-900">{user.fullName}</span>
+                {user.position && (
+                  <span className="ml-2 text-xs text-gray-500">{user.position}</span>
+                )}
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// =========================================================================
 // COMPONENT
 // =========================================================================
 
@@ -276,12 +371,89 @@ export function TimesheetFormEditor({
 }: TimesheetFormEditorProps) {
   const { t } = useTranslation('timesheet');
 
-  const [form, setForm] = useState<FormState>(() => timesheetToFormState(timesheet));
-  const [collapsedDays, setCollapsedDays] = useState<Set<number>>(new Set());
+  // ── Busca usuários do sistema para autocomplete ────────────────────
+  const { data: usersResponse } = useQuery({
+    queryKey: ['users', 'all', 'autocomplete'],
+    queryFn: () => getUsers({ limit: 100, isActive: true }),
+  });
 
+  const systemUsers: SystemUser[] = (usersResponse?.data || []).map((u) => ({
+    id: u.id,
+    firstName: u.firstName,
+    lastName: u.lastName,
+    fullName: `${u.firstName} ${u.lastName}`,
+    position: u.position || '',
+  }));
+
+  // ── Busca perfil do usuário atual ──────────────────────────────────
+  const { data: currentUser } = useQuery({
+    queryKey: ['profile', 'current'],
+    queryFn: getProfile,
+  });
+
+  const currentUserName = currentUser
+    ? `${currentUser.firstName} ${currentUser.lastName}`
+    : '';
+  const currentUserPosition = currentUser?.position || '';
+
+  // ── Estado do formulário ───────────────────────────────────────────
+  const [form, setForm] = useState<FormState>(() => timesheetToFormState(timesheet));
+
+  // Accordion: primeiro dia aberto, demais recolhidos
+  const [collapsedDays, setCollapsedDays] = useState<Set<number>>(
+    () => new Set(form.days.slice(1).map((_, i) => i + 1)),
+  );
+
+  // Erros de validação
+  const [validationErrors, setValidationErrors] = useState<Set<number>>(new Set());
+
+  // Atualiza form quando timesheet muda
   useEffect(() => {
-    setForm(timesheetToFormState(timesheet));
+    const state = timesheetToFormState(timesheet);
+    setForm(state);
+    setCollapsedDays(new Set(state.days.slice(1).map((_, i) => i + 1)));
   }, [timesheet]);
+
+  // Pré-preenche usuário atual como primeiro entry em todos os dias (só na primeira carga)
+  useEffect(() => {
+    if (!currentUserName) return;
+
+    setForm((prev) => {
+      let changed = false;
+      const days = prev.days.map((day) => {
+        // Só preenche se o primeiro entry está vazio
+        if (day.entries.length > 0 && day.entries[0].technicianName.trim() === '') {
+          changed = true;
+          return {
+            ...day,
+            entries: [
+              {
+                ...day.entries[0],
+                technicianName: currentUserName,
+                role: day.entries[0].role || currentUserPosition,
+                isCurrentUser: true,
+              },
+              ...day.entries.slice(1),
+            ],
+          };
+        }
+        // Marca o primeiro entry como currentUser se o nome bater
+        if (day.entries.length > 0 && day.entries[0].technicianName.trim() === currentUserName) {
+          changed = true;
+          return {
+            ...day,
+            entries: [
+              { ...day.entries[0], isCurrentUser: true },
+              ...day.entries.slice(1),
+            ],
+          };
+        }
+        return day;
+      });
+
+      return changed ? { ...prev, days } : prev;
+    });
+  }, [currentUserName, currentUserPosition]);
 
   function toggleDay(dayIdx: number) {
     setCollapsedDays((prev) => {
@@ -292,13 +464,11 @@ export function TimesheetFormEditor({
     });
   }
 
-  // ── Metadata handlers ───────────────────────────────────────────────
+  // ── Handlers ──────────────────────────────────────────────────────
 
   function handleMetaChange(field: keyof FormState, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }));
   }
-
-  // ── Shared field handlers ───────────────────────────────────────────
 
   function handleSharedChange(dayIdx: number, field: SharedFieldKey, value: string) {
     setForm((prev) => {
@@ -307,8 +477,6 @@ export function TimesheetFormEditor({
       return { ...prev, days };
     });
   }
-
-  // ── Entry handlers ──────────────────────────────────────────────────
 
   function handleEntryChange(
     dayIdx: number,
@@ -323,6 +491,15 @@ export function TimesheetFormEditor({
       days[dayIdx] = { ...days[dayIdx], entries };
       return { ...prev, days };
     });
+  }
+
+  /**
+   * Quando seleciona um usuário do autocomplete, preenche o role.
+   */
+  function handleSelectUser(dayIdx: number, entryIdx: number, user: SystemUser) {
+    if (user.position) {
+      handleEntryChange(dayIdx, entryIdx, 'role', user.position);
+    }
   }
 
   function handleAddEntry(dayIdx: number) {
@@ -342,18 +519,22 @@ export function TimesheetFormEditor({
     });
   }
 
-  function handleDayFieldChange(dayIdx: number, field: 'date' | 'progress', value: string) {
+  function handleProgressChange(dayIdx: number, value: string) {
     setForm((prev) => {
       const days = [...prev.days];
-      days[dayIdx] = { ...days[dayIdx], [field]: value };
+      days[dayIdx] = { ...days[dayIdx], progress: value };
       return { ...prev, days };
     });
+    // Limpa erro de validação quando preenchido
+    if (value.trim()) {
+      setValidationErrors((prev) => {
+        const next = new Set(prev);
+        next.delete(dayIdx);
+        return next;
+      });
+    }
   }
 
-  /**
-   * Toggle personalizado: quando ativado, copia os valores compartilhados
-   * para os campos da entrada (para o usuário editar a partir dali).
-   */
   function toggleCustomize(dayIdx: number, entryIdx: number) {
     setForm((prev) => {
       const days = [...prev.days];
@@ -362,7 +543,6 @@ export function TimesheetFormEditor({
       const shared = days[dayIdx].shared;
 
       if (!entry.customized) {
-        // Ativando: copia valores compartilhados para os campos
         entries[entryIdx] = {
           ...entry,
           customized: true,
@@ -377,7 +557,6 @@ export function TimesheetFormEditor({
           standbyReason: entry.standbyReason || shared.standbyReason,
         };
       } else {
-        // Desativando: limpa valores personalizados
         entries[entryIdx] = { ...entry, customized: false };
       }
 
@@ -386,18 +565,38 @@ export function TimesheetFormEditor({
     });
   }
 
-  // ── Save / Cancel ───────────────────────────────────────────────────
+  // ── Save / Cancel ─────────────────────────────────────────────────
 
   function handleSave() {
+    // Validação: Daily Progress obrigatório
+    const errors = new Set<number>();
+    form.days.forEach((day, idx) => {
+      if (!day.progress.trim()) errors.add(idx);
+    });
+
+    if (errors.size > 0) {
+      setValidationErrors(errors);
+      // Abre o primeiro dia com erro
+      const firstError = Math.min(...errors);
+      setCollapsedDays((prev) => {
+        const next = new Set(prev);
+        next.delete(firstError);
+        return next;
+      });
+      toast.error(t('form.progressRequired'));
+      return;
+    }
+
     onSave(formStateToPayload(form));
   }
 
   function handleCancel() {
     setForm(timesheetToFormState(timesheet));
+    setValidationErrors(new Set());
     toast.info(t('form.changesReverted'));
   }
 
-  // ── Styles ──────────────────────────────────────────────────────────
+  // ── Styles ─────────────────────────────────────────────────────────
   const inputClass =
     'w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60';
   const smallInput =
@@ -406,7 +605,7 @@ export function TimesheetFormEditor({
   const smallLabel = 'block text-xs font-medium text-gray-500 mb-0.5';
 
   return (
-    <div className="space-y-6 max-w-5xl">
+    <div className="space-y-4 max-w-5xl">
       {/* ── Seção: Metadata ──────────────────────────────────────────── */}
       <section className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-100 bg-gray-50">
@@ -419,7 +618,7 @@ export function TimesheetFormEditor({
               <input type="text" value={form.jobNumber} onChange={(e) => handleMetaChange('jobNumber', e.target.value)} disabled={isSaving} className={inputClass} />
             </div>
             <div>
-              <label className={labelClass}>{t('sheet.week')} *</label>
+              <label className={labelClass}>{t('sheet.week')}</label>
               <input type="text" value={form.week} disabled className={inputClass + ' bg-gray-50'} />
             </div>
             <div>
@@ -447,40 +646,94 @@ export function TimesheetFormEditor({
       {/* ── Seção: Dias da Semana ────────────────────────────────────── */}
       {form.days.map((day, dayIdx) => {
         const isCollapsed = collapsedDays.has(dayIdx);
+        const filled = isDayFilled(day);
+        const hasError = validationErrors.has(dayIdx);
+
+        // Borda: verde (preenchido), laranja-avermelhado (erro), laranja (vazio)
+        const borderColor = hasError
+          ? 'border-red-300'
+          : filled
+            ? 'border-emerald-200'
+            : 'border-amber-200';
+
+        const headerBg = hasError
+          ? 'bg-red-50'
+          : filled
+            ? 'bg-emerald-50'
+            : 'bg-amber-50';
 
         return (
-          <section key={day.id || dayIdx} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-            {/* Header do dia (clicável para colapsar) */}
+          <section key={day.id || dayIdx} className={`bg-white rounded-xl border-2 ${borderColor} overflow-hidden transition-colors`}>
+            {/* Header do dia */}
             <div
-              className="px-6 py-3 border-b border-gray-100 bg-gray-50 flex items-center justify-between cursor-pointer hover:bg-gray-100 transition-colors"
+              className={`px-5 py-3 border-b ${borderColor} ${headerBg} flex items-center justify-between cursor-pointer hover:opacity-90 transition-all`}
               onClick={() => toggleDay(dayIdx)}
             >
               <div className="flex items-center gap-3">
                 {isCollapsed ? <ChevronRight size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
                 <h3 className="text-sm font-semibold text-gray-900">{day.dayName}</h3>
-                <span className="text-xs text-gray-500">{day.date} • {day.entries.length} {t('form.entries')}</span>
+                <span className="text-xs text-gray-500">{day.date}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                {/* Indicador de status */}
+                {filled ? (
+                  <span className="text-xs font-medium text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full">
+                    {t('form.filled')}
+                  </span>
+                ) : (
+                  <span className="text-xs font-medium text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full">
+                    {t('form.pending')}
+                  </span>
+                )}
+                {hasError && (
+                  <span className="text-xs font-medium text-red-600">
+                    {t('form.progressRequired')}
+                  </span>
+                )}
+                <span className="text-xs text-gray-400">
+                  {day.entries.length} {t('form.entries')}
+                </span>
               </div>
             </div>
 
             {!isCollapsed && (
-              <div className="p-4 space-y-5">
-                {/* Data + Progresso */}
+              <div className="p-5 space-y-5">
+                {/* Data (read-only) + Daily Progress (obrigatório) */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className={labelClass}>{day.dayName} {t('sheet.dayDate')}</label>
-                    <input type="text" value={day.date} onChange={(e) => handleDayFieldChange(dayIdx, 'date', e.target.value)} placeholder="DD/MM/YYYY" disabled={isSaving} className={inputClass} />
+                    <label className={labelClass}>
+                      <span className="flex items-center gap-1.5">
+                        <Lock size={12} className="text-gray-400" />
+                        {day.dayName} {t('sheet.dayDate')}
+                      </span>
+                    </label>
+                    <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-600">
+                      {day.date}
+                    </div>
                   </div>
                   <div>
-                    <label className={labelClass}>{t('sheet.dailyProgress')}</label>
-                    <textarea value={day.progress} onChange={(e) => handleDayFieldChange(dayIdx, 'progress', e.target.value)} rows={2} disabled={isSaving} placeholder="07:00 Tooling prepare, grinding, lamination... 19:00 demob." className={inputClass} />
+                    <label className={labelClass}>
+                      {t('sheet.dailyProgress')} <span className="text-red-500">*</span>
+                    </label>
+                    <textarea
+                      value={day.progress}
+                      onChange={(e) => handleProgressChange(dayIdx, e.target.value)}
+                      rows={2}
+                      disabled={isSaving}
+                      placeholder="07:00 Tooling prepare, grinding, lamination... 19:00 demob."
+                      className={`${inputClass} ${hasError ? 'border-red-300 ring-1 ring-red-300' : ''}`}
+                    />
+                    {hasError && (
+                      <p className="text-xs text-red-500 mt-1">{t('form.progressRequired')}</p>
+                    )}
                   </div>
                 </div>
 
-                {/* ── Informações Comuns (aplicadas a todos os técnicos) ── */}
+                {/* ── Informações Comuns ── */}
                 <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-4">
                   <div className="flex items-center gap-2 mb-3">
-                    <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
-                      <Settings2 size={12} className="text-blue-600" />
+                    <div className="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center">
+                      <Settings2 size={10} className="text-blue-600" />
                     </div>
                     <h4 className="text-xs font-semibold text-blue-800 uppercase tracking-wide">
                       {t('form.commonInfo')}
@@ -530,7 +783,7 @@ export function TimesheetFormEditor({
                   </div>
                 </div>
 
-                {/* ── Técnicos ──────────────────────────────────────────── */}
+                {/* ── Técnicos ── */}
                 <div>
                   <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
                     {t('form.technicians')}
@@ -538,38 +791,54 @@ export function TimesheetFormEditor({
 
                   <div className="space-y-2">
                     {day.entries.map((entry, entryIdx) => (
-                      <div key={entryIdx} className="border border-gray-150 rounded-lg overflow-hidden">
-                        {/* Linha principal: Nome + Role + botões */}
-                        <div className="flex items-center gap-3 px-3 py-2 bg-white">
-                          <span className="text-xs text-gray-400 w-5 text-center font-medium">{entryIdx + 1}</span>
+                      <div
+                        key={entryIdx}
+                        className={`border rounded-lg overflow-hidden ${
+                          entry.isCurrentUser ? 'border-blue-200 bg-blue-50/30' : 'border-gray-200'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 px-3 py-2.5 bg-white">
+                          <span className="text-xs text-gray-400 w-5 text-center font-medium shrink-0">
+                            {entryIdx + 1}
+                          </span>
 
-                          <div className="flex-1">
-                            <input
-                              type="text"
-                              value={entry.technicianName}
-                              onChange={(e) => handleEntryChange(dayIdx, entryIdx, 'technicianName', e.target.value)}
-                              placeholder={t('sheet.technicianName')}
-                              disabled={isSaving}
-                              className="w-full px-2 py-1.5 border border-gray-200 rounded text-sm font-medium focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            />
+                          {/* Nome com autocomplete */}
+                          <div className="flex-1 min-w-0">
+                            {entry.isCurrentUser ? (
+                              <div className="flex items-center gap-2 px-2 py-1.5 bg-blue-50 border border-blue-200 rounded text-sm font-medium text-gray-700">
+                                <UserIcon size={14} className="text-blue-500 shrink-0" />
+                                {entry.technicianName}
+                                <span className="text-xs text-blue-500 ml-auto">{t('form.you')}</span>
+                              </div>
+                            ) : (
+                              <TechnicianAutocomplete
+                                value={entry.technicianName}
+                                onChange={(v) => handleEntryChange(dayIdx, entryIdx, 'technicianName', v)}
+                                onSelectUser={(user) => handleSelectUser(dayIdx, entryIdx, user)}
+                                users={systemUsers}
+                                disabled={isSaving}
+                                placeholder={t('sheet.technicianName')}
+                              />
+                            )}
                           </div>
 
-                          <div className="w-32">
+                          {/* Role */}
+                          <div className="w-32 shrink-0">
                             <input
                               type="text"
                               value={entry.role}
                               onChange={(e) => handleEntryChange(dayIdx, entryIdx, 'role', e.target.value)}
                               placeholder={t('sheet.role')}
-                              disabled={isSaving}
-                              className="w-full px-2 py-1.5 border border-gray-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                              disabled={isSaving || entry.isCurrentUser}
+                              className="w-full px-2 py-1.5 border border-gray-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-60"
                             />
                           </div>
 
-                          {/* Botão: Personalizar campos */}
+                          {/* Botão: Personalizar */}
                           <button
                             onClick={() => toggleCustomize(dayIdx, entryIdx)}
                             disabled={isSaving}
-                            className={`p-1.5 rounded transition-colors ${
+                            className={`p-1.5 rounded transition-colors shrink-0 ${
                               entry.customized
                                 ? 'bg-amber-100 text-amber-600 hover:bg-amber-200'
                                 : 'text-gray-300 hover:text-gray-500 hover:bg-gray-100'
@@ -579,18 +848,21 @@ export function TimesheetFormEditor({
                             <Settings2 size={14} />
                           </button>
 
-                          {/* Botão: Remover */}
-                          <button
-                            onClick={() => handleRemoveEntry(dayIdx, entryIdx)}
-                            disabled={isSaving}
-                            className="p-1.5 text-gray-300 hover:text-red-500 transition-colors disabled:opacity-50"
-                            title={t('sheet.removeRow')}
-                          >
-                            <Trash2 size={14} />
-                          </button>
+                          {/* Botão: Remover (não remove entry do currentUser) */}
+                          {!entry.isCurrentUser && (
+                            <button
+                              onClick={() => handleRemoveEntry(dayIdx, entryIdx)}
+                              disabled={isSaving}
+                              className="p-1.5 text-gray-300 hover:text-red-500 transition-colors disabled:opacity-50 shrink-0"
+                              title={t('sheet.removeRow')}
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          )}
+                          {entry.isCurrentUser && <div className="w-7 shrink-0" />}
                         </div>
 
-                        {/* Campos personalizados (aparece quando customized = true) */}
+                        {/* Campos personalizados */}
                         {entry.customized && (
                           <div className="px-3 py-3 bg-amber-50/50 border-t border-amber-100">
                             <div className="flex items-center gap-1 mb-2">

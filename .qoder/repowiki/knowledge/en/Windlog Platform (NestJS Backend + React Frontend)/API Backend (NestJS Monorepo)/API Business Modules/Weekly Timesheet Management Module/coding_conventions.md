@@ -1,0 +1,6 @@
+- Each NestJS module follows the {name}.module.ts + {name}.controller.ts + {name}.service.ts + dto/{name}.dto.ts layout, with zero business logic in controllers.
+- DTOs use `class-validator` decorators (`@IsString`, `@IsUUID`, `@IsOptional`, `@ValidateNested`, `@Type`) and every optional field carries both the TypeScript `?` and an explicit `@IsOptional()` decorator.
+- RBAC is enforced inside the service via helper methods (`canManageTimesheet`, `canViewTimesheet`) that check ADMIN/HR roles first, then project membership for Team Leader — never in guards or controllers.
+- Soft delete is used for all business entities: queries filter `deletedAt: null` and `remove` sets `deletedAt = new Date()` instead of hard deletion.
+- All database access goes exclusively through `PrismaService`; the service constructs dynamic `where` clauses and uses `include`/`select` projections rather than raw queries.
+- Swagger documentation is added per endpoint with `@ApiTags`, `@ApiOperation`, `@ApiResponse`, and `@ApiBearerAuth()` on controllers.

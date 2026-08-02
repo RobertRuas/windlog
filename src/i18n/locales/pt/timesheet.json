@@ -108,7 +108,11 @@
     "technicians": "Técnicos",
     "customize": "Personalizar campos para este técnico",
     "useCommon": "Usar valores comuns",
-    "customizedFields": "Campos personalizados"
+    "customizedFields": "Campos personalizados",
+    "filled": "Preenchido",
+    "pending": "Pendente",
+    "you": "Você",
+    "progressRequired": "Preencha o Daily Progress"
   },
   "toasts": {
     "created": "Timesheet criado com sucesso!",

@@ -1,1 +1,1 @@
-React + Vite frontend for the Windlog platform, wiring role-based routes, TanStack Query data layer, i18n, and Sonner toasts across shared UI components, feature pages, and typed API services.
+Vite+React frontend for the Windlog platform, bootstrapping role-based routing, TanStack Query data layer, Portuguese i18n, Sonner toasts, and typed NestJS API services across shared UI components and feature pages.

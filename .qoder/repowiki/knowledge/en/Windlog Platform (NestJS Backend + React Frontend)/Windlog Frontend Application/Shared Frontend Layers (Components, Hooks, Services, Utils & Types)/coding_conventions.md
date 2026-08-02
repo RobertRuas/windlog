@@ -1,6 +1,0 @@
-- Every service function follows the pattern `api.<method><ApiResponse<T>>(endpoint, body)` and returns `response.data`, unwrapping the NestJS response envelope consistently.
-- TanStack Query keys use the `['entity', filterOrId]` tuple format (e.g. `['profile']`, `['file-url', filePath]`) and mutations invalidate related keys to keep cache consistent.
-- UI components in `src/components/ui/` accept Tailwind `className` props and expose variant/size enums as string unions, never hardcoding page-specific styles.
-- Layout components live under `src/components/layout/` and are reserved for structural shells (sidebar, header); they never contain business logic or direct API calls beyond query fetching.
-- Constants files export both a typed array (e.g. `PREDEFINED_COUNTRIES`, `PREDEFINED_LANGUAGES`) and helper lookup functions (`getCountryByCode`, `getLanguageByName`) instead of raw arrays.
-- Toast notifications for CRUD operations follow the Sonner pattern with Portuguese messages formatted as 'X criado/atualizado/removido com sucesso'.
