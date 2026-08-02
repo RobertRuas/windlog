@@ -78,7 +78,7 @@ export class NotificationController {
   @ApiResponse({ status: 200, description: 'Notificações retornadas com sucesso' })
   @ApiResponse({ status: 401, description: 'Não autenticado' })
   findAll(@CurrentUser() user: any, @Query() filter: NotificationFilterDto) {
-    return this.notificationService.findAll(user.id, filter);
+    return this.notificationService.findAll(user.sub, filter);
   }
 
   /**
@@ -90,7 +90,7 @@ export class NotificationController {
   @ApiResponse({ status: 200, description: 'Contagem retornada com sucesso' })
   @ApiResponse({ status: 401, description: 'Não autenticado' })
   getUnreadCount(@CurrentUser() user: any) {
-    return this.notificationService.getUnreadCount(user.id);
+    return this.notificationService.getUnreadCount(user.sub);
   }
 
   /**
@@ -103,7 +103,7 @@ export class NotificationController {
   @ApiResponse({ status: 200, description: 'Notificações marcadas como lidas' })
   @ApiResponse({ status: 401, description: 'Não autenticado' })
   markAllAsRead(@CurrentUser() user: any) {
-    return this.notificationService.markAllAsRead(user.id);
+    return this.notificationService.markAllAsRead(user.sub);
   }
 
   /**
@@ -116,7 +116,7 @@ export class NotificationController {
   @ApiResponse({ status: 401, description: 'Não autenticado' })
   @ApiResponse({ status: 404, description: 'Notificação não encontrada' })
   findById(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.notificationService.findById(id, user.id);
+    return this.notificationService.findById(id, user.sub);
   }
 
   /**
@@ -129,7 +129,7 @@ export class NotificationController {
   @ApiResponse({ status: 401, description: 'Não autenticado' })
   @ApiResponse({ status: 404, description: 'Notificação não encontrada' })
   update(@Param('id') id: string, @CurrentUser() user: any, @Body() data: UpdateNotificationDto) {
-    return this.notificationService.update(id, user.id, data);
+    return this.notificationService.update(id, user.sub, data);
   }
 
   /**
@@ -143,7 +143,7 @@ export class NotificationController {
   @ApiResponse({ status: 401, description: 'Não autenticado' })
   @ApiResponse({ status: 404, description: 'Notificação não encontrada' })
   delete(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.notificationService.delete(id, user.id);
+    return this.notificationService.delete(id, user.sub);
   }
 
   /**
@@ -156,6 +156,6 @@ export class NotificationController {
   @ApiResponse({ status: 200, description: 'Notificações lidas removidas com sucesso' })
   @ApiResponse({ status: 401, description: 'Não autenticado' })
   deleteRead(@CurrentUser() user: any) {
-    return this.notificationService.deleteRead(user.id);
+    return this.notificationService.deleteRead(user.sub);
   }
 }

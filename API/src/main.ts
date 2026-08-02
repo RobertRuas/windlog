@@ -95,9 +95,9 @@ async function bootstrap() {
   // 4. CORS - Cross-Origin Resource Sharing
   // -------------------------------------------------------------------------
   // Permite que o frontend (em outro domínio/porta) acesse a API
-  // Em produção, restrinja para domínios específicos
+  // Usa variável de ambiente CORS_ORIGIN para controlar origem permitida
   app.enableCors({
-    origin: '*', // Em produção, substitua por domínios específicos
+    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });

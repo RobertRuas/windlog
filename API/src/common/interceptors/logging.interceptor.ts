@@ -249,6 +249,46 @@ export class LoggingInterceptor implements NestInterceptor {
       if (method === 'DELETE') return LogAction.DATA_EXPORT;
     }
 
+    // Notifications
+    if (url.includes('/notifications')) {
+      if (method === 'PATCH') return LogAction.NOTIFICATION_READ;
+      if (method === 'DELETE') return LogAction.NOTIFICATION_DELETE;
+    }
+
+    // Project files
+    if (url.includes('/files')) {
+      if (method === 'POST') return LogAction.PROJECT_FILE_CREATE;
+      if (method === 'DELETE') return LogAction.PROJECT_FILE_DELETE;
+    }
+
+    // Documents
+    if (url.includes('/documents')) {
+      if (method === 'POST') return LogAction.DOCUMENT_ADD;
+      if (method === 'PUT' || method === 'PATCH') return LogAction.DOCUMENT_UPDATE;
+      if (method === 'DELETE') return LogAction.DOCUMENT_DELETE;
+    }
+
+    // Projects
+    if (url.includes('/projects')) {
+      if (method === 'POST') return LogAction.PROJECT_CREATE;
+      if (method === 'PUT' || method === 'PATCH') return LogAction.PROJECT_UPDATE;
+      if (method === 'DELETE') return LogAction.PROJECT_DELETE;
+    }
+
+    // Turbines
+    if (url.includes('/turbines')) {
+      if (method === 'POST') return LogAction.TURBINE_CREATE;
+      if (method === 'PUT' || method === 'PATCH') return LogAction.TURBINE_UPDATE;
+      if (method === 'DELETE') return LogAction.TURBINE_DELETE;
+    }
+
+    // Members/Technicians
+    if (url.includes('/members')) {
+      if (method === 'POST') return LogAction.TECHNICIAN_CREATE;
+      if (method === 'PUT' || method === 'PATCH') return LogAction.TECHNICIAN_UPDATE;
+      if (method === 'DELETE') return LogAction.TECHNICIAN_DELETE;
+    }
+
     // Default
     return LogAction.OTHER;
   }

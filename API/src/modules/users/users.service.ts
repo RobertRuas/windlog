@@ -122,8 +122,8 @@ export class UsersService {
     const { search, role, isActive, page = 1, limit = 10 } = filter;
 
     // Constrói o where clause dinamicamente
-    // Inclui todos os usuários (ativos e inativos/deletados)
-    const where: any = {};
+    // Exclui usuários deletados (soft delete) por padrão
+    const where: any = { deletedAt: null };
 
     // Busca por nome ou email
     if (search) {

@@ -5,7 +5,9 @@
     "profile": "Perfil",
     "settings": "Configurações",
     "users": "Usuários",
-    "projects": "Projetos"
+    "projects": "Projetos",
+    "logs": "Logs",
+    "notifications": "Notificações"
   },
   "notifications": {
     "title": "Notificações",
@@ -21,11 +23,28 @@
     "edit": "Editar",
     "back": "Voltar",
     "confirm": "Confirmar",
-    "logout": "Sair"
+    "logout": "Sair",
+    "login": "Entrar",
+    "continue": "Pressione um botão para continuar..."
   },
   "status": {
     "loading": "Carregando...",
     "error": "Ocorreu um erro",
     "success": "Sucesso"
+  },
+  "file": {
+    "no_file": "Sem ficheiro anexado",
+    "loading": "A carregar...",
+    "unavailable": "Ficheiro indisponível"
+  },
+  "error": {
+    "unknown": "Erro desconhecido",
+    "token_missing": "Token de autenticação não fornecido. Por favor, faça login.",
+    "session_expired": "Sessão expirada. Autenticação necessária.",
+    "session_ended": "A sua sessão terminou. Por favor, faça login novamente.",
+    "link_expired": "Este link de ficheiro expirou ou já não é válido. Volte e atualize a página para obter um novo link.",
+    "file_load_error": "Ocorreu um erro ao carregar o ficheiro. Por favor, tente novamente.",
+    "back": "[ ← Voltar ]",
+    "login": "[ Login → ]"
   }
 }

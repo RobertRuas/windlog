@@ -20,13 +20,10 @@
 
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import {
   ArrowLeft,
   AlertCircle,
-  Info,
-  AlertTriangle,
-  Check,
-  X,
   Calendar,
   Flag,
   Tag,
@@ -38,9 +35,8 @@ import {
   getNotificationById,
   markAsRead,
   deleteNotification,
-  NotificationType,
-  NotificationPriority,
 } from '@/services/notification.service';
+import { getNotificationIcon, getTypeLabel, getPriorityInfo } from '@/utils/notificationHelpers';
 
 /**
  * Formata data completa (ex: "30 de julho de 2026, 14:30").
@@ -54,68 +50,6 @@ function formatFullDate(dateString: string): string {
     hour: '2-digit',
     minute: '2-digit',
   });
-}
-
-/**
- * Retorna ícone e cor baseado no tipo de notificação.
- */
-function getNotificationIcon(type: NotificationType) {
-  switch (type) {
-    case NotificationType.ACTION_REQUIRED:
-    case NotificationType.DOCUMENT_EXPIRING:
-    case NotificationType.CERTIFICATION_EXPIRING:
-    case NotificationType.PASSWORD_EXPIRING:
-      return { icon: AlertCircle, color: 'text-red-500', bg: 'bg-red-100', border: 'border-red-200' };
-    case NotificationType.WARNING:
-      return { icon: AlertTriangle, color: 'text-amber-500', bg: 'bg-amber-100', border: 'border-amber-200' };
-    case NotificationType.ERROR:
-      return { icon: X, color: 'text-red-600', bg: 'bg-red-100', border: 'border-red-200' };
-    case NotificationType.SUCCESS:
-      return { icon: Check, color: 'text-green-500', bg: 'bg-green-100', border: 'border-green-200' };
-    case NotificationType.PROFILE_INCOMPLETE:
-      return { icon: Info, color: 'text-blue-500', bg: 'bg-blue-100', border: 'border-blue-200' };
-    default:
-      return { icon: Info, color: 'text-blue-500', bg: 'bg-blue-100', border: 'border-blue-200' };
-  }
-}
-
-/**
- * Retorna label e cor baseado na prioridade.
- */
-function getPriorityInfo(priority: NotificationPriority) {
-  switch (priority) {
-    case NotificationPriority.URGENT:
-      return { label: 'Urgente', color: 'bg-red-100 text-red-700 border-red-200', dot: 'bg-red-500' };
-    case NotificationPriority.HIGH:
-      return { label: 'Alta', color: 'bg-orange-100 text-orange-700 border-orange-200', dot: 'bg-orange-500' };
-    case NotificationPriority.MEDIUM:
-      return { label: 'Média', color: 'bg-blue-100 text-blue-700 border-blue-200', dot: 'bg-blue-500' };
-    case NotificationPriority.LOW:
-      return { label: 'Baixa', color: 'bg-gray-100 text-gray-700 border-gray-200', dot: 'bg-gray-400' };
-    default:
-      return { label: 'Média', color: 'bg-blue-100 text-blue-700 border-blue-200', dot: 'bg-blue-500' };
-  }
-}
-
-/**
- * Retorna label do tipo de notificação.
- */
-function getTypeLabel(type: NotificationType): string {
-  const labels: Record<NotificationType, string> = {
-    ACTION_REQUIRED: 'Ação Obrigatória',
-    DOCUMENT_EXPIRING: 'Documento a Expirar',
-    CERTIFICATION_EXPIRING: 'Certificação a Expirar',
-    PASSWORD_EXPIRING: 'Senha a Expirar',
-    RECOMMENDED_ACTION: 'Ação Recomendada',
-    PROFILE_INCOMPLETE: 'Perfil Incompleto',
-    INFO: 'Informação',
-    PROJECT_UPDATE: 'Atualização de Projeto',
-    SYSTEM_UPDATE: 'Atualização do Sistema',
-    SUCCESS: 'Sucesso',
-    WARNING: 'Aviso',
-    ERROR: 'Erro',
-  };
-  return labels[type] || 'Notificação';
 }
 
 /**
@@ -143,7 +77,7 @@ export function NotificationDetailPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
       queryClient.invalidateQueries({ queryKey: ['notification', id] });
-      queryClient.invalidateQueries({ queryKey: ['unreadCount'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications', 'unread'] });
     },
   });
 
@@ -154,17 +88,20 @@ export function NotificationDetailPage() {
     mutationFn: () => deleteNotification(id!),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
-      queryClient.invalidateQueries({ queryKey: ['unreadCount'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications', 'unread'] });
       navigate('/notifications');
     },
   });
 
   /**
    * Marca como lida ao abrir a página (se não for lida).
+   * Usa useEffect para evitar side-effects durante o render.
    */
-  if (notification && !notification.isRead && !markAsReadMutation.isPending) {
-    markAsReadMutation.mutate();
-  }
+  useEffect(() => {
+    if (notification && !notification.isRead && !markAsReadMutation.isPending) {
+      markAsReadMutation.mutate();
+    }
+  }, [notification, markAsReadMutation]);
 
   /**
    * Navega para a entidade relacionada.

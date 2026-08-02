@@ -48,8 +48,5 @@ export {
 // Utils
 export {
   formatDate,
-  sanitizeUser,
   buildPaginationMeta,
-  generateSlug,
-  isValidUUID,
 } from './utils/index.js';

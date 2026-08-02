@@ -29,9 +29,6 @@ import {
   CheckCheck,
   Trash2,
   AlertCircle,
-  Info,
-  AlertTriangle,
-  X,
   Mail,
   MailOpen,
   ChevronRight,
@@ -43,10 +40,9 @@ import {
   markAllAsRead,
   deleteNotification,
   deleteRead,
-  NotificationType,
-  NotificationPriority,
   type Notification,
 } from '@/services/notification.service';
+import { getNotificationIcon, getTypeLabel, getPriorityBorder } from '@/utils/notificationHelpers';
 
 /**
  * Formata data relativa (ex: "há 2 horas").
@@ -64,68 +60,6 @@ function formatRelativeDate(dateString: string): string {
   if (diffHrs < 24) return `há ${diffHrs}h`;
   if (diffDays < 7) return `há ${diffDays}d`;
   return date.toLocaleDateString('pt-PT');
-}
-
-/**
- * Retorna ícone e cor baseado no tipo de notificação.
- */
-function getNotificationIcon(type: NotificationType) {
-  switch (type) {
-    case NotificationType.ACTION_REQUIRED:
-    case NotificationType.DOCUMENT_EXPIRING:
-    case NotificationType.CERTIFICATION_EXPIRING:
-    case NotificationType.PASSWORD_EXPIRING:
-      return { icon: AlertCircle, color: 'text-red-500', bg: 'bg-red-50' };
-    case NotificationType.WARNING:
-      return { icon: AlertTriangle, color: 'text-amber-500', bg: 'bg-amber-50' };
-    case NotificationType.ERROR:
-      return { icon: X, color: 'text-red-600', bg: 'bg-red-50' };
-    case NotificationType.SUCCESS:
-      return { icon: Check, color: 'text-green-500', bg: 'bg-green-50' };
-    case NotificationType.PROFILE_INCOMPLETE:
-      return { icon: Info, color: 'text-blue-500', bg: 'bg-blue-50' };
-    default:
-      return { icon: Info, color: 'text-blue-500', bg: 'bg-blue-50' };
-  }
-}
-
-/**
- * Retorna cor da borda esquerda baseado na prioridade.
- */
-function getPriorityBorder(priority: NotificationPriority): string {
-  switch (priority) {
-    case NotificationPriority.URGENT:
-      return 'border-l-red-500';
-    case NotificationPriority.HIGH:
-      return 'border-l-orange-500';
-    case NotificationPriority.MEDIUM:
-      return 'border-l-blue-500';
-    case NotificationPriority.LOW:
-      return 'border-l-gray-300';
-    default:
-      return 'border-l-blue-500';
-  }
-}
-
-/**
- * Retorna label do tipo de notificação.
- */
-function getTypeLabel(type: NotificationType): string {
-  const labels: Record<NotificationType, string> = {
-    ACTION_REQUIRED: 'Ação Obrigatória',
-    DOCUMENT_EXPIRING: 'Documento a Expirar',
-    CERTIFICATION_EXPIRING: 'Certificação a Expirar',
-    PASSWORD_EXPIRING: 'Senha a Expirar',
-    RECOMMENDED_ACTION: 'Ação Recomendada',
-    PROFILE_INCOMPLETE: 'Perfil Incompleto',
-    INFO: 'Informação',
-    PROJECT_UPDATE: 'Atualização de Projeto',
-    SYSTEM_UPDATE: 'Atualização do Sistema',
-    SUCCESS: 'Sucesso',
-    WARNING: 'Aviso',
-    ERROR: 'Erro',
-  };
-  return labels[type] || 'Notificação';
 }
 
 type FilterType = 'all' | 'unread' | 'read';
@@ -159,7 +93,7 @@ export function NotificationsPage() {
     mutationFn: markAsRead,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
-      queryClient.invalidateQueries({ queryKey: ['unreadCount'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications', 'unread'] });
     },
   });
 
@@ -170,7 +104,7 @@ export function NotificationsPage() {
     mutationFn: markAllAsRead,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
-      queryClient.invalidateQueries({ queryKey: ['unreadCount'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications', 'unread'] });
     },
   });
 
@@ -181,7 +115,7 @@ export function NotificationsPage() {
     mutationFn: deleteNotification,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
-      queryClient.invalidateQueries({ queryKey: ['unreadCount'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications', 'unread'] });
     },
   });
 
@@ -192,7 +126,7 @@ export function NotificationsPage() {
     mutationFn: deleteRead,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
-      queryClient.invalidateQueries({ queryKey: ['unreadCount'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications', 'unread'] });
     },
   });
 

@@ -32,28 +32,6 @@ export function formatDate(date: Date | string): string {
 }
 
 /**
- * Remove campos sensíveis de um objeto (ex: password).
- *
- * @param obj - Objeto a ser limpo
- * @param fields - Lista de campos para remover (padrão: ['password'])
- * @returns Novo objeto sem os campos sensíveis
- *
- * @example
- * sanitizeUser({ id: '1', email: 'a@b.com', password: 'secret' })
- * // { id: '1', email: 'a@b.com' }
- */
-export function sanitizeUser<T extends Record<string, unknown>>(
-  obj: T,
-  fields: string[] = ['password'],
-): Omit<T, string> {
-  const sanitized = { ...obj };
-  for (const field of fields) {
-    delete (sanitized as Record<string, unknown>)[field];
-  }
-  return sanitized;
-}
-
-/**
  * Calcula metadados de paginação.
  *
  * @param total - Total de registros no banco
@@ -76,38 +54,4 @@ export function buildPaginationMeta(
     limit,
     totalPages: Math.ceil(total / limit),
   };
-}
-
-/**
- * Gera um slug a partir de uma string.
- *
- * @param text - Texto para converter em slug
- * @returns Slug em lowercase com hífens (ex: 'hello-world')
- *
- * @example
- * generateSlug('Hello World!') // 'hello-world'
- */
-export function generateSlug(text: string): string {
-  return text
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, '') // Remove caracteres especiais
-    .replace(/\s+/g, '-') // Substitui espaços por hífens
-    .replace(/-+/g, '-'); // Remove hífens duplicados
-}
-
-/**
- * Verifica se uma string é um UUID válido.
- *
- * @param str - String para verificar
- * @returns true se for UUID válido, false caso contrário
- *
- * @example
- * isValidUUID('550e8400-e29b-41d4-a716-446655440000') // true
- * isValidUUID('not-a-uuid') // false
- */
-export function isValidUUID(str: string): boolean {
-  const uuidRegex =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-  return uuidRegex.test(str);
 }

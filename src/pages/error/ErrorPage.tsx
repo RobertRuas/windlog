@@ -25,17 +25,18 @@
 
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 /**
- * Mensagens de erro conhecidas e suas traduções amigáveis.
- * Mapeia mensagens da API para textos mais descritivos.
+ * Mensagens de erro conhecidas e suas chaves de tradução.
+ * Mapeia mensagens da API para chaves do i18n.
  */
 const KNOWN_MESSAGES: Record<string, string> = {
-  'Token não fornecido': 'Authentication token is missing. Please log in.',
-  'Token expirado. Faça login novamente.': 'Session expired. Authentication required.',
-  'Sessão expirada. Faça login novamente.': 'Your session has ended. Please sign in again.',
-  'Link expirado ou inválido': 'This file link has expired or is no longer valid. Please go back and refresh the page to get a new link.',
-  'Erro ao carregar ficheiro': 'An error occurred while loading the file. Please try again.',
+  'Token não fornecido': 'error.token_missing',
+  'Token expirado. Faça login novamente.': 'error.session_expired',
+  'Sessão expirada. Faça login novamente.': 'error.session_ended',
+  'Link expirado ou inválido': 'error.link_expired',
+  'Erro ao carregar ficheiro': 'error.file_load_error',
 };
 
 /**
@@ -45,15 +46,19 @@ const KNOWN_MESSAGES: Record<string, string> = {
  * texto verde fosforescente, efeito scanline, cursor piscando).
  */
 export function ErrorPage() {
+  // Hook de tradução para mensagens em português
+  const { t } = useTranslation('common');
+
   // Lê a mensagem de erro dos parâmetros da URL
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
   // Mensagem bruta da URL (decodificada)
-  const rawMessage = searchParams.get('msg') || 'Unknown error';
+  const rawMessage = searchParams.get('msg') || t('error.unknown');
 
   // Traduz para mensagem amigável se for conhecida
-  const message = KNOWN_MESSAGES[rawMessage] || rawMessage;
+  const messageKey = KNOWN_MESSAGES[rawMessage];
+  const message = messageKey ? t(messageKey) : rawMessage;
 
   // Determina o código de status baseado na mensagem
   const isFileError = rawMessage === 'Link expirado ou inválido' || rawMessage === 'Erro ao carregar ficheiro';
@@ -190,7 +195,7 @@ export function ErrorPage() {
           className="text-xs mb-6 opacity-30"
           style={{ color: '#00ff41', fontFamily: '"Courier New", Courier, monospace' }}
         >
-          Press a button to continue...
+          {t('buttons.continue')}
         </div>
 
         {/* Botões de ação */}
@@ -214,7 +219,7 @@ export function ErrorPage() {
               e.currentTarget.style.borderColor = '#00ff4140';
             }}
           >
-            [ ← Back ]
+            {t('error.back')}
           </button>
 
           {/* Botão login */}
@@ -235,7 +240,7 @@ export function ErrorPage() {
               e.currentTarget.style.boxShadow = '0 0 12px rgba(0, 255, 65, 0.3)';
             }}
           >
-            [ Login → ]
+            {t('error.login')}
           </button>
         </div>
 

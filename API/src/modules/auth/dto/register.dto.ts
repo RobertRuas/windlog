@@ -34,11 +34,9 @@ import {
   IsString,
   MinLength,
   IsOptional,
-  IsEnum,
   IsDateString,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Role } from '../../../common/decorators/roles.decorator.js';
 
 /**
  * DTO para o endpoint de registro.
@@ -81,17 +79,6 @@ export class RegisterDto {
   @IsString()
   @IsNotEmpty({ message: 'Last name is required' })
   lastName: string;
-
-  @ApiPropertyOptional({
-    description: 'Papel do usuário no sistema (padrão: STANDARD)',
-    enum: Role,
-    default: Role.STANDARD,
-  })
-  @IsOptional()
-  @IsEnum(Role, {
-    message: `Role must be one of: ${Object.values(Role).join(', ')}`,
-  })
-  role?: Role;
 
   // =========================================================================
   // CAMPOS OPCIONAIS (preenchidos posteriormente)

@@ -41,6 +41,7 @@ import { CreateLanguageDto, UpdateLanguageDto } from './dto/user-language.dto.js
 import { CreateDocumentDto, UpdateDocumentDto } from './dto/user-document.dto.js';
 import { CreateBankAccountDto, UpdateBankAccountDto } from './dto/user-bank-account.dto.js';
 import { JwtPayload } from './strategies/jwt.strategy.js';
+import { Role } from '../../common/decorators/roles.decorator.js';
 
 /**
  * Número de rounds do bcrypt para hashear senhas.
@@ -100,7 +101,7 @@ export class AuthService {
         password: hashedPassword,
         firstName: dto.firstName,
         lastName: dto.lastName,
-        role: dto.role,
+        role: Role.STANDARD, // Segurança: registro público SEMPRE cria usuário STANDARD
         // Campos opcionais (preenchidos posteriormente no perfil)
         phone: dto.phone,
         phoneCountryCode: dto.phoneCountryCode,

@@ -15,7 +15,7 @@
  * ============================================================================
  */
 
-import { IsString, IsNotEmpty, IsEnum } from 'class-validator';
+import { IsString, IsNotEmpty, IsEnum, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 /**
@@ -51,11 +51,13 @@ export class CreateLanguageDto {
  */
 export class UpdateLanguageDto {
   @ApiProperty({ required: false })
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
   language?: string;
 
   @ApiProperty({ required: false, enum: LanguageLevel })
+  @IsOptional()
   @IsEnum(LanguageLevel)
   level?: LanguageLevel;
 }

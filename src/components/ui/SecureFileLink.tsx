@@ -25,6 +25,7 @@
  * ============================================================================
  */
 
+import { useTranslation } from 'react-i18next';
 import { useFileUrl } from '@/hooks/useFileUrl';
 
 /**
@@ -50,6 +51,9 @@ export function SecureFileLink({
   className = 'text-blue-600 hover:text-blue-800 underline',
   openInNewTab = true,
 }: SecureFileLinkProps) {
+  // Hook de tradução para mensagens em português
+  const { t } = useTranslation('common');
+
   // Obtém a URL temporária do hook
   const { url, isLoading } = useFileUrl(filePath);
 
@@ -57,7 +61,7 @@ export function SecureFileLink({
   if (!filePath) {
     return (
       <span className="text-gray-400 text-sm italic">
-        No file attached
+        {t('file.no_file')}
       </span>
     );
   }
@@ -66,7 +70,7 @@ export function SecureFileLink({
   if (isLoading) {
     return (
       <span className="text-gray-400 text-sm animate-pulse">
-        Loading...
+        {t('file.loading')}
       </span>
     );
   }
@@ -75,7 +79,7 @@ export function SecureFileLink({
   if (!url) {
     return (
       <span className="text-red-400 text-sm">
-        File unavailable
+        {t('file.unavailable')}
       </span>
     );
   }
