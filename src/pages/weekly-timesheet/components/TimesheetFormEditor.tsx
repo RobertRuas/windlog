@@ -34,7 +34,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import {
   Plus, Trash2, RotateCcw, ChevronDown, ChevronRight,
-  X, User as UserIcon, Check, Loader2,
+  X, User as UserIcon, Check,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type {
@@ -412,10 +412,6 @@ export function TimesheetFormEditor({
   // Painéis de personalização recolhidos (key: "dayIdx-entryIdx")
   const [collapsedCustomize, setCollapsedCustomize] = useState<Set<string>>(new Set());
 
-  // Auto-save: controle de estado sujo e feedback
-  const [isDirty, setIsDirty] = useState(false);
-  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
-
   // Atualiza form quando timesheet muda
   useEffect(() => {
     const state = timesheetToFormState(timesheet);
@@ -464,30 +460,14 @@ export function TimesheetFormEditor({
     });
   }, [currentUserName, currentUserPosition]);
 
-  // Marca o form como sujo (chamado em cada handler de edição)
-  function markDirty() {
-    setIsDirty(true);
-    setSaveStatus('idle');
-  }
-
-  // Auto-save com debounce: salva 800ms após a última edição
+  // Auto-save silencioso com debounce: salva 600ms após a última edição (sem feedback visual)
   useEffect(() => {
-    if (!isDirty) return;
     const timer = setTimeout(() => {
-      setIsDirty(false);
-      setSaveStatus('saving');
-      try {
-        onSave(formStateToPayload(form));
-        // O toast de sucesso e o refetch são tratados pelo mutation
-        setTimeout(() => setSaveStatus('saved'), 600);
-        setTimeout(() => setSaveStatus('idle'), 2800);
-      } catch {
-        setSaveStatus('idle');
-      }
-    }, 800);
+      onSave(formStateToPayload(form));
+    }, 600);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isDirty, form]);
+  }, [form]);
 
   function toggleDay(dayIdx: number) {
     setCollapsedDays((prev) => {
@@ -502,7 +482,6 @@ export function TimesheetFormEditor({
 
   function handleMetaChange(field: keyof FormState, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }));
-    markDirty();
   }
 
   function handleSharedChange(dayIdx: number, field: SharedFieldKey, value: string) {
@@ -518,7 +497,6 @@ export function TimesheetFormEditor({
       days[dayIdx] = { ...day, shared: newShared, entries: newEntries };
       return { ...prev, days };
     });
-    markDirty();
   }
 
   function handleEntryChange(
@@ -534,7 +512,6 @@ export function TimesheetFormEditor({
       days[dayIdx] = { ...days[dayIdx], entries };
       return { ...prev, days };
     });
-    markDirty();
   }
 
   /**
@@ -622,7 +599,6 @@ export function TimesheetFormEditor({
       days[dayIdx] = { ...days[dayIdx], entries };
       return { ...prev, days };
     });
-    markDirty();
   }
 
   function toggleCustomizePanel(dayIdx: number, entryIdx: number) {
@@ -1047,22 +1023,6 @@ export function TimesheetFormEditor({
 
       {/* ── Botões de ação ────────────────────────────────────────────── */}
       <div className="flex items-center justify-end gap-3 pt-4 pb-8 sticky bottom-0 bg-white/80 backdrop-blur-sm border-t border-gray-100 -mx-6 px-6">
-        {/* Indicador de auto-save */}
-        <div className="mr-auto flex items-center gap-1.5">
-          {saveStatus === 'saving' && (
-            <>
-              <Loader2 size={12} className="text-amber-500 animate-spin" />
-              <span className="text-xs text-amber-600 font-medium">{t('form.savingStatus')}</span>
-            </>
-          )}
-          {saveStatus === 'saved' && (
-            <>
-              <Check size={12} className="text-emerald-500" />
-              <span className="text-xs text-emerald-600 font-medium">{t('form.saved')}</span>
-            </>
-          )}
-        </div>
-
         <button onClick={handleCancel} disabled={isSaving} className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50">
           <RotateCcw size={14} />
           {t('form.cancel')}
