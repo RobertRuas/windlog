@@ -300,20 +300,23 @@ function SectionRow({
   const { icon: Icon, color } = SECTION_ICONS[section.id] || { icon: FileText, color: 'text-gray-500' };
   const isComplete = section.isComplete;
   const isRequired = section.id === 'documents'; // passaporte obrigatório
+  const progressText = `${section.filledFields}/${section.totalFields}`;
 
   return (
     <button
       onClick={onClick}
       disabled={isComplete}
-      className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left transition-all ${
+      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all ${
         isComplete
           ? 'opacity-60 cursor-default'
           : 'hover:bg-gray-50 cursor-pointer group'
       }`}
     >
       {/* Ícone da seção */}
-      <div className={`w-7 h-7 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0`}>
-        <Icon size={14} className={isComplete ? 'text-gray-400' : color} />
+      <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+        isComplete ? 'bg-emerald-50' : 'bg-gray-100'
+      }`}>
+        <Icon size={15} className={isComplete ? 'text-emerald-500' : color} />
       </div>
 
       {/* Nome e hint */}
@@ -323,16 +326,27 @@ function SectionRow({
             {t(`completeness.sections.${section.id}`)}
           </span>
           {isRequired && !isComplete && (
-            <span className="px-1 py-px text-[9px] font-bold uppercase bg-rose-100 text-rose-600 rounded">
+            <span className="px-1.5 py-0.5 text-[9px] font-bold uppercase bg-rose-100 text-rose-600 rounded">
               {t('completeness.required')}
             </span>
           )}
         </div>
-        {!isComplete && (
-          <p className="text-[11px] text-gray-400 truncate">
-            {t(`completeness.hints.${section.id}`)}
-          </p>
-        )}
+        <div className="flex items-center gap-2 mt-0.5">
+          {!isComplete ? (
+            <>
+              <p className="text-[11px] text-gray-400 truncate">
+                {t(`completeness.hints.${section.id}`)}
+              </p>
+              <span className="text-[10px] text-gray-400 font-medium flex-shrink-0">
+                {progressText}
+              </span>
+            </>
+          ) : (
+            <p className="text-[11px] text-emerald-500 truncate">
+              {t('completeness.complete')}
+            </p>
+          )}
+        </div>
       </div>
 
       {/* Status */}

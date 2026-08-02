@@ -32,7 +32,6 @@ import { toast } from 'sonner';
 import type { ProjectDetail, ProjectFile } from '@/services/project.service';
 import { DataTable, type DataTableColumn } from '@/components/ui/DataTable';
 import { SecureFileLink } from '@/components/ui/SecureFileLink';
-import { Button } from '@/components/ui/Button';
 
 /**
  * Props do componente ProjectFilesTab.

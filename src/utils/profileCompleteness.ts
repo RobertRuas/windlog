@@ -155,7 +155,7 @@ function getProfileSections(): ProfileSection[] {
     {
       id: 'documents',
       weight: 25,
-      fields: ['passport', 'otherDocuments'],
+      fields: ['passport'],
       requiredFields: ['passport'],
       isComplete: (d) => {
         const hasPassport = d.documents?.some(doc => doc.type === 'PASSPORT') ?? false;

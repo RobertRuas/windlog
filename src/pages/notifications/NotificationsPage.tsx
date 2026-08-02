@@ -32,7 +32,6 @@ import {
   Info,
   AlertTriangle,
   X,
-  Filter,
   Mail,
   MailOpen,
   ChevronRight,
