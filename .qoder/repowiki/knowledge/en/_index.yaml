@@ -3,7 +3,7 @@ schema_version: 1
 locale: en-US
 branch: main
 nodes_managed: true
-exported_at: "2026-08-02T23:14:42Z"
+exported_at: "2026-08-02T23:44:01Z"
 modules:
     "":
         dir_name: Windlog Platform (NestJS Backend + React Frontend)
@@ -38,7 +38,8 @@ modules:
         source_files: []
         children: []
         depends_on: []
-        related_to: []
+        related_to:
+            - path: api_backend/modules
     api_backend/modules:
         dir_name: API Business Modules
         title: API Business Modules
@@ -49,10 +50,9 @@ modules:
             - api_backend/modules/weekly_timesheet
         depends_on: []
         related_to:
-            - path: frontend_app/pages_home
+            - path: api_backend/common_infrastructure
             - path: frontend_app/pages_logs
             - path: frontend_app/pages_projects
-            - path: frontend_app/pages_settings
             - path: frontend_app/pages_users
     api_backend/modules/weekly_timesheet:
         dir_name: Weekly Timesheet Management Module
@@ -91,7 +91,8 @@ modules:
         source_files: []
         children: []
         depends_on: []
-        related_to: []
+        related_to:
+            - path: frontend_app/shared_layers
     frontend_app/i18n:
         dir_name: Internationalization (i18n) Configuration & Portuguese Translations
         title: Internationalization (i18n) Configuration & Portuguese Translations
@@ -109,8 +110,7 @@ modules:
         source_files: []
         children: []
         depends_on: []
-        related_to:
-            - path: api_backend/modules
+        related_to: []
     frontend_app/pages_logs:
         dir_name: System Logs Admin Page
         title: System Logs Admin Page
@@ -139,8 +139,7 @@ modules:
         source_files: []
         children: []
         depends_on: []
-        related_to:
-            - path: api_backend/modules
+        related_to: []
     frontend_app/pages_users:
         dir_name: Users Management Page
         title: Users Management Page
@@ -164,4 +163,5 @@ modules:
         source_files: []
         children: []
         depends_on: []
-        related_to: []
+        related_to:
+            - path: frontend_app/app_shell

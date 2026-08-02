@@ -34,7 +34,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import {
   Plus, Trash2, Save, RotateCcw, ChevronDown, ChevronRight,
-  Settings2, X, User as UserIcon, Check,
+  Settings2, X, User as UserIcon, Check, Eye,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type {
@@ -409,6 +409,9 @@ export function TimesheetFormEditor({
   // Erros de validação
   const [validationErrors, setValidationErrors] = useState<Set<number>>(new Set());
 
+  // Painéis de personalização recolhidos (key: "dayIdx-entryIdx")
+  const [collapsedCustomize, setCollapsedCustomize] = useState<Set<string>>(new Set());
+
   // Atualiza form quando timesheet muda
   useEffect(() => {
     const state = timesheetToFormState(timesheet);
@@ -475,7 +478,14 @@ export function TimesheetFormEditor({
   function handleSharedChange(dayIdx: number, field: SharedFieldKey, value: string) {
     setForm((prev) => {
       const days = [...prev.days];
-      days[dayIdx] = { ...days[dayIdx], shared: { ...days[dayIdx].shared, [field]: value } };
+      const day = days[dayIdx];
+      // Atualiza shared
+      const newShared = { ...day.shared, [field]: value };
+      // Sincroniza o campo em todos os entries não-customizados
+      const newEntries = day.entries.map((e) =>
+        e.customized ? e : { ...e, [field]: value },
+      );
+      days[dayIdx] = { ...day, shared: newShared, entries: newEntries };
       return { ...prev, days };
     });
   }
@@ -545,38 +555,50 @@ export function TimesheetFormEditor({
       const shared = days[dayIdx].shared;
 
       if (!entry.customized) {
+        // Ativando personalização: copia valores atuais de shared
         entries[entryIdx] = {
           ...entry,
           customized: true,
-          localTurbineNo: entry.localTurbineNo || shared.localTurbineNo,
-          turbineIdNo: entry.turbineIdNo || shared.turbineIdNo,
-          towerNo: entry.towerNo || shared.towerNo,
-          bladeNo: entry.bladeNo || shared.bladeNo,
-          standbyHrs: entry.standbyHrs || shared.standbyHrs,
-          workingHrs: entry.workingHrs || shared.workingHrs,
-          travelHrs: entry.travelHrs || shared.travelHrs,
-          downtimeHrs: entry.downtimeHrs || shared.downtimeHrs,
-          standbyReason: entry.standbyReason || shared.standbyReason,
+          localTurbineNo: shared.localTurbineNo,
+          turbineIdNo: shared.turbineIdNo,
+          towerNo: shared.towerNo,
+          bladeNo: shared.bladeNo,
+          standbyHrs: shared.standbyHrs,
+          workingHrs: shared.workingHrs,
+          travelHrs: shared.travelHrs,
+          downtimeHrs: shared.downtimeHrs,
+          standbyReason: shared.standbyReason,
         };
       } else {
-        // Voltando para comum: limpa os valores individuais
+        // Voltando para comum: copia valores de shared para os campos do entry
+        // (assim detectSharedValues reconhecerá como valor comum após recarga)
         entries[entryIdx] = {
           ...entry,
           customized: false,
-          localTurbineNo: '',
-          turbineIdNo: '',
-          towerNo: '',
-          bladeNo: '',
-          standbyHrs: '',
-          workingHrs: '',
-          travelHrs: '',
-          downtimeHrs: '',
-          standbyReason: '',
+          localTurbineNo: shared.localTurbineNo,
+          turbineIdNo: shared.turbineIdNo,
+          towerNo: shared.towerNo,
+          bladeNo: shared.bladeNo,
+          standbyHrs: shared.standbyHrs,
+          workingHrs: shared.workingHrs,
+          travelHrs: shared.travelHrs,
+          downtimeHrs: shared.downtimeHrs,
+          standbyReason: shared.standbyReason,
         };
       }
 
       days[dayIdx] = { ...days[dayIdx], entries };
       return { ...prev, days };
+    });
+  }
+
+  function toggleCustomizePanel(dayIdx: number, entryIdx: number) {
+    const key = `${dayIdx}-${entryIdx}`;
+    setCollapsedCustomize((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
     });
   }
 
@@ -838,64 +860,88 @@ export function TimesheetFormEditor({
                           {entry.isCurrentUser && <div className="w-7 shrink-0" />}
                         </div>
 
-                        {/* Campos personalizados */}
-                        {entry.customized && (
-                          <div className="px-3 py-3 bg-orange-50/50 border-t border-orange-100">
-                            <div className="flex items-center gap-1.5 mb-2">
-                              <span className="text-xs font-semibold text-orange-700 uppercase tracking-wide">
-                                {t('form.customizedFields')}
-                              </span>
-                              <span className="text-xs text-orange-500">— {t('form.clickToUseCommon')}</span>
-                              <button
-                                onClick={() => toggleCustomize(dayIdx, entryIdx)}
-                                className="ml-auto flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
-                              >
-                                <X size={10} />
-                                {t('form.useCommon')}
-                              </button>
+                        {/* Painel de personalização (recolhível) */}
+                        {entry.customized && (() => {
+                          const cKey = `${dayIdx}-${entryIdx}`;
+                          const isCustomCollapsed = collapsedCustomize.has(cKey);
+                          return (
+                            <div className="border-t border-orange-100 bg-orange-50/30">
+                              {/* Barra de cabeçalho — sempre visível */}
+                              <div className="flex items-center gap-2 px-3 py-2">
+                                <Eye size={11} className="text-orange-500 shrink-0" />
+                                <span className="text-xs font-medium text-orange-700">
+                                  {t('form.customizedFields')}
+                                </span>
+                                {isCustomCollapsed && (
+                                  <span className="text-xs text-orange-400 italic truncate">
+                                    {t('form.usingCustomValues')}
+                                  </span>
+                                )}
+                                <button
+                                  onClick={() => toggleCustomizePanel(dayIdx, entryIdx)}
+                                  className="ml-auto p-0.5 text-orange-400 hover:text-orange-600 transition-colors"
+                                  title={isCustomCollapsed ? t('form.expandCustom') : t('form.collapseCustom')}
+                                >
+                                  {isCustomCollapsed ? <ChevronRight size={12} /> : <ChevronDown size={12} />}
+                                </button>
+                                <button
+                                  onClick={() => toggleCustomize(dayIdx, entryIdx)}
+                                  className="flex items-center gap-1 px-1.5 py-0.5 text-xs font-medium rounded bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+                                  title={t('form.useCommon')}
+                                >
+                                  <X size={10} />
+                                  {t('form.useCommon')}
+                                </button>
+                              </div>
+
+                              {/* Campos — visíveis apenas quando expandido */}
+                              {!isCustomCollapsed && (
+                                <div className="px-3 pb-3 space-y-2">
+                                  <div className="grid grid-cols-4 gap-2">
+                                    <div>
+                                      <label className={smallLabel}>{t('sheet.localTurbineNo')}</label>
+                                      <input type="text" value={entry.localTurbineNo} onChange={(e) => handleEntryChange(dayIdx, entryIdx, 'localTurbineNo', e.target.value)} disabled={isSaving} className={smallInput} />
+                                    </div>
+                                    <div>
+                                      <label className={smallLabel}>{t('sheet.turbineIdNo')}</label>
+                                      <input type="text" value={entry.turbineIdNo} onChange={(e) => handleEntryChange(dayIdx, entryIdx, 'turbineIdNo', e.target.value)} disabled={isSaving} className={smallInput} />
+                                    </div>
+                                    <div>
+                                      <label className={smallLabel}>{t('sheet.towerNo')}</label>
+                                      <input type="text" value={entry.towerNo} onChange={(e) => handleEntryChange(dayIdx, entryIdx, 'towerNo', e.target.value)} disabled={isSaving} className={smallInput} />
+                                    </div>
+                                    <div>
+                                      <label className={smallLabel}>{t('sheet.bladeNo')}</label>
+                                      <input type="text" value={entry.bladeNo} onChange={(e) => handleEntryChange(dayIdx, entryIdx, 'bladeNo', e.target.value)} disabled={isSaving} className={smallInput} />
+                                    </div>
+                                  </div>
+                                  <div className="grid grid-cols-5 gap-2">
+                                    <div>
+                                      <label className={smallLabel}>{t('sheet.standbyHrs')}</label>
+                                      <input type="text" value={entry.standbyHrs} onChange={(e) => handleEntryChange(dayIdx, entryIdx, 'standbyHrs', e.target.value)} disabled={isSaving} className={smallInput + ' text-center'} />
+                                    </div>
+                                    <div>
+                                      <label className={smallLabel}>{t('sheet.workingHrs')}</label>
+                                      <input type="text" value={entry.workingHrs} onChange={(e) => handleEntryChange(dayIdx, entryIdx, 'workingHrs', e.target.value)} disabled={isSaving} className={smallInput + ' text-center'} />
+                                    </div>
+                                    <div>
+                                      <label className={smallLabel}>{t('sheet.travelHrs')}</label>
+                                      <input type="text" value={entry.travelHrs} onChange={(e) => handleEntryChange(dayIdx, entryIdx, 'travelHrs', e.target.value)} disabled={isSaving} className={smallInput + ' text-center'} />
+                                    </div>
+                                    <div>
+                                      <label className={smallLabel}>{t('sheet.downtimeHrs')}</label>
+                                      <input type="text" value={entry.downtimeHrs} onChange={(e) => handleEntryChange(dayIdx, entryIdx, 'downtimeHrs', e.target.value)} disabled={isSaving} className={smallInput + ' text-center'} />
+                                    </div>
+                                    <div>
+                                      <label className={smallLabel}>{t('sheet.standbyReason')}</label>
+                                      <input type="text" value={entry.standbyReason} onChange={(e) => handleEntryChange(dayIdx, entryIdx, 'standbyReason', e.target.value)} disabled={isSaving} className={smallInput} />
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
                             </div>
-                            <div className="grid grid-cols-4 gap-2">
-                              <div>
-                                <label className={smallLabel}>{t('sheet.localTurbineNo')}</label>
-                                <input type="text" value={entry.localTurbineNo} onChange={(e) => handleEntryChange(dayIdx, entryIdx, 'localTurbineNo', e.target.value)} disabled={isSaving} className={smallInput} />
-                              </div>
-                              <div>
-                                <label className={smallLabel}>{t('sheet.turbineIdNo')}</label>
-                                <input type="text" value={entry.turbineIdNo} onChange={(e) => handleEntryChange(dayIdx, entryIdx, 'turbineIdNo', e.target.value)} disabled={isSaving} className={smallInput} />
-                              </div>
-                              <div>
-                                <label className={smallLabel}>{t('sheet.towerNo')}</label>
-                                <input type="text" value={entry.towerNo} onChange={(e) => handleEntryChange(dayIdx, entryIdx, 'towerNo', e.target.value)} disabled={isSaving} className={smallInput} />
-                              </div>
-                              <div>
-                                <label className={smallLabel}>{t('sheet.bladeNo')}</label>
-                                <input type="text" value={entry.bladeNo} onChange={(e) => handleEntryChange(dayIdx, entryIdx, 'bladeNo', e.target.value)} disabled={isSaving} className={smallInput} />
-                              </div>
-                            </div>
-                            <div className="grid grid-cols-5 gap-2 mt-2">
-                              <div>
-                                <label className={smallLabel}>{t('sheet.standbyHrs')}</label>
-                                <input type="text" value={entry.standbyHrs} onChange={(e) => handleEntryChange(dayIdx, entryIdx, 'standbyHrs', e.target.value)} disabled={isSaving} className={smallInput + ' text-center'} />
-                              </div>
-                              <div>
-                                <label className={smallLabel}>{t('sheet.workingHrs')}</label>
-                                <input type="text" value={entry.workingHrs} onChange={(e) => handleEntryChange(dayIdx, entryIdx, 'workingHrs', e.target.value)} disabled={isSaving} className={smallInput + ' text-center'} />
-                              </div>
-                              <div>
-                                <label className={smallLabel}>{t('sheet.travelHrs')}</label>
-                                <input type="text" value={entry.travelHrs} onChange={(e) => handleEntryChange(dayIdx, entryIdx, 'travelHrs', e.target.value)} disabled={isSaving} className={smallInput + ' text-center'} />
-                              </div>
-                              <div>
-                                <label className={smallLabel}>{t('sheet.downtimeHrs')}</label>
-                                <input type="text" value={entry.downtimeHrs} onChange={(e) => handleEntryChange(dayIdx, entryIdx, 'downtimeHrs', e.target.value)} disabled={isSaving} className={smallInput + ' text-center'} />
-                              </div>
-                              <div>
-                                <label className={smallLabel}>{t('sheet.standbyReason')}</label>
-                                <input type="text" value={entry.standbyReason} onChange={(e) => handleEntryChange(dayIdx, entryIdx, 'standbyReason', e.target.value)} disabled={isSaving} className={smallInput} />
-                              </div>
-                            </div>
-                          </div>
-                        )}
+                          );
+                        })()}
                       </div>
                     ))}
                   </div>

@@ -5,5 +5,4 @@ scope:
     - src/pages/home/
 source_files: []
 depends_on: []
-related_to:
-    - path: api_backend/modules
+related_to: []

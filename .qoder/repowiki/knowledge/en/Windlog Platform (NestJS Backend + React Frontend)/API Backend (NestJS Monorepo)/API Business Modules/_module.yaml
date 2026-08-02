@@ -6,8 +6,7 @@ scope:
 source_files: []
 depends_on: []
 related_to:
-    - path: frontend_app/pages_home
+    - path: api_backend/common_infrastructure
     - path: frontend_app/pages_logs
     - path: frontend_app/pages_projects
-    - path: frontend_app/pages_settings
     - path: frontend_app/pages_users
