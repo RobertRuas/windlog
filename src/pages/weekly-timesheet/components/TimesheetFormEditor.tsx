@@ -140,7 +140,10 @@ function formatDateISO(dateStr: string): string {
  */
 function isDayFilled(day: FormDay): boolean {
   const hasProgress = day.progress.trim().length > 0;
-  const hasNamedEntry = day.entries.some((e) => e.technicianName.trim().length > 0);
+  // Considera apenas técnicos que não são o usuário atual
+  const hasNamedEntry = day.entries.some(
+    (e) => e.technicianName.trim().length > 0 && !e.isCurrentUser,
+  );
   return hasProgress && hasNamedEntry;
 }
 
@@ -330,7 +333,6 @@ function TechnicianAutocomplete({
           onChange(e.target.value);
           setShowSuggestions(true);
         }}
-        onFocus={() => setShowSuggestions(true)}
         disabled={disabled}
         placeholder={placeholder}
         autoComplete="off"
@@ -568,10 +570,15 @@ export function TimesheetFormEditor({
   // ── Save / Cancel ─────────────────────────────────────────────────
 
   function handleSave() {
-    // Validação: Daily Progress obrigatório
+    // Validação: Daily Progress obrigatório APENAS nos dias que têm técnico com nome
+    // (entries do usuário atual não contam, pois são pré-preenchidas em todos os dias)
     const errors = new Set<number>();
     form.days.forEach((day, idx) => {
-      if (!day.progress.trim()) errors.add(idx);
+      const hasNamedEntry = day.entries.some(
+        (e) => e.technicianName.trim().length > 0 && !e.isCurrentUser,
+      );
+      // Só exige progress se o dia tem pelo menos 1 técnico preenchido (além do usuário atual)
+      if (hasNamedEntry && !day.progress.trim()) errors.add(idx);
     });
 
     if (errors.size > 0) {
