@@ -559,7 +559,20 @@ export function TimesheetFormEditor({
           standbyReason: entry.standbyReason || shared.standbyReason,
         };
       } else {
-        entries[entryIdx] = { ...entry, customized: false };
+        // Voltando para comum: limpa os valores individuais
+        entries[entryIdx] = {
+          ...entry,
+          customized: false,
+          localTurbineNo: '',
+          turbineIdNo: '',
+          towerNo: '',
+          bladeNo: '',
+          standbyHrs: '',
+          workingHrs: '',
+          travelHrs: '',
+          downtimeHrs: '',
+          standbyReason: '',
+        };
       }
 
       days[dayIdx] = { ...days[dayIdx], entries };
@@ -570,30 +583,7 @@ export function TimesheetFormEditor({
   // ── Save / Cancel ─────────────────────────────────────────────────
 
   function handleSave() {
-    // Validação: Daily Progress obrigatório APENAS nos dias que têm técnico com nome
-    // (entries do usuário atual não contam, pois são pré-preenchidas em todos os dias)
-    const errors = new Set<number>();
-    form.days.forEach((day, idx) => {
-      const hasNamedEntry = day.entries.some(
-        (e) => e.technicianName.trim().length > 0 && !e.isCurrentUser,
-      );
-      // Só exige progress se o dia tem pelo menos 1 técnico preenchido (além do usuário atual)
-      if (hasNamedEntry && !day.progress.trim()) errors.add(idx);
-    });
-
-    if (errors.size > 0) {
-      setValidationErrors(errors);
-      // Abre o primeiro dia com erro
-      const firstError = Math.min(...errors);
-      setCollapsedDays((prev) => {
-        const next = new Set(prev);
-        next.delete(firstError);
-        return next;
-      });
-      toast.error(t('form.progressRequired'));
-      return;
-    }
-
+    // Salva sempre — campos obrigatórios só bloqueiam o submit, não o save
     onSave(formStateToPayload(form));
   }
 
