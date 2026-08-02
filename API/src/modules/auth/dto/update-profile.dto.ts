@@ -146,6 +146,15 @@ export class UpdateProfileDto {
   position?: string;
 
   @ApiProperty({
+    description: 'Data de contratação',
+    example: '2024-01-15',
+    required: false,
+  })
+  @IsOptional()
+  @IsDateString({}, { message: 'Hire date must be a valid date' })
+  hireDate?: string;
+
+  @ApiProperty({
     description: 'Biografia/resumo profissional',
     example: 'Profissional com 10 anos de experiência em energia eólica.',
     required: false,
