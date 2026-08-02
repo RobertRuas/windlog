@@ -33,8 +33,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import {
-  Plus, Trash2, Save, RotateCcw, ChevronDown, ChevronRight,
-  Settings2, X, User as UserIcon, Check, Eye,
+  Plus, Trash2, RotateCcw, ChevronDown, ChevronRight,
+  X, User as UserIcon, Check, Loader2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type {
@@ -412,6 +412,10 @@ export function TimesheetFormEditor({
   // Painéis de personalização recolhidos (key: "dayIdx-entryIdx")
   const [collapsedCustomize, setCollapsedCustomize] = useState<Set<string>>(new Set());
 
+  // Auto-save: controle de estado sujo e feedback
+  const [isDirty, setIsDirty] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+
   // Atualiza form quando timesheet muda
   useEffect(() => {
     const state = timesheetToFormState(timesheet);
@@ -460,6 +464,31 @@ export function TimesheetFormEditor({
     });
   }, [currentUserName, currentUserPosition]);
 
+  // Marca o form como sujo (chamado em cada handler de edição)
+  function markDirty() {
+    setIsDirty(true);
+    setSaveStatus('idle');
+  }
+
+  // Auto-save com debounce: salva 800ms após a última edição
+  useEffect(() => {
+    if (!isDirty) return;
+    const timer = setTimeout(() => {
+      setIsDirty(false);
+      setSaveStatus('saving');
+      try {
+        onSave(formStateToPayload(form));
+        // O toast de sucesso e o refetch são tratados pelo mutation
+        setTimeout(() => setSaveStatus('saved'), 600);
+        setTimeout(() => setSaveStatus('idle'), 2800);
+      } catch {
+        setSaveStatus('idle');
+      }
+    }, 800);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDirty, form]);
+
   function toggleDay(dayIdx: number) {
     setCollapsedDays((prev) => {
       const next = new Set(prev);
@@ -473,6 +502,7 @@ export function TimesheetFormEditor({
 
   function handleMetaChange(field: keyof FormState, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }));
+    markDirty();
   }
 
   function handleSharedChange(dayIdx: number, field: SharedFieldKey, value: string) {
@@ -488,6 +518,7 @@ export function TimesheetFormEditor({
       days[dayIdx] = { ...day, shared: newShared, entries: newEntries };
       return { ...prev, days };
     });
+    markDirty();
   }
 
   function handleEntryChange(
@@ -503,6 +534,7 @@ export function TimesheetFormEditor({
       days[dayIdx] = { ...days[dayIdx], entries };
       return { ...prev, days };
     });
+    markDirty();
   }
 
   /**
@@ -590,6 +622,7 @@ export function TimesheetFormEditor({
       days[dayIdx] = { ...days[dayIdx], entries };
       return { ...prev, days };
     });
+    markDirty();
   }
 
   function toggleCustomizePanel(dayIdx: number, entryIdx: number) {
@@ -602,12 +635,7 @@ export function TimesheetFormEditor({
     });
   }
 
-  // ── Save / Cancel ─────────────────────────────────────────────────
-
-  function handleSave() {
-    // Salva sempre — campos obrigatórios só bloqueiam o submit, não o save
-    onSave(formStateToPayload(form));
-  }
+  // ── Cancel ────────────────────────────────────────────────────────
 
   function handleCancel() {
     setForm(timesheetToFormState(timesheet));
@@ -722,7 +750,7 @@ export function TimesheetFormEditor({
                 <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-4">
                   <div className="flex items-center gap-2 mb-3">
                     <div className="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center">
-                      <Settings2 size={10} className="text-blue-600" />
+                      <Check size={10} className="text-blue-600" />
                     </div>
                     <h4 className="text-xs font-semibold text-blue-800 uppercase tracking-wide">
                       {t('form.commonInfo')}
@@ -782,8 +810,12 @@ export function TimesheetFormEditor({
                     {day.entries.map((entry, entryIdx) => (
                       <div
                         key={entryIdx}
-                        className={`border rounded-lg overflow-hidden ${
-                          entry.isCurrentUser ? 'border-blue-200 bg-blue-50/30' : 'border-gray-200'
+                        className={`border rounded-lg overflow-hidden transition-colors ${
+                          entry.customized
+                            ? 'border-orange-200 bg-orange-50/20'
+                            : entry.isCurrentUser
+                              ? 'border-blue-200 bg-blue-50/30'
+                              : 'border-gray-200'
                         }`}
                       >
                         <div className="flex items-center gap-3 px-3 py-2.5 bg-white">
@@ -823,28 +855,26 @@ export function TimesheetFormEditor({
                             />
                           </div>
 
-                          {/* Toggle: Comum ↔ Personalizado */}
-                          {entry.customized ? (
+                          {/* Toggle switch: Comum ↔ Personalizado */}
+                          <div className="flex items-center gap-1.5 shrink-0">
                             <button
                               onClick={() => toggleCustomize(dayIdx, entryIdx)}
                               disabled={isSaving}
-                              className="flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-orange-100 text-orange-700 hover:bg-orange-200 transition-colors shrink-0 disabled:opacity-50"
-                              title={t('form.useCommon')}
+                              className={`relative w-8 h-4.5 rounded-full transition-colors disabled:opacity-50 ${
+                                entry.customized ? 'bg-orange-400' : 'bg-gray-300'
+                              }`}
+                              title={entry.customized ? t('form.useCommon') : t('form.customize')}
                             >
-                              <Check size={12} />
-                              {t('form.customized')}
+                              <span className={`absolute top-0.5 w-3.5 h-3.5 rounded-full bg-white shadow transition-transform ${
+                                entry.customized ? 'left-4' : 'left-0.5'
+                              }`} />
                             </button>
-                          ) : (
-                            <button
-                              onClick={() => toggleCustomize(dayIdx, entryIdx)}
-                              disabled={isSaving}
-                              className="flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-500 hover:bg-blue-50 hover:text-blue-600 transition-colors shrink-0 disabled:opacity-50"
-                              title={t('form.customize')}
-                            >
-                              <Settings2 size={12} />
-                              {t('form.common')}
-                            </button>
-                          )}
+                            <span className={`text-xs font-medium w-20 ${
+                              entry.customized ? 'text-orange-600' : 'text-gray-400'
+                            }`}>
+                              {entry.customized ? t('form.customized') : t('form.common')}
+                            </span>
+                          </div>
 
                           {/* Botão: Remover (não remove entry do currentUser) */}
                           {!entry.isCurrentUser && (
@@ -860,15 +890,15 @@ export function TimesheetFormEditor({
                           {entry.isCurrentUser && <div className="w-7 shrink-0" />}
                         </div>
 
-                        {/* Painel de personalização (recolhível) */}
+                        {/* Painel de personalização (accordion) */}
                         {entry.customized && (() => {
                           const cKey = `${dayIdx}-${entryIdx}`;
                           const isCustomCollapsed = collapsedCustomize.has(cKey);
                           return (
                             <div className="border-t border-orange-100 bg-orange-50/30">
-                              {/* Barra de cabeçalho — sempre visível */}
+                              {/* Cabeçalho do accordion */}
                               <div className="flex items-center gap-2 px-3 py-2">
-                                <Eye size={11} className="text-orange-500 shrink-0" />
+                                <Check size={11} className="text-orange-500 shrink-0" />
                                 <span className="text-xs font-medium text-orange-700">
                                   {t('form.customizedFields')}
                                 </span>
@@ -883,14 +913,6 @@ export function TimesheetFormEditor({
                                   title={isCustomCollapsed ? t('form.expandCustom') : t('form.collapseCustom')}
                                 >
                                   {isCustomCollapsed ? <ChevronRight size={12} /> : <ChevronDown size={12} />}
-                                </button>
-                                <button
-                                  onClick={() => toggleCustomize(dayIdx, entryIdx)}
-                                  className="flex items-center gap-1 px-1.5 py-0.5 text-xs font-medium rounded bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
-                                  title={t('form.useCommon')}
-                                >
-                                  <X size={10} />
-                                  {t('form.useCommon')}
                                 </button>
                               </div>
 
@@ -1025,13 +1047,25 @@ export function TimesheetFormEditor({
 
       {/* ── Botões de ação ────────────────────────────────────────────── */}
       <div className="flex items-center justify-end gap-3 pt-4 pb-8 sticky bottom-0 bg-white/80 backdrop-blur-sm border-t border-gray-100 -mx-6 px-6">
+        {/* Indicador de auto-save */}
+        <div className="mr-auto flex items-center gap-1.5">
+          {saveStatus === 'saving' && (
+            <>
+              <Loader2 size={12} className="text-amber-500 animate-spin" />
+              <span className="text-xs text-amber-600 font-medium">{t('form.savingStatus')}</span>
+            </>
+          )}
+          {saveStatus === 'saved' && (
+            <>
+              <Check size={12} className="text-emerald-500" />
+              <span className="text-xs text-emerald-600 font-medium">{t('form.saved')}</span>
+            </>
+          )}
+        </div>
+
         <button onClick={handleCancel} disabled={isSaving} className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50">
           <RotateCcw size={14} />
           {t('form.cancel')}
-        </button>
-        <button onClick={handleSave} disabled={isSaving} className="flex items-center gap-2 px-5 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-          <Save size={14} />
-          {isSaving ? t('form.saving') : t('form.saveChanges')}
         </button>
       </div>
     </div>
