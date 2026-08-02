@@ -341,6 +341,7 @@ export class AuthService {
     if (dto.country !== undefined) updateData.country = dto.country;
     if (dto.department !== undefined) updateData.department = dto.department;
     if (dto.position !== undefined) updateData.position = dto.position;
+    if (dto.hireDate !== undefined) updateData.hireDate = dto.hireDate ? new Date(dto.hireDate) : null;
     if (dto.bio !== undefined) updateData.bio = dto.bio;
     if (dto.photoUrl !== undefined) updateData.photoUrl = dto.photoUrl;
 
