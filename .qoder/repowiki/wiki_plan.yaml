@@ -1,0 +1,191 @@
+version: 1
+
+scope:
+  include:
+    - "src/**"
+    - "API/src/**"
+    - "API/prisma/schema.prisma"
+    - "src/i18n/**"
+  exclude:
+    - "**/node_modules/**"
+    - "**/dist/**"
+    - "**/generated/**"
+    - "**/migrations/**"
+    - "**/*.spec.ts"
+    - "**/AI-INSTRUCTIONS.ts"
+
+repowiki:
+  template: "architecture"
+
+  notes:
+    - text: "Windlog é um sistema web de gestão para técnicos de energia eólica. Monorepo com frontend React (Vite) e backend NestJS, comunicando via REST API."
+    - text: "O idioma oficial do código é inglês (variáveis, funções, classes). Comentários e documentação são em português brasileiro (PT-BR), estilo didático e explicativo."
+    - text: "Autenticação via JWT Bearer Token. O payload JWT contém { sub: userId, email, role }. O campo sub é o ID do usuário — nunca usar user.id."
+    - text: "O sistema usa RBAC com 3 roles: ADMIN (acesso total), HR (gestão de pessoas), STANDARD (acesso restrito). Roles são definidos no decorator @Roles() e validados pelo RolesGuard."
+    - text: "Todas as entidades principais usam UUID como ID e soft delete (campo deletedAt). Timestamps sempre em UTC."
+    - text: "Formato de resposta padronizado: sucesso = { data, message, statusCode, timestamp }, erro = { error, message, statusCode, timestamp, path }."
+    - text: "Moeda oficial da aplicação é Euro (€). Locale padrão é pt-PT para formatação de datas e números."
+    - text: "Design system inspirado na Apple: minimalista, limpo, espaçamento generoso, cores neutras com acentos em azul. Tailwind CSS v4 com classes utilitárias."
+    - text: "Frontend usa TanStack Query (React Query) para data fetching e cache. Mutações devem invalidar queries relacionadas via queryClient.invalidateQueries()."
+    - text: "i18n obrigatório em todo texto visível ao usuário. Namespace 'common' para textos compartilhados. Nunca usar strings hardcoded em inglês na UI."
+    - text: "Logging completo via LoggingInterceptor + SystemLogService. Toda ação do usuário deve ser registrada com contexto completo (userId, action, entity, IP, duration)."
+    - text: "Upload de ficheiros via Multer com validação de MIME type e tamanho. URLs temporárias para acesso seguro a ficheiros (endpoint /upload/files/:token)."
+
+  documents:
+    - title: "Visão Geral do Projeto"
+      goal: "Apresentar o propósito, público-alvo, arquitetura geral e tecnologias do Windlog."
+      parent: ""
+      template: |
+        ## Objetivo da Aplicação
+        ## Público-Alvo e Roles
+        ## Arquitetura Geral (Monorepo)
+        ## Stack Tecnológica
+        ## Fluxo Geral da Aplicação
+
+    - title: "Stack e Dependências"
+      goal: "Listar todas as tecnologias, bibliotecas e suas responsabilidades no projeto."
+      parent: "Visão Geral do Projeto"
+      template: |
+        ## Backend (API/)
+        ## Frontend (src/)
+        ## Banco de Dados
+        ## Ferramentas de Desenvolvimento
+
+    - title: "Estrutura do Projeto"
+      goal: "Documentar a árvore de diretórios e a responsabilidade de cada pasta."
+      parent: ""
+      template: |
+        ## Estrutura do Backend (API/)
+        ## Estrutura do Frontend (src/)
+        ## Arquivos de Configuração
+        ## Responsabilidade por Diretório
+
+    - title: "Arquitetura Backend"
+      goal: "Definir como os módulos NestJS são organizados e como criar novos módulos."
+      parent: ""
+      template: |
+        ## Padrão Modular NestJS
+        ## Anatomia de um Módulo
+        ## Responsabilidade de Cada Arquivo
+        ## Fluxo Interno do Módulo
+        ## Dependências Permitidas
+
+    - title: "Módulos do Sistema"
+      goal: "Descrever cada módulo existente, seus endpoints e responsabilidades."
+      parent: "Arquitetura Backend"
+      template: |
+        ## Módulo Auth
+        ## Módulo Users
+        ## Módulo Projects
+        ## Módulo Notifications
+        ## Módulo SystemLog
+        ## Módulo Upload
+
+    - title: "Common — Infraestrutura Compartilhada"
+      goal: "Documentar decorators, guards, filters, interceptors, DTOs e utilitários comuns."
+      parent: "Arquitetura Backend"
+      template: |
+        ## Decorators (@CurrentUser, @Roles)
+        ## Guards (RolesGuard, JwtAuthGuard)
+        ## Filters (HttpExceptionFilter)
+        ## Interceptors (LoggingInterceptor, TransformInterceptor)
+        ## DTOs Comuns (PaginationDto, ApiResponseDto)
+        ## Utilitários (formatDate, buildPaginationMeta)
+
+    - title: "Arquitetura Frontend"
+      goal: "Definir a organização de páginas, componentes, serviços e hooks do React."
+      parent: ""
+      template: |
+        ## Organização de Páginas
+        ## Componentes Compartilhados
+        ## Serviços (API Layer)
+        ## Hooks Personalizados
+        ## Estado e Cache (TanStack Query)
+        ## Roteamento
+
+    - title: "Convenções de Código"
+      goal: "Definir padrões obrigatórios de nomenclatura, imports, comentários e tratamento de erros."
+      parent: ""
+      template: |
+        ## Nomenclatura de Arquivos
+        ## Nomenclatura de Classes e Interfaces
+        ## Funções e Métodos
+        ## Enums e Constantes
+        ## Organização dos Imports
+        ## Comentários e Documentação
+        ## Tratamento de Erros
+        ## Padrão de Retorno
+
+    - title: "Fluxo da Requisição"
+      goal: "Explicar como uma requisição percorre o sistema do request ao response."
+      parent: ""
+      template: |
+        ## Fluxo Backend (Request → Response)
+        ## Fluxo Frontend (User Action → UI Update)
+        ## Pipeline de Interceptors
+        ## Middleware e Guards
+
+    - title: "Segurança e Autenticação"
+      goal: "Documentar o sistema de autenticação JWT, RBAC, CORS e boas práticas de segurança."
+      parent: ""
+      template: |
+        ## Fluxo de Autenticação JWT
+        ## Registro de Usuário
+        ## Login e Refresh Token
+        ## RBAC (Roles e Permissões)
+        ## CORS e Helmet
+        ## Proteção de Endpoints
+        ## URLs Temporárias para Ficheiros
+
+    - title: "Banco de Dados e Prisma"
+      goal: "Documentar o schema Prisma, convenções de modelagem e migrations."
+      parent: ""
+      template: |
+        ## Schema Prisma
+        ## Convenções de Modelagem
+        ## Soft Delete
+        ## Migrations
+        ## Seed de Dados
+
+    - title: "Boas Práticas"
+      goal: "Regras obrigatórias e recomendações para manter a qualidade do código."
+      parent: ""
+      template: |
+        ## Regras Obrigatórias
+        ## Princípios SOLID Aplicados
+        ## Reutilização de Código
+        ## Performance
+        ## Responsividade e Design
+
+    - title: "Guia para Novas Funcionalidades"
+      goal: "Passo a passo para adicionar uma nova feature mantendo os padrões."
+      parent: ""
+      template: |
+        ## Novo Endpoint Backend
+        ## Nova Página Frontend
+        ## Novo Componente Compartilhado
+        ## Nova Migration
+        ## Checklist de Entrega
+
+    - title: "Guia para Agentes de IA"
+      goal: "Regras que qualquer agente de IA deve seguir ao modificar o projeto."
+      parent: ""
+      template: |
+        ## Antes de Modificar Código
+        ## Regras de Arquitetura
+        ## Regras de Nomenclatura
+        ## Regras de Segurança
+        ## Validação Pós-Modificação
+
+knowledgecard:
+  notes:
+    - text: "Todo módulo backend segue exatamente: {name}.module.ts + {name}.controller.ts + {name}.service.ts + dto/{name}.dto.ts. Nunca adicionar lógica no controller — pertence ao service."
+    - text: "DTOs backend usam class-validator com decorators @IsString, @IsEmail, @IsOptional, etc. Todo campo opcional PRECISA de @IsOptional() — o ? do TypeScript não é suficiente."
+    - text: "Frontend pages seguem padrão: {PageName}.tsx + components/ + hooks/. Services ficam em src/services/ e encapsulam chamadas à API via axios."
+    - text: "TanStack Query keys seguem padrão ['entity', filter?] para listas e ['entity', id] para detalhes. Mutações invalidam todas as keys relacionadas."
+    - text: "Componentes UI ficam em src/components/ui/. Componentes de layout em src/components/layout/. Nunca misturar — UI são genéricos, layout são estruturais."
+    - text: "Toast notifications obrigatórias para todas operações CRUD via Sonner. Mensagens em português. Padrão: 'X criado/atualizado/removido com sucesso'."
+    - text: "Prisma é a única fonte de tipos autoritativa. Enums no código devem espelhar enums do schema.prisma. Nunca acessar o banco fora do Service."
+    - text: "Design responsivo obrigatório: mobile-first com breakpoints Tailwind (sm:, md:, lg:). Sidebar colapsável em mobile via hamburger menu."
+    - text: "Soft delete obrigatório para entidades de negócio (User, Project, Turbine, File). Sempre filtrar deletedAt: null nas queries. Junction tables podem usar hard delete."
+    - text: "LoggingInterceptor mapeia automaticamente URL + método HTTP para LogAction. Novos endpoints devem ter seu LogAction adicionado ao método determineAction()."
