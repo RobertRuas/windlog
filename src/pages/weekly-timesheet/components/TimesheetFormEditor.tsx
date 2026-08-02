@@ -34,7 +34,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import {
   Plus, Trash2, Save, RotateCcw, ChevronDown, ChevronRight,
-  Settings2, X, User as UserIcon, Lock,
+  Settings2, X, User as UserIcon,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type {
@@ -705,35 +705,22 @@ export function TimesheetFormEditor({
 
             {!isCollapsed && (
               <div className="p-5 space-y-5">
-                {/* Data (read-only) + Daily Progress (obrigatório) */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className={labelClass}>
-                      <span className="flex items-center gap-1.5">
-                        <Lock size={12} className="text-gray-400" />
-                        {day.dayName} {t('sheet.dayDate')}
-                      </span>
-                    </label>
-                    <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-600">
-                      {day.date}
-                    </div>
-                  </div>
-                  <div>
-                    <label className={labelClass}>
-                      {t('sheet.dailyProgress')} <span className="text-red-500">*</span>
-                    </label>
-                    <textarea
-                      value={day.progress}
-                      onChange={(e) => handleProgressChange(dayIdx, e.target.value)}
-                      rows={2}
-                      disabled={isSaving}
-                      placeholder="07:00 Tooling prepare, grinding, lamination... 19:00 demob."
-                      className={`${inputClass} ${hasError ? 'border-red-300 ring-1 ring-red-300' : ''}`}
-                    />
-                    {hasError && (
-                      <p className="text-xs text-red-500 mt-1">{t('form.progressRequired')}</p>
-                    )}
-                  </div>
+                {/* Daily Progress (obrigatório) */}
+                <div>
+                  <label className={labelClass}>
+                    {t('sheet.dailyProgress')} <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    value={day.progress}
+                    onChange={(e) => handleProgressChange(dayIdx, e.target.value)}
+                    rows={2}
+                    disabled={isSaving}
+                    placeholder="07:00 Tooling prepare, grinding, lamination... 19:00 demob."
+                    className={`${inputClass} ${hasError ? 'border-red-300 ring-1 ring-red-300' : ''}`}
+                  />
+                  {hasError && (
+                    <p className="text-xs text-red-500 mt-1">{t('form.progressRequired')}</p>
+                  )}
                 </div>
 
                 {/* ── Informações Comuns ── */}
