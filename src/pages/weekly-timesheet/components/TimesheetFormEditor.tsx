@@ -811,19 +811,28 @@ export function TimesheetFormEditor({
                             />
                           </div>
 
-                          {/* Botão: Personalizar */}
-                          <button
-                            onClick={() => toggleCustomize(dayIdx, entryIdx)}
-                            disabled={isSaving}
-                            className={`p-1.5 rounded transition-colors shrink-0 ${
-                              entry.customized
-                                ? 'bg-orange-100 text-orange-600 hover:bg-orange-200'
-                                : 'text-gray-300 hover:text-gray-500 hover:bg-gray-100'
-                            }`}
-                            title={entry.customized ? t('form.useCommon') : t('form.customize')}
-                          >
-                            {entry.customized ? <Check size={14} /> : <Settings2 size={14} />}
-                          </button>
+                          {/* Toggle: Comum ↔ Personalizado */}
+                          {entry.customized ? (
+                            <button
+                              onClick={() => toggleCustomize(dayIdx, entryIdx)}
+                              disabled={isSaving}
+                              className="flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-orange-100 text-orange-700 hover:bg-orange-200 transition-colors shrink-0 disabled:opacity-50"
+                              title={t('form.useCommon')}
+                            >
+                              <Check size={12} />
+                              {t('form.customized')}
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => toggleCustomize(dayIdx, entryIdx)}
+                              disabled={isSaving}
+                              className="flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-500 hover:bg-blue-50 hover:text-blue-600 transition-colors shrink-0 disabled:opacity-50"
+                              title={t('form.customize')}
+                            >
+                              <Settings2 size={12} />
+                              {t('form.common')}
+                            </button>
+                          )}
 
                           {/* Botão: Remover (não remove entry do currentUser) */}
                           {!entry.isCurrentUser && (
@@ -843,13 +852,16 @@ export function TimesheetFormEditor({
                         {entry.customized && (
                           <div className="px-3 py-3 bg-orange-50/50 border-t border-orange-100">
                             <div className="flex items-center gap-1.5 mb-2">
-                              <Check size={12} className="text-orange-600" />
-                              <span className="text-xs font-medium text-orange-700">{t('form.customizedFields')}</span>
+                              <span className="text-xs font-semibold text-orange-700 uppercase tracking-wide">
+                                {t('form.customizedFields')}
+                              </span>
+                              <span className="text-xs text-orange-500">— {t('form.clickToUseCommon')}</span>
                               <button
                                 onClick={() => toggleCustomize(dayIdx, entryIdx)}
-                                className="ml-auto p-0.5 text-orange-400 hover:text-orange-600"
+                                className="ml-auto flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
                               >
-                                <X size={12} />
+                                <X size={10} />
+                                {t('form.useCommon')}
                               </button>
                             </div>
                             <div className="grid grid-cols-4 gap-2">
