@@ -1,0 +1,521 @@
+/**
+ * ============================================================================
+ * TIMESHEET STYLES - Estilos da Planilha Weekly Timesheet
+ * ============================================================================
+ *
+ * O QUE É ESTE ARQUIVO?
+ * ---------------------
+ * Contém todos os estilos visuais da planilha Weekly Timesheet.
+ * Migrado fielmente do design original (timesheet_design/css/styles.css).
+ *
+ * ESTRUTURA:
+ * ----------
+ * 1. Variáveis CSS (cores e paleta do Excel)
+ * 2. Layout do container e painel de controle
+ * 3. Estilos da tabela (larguras, alturas, bordas)
+ * 4. Células específicas (título, metadata, dias, dados, assinaturas)
+ * 5. Regras de impressão (A4 Landscape)
+ *
+ * NOTA: As regras de impressão (@media print) garantem que a planilha
+ * seja impressa em A4 Landscape com todas as cores preservadas.
+ * ============================================================================
+ */
+
+/* ==========================================================================
+   1. VARIÁVEIS CSS - Paleta de cores e design tokens
+   ========================================================================== */
+
+:root {
+  /* Cores do fundo do painel de controle (glassmorphic) */
+  --ts-bg-gradient-start: #0f172a;
+  --ts-bg-gradient-end: #1e293b;
+  --ts-card-bg: #ffffff;
+  --ts-card-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3),
+    0 10px 10px -5px rgba(0, 0, 0, 0.3);
+  --ts-primary-accent: #10b981;
+  --ts-primary-hover: #059669;
+  --ts-text-main: #f8fafc;
+  --ts-text-muted: #94a3b8;
+
+  /* Paleta de cores da planilha (estilo Excel) */
+  --excel-header-bg: #daf2d0;
+  --excel-travel-bg: #f2f2f2;
+  --excel-travel-text: #747474;
+  --excel-green-accent: #92d050;
+  --excel-border-color: #000000;
+  --excel-font-family: 'Calibri', 'Segoe UI', system-ui, -apple-system,
+    sans-serif;
+}
+
+/* ==========================================================================
+   2. LAYOUT - Container principal e painel de controle
+   ========================================================================== */
+
+/**
+ * Container principal do módulo de timesheets.
+ * Centraliza o conteúdo com largura máxima.
+ */
+.ts-dashboard-container {
+  width: 100%;
+  max-width: 1540px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/**
+ * Painel de controle (header com zoom, editar, exportar, imprimir).
+ * Escondido na impressão.
+ */
+.ts-control-panel {
+  background: rgba(30, 41, 59, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 1.25rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+}
+
+.ts-app-title h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: #1e40af;
+}
+
+.ts-app-title p {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.ts-action-buttons {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+/* ── Botões ──────────────────────────────────────────────────────────── */
+
+.ts-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ts-btn-primary {
+  background-color: var(--ts-primary-accent);
+  color: #0c1220;
+}
+
+.ts-btn-primary:hover {
+  background-color: var(--ts-primary-hover);
+  transform: translateY(-1px);
+}
+
+.ts-btn-secondary {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #1e293b;
+  border: 1px solid #e2e8f0;
+  background-color: #f8fafc;
+}
+
+.ts-btn-secondary:hover {
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+}
+
+.ts-btn:active {
+  transform: translateY(1px);
+}
+
+/* ── Controles de Zoom ──────────────────────────────────────────────── */
+
+.ts-zoom-controls {
+  display: inline-flex;
+  align-items: center;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 3px;
+  gap: 0.25rem;
+}
+
+.ts-zoom-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1e293b;
+  min-width: 46px;
+  text-align: center;
+  user-select: none;
+}
+
+.ts-btn-zoom {
+  padding: 0.5rem;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: #64748b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.ts-btn-zoom:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
+.ts-btn-zoom:active {
+  background: #cbd5e1;
+  transform: scale(0.95);
+}
+
+/* ==========================================================================
+   3. SHEET CARD - O "papel" da planilha (container branco)
+   ========================================================================== */
+
+/**
+ * Card branco que envolve a planilha (simula uma folha de papel).
+ */
+.ts-sheet-card {
+  background-color: var(--ts-card-bg);
+  color: #000000;
+  border-radius: 12px;
+  box-shadow: var(--ts-card-shadow);
+  padding: 2.5rem;
+  overflow-x: auto;
+  width: 100%;
+}
+
+/**
+ * Wrapper interno com zoom controlado por CSS.
+ * Largura fixa de 1489px para manter o layout fiel ao Excel original.
+ */
+.ts-sheet-scroll-wrapper {
+  width: 1489px;
+  margin: 0 auto;
+  --sheet-zoom: 1;
+  zoom: var(--sheet-zoom);
+  transform: scale(var(--sheet-zoom));
+  transform-origin: top center;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    zoom 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@supports (zoom: 1) {
+  .ts-sheet-scroll-wrapper {
+    transform: none;
+  }
+}
+
+/* ==========================================================================
+   4. TABELA EXCEL - Estilos core da planilha
+   ========================================================================== */
+
+/**
+ * Tabela principal com layout fixo e largura de 1489px.
+ * Reproduz fielmente o visual do Excel original.
+ */
+table.ts-excel-table {
+  width: 1489px;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-family: var(--excel-font-family);
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+/* ── Alturas de linhas (conformes ao XML do Excel) ──────────────────── */
+
+table.ts-excel-table tr.row-title {
+  height: 64px;
+}
+
+table.ts-excel-table tr.row-metadata-header {
+  height: 34px;
+}
+
+table.ts-excel-table tr.row-metadata-values {
+  height: 30.5px;
+}
+
+table.ts-excel-table tr.row-separator {
+  height: 16px;
+}
+
+table.ts-excel-table tr.row-day-header {
+  height: 68px;
+}
+
+table.ts-excel-table tr.row-data {
+  height: 16px;
+}
+
+table.ts-excel-table tr.row-signature-main {
+  height: 58.25px;
+}
+
+table.ts-excel-table tr.row-signature-line {
+  height: 17px;
+}
+
+/* ── Células padrão (bordas e padding) ──────────────────────────────── */
+
+table.ts-excel-table td,
+table.ts-excel-table th {
+  padding: 2px 4px;
+  vertical-align: middle;
+  text-align: center;
+  position: relative;
+}
+
+/* ==========================================================================
+   5. CÉLULAS ESPECÍFICAS - Classes para cada tipo de célula
+   ========================================================================== */
+
+/* ── Título "WEEKLY TIMESHEET" (s84) ────────────────────────────────── */
+
+.cell-title {
+  font-size: 14px;
+  color: #000000;
+  border-bottom: 2px solid var(--excel-green-accent);
+}
+
+/* ── Metadata Headers (verde claro) ─────────────────────────────────── */
+
+.cell-meta-header {
+  font-size: 12px;
+  background-color: var(--excel-header-bg);
+  border: 1px solid var(--excel-border-color);
+}
+
+.cell-meta-header-left-top {
+  border-right: none;
+}
+
+.cell-meta-header-right {
+  border-left: none;
+}
+
+/* ── Metadata Values ────────────────────────────────────────────────── */
+
+.cell-meta-value {
+  font-size: 12px;
+  border: 1px solid var(--excel-border-color);
+}
+
+.cell-meta-value-left-top {
+  border-right: none;
+}
+
+.cell-meta-value-right {
+  border-left: none;
+}
+
+.cell-meta-value-text {
+  text-align: left;
+}
+
+/* ── Separador (linha invisível) ────────────────────────────────────── */
+
+.cell-sep {
+  border: none !important;
+}
+
+/* ── Day Headers (verde claro) ──────────────────────────────────────── */
+
+.cell-day-header {
+  font-size: 12px;
+  background-color: var(--excel-header-bg);
+  border: 1px solid var(--excel-border-color);
+}
+
+.cell-day-header-bold {
+  font-weight: bold;
+}
+
+/* ── Rotated Headers (Stand-by, Working, Travel) ────────────────────── */
+
+.cell-day-header-rotated {
+  font-size: 12px;
+  background-color: var(--excel-header-bg);
+  border: 1px solid var(--excel-border-color);
+  padding: 0 !important;
+}
+
+.cell-day-header-rotated-grey {
+  font-size: 12px;
+  background-color: var(--excel-travel-bg);
+  border: 1px solid var(--excel-border-color);
+  padding: 0 !important;
+}
+
+.rotated-text-container {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rotated-text {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.rotated-text-grey {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  color: var(--excel-travel-text);
+  white-space: nowrap;
+}
+
+/* ── Daily Progress Header ──────────────────────────────────────────── */
+
+.cell-day-header-progress {
+  font-size: 12px;
+  background-color: var(--excel-header-bg);
+  border: 1px solid var(--excel-border-color);
+  text-align: left;
+  vertical-align: top;
+  padding: 6px;
+  font-weight: normal;
+}
+
+.cell-day-header-progress i {
+  font-size: 11px;
+}
+
+/* ── Data Cells (linhas de dados diários) ───────────────────────────── */
+
+.cell-data {
+  font-size: 12px;
+  border: 1px solid var(--excel-border-color);
+  height: 16px;
+}
+
+.cell-data-date {
+  font-size: 12px;
+  border: 1px solid var(--excel-border-color);
+}
+
+.cell-data-progress {
+  font-size: 12px;
+  border: 1px solid var(--excel-border-color);
+  text-align: left;
+  vertical-align: top;
+  background-color: #ffffff;
+  padding: 6px;
+  word-wrap: break-word;
+}
+
+/* ── Editable cells (modo edição) ───────────────────────────────────── */
+
+.cell-editable {
+  outline: 1px dashed var(--ts-primary-accent);
+  background-color: rgba(16, 185, 129, 0.05);
+  cursor: text;
+}
+
+/* ── Signature Area (rodapé) ────────────────────────────────────────── */
+
+.cell-signature-label {
+  font-size: 12px;
+  text-align: right;
+  vertical-align: middle;
+}
+
+.cell-signature-space {
+  font-size: 12px;
+  border: none;
+}
+
+.cell-signature-line-value {
+  font-size: 12px;
+  border-bottom: 1px solid var(--excel-border-color);
+  vertical-align: middle;
+}
+
+/* ==========================================================================
+   6. REGRAS DE IMPRESSÃO - A4 Landscape
+   ========================================================================== */
+
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 0.3in;
+  }
+
+  /* Reset de backgrounds para impressão */
+  body {
+    background: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    color: #000000 !important;
+    width: 1489px;
+  }
+
+  /* Esconde o painel de controle na impressão */
+  .ts-control-panel,
+  .ts-no-print {
+    display: none !important;
+  }
+
+  /* Container ocupa largura total na impressão */
+  .ts-dashboard-container {
+    width: 1489px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    gap: 0 !important;
+  }
+
+  /* Remove sombra e borda do card */
+  .ts-sheet-card {
+    background: #ffffff !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 1489px !important;
+    overflow: visible !important;
+  }
+
+  .ts-sheet-scroll-wrapper {
+    width: 1489px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  table.ts-excel-table {
+    width: 1489px !important;
+    page-break-inside: avoid;
+  }
+
+  /* Garante que as cores sejam impressas */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}

@@ -38,6 +38,7 @@ import { UsersModule } from './modules/users/users.module.js';
 import { ProjectsModule } from './modules/projects/projects.module.js';
 import { UploadModule } from './modules/upload/upload.module.js';
 import { NotificationsModule } from './modules/notifications/notification.module.js';
+import { WeeklyTimesheetModule } from './modules/weekly-timesheet/weekly-timesheet.module.js';
 
 @Module({
   imports: [
@@ -94,11 +95,14 @@ import { NotificationsModule } from './modules/notifications/notification.module
     NotificationsModule,
 
     // -------------------------------------------------------------------------
+    // WEEKLY TIMESHEET MODULE - Gestão de Timesheets Semanais
+    // -------------------------------------------------------------------------
+    WeeklyTimesheetModule,
+
+    // -------------------------------------------------------------------------
     // PRÓXIMOS MÓDULOS SERÃO ADICIONADOS AQUI
     // -------------------------------------------------------------------------
     // Exemplo:
-    // ProjectsModule,
-    // TimesheetsModule,
     // DailyReportsModule,
   ],
 })

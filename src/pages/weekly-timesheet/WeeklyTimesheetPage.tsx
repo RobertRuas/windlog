@@ -1,0 +1,272 @@
+/**
+ * ============================================================================
+ * WEEKLY TIMESHEET PAGE - Página de Listagem de Timesheets
+ * ============================================================================
+ *
+ * O QUE É ESTE ARQUIVO?
+ * ---------------------
+ * Página principal do módulo de Weekly Timesheets.
+ * Exibe uma tabela com todos os timesheets do sistema, com filtros
+ * e opção de criar novo timesheet.
+ *
+ * FUNCIONALIDADES:
+ * ----------------
+ * - Tabela paginada com timesheets
+ * - Filtros por projeto, semana e status
+ * - Botão "Novo Timesheet" (abre modal de criação)
+ * - Ações: visualizar, excluir
+ * - Navegação para página de detalhes ao clicar em uma linha
+ * ============================================================================
+ */
+
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { Plus, Trash2, Eye, Calendar } from 'lucide-react';
+import { toast } from 'sonner';
+
+import { AppLayout } from '@/components/layout/AppLayout';
+import { TimesheetCreateModal } from './components/TimesheetCreateModal';
+import { useTimesheetMutations } from './hooks/useTimesheetMutations';
+import {
+  getTimesheets,
+  type TimesheetListItem,
+} from '@/services/weekly-timesheet.service';
+
+/**
+ * Página WeeklyTimesheetPage - Listagem de timesheets.
+ */
+export function WeeklyTimesheetPage() {
+  const navigate = useNavigate();
+  const { t } = useTranslation('timesheet');
+  const mutations = useTimesheetMutations();
+
+  // ── Estado local ────────────────────────────────────────────────────
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [page, setPage] = useState(1);
+  const [statusFilter, setStatusFilter] = useState('');
+
+  // ── Busca timesheets ────────────────────────────────────────────────
+  const { data: response, isLoading } = useQuery({
+    queryKey: ['timesheets', page, statusFilter],
+    queryFn: () =>
+      getTimesheets({
+        page,
+        limit: 10,
+        status: statusFilter || undefined,
+      }),
+  });
+
+  const timesheets = response?.data?.data || [];
+  const meta = response?.data?.meta;
+
+  /**
+   * Badge de status colorido.
+   */
+  function StatusBadge({ status }: { status: string }) {
+    const colors: Record<string, string> = {
+      DRAFT: 'bg-yellow-100 text-yellow-800',
+      SUBMITTED: 'bg-blue-100 text-blue-800',
+      APPROVED: 'bg-green-100 text-green-800',
+    };
+
+    return (
+      <span
+        className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${colors[status] || 'bg-gray-100 text-gray-800'}`}
+      >
+        {t(`status.${status}`)}
+      </span>
+    );
+  }
+
+  /**
+   * Exclui um timesheet (com confirmação).
+   */
+  function handleDelete(id: string, e: React.MouseEvent) {
+    e.stopPropagation();
+
+    if (window.confirm(t('toasts.deleteConfirm'))) {
+      mutations.deleteTimesheet.mutate(id);
+    }
+  }
+
+  /**
+   * Callback após criação de novo timesheet.
+   * Navega para a página de detalhes.
+   */
+  function handleCreated(timesheetId: string) {
+    setShowCreateModal(false);
+    navigate(`/timesheets/${timesheetId}`);
+  }
+
+  return (
+    <AppLayout>
+      <div className="p-6 max-w-7xl mx-auto">
+        {/* ── Header ────────────────────────────────────────────────── */}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+              <Calendar size={24} className="text-blue-600" />
+              {t('title')}
+            </h1>
+            <p className="text-sm text-gray-500 mt-1">{t('subtitle')}</p>
+          </div>
+
+          {/* Botão Novo Timesheet */}
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+          >
+            <Plus size={16} />
+            {t('newTimesheet')}
+          </button>
+        </div>
+
+        {/* ── Filtros ───────────────────────────────────────────────── */}
+        <div className="flex gap-3 mb-4">
+          <select
+            value={statusFilter}
+            onChange={(e) => {
+              setStatusFilter(e.target.value);
+              setPage(1);
+            }}
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
+          >
+            <option value="">{t('filters.allStatuses')}</option>
+            <option value="DRAFT">{t('status.DRAFT')}</option>
+            <option value="SUBMITTED">{t('status.SUBMITTED')}</option>
+            <option value="APPROVED">{t('status.APPROVED')}</option>
+          </select>
+        </div>
+
+        {/* ── Tabela ────────────────────────────────────────────────── */}
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          {isLoading ? (
+            <div className="p-8 text-center text-gray-500">
+              {t('table.loading')}
+            </div>
+          ) : timesheets.length === 0 ? (
+            <div className="p-8 text-center text-gray-500">
+              {t('table.empty')}
+            </div>
+          ) : (
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th className="text-left px-4 py-3 font-medium text-gray-700">
+                    {t('table.project')}
+                  </th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-700">
+                    {t('table.client')}
+                  </th>
+                  <th className="text-center px-4 py-3 font-medium text-gray-700">
+                    {t('table.week')}
+                  </th>
+                  <th className="text-center px-4 py-3 font-medium text-gray-700">
+                    {t('table.teamNo')}
+                  </th>
+                  <th className="text-center px-4 py-3 font-medium text-gray-700">
+                    {t('table.status')}
+                  </th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-700">
+                    {t('table.createdBy')}
+                  </th>
+                  <th className="text-right px-4 py-3 font-medium text-gray-700">
+                    {t('table.actions')}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {timesheets.map((ts: TimesheetListItem) => (
+                  <tr
+                    key={ts.id}
+                    onClick={() => navigate(`/timesheets/${ts.id}`)}
+                    className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors"
+                  >
+                    <td className="px-4 py-3 font-medium text-gray-900">
+                      {ts.project.name}
+                    </td>
+                    <td className="px-4 py-3 text-gray-600">
+                      {ts.project.client}
+                    </td>
+                    <td className="px-4 py-3 text-center text-gray-600">
+                      {ts.week}
+                    </td>
+                    <td className="px-4 py-3 text-center text-gray-600">
+                      {ts.teamNo || '-'}
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <StatusBadge status={ts.status} />
+                    </td>
+                    <td className="px-4 py-3 text-gray-600">
+                      {ts.creator.firstName} {ts.creator.lastName}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <div className="flex justify-end gap-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/timesheets/${ts.id}`);
+                          }}
+                          className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors"
+                          title="Visualizar"
+                        >
+                          <Eye size={16} />
+                        </button>
+                        <button
+                          onClick={(e) => handleDelete(ts.id, e)}
+                          className="p-1.5 text-gray-400 hover:text-red-600 transition-colors"
+                          title="Excluir"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+
+        {/* ── Paginação ─────────────────────────────────────────────── */}
+        {meta && meta.totalPages > 1 && (
+          <div className="flex items-center justify-between mt-4">
+            <span className="text-sm text-gray-500">
+              {t('table.pagination', {
+                page: meta.page,
+                totalPages: meta.totalPages,
+                total: meta.total,
+              })}
+            </span>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="px-3 py-1 text-sm border border-gray-300 rounded-lg disabled:opacity-50 hover:bg-gray-50"
+              >
+                ←
+              </button>
+              <button
+                onClick={() => setPage((p) => Math.min(meta.totalPages, p + 1))}
+                disabled={page === meta.totalPages}
+                className="px-3 py-1 text-sm border border-gray-300 rounded-lg disabled:opacity-50 hover:bg-gray-50"
+              >
+                →
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── Modal de criação ────────────────────────────────────────── */}
+      {showCreateModal && (
+        <TimesheetCreateModal
+          onClose={() => setShowCreateModal(false)}
+          onSuccess={handleCreated}
+        />
+      )}
+    </AppLayout>
+  );
+}

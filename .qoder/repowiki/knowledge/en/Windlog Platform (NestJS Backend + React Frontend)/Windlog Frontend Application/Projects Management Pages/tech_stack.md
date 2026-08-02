@@ -1,0 +1,1 @@
+React + TypeScript with TanStack Query (`useQuery`, `useMutation`, `useQueryClient`) for data fetching and cache invalidation, react-i18next for translations keyed under the `projects` namespace, Sonner for toast notifications, lucide-react icons, and Tailwind CSS for styling. Data layer is provided by `@/services/project.service` and `@/services/user.service` (axios-based).

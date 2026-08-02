@@ -1,0 +1,1 @@
+i18next with react-i18next integration, JSON translation files, TypeScript.

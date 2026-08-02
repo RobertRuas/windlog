@@ -1,0 +1,10 @@
+schema_version: 1
+module_path: api_backend/common_infrastructure
+title: Common Infrastructure (Decorators, Guards, Interceptors, DTOs & Database)
+scope:
+    - API/src/common/
+    - API/src/config/
+    - API/src/database/
+source_files: []
+depends_on: []
+related_to: []

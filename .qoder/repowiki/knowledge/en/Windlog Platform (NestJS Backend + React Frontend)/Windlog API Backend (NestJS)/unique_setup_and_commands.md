@@ -1,0 +1,1 @@
+Bootstrap runs via `src/main.ts` which sets global prefix `/api/v1`, enables CORS from `CORS_ORIGIN` (default `http://localhost:5173`), and serves Swagger at `/api/docs`. Required environment variables include `DATABASE_URL`, `JWT_SECRET`, `PORT`, and `CORS_ORIGIN`.

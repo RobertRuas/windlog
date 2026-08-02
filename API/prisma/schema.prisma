@@ -207,6 +207,8 @@ model User {
   projectMembers  ProjectMember[]
   projectFiles    ProjectFile[]
   notifications   Notification[]
+  weeklyTimesheets WeeklyTimesheet[]
+  timesheetEntries WeeklyTimesheetEntry[]
 }
 // ---------------------------------------------------------------------------
 // MODEL: USER DOCUMENT (Documentos Pessoais do Usuário)
@@ -479,6 +481,7 @@ model Project {
   turbines    ProjectTurbine[]
   members     ProjectMember[]
   files       ProjectFile[]
+  weeklyTimesheets WeeklyTimesheet[]
 }
 
 // ---------------------------------------------------------------------------
@@ -653,6 +656,13 @@ enum LogAction {
   // Notificações
   NOTIFICATION_READ
   NOTIFICATION_DELETE
+  
+  // Weekly Timesheets
+  TIMESHEET_CREATE
+  TIMESHEET_UPDATE
+  TIMESHEET_DELETE
+  TIMESHEET_SUBMIT
+  TIMESHEET_APPROVE
   
   // Sistema
   SYSTEM_ERROR
@@ -857,4 +867,217 @@ model Notification {
   @@index([createdAt])
   @@index([userId, isRead])
   @@index([userId, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// ENUM: TIMESHEET STATUS (Status do Weekly Timesheet)
+// ---------------------------------------------------------------------------
+// Define os possíveis status de um Weekly Timesheet.
+// - DRAFT:     Rascunho (ainda sendo editado pelo Team Leader)
+// - SUBMITTED: Enviado/submetido para aprovação
+// - APPROVED:  Aprovado pelo cliente ou gestor
+// ---------------------------------------------------------------------------
+enum TimesheetStatus {
+  DRAFT       // Rascunho (sendo editado)
+  SUBMITTED   // Enviado/submetido
+  APPROVED    // Aprovado
+}
+
+// ---------------------------------------------------------------------------
+// MODEL: WEEKLY TIMESHEET (Planilha Semanal de Horas)
+// ---------------------------------------------------------------------------
+// Representa uma planilha semanal de horas de trabalho (Weekly Timesheet).
+// Este documento é preenchido pelo Team Leader ao final de cada semana
+// e contém as horas trabalhadas, standby e travel de cada técnico por dia.
+//
+// VINCULAÇÃO COM PROJETO:
+// -----------------------
+// Cada timesheet está vinculado a um projeto existente. Os campos
+// jobScope, client e siteName são preenchidos automaticamente a partir
+// dos dados do projeto selecionado.
+//
+// ASSINATURAS:
+// ------------
+// O rodapé do documento contém assinatura do Team Leader e do Cliente,
+// cada um com nome e data.
+//
+// DIAS E ENTRADAS:
+// ----------------
+// Os dias da semana estão em WeeklyTimesheetDay (1:N)
+// As linhas de cada dia estão em WeeklyTimesheetEntry (1:N por dia)
+// ---------------------------------------------------------------------------
+model WeeklyTimesheet {
+  // Identificador único (UUID v4)
+  id        String   @id @default(uuid())
+
+  // Relação com o projeto
+  /// ID do projeto vinculado
+  projectId String
+  /// Referência ao projeto (de onde vem client, siteName, jobScope)
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  // Metadata do documento (cabeçalho)
+  /// Nordic Access Job Number (número interno do job)
+  jobNumber  String?
+  /// Número da semana ISO (ex: "26" para a 26ª semana do ano)
+  week       String
+  /// Número da equipe (ex: "2")
+  teamNo     String?
+  /// Escopo do trabalho (preenchido automaticamente do Project.scope)
+  jobScope   String?
+  /// Nome do cliente (preenchido automaticamente do Project.client)
+  client     String?
+  /// Nome do local/projeto (preenchido automaticamente do Project.name)
+  siteName   String?
+
+  // Quem criou o timesheet (Team Leader)
+  /// ID do usuário que criou (Team Leader)
+  createdBy  String
+  /// Referência ao usuário criador
+  creator    User     @relation(fields: [createdBy], references: [id])
+
+  // Assinaturas (rodapé do documento)
+  /// Nome do técnico/team leader para assinatura
+  technicianName      String?
+  /// Espaço para assinatura do técnico (imagem ou texto)
+  technicianSignature String?
+  /// Data da assinatura do técnico
+  technicianDate      DateTime?
+  /// Nome do cliente para assinatura
+  clientName          String?
+  /// Espaço para assinatura do cliente (imagem ou texto)
+  clientSignature     String?
+  /// Data da assinatura do cliente
+  clientDate          DateTime?
+
+  // Status do timesheet
+  /// Status atual (enum TimesheetStatus: DRAFT, SUBMITTED, APPROVED)
+  status     TimesheetStatus @default(DRAFT)
+
+  // Timestamps (datas em UTC)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  /// Soft delete (data de exclusão, null = ativo)
+  deletedAt  DateTime?
+
+  // Relações
+  /// Dias da semana (7 dias, cada um com suas entradas)
+  days       WeeklyTimesheetDay[]
+
+  // Índices para performance nas consultas
+  @@index([projectId])
+  @@index([createdBy])
+  @@index([week])
+  @@index([status])
+}
+
+// ---------------------------------------------------------------------------
+// MODEL: WEEKLY TIMESHEET DAY (Dia da Semana no Timesheet)
+// ---------------------------------------------------------------------------
+// Representa um dia específico dentro de um Weekly Timesheet.
+// Cada dia contém múltiplas entradas (uma por técnico que trabalhou naquele dia).
+//
+// EXEMPLO:
+// --------
+// Monday (2026-06-22) → 4 técnicos trabalharam → 4 WeeklyTimesheetEntry
+// ---------------------------------------------------------------------------
+model WeeklyTimesheetDay {
+  // Identificador único (UUID v4)
+  id          String   @id @default(uuid())
+
+  // Relação com o timesheet
+  /// ID do timesheet ao qual este dia pertence
+  timesheetId String
+  /// Referência ao timesheet pai
+  timesheet   WeeklyTimesheet @relation(fields: [timesheetId], references: [id], onDelete: Cascade)
+
+  // Dados do dia
+  /// Data completa do dia (ex: 2026-06-22)
+  date        DateTime
+  /// Nome do dia em inglês (ex: "Monday", "Tuesday")
+  dayName     String
+  /// Descrição do progresso diário (ex: "07:00 Tooling prepare...")
+  progress    String?
+  /// Ordem de exibição (0=Monday, 1=Tuesday, ..., 6=Sunday)
+  sortOrder   Int      @default(0)
+
+  // Timestamps
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relações
+  /// Entradas deste dia (uma por técnico/linha)
+  entries     WeeklyTimesheetEntry[]
+
+  // Índices e unicidade
+  @@index([timesheetId])
+  @@unique([timesheetId, date])
+}
+
+// ---------------------------------------------------------------------------
+// MODEL: WEEKLY TIMESHEET ENTRY (Linha de Entrada por Dia)
+// ---------------------------------------------------------------------------
+// Representa uma linha de entrada de técnico dentro de um dia do timesheet.
+// Cada linha contém: nome do técnico, função, turbina, horas e motivo de standby.
+//
+// VINCULAÇÃO COM USUÁRIO:
+// -----------------------
+// O campo userId é opcional. Se preenchido, o nome do técnico é puxado
+// automaticamente do cadastro de usuários. Se nulo, o nome é livre.
+// ---------------------------------------------------------------------------
+model WeeklyTimesheetEntry {
+  // Identificador único (UUID v4)
+  id             String   @id @default(uuid())
+
+  // Relação com o dia
+  /// ID do dia ao qual esta entrada pertence
+  dayId          String
+  /// Referência ao dia pai
+  day            WeeklyTimesheetDay @relation(fields: [dayId], references: [id], onDelete: Cascade)
+
+  // Relação com o usuário (opcional)
+  /// ID do usuário/técnico (nulo se for externo ao sistema)
+  userId         String?
+  /// Referência ao usuário (para preencher technicianName automaticamente)
+  user           User?    @relation(fields: [userId], references: [id])
+
+  // Dados do técnico e turbina
+  /// Nome do técnico (preenchido do User ou manualmente)
+  technicianName String
+  /// Função/cargo do técnico no dia (ex: "Lead Technician", "Technician")
+  role           String?
+  /// Número local da turbina (ex: "WEA1")
+  localTurbineNo String?
+  /// ID da turbina (ex: "552201011")
+  turbineIdNo    String?
+  /// Número da torre Max Bögl (ex: "G20_001234_DE")
+  towerNo        String?
+  /// Número da pá (se aplicável)
+  bladeNo        String?
+
+  // Horas trabalhadas
+  /// Horas de standby (espera)
+  standbyHrs     String?
+  /// Horas de trabalho efetivo
+  workingHrs     String?
+  /// Horas de viagem/deslocamento
+  travelHrs      String?
+  /// Horas de downtime da turbina (WTG)
+  downtimeHrs    String?
+
+  // Motivo de standby
+  /// Razão do tempo de standby (ex: "Weather", "Parts waiting")
+  standbyReason  String?
+
+  // Ordem de exibição dentro do dia
+  /// Ordem da linha dentro do dia (0 = primeira linha)
+  sortOrder      Int      @default(0)
+
+  // Timestamps
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Índices para performance
+  @@index([dayId])
+  @@index([userId])
 }

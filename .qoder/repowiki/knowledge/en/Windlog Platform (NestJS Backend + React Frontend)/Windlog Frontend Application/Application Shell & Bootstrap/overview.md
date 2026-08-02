@@ -1,0 +1,1 @@
+Bootstraps the React application by mounting the root component, configuring routing with role-based guards, initializing TanStack Query and Sonner toasts, and defining global Tailwind styles.

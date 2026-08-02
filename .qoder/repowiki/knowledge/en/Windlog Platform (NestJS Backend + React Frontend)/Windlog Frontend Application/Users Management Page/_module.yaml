@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: frontend_app/pages_users
+title: Users Management Page
+scope:
+    - src/pages/users/
+source_files: []
+depends_on: []
+related_to: []

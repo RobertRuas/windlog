@@ -1,0 +1,8 @@
+- Backend modules follow the strict {name}.module.ts + {name}.controller.ts + {name}.service.ts + dto/{name}.dto.ts layout with no business logic in controllers.
+- DTOs use class-validator decorators (@IsString, @IsEmail, etc.) and every optional field must include @IsOptional() alongside the TypeScript ? operator.
+- Frontend pages follow {PageName}.tsx + components/ + hooks/ structure, with API calls encapsulated in src/services/*.ts using axios.
+- TanStack Query keys use ['entity', filter?] for lists and ['entity', id] for details, with mutations invalidating all related keys.
+- UI components live in src/components/ui/ (generic) and src/components/layout/ (structural); never mix them.
+- Soft delete is mandatory for business entities (User, Project, Turbine, File) with deletedAt filtering; junction tables may use hard delete.
+- Toast notifications via Sonner are required for all CRUD operations with Portuguese messages following the 'X criado/atualizado/remido com sucesso' pattern.
+- Prisma enums must be mirrored in code and never accessed outside Services; Prisma is the only authoritative type source.

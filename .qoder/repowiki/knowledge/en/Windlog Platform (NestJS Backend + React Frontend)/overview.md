@@ -1,0 +1,1 @@
+Full-stack Windlog platform pairing a NestJS backend with six domain modules and a React+Vite frontend, wired through shared Prisma types, typed API services, and role-based authentication across both layers.

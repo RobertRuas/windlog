@@ -1,0 +1,1 @@
+React + TypeScript, react-i18next for translations, react-router-dom for navigation, lucide-react for icons, Tailwind CSS for styling, and direct JWT decoding from localStorage for role checks.

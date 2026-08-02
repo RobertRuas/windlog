@@ -1,0 +1,1 @@
+NestJS feature modules implementing the core business domains — authentication with JWT, user profile management, projects, notifications, file uploads via Multer, and system logging — each following a strict controller/service/DTO module layout backed by Prisma.

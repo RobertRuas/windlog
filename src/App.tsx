@@ -45,6 +45,8 @@ import { ProjectDetailPage } from '@/pages/projects/detail/ProjectDetailPage';
 import { ChangeTempPasswordPage } from '@/pages/change-password/ChangeTempPasswordPage';
 import { NotificationsPage } from '@/pages/notifications/NotificationsPage';
 import { NotificationDetailPage } from '@/pages/notifications/NotificationDetailPage';
+import { WeeklyTimesheetPage } from '@/pages/weekly-timesheet/WeeklyTimesheetPage';
+import { WeeklyTimesheetDetailPage } from '@/pages/weekly-timesheet/WeeklyTimesheetDetailPage';
 import { ErrorPage } from '@/pages/error/ErrorPage';
 
 // Serviço de autenticação
@@ -298,6 +300,26 @@ export default function App() {
               <AdminOrHRRoute>
                 <ProjectDetailPage />
               </AdminOrHRRoute>
+            }
+          />
+
+          {/* Rota protegida - lista de timesheets (todos autenticados) */}
+          <Route
+            path="/timesheets"
+            element={
+              <ProtectedRoute>
+                <WeeklyTimesheetPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Rota protegida - detalhes do timesheet (todos autenticados) */}
+          <Route
+            path="/timesheets/:id"
+            element={
+              <ProtectedRoute>
+                <WeeklyTimesheetDetailPage />
+              </ProtectedRoute>
             }
           />
 

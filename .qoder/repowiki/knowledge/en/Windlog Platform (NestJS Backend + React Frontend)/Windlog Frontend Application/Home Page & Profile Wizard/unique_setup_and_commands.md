@@ -1,0 +1,1 @@
+No build or setup commands specific to this module; it follows the standard frontend page pattern of `{PageName}.tsx + components/` with services in `src/services/`. Uses i18n keys under the `home` namespace and relies on `@/utils/profileCompleteness` for wizard step detection and completeness calculation.

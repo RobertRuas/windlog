@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: frontend_app/pages_projects
+title: Projects Management Pages
+scope:
+    - src/pages/projects/
+source_files: []
+depends_on: []
+related_to: []

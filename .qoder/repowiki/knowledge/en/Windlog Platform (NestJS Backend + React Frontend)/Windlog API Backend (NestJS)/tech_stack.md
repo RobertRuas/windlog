@@ -1,0 +1,1 @@
+NestJS with Prisma v7 as the sole ORM, class-validator for DTO validation, JWT via Passport strategies, Multer for file uploads, Helmet + compression for security/performance, and Swagger/OpenAPI for interactive documentation.

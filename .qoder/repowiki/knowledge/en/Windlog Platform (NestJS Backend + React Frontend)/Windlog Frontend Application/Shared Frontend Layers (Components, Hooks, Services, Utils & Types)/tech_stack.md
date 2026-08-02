@@ -1,0 +1,1 @@
+React + TypeScript with Tailwind CSS for styling, TanStack Query for server state caching and invalidation, native `fetch` for HTTP (no axios), Sonner for toast notifications, and Lucide React icons. JWT tokens are decoded client-side using base64url parsing without a crypto library.

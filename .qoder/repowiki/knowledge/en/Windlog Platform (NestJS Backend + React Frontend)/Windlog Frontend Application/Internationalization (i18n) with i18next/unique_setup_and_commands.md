@@ -1,0 +1,1 @@
+To add a new language, import its JSON files in `index.ts` and register them under a new language key in the `resources` object; to add a new namespace, create a new JSON file under `locales/pt/` and register it in the same object.

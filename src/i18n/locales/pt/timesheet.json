@@ -1,0 +1,122 @@
+{
+  "title": "Weekly Timesheets",
+  "subtitle": "Gerencie as planilhas semanais de horas de trabalho",
+  "newTimesheet": "Novo Timesheet",
+  "filters": {
+    "allProjects": "Todos os projetos",
+    "allStatuses": "Todos os status",
+    "weekPlaceholder": "Semana...",
+    "searchPlaceholder": "Buscar por projeto ou cliente..."
+  },
+  "table": {
+    "project": "Projeto",
+    "client": "Cliente",
+    "week": "Semana",
+    "teamNo": "Equipe",
+    "jobNumber": "Job Number",
+    "status": "Status",
+    "createdBy": "Criado por",
+    "createdAt": "Data",
+    "actions": "Ações",
+    "loading": "Carregando...",
+    "empty": "Nenhum timesheet encontrado",
+    "pagination": "Página {{page}} de {{totalPages}} ({{total}} timesheets)"
+  },
+  "status": {
+    "DRAFT": "Rascunho",
+    "SUBMITTED": "Enviado",
+    "APPROVED": "Aprovado"
+  },
+  "create": {
+    "title": "Criar Novo Timesheet",
+    "selectProject": "Selecionar Projeto",
+    "weekNumber": "Semana",
+    "jobNumber": "Nordic Access Job Number",
+    "teamNo": "Número da Equipe",
+    "projectRequired": "Selecione um projeto",
+    "weekRequired": "Selecione a semana",
+    "submit": "Criar Timesheet",
+    "cancel": "Cancelar",
+    "weekRange": "{{start}} — {{end}}",
+    "selectWeek": "Selecionar semana..."
+  },
+  "detail": {
+    "loading": "Carregando timesheet...",
+    "back": "Voltar",
+    "tabSheet": "Planilha",
+    "tabEditor": "Editor",
+    "editMode": "Modo Edição",
+    "editModeOn": "Ativado",
+    "editModeOff": "Desativado",
+    "saveChanges": "Salvar Alterações",
+    "exportExcel": "Exportar para Excel",
+    "print": "Gerar PDF / Imprimir",
+    "zoomIn": "Aumentar Escala",
+    "zoomOut": "Diminuir Escala"
+  },
+  "sheet": {
+    "title": "WEEKLY TIMESHEET",
+    "jobNumber": "Nordic Access Job Number",
+    "week": "Week",
+    "teamNo": "Team No.",
+    "jobScope": "Job Scope",
+    "client": "Client",
+    "siteName": "Site Name",
+    "dayDate": "Date",
+    "technicianName": "Technician Name",
+    "role": "Role",
+    "localTurbineNo": "Local Turbine No.",
+    "turbineIdNo": "Turbine ID No.",
+    "towerNo": "Max Bögl Tower No.",
+    "bladeNo": "Blade No.",
+    "standbyHrs": "Stand-by/h",
+    "workingHrs": "Working/h",
+    "travelHrs": "Travel / h",
+    "downtimeHrs": "WTG Downtime hours",
+    "standbyReason": "Stand-by Time Reason",
+    "dailyProgress": "Daily Progress",
+    "dailyProgressExample": "",
+    "addRow": "Add Technician Row",
+    "removeRow": "Remove Last Row"
+  },
+  "signatures": {
+    "signature": "Signature",
+    "clientSignature": "Client Signature",
+    "name": "Name",
+    "clientName": "Client Name",
+    "date": "Date"
+  },
+  "days": {
+    "Monday": "Monday",
+    "Tuesday": "Tuesday",
+    "Wednesday": "Wednesday",
+    "Thursday": "Thursday",
+    "Friday": "Friday",
+    "Saturday": "Saturday",
+    "Sunday": "Sunday"
+  },
+  "form": {
+    "metadataTitle": "Informações do Timesheet",
+    "signaturesTitle": "Assinaturas",
+    "entries": "entradas",
+    "saveChanges": "Salvar Alterações",
+    "saving": "Salvando...",
+    "cancel": "Descartar Mudanças",
+    "changesReverted": "Alterações descartadas",
+    "changesSaved": "Alterações salvas com sucesso!",
+    "commonInfo": "Informações Comuns",
+    "technicians": "Técnicos",
+    "customize": "Personalizar campos para este técnico",
+    "useCommon": "Usar valores comuns",
+    "customizedFields": "Campos personalizados"
+  },
+  "toasts": {
+    "created": "Timesheet criado com sucesso!",
+    "updated": "Timesheet atualizado com sucesso!",
+    "deleted": "Timesheet removido com sucesso!",
+    "submitted": "Timesheet submetido para aprovação!",
+    "error": "Erro ao processar timesheet",
+    "deleteConfirm": "Tem certeza que deseja excluir este timesheet?",
+    "deleteSuccess": "Timesheet excluído com sucesso!"
+  }
+}

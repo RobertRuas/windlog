@@ -1,0 +1,1 @@
+JWT configuration requires `JWT_SECRET` and optional `JWT_EXPIRES_IN` environment variables; file upload paths come from `UPLOAD_DIR` and `MAX_FILE_SIZE`. The `createMulterConfig` function must be passed to `FileInterceptor` in any endpoint that handles multipart uploads, and categories must be one of `avatars | documents | certifications | projects | other`.

@@ -1,0 +1,6 @@
+- Pages follow the `{PageName}.tsx` + `components/` + optional `hooks/` folder structure, with API logic delegated to `src/services/` modules.
+- TanStack Query keys use the pattern `['entity', filter?]` for lists and `['entity', id]` for details; mutations invalidate related keys after success.
+- UI components go in `src/components/ui/` (generic primitives) while layout components stay in `src/components/layout/`; never mix the two directories.
+- All CRUD operations surface user feedback via Sonner toast messages in Portuguese using the pattern 'X criado/atualizado/removido com sucesso'.
+- Route guards are applied through `ProtectedRoute`, `AdminRoute`, and `AdminOrHRRoute` wrappers around page elements based on JWT payload roles.
+- Services encapsulate all axios calls per domain (auth, project, user, notification, upload, system-log) and expose typed functions consumed by page hooks.

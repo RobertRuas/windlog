@@ -1,0 +1,1 @@
+No build or setup scripts specific to this module; it follows the standard Vite/React workflow. Requires the backend project endpoints exposed by `@/services/project.service` and user endpoints from `@/services/user.service` to be available at runtime.

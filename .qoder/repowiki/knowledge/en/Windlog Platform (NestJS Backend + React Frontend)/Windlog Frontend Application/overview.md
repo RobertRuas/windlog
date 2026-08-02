@@ -1,0 +1,1 @@
+React + Vite frontend for the Windlog platform, wiring role-based routes, TanStack Query data layer, i18n, and Sonner toasts across shared UI components, feature pages, and typed API services.
