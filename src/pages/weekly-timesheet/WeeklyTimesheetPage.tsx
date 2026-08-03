@@ -190,23 +190,17 @@ export function WeeklyTimesheetPage() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
+                  <th className="text-center px-4 py-3 font-medium text-gray-700 whitespace-nowrap">
+                    {t('table.week')}
+                  </th>
                   <th className="text-left px-4 py-3 font-medium text-gray-700 whitespace-nowrap">
                     {t('table.project')}
                   </th>
                   <th className="text-left px-4 py-3 font-medium text-gray-700 whitespace-nowrap">
-                    {t('table.client')}
-                  </th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-700 whitespace-nowrap">
-                    {t('table.week')}
-                  </th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-700 whitespace-nowrap">
-                    {t('table.teamNo')}
+                    {t('table.createdBy')}
                   </th>
                   <th className="text-center px-4 py-3 font-medium text-gray-700 whitespace-nowrap">
                     {t('table.status')}
-                  </th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-700 whitespace-nowrap">
-                    {t('table.createdBy')}
                   </th>
                   <th className="text-center px-4 py-3 font-medium text-gray-700 whitespace-nowrap">
                     {t('table.actions')}
@@ -219,23 +213,17 @@ export function WeeklyTimesheetPage() {
                     key={ts.id}
                     className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
                   >
+                    <td className="px-4 py-3 text-center text-gray-600 whitespace-nowrap">
+                      #{ts.week}
+                    </td>
                     <td className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap">
                       {ts.project.name}
                     </td>
                     <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
-                      {ts.project.client}
-                    </td>
-                    <td className="px-4 py-3 text-center text-gray-600 whitespace-nowrap">
-                      {ts.week}
-                    </td>
-                    <td className="px-4 py-3 text-center text-gray-600 whitespace-nowrap">
-                      {ts.teamNo || '-'}
+                      {ts.creator.firstName} {ts.creator.lastName}
                     </td>
                     <td className="px-4 py-3 text-center whitespace-nowrap">
                       <StatusBadge status={ts.status} />
-                    </td>
-                    <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
-                      {ts.creator.firstName} {ts.creator.lastName}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <div className="flex items-center justify-center gap-1">
