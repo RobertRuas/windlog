@@ -871,15 +871,17 @@ export function TimesheetFormEditor({
                     type="button"
                     onClick={() => {
                       if (form.technicianSignature) {
+                        // Se já tem assinatura, limpa (volta para em branco)
                         handleMetaChange('technicianSignature', '');
                       } else if (currentUserSignature) {
+                        // Se está em branco e tem assinatura configurada, aplica
                         handleMetaChange('technicianSignature', currentUserSignature);
                       }
                     }}
-                    disabled={isSaving || !currentUserSignature}
+                    disabled={isSaving}
                     className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
                       form.technicianSignature ? 'bg-indigo-600' : 'bg-gray-200'
-                    } ${isSaving || !currentUserSignature ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    } ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     <span
                       className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
@@ -893,16 +895,26 @@ export function TimesheetFormEditor({
                 </div>
                 {/* Preview da assinatura quando ativa */}
                 {form.technicianSignature && form.technicianSignature.startsWith('data:image') && (
-                  <div className="mt-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                  <div className="mt-2 p-3 bg-gray-50 rounded-lg border border-gray-200 flex items-center gap-3">
                     <img
                       src={form.technicianSignature}
                       alt="Your signature"
                       className="w-auto object-contain"
-                      style={{ maxHeight: '80px' }}
+                      style={{ maxHeight: '60px' }}
                     />
+                    {/* Botão para limpar assinatura */}
+                    <button
+                      type="button"
+                      onClick={() => handleMetaChange('technicianSignature', '')}
+                      disabled={isSaving}
+                      className="shrink-0 p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors disabled:opacity-50"
+                      title={t('signatures.clearSignature')}
+                    >
+                      <Trash2 size={14} />
+                    </button>
                   </div>
                 )}
-                {!currentUserSignature && (
+                {!currentUserSignature && !form.technicianSignature && (
                   <p className="text-xs text-gray-400 mt-1">
                     {t('signatures.noSignatureConfigured')}
                   </p>
@@ -917,25 +929,29 @@ export function TimesheetFormEditor({
                 />
               </div>
             </div>
-            {/* ── Coluna: Cliente (apenas nome e data) ──────────────── */}
+            {/* ── Coluna: Cliente (apenas leitura — cliente assina o PDF) ── */}
             <div className="space-y-4">
               <h3 className="text-sm font-semibold text-gray-800 border-b border-gray-200 pb-2">{t('signatures.clientSignature')}</h3>
-              <div>
-                <label className={labelClass}>{t('signatures.clientName')}</label>
-                <input type="text" value={form.clientName} onChange={(e) => handleMetaChange('clientName', e.target.value)} disabled={isSaving} className={inputClass} />
-              </div>
-              <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
-                <p className="text-sm text-amber-700">
-                  {t('signatures.clientSignsPdf')}
-                </p>
-              </div>
-              <div>
-                <label className={labelClass}>{t('signatures.date')}</label>
-                <DatePicker
-                  value={form.clientDate}
-                  onChange={(v) => handleMetaChange('clientDate', v)}
-                  disabled={isSaving}
-                />
+              <div className="p-4 bg-amber-50 rounded-lg border border-amber-200 space-y-3">
+                <div className="flex items-start gap-2">
+                  <svg className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <p className="text-sm text-amber-800">
+                    {t('signatures.clientSignsPdf')}
+                  </p>
+                </div>
+                {/* Mostra os dados do cliente se já existirem */}
+                {(form.clientName || form.clientDate) && (
+                  <div className="text-xs text-amber-700 space-y-1 pt-2 border-t border-amber-200">
+                    {form.clientName && (
+                      <p><span className="font-medium">{t('signatures.clientName')}:</span> {form.clientName}</p>
+                    )}
+                    {form.clientDate && (
+                      <p><span className="font-medium">{t('signatures.date')}:</span> {form.clientDate}</p>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>
