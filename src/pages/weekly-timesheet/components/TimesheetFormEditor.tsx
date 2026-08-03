@@ -876,18 +876,15 @@ export function TimesheetFormEditor({
 
                           {/* Toggle switch: removido — todos usam informações comuns */}
 
-                          {/* Botão: Remover (não remove entry do currentUser) */}
-                          {!entry.isCurrentUser && (
-                            <button
-                              onClick={() => handleRemoveEntry(dayIdx, entryIdx)}
-                              disabled={isSaving}
-                              className="p-1.5 text-gray-300 hover:text-red-500 transition-colors disabled:opacity-50 shrink-0"
-                              title={t('sheet.removeRow')}
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          )}
-                          {entry.isCurrentUser && <div className="w-7 shrink-0" />}
+                          {/* Botão: Remover */}
+                          <button
+                            onClick={() => handleRemoveEntry(dayIdx, entryIdx)}
+                            disabled={isSaving}
+                            className="p-1.5 text-gray-300 hover:text-red-500 transition-colors disabled:opacity-50 shrink-0"
+                            title={t('sheet.removeRow')}
+                          >
+                            <Trash2 size={14} />
+                          </button>
                         </div>
                       </div>
                     ))}
