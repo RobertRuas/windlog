@@ -96,18 +96,8 @@ interface FormEntry {
   id?: string;
   technicianName: string;
   role: string;
-  customized: boolean;
   /** Se é o entry do usuário atual (bloqueado para remoção) */
   isCurrentUser?: boolean;
-  localTurbineNo: string;
-  turbineIdNo: string;
-  towerNo: string;
-  bladeNo: string;
-  standbyHrs: string;
-  workingHrs: string;
-  travelHrs: string;
-  downtimeHrs: string;
-  standbyReason: string;
 }
 
 interface SystemUser {
@@ -151,32 +141,15 @@ function isDayFilled(day: FormDay): boolean {
 function detectSharedValues(
   entries: { [key: string]: any }[],
 ): Record<SharedFieldKey, string> {
-  function computeShared(list: { [key: string]: any }[]): Record<string, string> {
-    const result: Record<string, string> = {};
-    for (const field of SHARED_FIELDS) {
-      const values = list.map((e) => e[field] || '');
-      const allSame = values.length > 0 && values.every((v) => v === values[0]);
-      result[field] = allSame ? values[0] : '';
-    }
-    return result;
+  // NÃO MAIS USADO — sharedValues agora vem da API (persistidos no banco)
+  // Mantido apenas como fallback para timesheets antigos sem sharedValues
+  const result: Record<string, string> = {};
+  for (const field of SHARED_FIELDS) {
+    const values = entries.map((e) => e[field] || '');
+    const allSame = values.length > 0 && values.every((v) => v === values[0]);
+    result[field] = allSame ? values[0] : '';
   }
-
-  // Pass 1: detecta shared considerando todos os entries
-  const shared1 = computeShared(entries);
-
-  // Identifica quais entries são "personalizados" com base no pass 1
-  const nonCustomized = entries.filter(
-    (e) => !SHARED_FIELDS.some((f) => (e[f] || '') !== shared1[f]),
-  );
-
-  // Pass 2: recalcula shared usando APENAS entries não-personalizados
-  // (entries personalizados não devem influenciar o que é "comum")
-  if (nonCustomized.length > 0) {
-    return computeShared(nonCustomized) as Record<SharedFieldKey, string>;
-  }
-
-  // Fallback: todos são personalizados — usa shared1
-  return shared1 as Record<SharedFieldKey, string>;
+  return result as Record<SharedFieldKey, string>;
 }
 
 function timesheetToFormState(ts: WeeklyTimesheet): FormState {
@@ -194,33 +167,31 @@ function timesheetToFormState(ts: WeeklyTimesheet): FormState {
     clientSignature: ts.clientSignature || '',
     clientDate: formatDateBR(ts.clientDate),
     days: ts.days.map((day) => {
-      const shared = detectSharedValues(day.entries);
+      // Usa sharedValues da API se disponível, senão detecta dos entries (fallback)
+      const shared: Record<SharedFieldKey, string> = day.sharedValues
+        ? {
+            localTurbineNo: day.sharedValues.localTurbineNo || '',
+            turbineIdNo: day.sharedValues.turbineIdNo || '',
+            towerNo: day.sharedValues.towerNo || '',
+            bladeNo: day.sharedValues.bladeNo || '',
+            standbyHrs: day.sharedValues.standbyHrs || '',
+            workingHrs: day.sharedValues.workingHrs || '',
+            travelHrs: day.sharedValues.travelHrs || '',
+            downtimeHrs: day.sharedValues.downtimeHrs || '',
+            standbyReason: day.sharedValues.standbyReason || '',
+          }
+        : detectSharedValues(day.entries);
       return {
         id: day.id,
         date: formatDateBR(day.date),
         dayName: day.dayName,
         progress: day.progress || '',
         shared,
-        entries: day.entries.map((e) => {
-          const isCustomized = SHARED_FIELDS.some(
-            (f) => (e[f as keyof typeof e] || '') !== shared[f],
-          );
-          return {
-            id: e.id,
-            technicianName: e.technicianName || '',
-            role: e.role || '',
-            customized: isCustomized,
-            localTurbineNo: e.localTurbineNo || '',
-            turbineIdNo: e.turbineIdNo || '',
-            towerNo: e.towerNo || '',
-            bladeNo: e.bladeNo || '',
-            standbyHrs: e.standbyHrs || '',
-            workingHrs: e.workingHrs || '',
-            travelHrs: e.travelHrs || '',
-            downtimeHrs: e.downtimeHrs || '',
-            standbyReason: e.standbyReason || '',
-          };
-        }),
+        entries: day.entries.map((e) => ({
+          id: e.id,
+          technicianName: e.technicianName || '',
+          role: e.role || '',
+        })),
       };
     }),
   };
@@ -244,23 +215,23 @@ function formStateToPayload(form: FormState): UpdateTimesheetPayload {
       id: day.id,
       dayName: day.dayName,
       progress: day.progress,
-      entries: day.entries.map((e): UpdateEntryPayload => {
-        const vals = e.customized ? e : { ...day.shared };
-        return {
-          id: e.id,
-          technicianName: e.technicianName,
-          role: e.role || undefined,
-          localTurbineNo: (vals as any).localTurbineNo || undefined,
-          turbineIdNo: (vals as any).turbineIdNo || undefined,
-          towerNo: (vals as any).towerNo || undefined,
-          bladeNo: (vals as any).bladeNo || undefined,
-          standbyHrs: (vals as any).standbyHrs || undefined,
-          workingHrs: (vals as any).workingHrs || undefined,
-          travelHrs: (vals as any).travelHrs || undefined,
-          downtimeHrs: (vals as any).downtimeHrs || undefined,
-          standbyReason: (vals as any).standbyReason || undefined,
-        };
-      }),
+      // Persiste sharedValues no banco para que sejam recarregados ao voltar à página
+      sharedValues: { ...day.shared },
+      entries: day.entries.map((e): UpdateEntryPayload => ({
+        id: e.id,
+        technicianName: e.technicianName,
+        role: e.role || undefined,
+        // Aplica shared values a cada entry (todos usam as informações comuns)
+        localTurbineNo: day.shared.localTurbineNo || undefined,
+        turbineIdNo: day.shared.turbineIdNo || undefined,
+        towerNo: day.shared.towerNo || undefined,
+        bladeNo: day.shared.bladeNo || undefined,
+        standbyHrs: day.shared.standbyHrs || undefined,
+        workingHrs: day.shared.workingHrs || undefined,
+        travelHrs: day.shared.travelHrs || undefined,
+        downtimeHrs: day.shared.downtimeHrs || undefined,
+        standbyReason: day.shared.standbyReason || undefined,
+      })),
     })),
   };
 }
@@ -269,10 +240,6 @@ function createEmptyEntry(): FormEntry {
   return {
     technicianName: '',
     role: '',
-    customized: false,
-    localTurbineNo: '', turbineIdNo: '', towerNo: '', bladeNo: '',
-    standbyHrs: '', workingHrs: '', travelHrs: '', downtimeHrs: '',
-    standbyReason: '',
   };
 }
 
@@ -432,8 +399,7 @@ export function TimesheetFormEditor({
   // Erros de validação
   const [validationErrors, setValidationErrors] = useState<Set<number>>(new Set());
 
-  // Painéis de personalização recolhidos (key: "dayIdx-entryIdx")
-  const [collapsedCustomize, setCollapsedCustomize] = useState<Set<string>>(new Set());
+  // Painéis de personalização recolhidos — removido (personalização descontinuada)
 
   // Inicializa form apenas na primeira carga do componente
   // O refetch é garantido pelo refetchOnMount:'always' na query (dados sempre frescos)
@@ -443,7 +409,6 @@ export function TimesheetFormEditor({
       const state = timesheetToFormState(timesheet);
       setForm(state);
       setCollapsedDays(new Set(state.days.slice(1).map((_, i) => i + 1)));
-      setCollapsedCustomize(new Set());
     }
   }, [timesheet]);
 
@@ -523,13 +488,11 @@ export function TimesheetFormEditor({
     setForm((prev) => {
       const days = [...prev.days];
       const day = days[dayIdx];
-      // Atualiza shared
-      const newShared = { ...day.shared, [field]: value };
-      // Sincroniza o campo em todos os entries não-customizados
-      const newEntries = day.entries.map((e) =>
-        e.customized ? e : { ...e, [field]: value },
-      );
-      days[dayIdx] = { ...day, shared: newShared, entries: newEntries };
+      // Apenas atualiza o shared (os entries recebem shared values ao salvar)
+      days[dayIdx] = {
+        ...day,
+        shared: { ...day.shared, [field]: value },
+      };
       return { ...prev, days };
     });
   }
@@ -538,7 +501,7 @@ export function TimesheetFormEditor({
     dayIdx: number,
     entryIdx: number,
     field: keyof FormEntry,
-    value: string | boolean,
+    value: string,
   ) {
     setForm((prev) => {
       const days = [...prev.days];
@@ -591,59 +554,9 @@ export function TimesheetFormEditor({
     }
   }
 
-  function toggleCustomize(dayIdx: number, entryIdx: number) {
-    setForm((prev) => {
-      const days = [...prev.days];
-      const entries = [...days[dayIdx].entries];
-      const entry = entries[entryIdx];
-      const shared = days[dayIdx].shared;
-
-      if (!entry.customized) {
-        // Ativando personalização: copia valores atuais de shared
-        entries[entryIdx] = {
-          ...entry,
-          customized: true,
-          localTurbineNo: shared.localTurbineNo,
-          turbineIdNo: shared.turbineIdNo,
-          towerNo: shared.towerNo,
-          bladeNo: shared.bladeNo,
-          standbyHrs: shared.standbyHrs,
-          workingHrs: shared.workingHrs,
-          travelHrs: shared.travelHrs,
-          downtimeHrs: shared.downtimeHrs,
-          standbyReason: shared.standbyReason,
-        };
-      } else {
-        // Voltando para comum: copia valores de shared para os campos do entry
-        // (assim detectSharedValues reconhecerá como valor comum após recarga)
-        entries[entryIdx] = {
-          ...entry,
-          customized: false,
-          localTurbineNo: shared.localTurbineNo,
-          turbineIdNo: shared.turbineIdNo,
-          towerNo: shared.towerNo,
-          bladeNo: shared.bladeNo,
-          standbyHrs: shared.standbyHrs,
-          workingHrs: shared.workingHrs,
-          travelHrs: shared.travelHrs,
-          downtimeHrs: shared.downtimeHrs,
-          standbyReason: shared.standbyReason,
-        };
-      }
-
-      days[dayIdx] = { ...days[dayIdx], entries };
-      return { ...prev, days };
-    });
-  }
-
-  function toggleCustomizePanel(dayIdx: number, entryIdx: number) {
-    const key = `${dayIdx}-${entryIdx}`;
-    setCollapsedCustomize((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      return next;
-    });
+  function toggleCustomize() {
+    // Removido — personalização por técnico foi descontinuada
+    // Todos os técnicos de um dia usam as informações comuns
   }
 
   // ── Save / Cancel ─────────────────────────────────────────────────
@@ -826,11 +739,9 @@ export function TimesheetFormEditor({
                       <div
                         key={entryIdx}
                         className={`border rounded-lg overflow-hidden transition-colors ${
-                          entry.customized
-                            ? 'border-orange-200 bg-orange-50/20'
-                            : entry.isCurrentUser
-                              ? 'border-blue-200 bg-blue-50/30'
-                              : 'border-gray-200'
+                          entry.isCurrentUser
+                            ? 'border-blue-200 bg-blue-50/30'
+                            : 'border-gray-200'
                         }`}
                       >
                         <div className="flex items-center gap-3 px-3 py-2.5 bg-white">
@@ -870,26 +781,7 @@ export function TimesheetFormEditor({
                             />
                           </div>
 
-                          {/* Toggle switch: Comum ↔ Personalizado */}
-                          <div className="flex items-center gap-1.5 shrink-0">
-                            <button
-                              onClick={() => toggleCustomize(dayIdx, entryIdx)}
-                              disabled={isSaving}
-                              className={`relative w-8 h-4.5 rounded-full transition-colors disabled:opacity-50 ${
-                                entry.customized ? 'bg-orange-400' : 'bg-gray-300'
-                              }`}
-                              title={entry.customized ? t('form.useCommon') : t('form.customize')}
-                            >
-                              <span className={`absolute top-0.5 w-3.5 h-3.5 rounded-full bg-white shadow transition-transform ${
-                                entry.customized ? 'left-4' : 'left-0.5'
-                              }`} />
-                            </button>
-                            <span className={`text-xs font-medium w-20 ${
-                              entry.customized ? 'text-orange-600' : 'text-gray-400'
-                            }`}>
-                              {entry.customized ? t('form.customized') : t('form.common')}
-                            </span>
-                          </div>
+                          {/* Toggle switch: removido — todos usam informações comuns */}
 
                           {/* Botão: Remover (não remove entry do currentUser) */}
                           {!entry.isCurrentUser && (
@@ -904,81 +796,6 @@ export function TimesheetFormEditor({
                           )}
                           {entry.isCurrentUser && <div className="w-7 shrink-0" />}
                         </div>
-
-                        {/* Painel de personalização (accordion) */}
-                        {entry.customized && (() => {
-                          const cKey = `${dayIdx}-${entryIdx}`;
-                          const isCustomCollapsed = collapsedCustomize.has(cKey);
-                          return (
-                            <div className="border-t border-orange-100 bg-orange-50/30">
-                              {/* Cabeçalho do accordion */}
-                              <div className="flex items-center gap-2 px-3 py-2">
-                                <Check size={11} className="text-orange-500 shrink-0" />
-                                <span className="text-xs font-medium text-orange-700">
-                                  {t('form.customizedFields')}
-                                </span>
-                                {isCustomCollapsed && (
-                                  <span className="text-xs text-orange-400 italic truncate">
-                                    {t('form.usingCustomValues')}
-                                  </span>
-                                )}
-                                <button
-                                  onClick={() => toggleCustomizePanel(dayIdx, entryIdx)}
-                                  className="ml-auto p-0.5 text-orange-400 hover:text-orange-600 transition-colors"
-                                  title={isCustomCollapsed ? t('form.expandCustom') : t('form.collapseCustom')}
-                                >
-                                  {isCustomCollapsed ? <ChevronRight size={12} /> : <ChevronDown size={12} />}
-                                </button>
-                              </div>
-
-                              {/* Campos — visíveis apenas quando expandido */}
-                              {!isCustomCollapsed && (
-                                <div className="px-3 pb-3 space-y-2">
-                                  <div className="grid grid-cols-4 gap-2">
-                                    <div>
-                                      <label className={smallLabel}>{t('sheet.localTurbineNo')}</label>
-                                      <input type="text" value={entry.localTurbineNo} onChange={(e) => handleEntryChange(dayIdx, entryIdx, 'localTurbineNo', e.target.value)} disabled={isSaving} className={smallInput} />
-                                    </div>
-                                    <div>
-                                      <label className={smallLabel}>{t('sheet.turbineIdNo')}</label>
-                                      <input type="text" value={entry.turbineIdNo} onChange={(e) => handleEntryChange(dayIdx, entryIdx, 'turbineIdNo', e.target.value)} disabled={isSaving} className={smallInput} />
-                                    </div>
-                                    <div>
-                                      <label className={smallLabel}>{t('sheet.towerNo')}</label>
-                                      <input type="text" value={entry.towerNo} onChange={(e) => handleEntryChange(dayIdx, entryIdx, 'towerNo', e.target.value)} disabled={isSaving} className={smallInput} />
-                                    </div>
-                                    <div>
-                                      <label className={smallLabel}>{t('sheet.bladeNo')}</label>
-                                      <input type="text" value={entry.bladeNo} onChange={(e) => handleEntryChange(dayIdx, entryIdx, 'bladeNo', e.target.value)} disabled={isSaving} className={smallInput} />
-                                    </div>
-                                  </div>
-                                  <div className="grid grid-cols-5 gap-2">
-                                    <div>
-                                      <label className={smallLabel}>{t('sheet.standbyHrs')}</label>
-                                      <input type="text" value={entry.standbyHrs} onChange={(e) => handleEntryChange(dayIdx, entryIdx, 'standbyHrs', e.target.value)} disabled={isSaving} className={smallInput + ' text-center'} />
-                                    </div>
-                                    <div>
-                                      <label className={smallLabel}>{t('sheet.workingHrs')}</label>
-                                      <input type="text" value={entry.workingHrs} onChange={(e) => handleEntryChange(dayIdx, entryIdx, 'workingHrs', e.target.value)} disabled={isSaving} className={smallInput + ' text-center'} />
-                                    </div>
-                                    <div>
-                                      <label className={smallLabel}>{t('sheet.travelHrs')}</label>
-                                      <input type="text" value={entry.travelHrs} onChange={(e) => handleEntryChange(dayIdx, entryIdx, 'travelHrs', e.target.value)} disabled={isSaving} className={smallInput + ' text-center'} />
-                                    </div>
-                                    <div>
-                                      <label className={smallLabel}>{t('sheet.downtimeHrs')}</label>
-                                      <input type="text" value={entry.downtimeHrs} onChange={(e) => handleEntryChange(dayIdx, entryIdx, 'downtimeHrs', e.target.value)} disabled={isSaving} className={smallInput + ' text-center'} />
-                                    </div>
-                                    <div>
-                                      <label className={smallLabel}>{t('sheet.standbyReason')}</label>
-                                      <input type="text" value={entry.standbyReason} onChange={(e) => handleEntryChange(dayIdx, entryIdx, 'standbyReason', e.target.value)} disabled={isSaving} className={smallInput} />
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })()}
                       </div>
                     ))}
                   </div>

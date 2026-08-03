@@ -532,6 +532,7 @@ export class WeeklyTimesheetService {
               dayName: dayDto.dayName,
               progress: dayDto.progress,
               sortOrder: dayDto.sortOrder,
+              sharedValues: dayDto.sharedValues ?? undefined,
             },
           });
 
@@ -609,6 +610,7 @@ export class WeeklyTimesheetService {
               dayName: dayDto.dayName || '',
               progress: dayDto.progress,
               sortOrder: dayDto.sortOrder || 0,
+              sharedValues: dayDto.sharedValues ?? undefined,
             },
           });
 

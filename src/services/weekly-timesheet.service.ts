@@ -68,6 +68,21 @@ export interface TimesheetEntry {
 }
 
 /**
+ * Valores comuns compartilhados entre todos os técnicos de um dia.
+ */
+export interface SharedValues {
+  localTurbineNo: string;
+  turbineIdNo: string;
+  towerNo: string;
+  bladeNo: string;
+  standbyHrs: string;
+  workingHrs: string;
+  travelHrs: string;
+  downtimeHrs: string;
+  standbyReason: string;
+}
+
+/**
  * Dia do timesheet com suas entradas (linhas de técnicos).
  */
 export interface TimesheetDay {
@@ -77,6 +92,7 @@ export interface TimesheetDay {
   dayName: string;
   progress?: string | null;
   sortOrder: number;
+  sharedValues?: SharedValues | null;
   entries: TimesheetEntry[];
   createdAt: string;
   updatedAt: string;
@@ -195,6 +211,7 @@ export interface UpdateDayPayload {
   dayName?: string;
   progress?: string;
   sortOrder?: number;
+  sharedValues?: Record<string, string>;
   entries?: UpdateEntryPayload[];
 }
 

@@ -1000,6 +1000,10 @@ model WeeklyTimesheetDay {
   progress    String?
   /// Ordem de exibição (0=Monday, 1=Tuesday, ..., 6=Sunday)
   sortOrder   Int      @default(0)
+  /// Valores comuns a todos os técnicos do dia (turbina, horas, etc.)
+  /// Armazena: localTurbineNo, turbineIdNo, towerNo, bladeNo, standbyHrs,
+  /// workingHrs, travelHrs, downtimeHrs, standbyReason
+  sharedValues Json?
 
   // Timestamps
   createdAt   DateTime @default(now())

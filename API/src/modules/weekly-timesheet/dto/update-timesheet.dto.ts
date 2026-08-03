@@ -35,6 +35,7 @@ import {
   IsUUID,
   ValidateNested,
   IsNumber,
+  IsObject,
 } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
@@ -162,6 +163,25 @@ export class UpdateDayDto {
   @IsOptional()
   @IsNumber()
   sortOrder?: number;
+
+  /** Valores comuns a todos os técnicos do dia (turbina, horas, etc.) */
+  @ApiPropertyOptional({
+    description: 'Valores comuns do dia (turbina, horas, standby, etc.)',
+    example: {
+      localTurbineNo: 'WEA1',
+      turbineIdNo: '552201011',
+      towerNo: 'G20_001234_DE',
+      bladeNo: '',
+      standbyHrs: '0',
+      workingHrs: '8',
+      travelHrs: '1.5',
+      downtimeHrs: '0',
+      standbyReason: '',
+    },
+  })
+  @IsOptional()
+  @IsObject()
+  sharedValues?: Record<string, string>;
 
   /** Entradas (linhas de técnicos) deste dia */
   @ApiPropertyOptional({ description: 'Entradas de técnicos deste dia', type: [UpdateEntryDto] })
