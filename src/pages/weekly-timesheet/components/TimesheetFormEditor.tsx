@@ -45,7 +45,7 @@ import type {
 } from '@/services/weekly-timesheet.service';
 import { updateTimesheet } from '@/services/weekly-timesheet.service';
 import { getProfile } from '@/services/auth.service';
-import { getUsers } from '@/services/user.service';
+import { getProjectMembers, type ProjectMember } from '@/services/project.service';
 import { PREDEFINED_FUNCTIONS } from '@/constants/functions';
 import { DatePicker } from '@/components/ui/DatePicker';
 
@@ -254,10 +254,10 @@ function emptyShared(): Record<SharedFieldKey, string> {
 }
 
 // =========================================================================
-// AUTOCOMPLETE INPUT COMPONENT
+// DROPDOWN SELECT COMPONENT (restritivo — apenas membros do projeto)
 // =========================================================================
 
-interface TechnicianAutocompleteProps {
+interface TechnicianSelectProps {
   value: string;
   onChange: (value: string) => void;
   onSelectUser: (user: SystemUser) => void;
@@ -267,77 +267,95 @@ interface TechnicianAutocompleteProps {
 }
 
 /**
- * Input com autocomplete para nome do técnico.
- * Mostra sugestões de usuários do sistema enquanto digita.
- * Permite digitar nome customizado (não força seleção).
+ * Dropdown com pesquisa para selecionar técnico.
+ * Restritivo: o usuário DEVE selecionar da lista (não permite texto livre).
+ * Mostra todos os membros do projeto, filtráveis por nome.
  */
-function TechnicianAutocomplete({
+function TechnicianSelect({
   value,
   onChange,
   onSelectUser,
   users,
   disabled,
   placeholder,
-}: TechnicianAutocompleteProps) {
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [query, setQuery] = useState(value);
+}: TechnicianSelectProps) {
+  const { t } = useTranslation('timesheet');
+  const [isOpen, setIsOpen] = useState(false);
+  const [query, setQuery] = useState('');
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  // Sincroniza valor externo → interno
+  // Sincroniza valor externo → display
   useEffect(() => {
     setQuery(value);
   }, [value]);
 
-  // Fecha sugestões ao clicar fora
+  // Fecha dropdown ao clicar fora
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
-        setShowSuggestions(false);
+        setIsOpen(false);
+        // Se o campo ficou vazio ou com texto que não corresponde a um usuário, limpa
+        if (value && !users.some((u) => u.fullName === value)) {
+          setQuery('');
+          onChange('');
+        }
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [value, users, onChange]);
 
-  const filtered = query.trim().length >= 2
-    ? users.filter((u) =>
-        u.fullName.toLowerCase().includes(query.toLowerCase()),
-      ).slice(0, 5)
-    : [];
+  const filtered = query.trim().length > 0
+    ? users.filter((u) => u.fullName.toLowerCase().includes(query.toLowerCase()))
+    : users;
 
   function handleSelect(user: SystemUser) {
     setQuery(user.fullName);
     onChange(user.fullName);
     onSelectUser(user);
-    setShowSuggestions(false);
+    setIsOpen(false);
   }
 
   return (
     <div ref={wrapperRef} className="relative">
       <input
+        ref={inputRef}
         type="text"
         value={query}
         onChange={(e) => {
           setQuery(e.target.value);
-          onChange(e.target.value);
-          setShowSuggestions(true);
+          setIsOpen(true);
+          // Se apagou tudo, limpa o valor
+          if (e.target.value.trim() === '') {
+            onChange('');
+          }
         }}
+        onFocus={() => setIsOpen(true)}
         disabled={disabled}
         placeholder={placeholder}
         autoComplete="off"
         className="w-full px-2 py-1.5 border border-gray-200 rounded text-sm font-medium focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-60"
       />
-      {showSuggestions && filtered.length > 0 && (
-        <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
+      {/* Ícone de seta para indicar dropdown */}
+      <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </div>
+      {isOpen && filtered.length > 0 && (
+        <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden max-h-48 overflow-y-auto">
           {filtered.map((user) => (
             <button
               key={user.id}
               type="button"
               onClick={() => handleSelect(user)}
-              className="w-full text-left px-3 py-2 text-sm hover:bg-blue-50 flex items-center gap-2 transition-colors"
+              className={`w-full text-left px-3 py-2 text-sm hover:bg-blue-50 flex items-center gap-2 transition-colors ${
+                value === user.fullName ? 'bg-blue-50' : ''
+              }`}
             >
               <UserIcon size={14} className="text-gray-400 shrink-0" />
-              <div>
+              <div className="flex-1 min-w-0">
                 <span className="font-medium text-gray-900">{user.fullName}</span>
                 {user.position && (
                   <span className="ml-2 text-xs text-gray-500">{user.position}</span>
@@ -345,6 +363,11 @@ function TechnicianAutocomplete({
               </div>
             </button>
           ))}
+        </div>
+      )}
+      {isOpen && filtered.length === 0 && query.trim().length > 0 && (
+        <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg p-3 text-center text-xs text-gray-400">
+          {t('form.noMemberFound')}
         </div>
       )}
     </div>
@@ -362,18 +385,18 @@ export function TimesheetFormEditor({
 }: TimesheetFormEditorProps) {
   const { t } = useTranslation('timesheet');
 
-  // ── Busca usuários do sistema para autocomplete ────────────────────
-  const { data: usersResponse } = useQuery({
-    queryKey: ['users', 'all', 'autocomplete'],
-    queryFn: () => getUsers({ limit: 100, isActive: true }),
+  // ── Busca membros do projeto para o select de técnicos ─────────────
+  const { data: projectMembers } = useQuery({
+    queryKey: ['project-members', timesheet.projectId],
+    queryFn: () => getProjectMembers(timesheet.projectId),
   });
 
-  const systemUsers: SystemUser[] = (usersResponse?.data || []).map((u) => ({
-    id: u.id,
-    firstName: u.firstName,
-    lastName: u.lastName,
-    fullName: `${u.firstName} ${u.lastName}`,
-    position: u.position || '',
+  const systemUsers: SystemUser[] = (projectMembers || []).map((m: ProjectMember) => ({
+    id: m.user.id,
+    firstName: m.user.firstName,
+    lastName: m.user.lastName,
+    fullName: `${m.user.firstName} ${m.user.lastName}`,
+    position: m.role || '',
   }));
 
   // ── Busca perfil do usuário atual ──────────────────────────────────
@@ -761,7 +784,7 @@ export function TimesheetFormEditor({
                                 <span className="text-xs text-blue-500 ml-auto">{t('form.you')}</span>
                               </div>
                             ) : (
-                              <TechnicianAutocomplete
+                              <TechnicianSelect
                                 value={entry.technicianName}
                                 onChange={(v) => handleEntryChange(dayIdx, entryIdx, 'technicianName', v)}
                                 onSelectUser={(user) => handleSelectUser(dayIdx, entryIdx, user)}
