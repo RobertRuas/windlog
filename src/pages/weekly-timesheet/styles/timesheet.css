@@ -434,7 +434,7 @@ table.ts-excel-table th {
 table.ts-excel-table td.cell-data-progress {
   font-size: 12px;
   border: 1px solid var(--excel-border-color);
-  text-align: left;
+  text-align: justify;
   vertical-align: top;
   background-color: #ffffff;
   padding: 6px;
