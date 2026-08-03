@@ -34,7 +34,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import {
   Plus, Trash2, Save, RotateCcw, ChevronDown, ChevronRight,
-  X, User as UserIcon, Check, Pen,
+  X, User as UserIcon, Check,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type {
@@ -47,7 +47,6 @@ import { updateTimesheet } from '@/services/weekly-timesheet.service';
 import { getProfile } from '@/services/auth.service';
 import { getUsers } from '@/services/user.service';
 import { PREDEFINED_FUNCTIONS } from '@/constants/functions';
-import { SignaturePad } from '@/components/ui/SignaturePad';
 
 // =========================================================================
 // TYPES
@@ -854,6 +853,7 @@ export function TimesheetFormEditor({
         </div>
         <div className="p-6">
           <div className="grid grid-cols-2 gap-8">
+            {/* ── Coluna: Team Leader ────────────────────────────────── */}
             <div className="space-y-4">
               <h3 className="text-sm font-semibold text-gray-800 border-b border-gray-200 pb-2">
                 {t('signatures.signature')} ({t('sheet.technicianName')})
@@ -864,31 +864,46 @@ export function TimesheetFormEditor({
               </div>
               <div>
                 <label className={labelClass}>{t('signatures.signature')}</label>
-                {/* Botão para usar assinatura do perfil */}
-                {currentUserSignature && !form.technicianSignature && (
+                {/* Interruptor: Usar assinatura ou deixar em branco */}
+                <div className="flex items-center gap-3 mb-2">
                   <button
                     type="button"
-                    onClick={() => handleMetaChange('technicianSignature', currentUserSignature)}
-                    disabled={isSaving}
-                    className="mb-2 flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-indigo-700 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors disabled:opacity-50"
+                    onClick={() => {
+                      if (form.technicianSignature) {
+                        handleMetaChange('technicianSignature', '');
+                      } else if (currentUserSignature) {
+                        handleMetaChange('technicianSignature', currentUserSignature);
+                      }
+                    }}
+                    disabled={isSaving || !currentUserSignature}
+                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                      form.technicianSignature ? 'bg-indigo-600' : 'bg-gray-200'
+                    } ${isSaving || !currentUserSignature ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
-                    <Pen size={12} />
-                    {t('signatures.useMySignature')}
+                    <span
+                      className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                        form.technicianSignature ? 'translate-x-5' : 'translate-x-0'
+                      }`}
+                    />
                   </button>
-                )}
-                {/* Se a assinatura é uma imagem (base64), exibe o SignaturePad */}
-                {form.technicianSignature && form.technicianSignature.startsWith('data:image') ? (
-                  <div className="space-y-2">
-                    <SignaturePad
-                      initialValue={form.technicianSignature}
-                      height={120}
-                      isSaving={isSaving}
-                      onSave={(dataUrl) => handleMetaChange('technicianSignature', dataUrl)}
-                      onClear={() => handleMetaChange('technicianSignature', '')}
+                  <span className="text-sm text-gray-600">
+                    {form.technicianSignature ? t('signatures.useMySignature') : t('signatures.leaveBlank')}
+                  </span>
+                </div>
+                {/* Preview da assinatura quando ativa */}
+                {form.technicianSignature && form.technicianSignature.startsWith('data:image') && (
+                  <div className="mt-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    <img
+                      src={form.technicianSignature}
+                      alt="Your signature"
+                      className="max-h-16 object-contain"
                     />
                   </div>
-                ) : (
-                  <input type="text" value={form.technicianSignature} onChange={(e) => handleMetaChange('technicianSignature', e.target.value)} disabled={isSaving} className={inputClass} placeholder={t('signatures.leaveBlank')} />
+                )}
+                {!currentUserSignature && (
+                  <p className="text-xs text-gray-400 mt-1">
+                    {t('signatures.noSignatureConfigured')}
+                  </p>
                 )}
               </div>
               <div>
@@ -896,28 +911,17 @@ export function TimesheetFormEditor({
                 <input type="text" value={form.technicianDate} onChange={(e) => handleMetaChange('technicianDate', e.target.value)} placeholder="DD/MM/YYYY" disabled={isSaving} className={inputClass} />
               </div>
             </div>
+            {/* ── Coluna: Cliente (apenas nome e data) ──────────────── */}
             <div className="space-y-4">
               <h3 className="text-sm font-semibold text-gray-800 border-b border-gray-200 pb-2">{t('signatures.clientSignature')}</h3>
               <div>
                 <label className={labelClass}>{t('signatures.clientName')}</label>
                 <input type="text" value={form.clientName} onChange={(e) => handleMetaChange('clientName', e.target.value)} disabled={isSaving} className={inputClass} />
               </div>
-              <div>
-                <label className={labelClass}>{t('signatures.clientSignature')}</label>
-                {/* Se a assinatura é uma imagem (base64), exibe o SignaturePad */}
-                {form.clientSignature && form.clientSignature.startsWith('data:image') ? (
-                  <div className="space-y-2">
-                    <SignaturePad
-                      initialValue={form.clientSignature}
-                      height={120}
-                      isSaving={isSaving}
-                      onSave={(dataUrl) => handleMetaChange('clientSignature', dataUrl)}
-                      onClear={() => handleMetaChange('clientSignature', '')}
-                    />
-                  </div>
-                ) : (
-                  <input type="text" value={form.clientSignature} onChange={(e) => handleMetaChange('clientSignature', e.target.value)} disabled={isSaving} className={inputClass} placeholder={t('signatures.leaveBlank')} />
-                )}
+              <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
+                <p className="text-sm text-amber-700">
+                  {t('signatures.clientSignsPdf')}
+                </p>
               </div>
               <div>
                 <label className={labelClass}>{t('signatures.date')} (DD/MM/YYYY)</label>

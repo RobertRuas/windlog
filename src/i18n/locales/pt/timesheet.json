@@ -89,7 +89,9 @@
     "useMySignature": "Usar minha assinatura",
     "clearSignature": "Limpar assinatura",
     "mySignature": "Minha Assinatura",
-    "leaveBlank": "Deixar em branco"
+    "leaveBlank": "Deixar em branco",
+    "noSignatureConfigured": "Configure sua assinatura na página de Perfil",
+    "clientSignsPdf": "O cliente assina diretamente no PDF impresso"
   },
   "days": {
     "Monday": "Monday",
