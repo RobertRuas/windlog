@@ -89,7 +89,7 @@ export function TimesheetSignatures({
               src={timesheet.technicianSignature}
               alt="Technician Signature"
               className="w-auto object-contain"
-              style={{ maxHeight: '60px' }}
+              style={{ maxHeight: '60px', mixBlendMode: 'multiply' }}
             />
           ) : (
             timesheet.technicianSignature || ''
@@ -112,7 +112,7 @@ export function TimesheetSignatures({
               src={timesheet.clientSignature}
               alt="Client Signature"
               className="w-auto object-contain"
-              style={{ maxHeight: '60px' }}
+              style={{ maxHeight: '60px', mixBlendMode: 'multiply' }}
             />
           ) : (
             timesheet.clientSignature || ''

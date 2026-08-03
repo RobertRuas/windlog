@@ -900,7 +900,7 @@ export function TimesheetFormEditor({
                       src={form.technicianSignature}
                       alt="Your signature"
                       className="w-auto object-contain"
-                      style={{ maxHeight: '60px' }}
+                      style={{ maxHeight: '60px', mixBlendMode: 'multiply' }}
                     />
                     {/* Botão para limpar assinatura */}
                     <button

@@ -463,7 +463,7 @@ export function SignaturePad({
           src={currentImage}
           alt="Signature"
           className="w-auto object-contain"
-          style={{ maxHeight: '120px' }}
+          style={{ maxHeight: '120px', mixBlendMode: 'multiply' }}
         />
       </div>
     );
