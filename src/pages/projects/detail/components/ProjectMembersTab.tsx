@@ -10,9 +10,9 @@
  * ============================================================================
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Plus, Edit2, Trash2, Users } from 'lucide-react';
+import { Search, Edit2, Trash2, Users, UserPlus } from 'lucide-react';
 import type { ProjectDetail, ProjectMember, AddMemberPayload, UpdateMemberPayload } from '@/services/project.service';
 
 /**
@@ -43,23 +43,34 @@ export function ProjectMembersTab({
 }: ProjectMembersTabProps) {
   const { t } = useTranslation('projects');
 
-  // Estados do modal de adicionar membro
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [selectedUserId, setSelectedUserId] = useState('');
-  const [memberRole, setMemberRole] = useState('');
+  // Estado da pesquisa inline de usuários
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
 
   // Estados do modal de editar função
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingMember, setEditingMember] = useState<ProjectMember | null>(null);
   const [editMemberRole, setEditMemberRole] = useState('');
 
+  // Fechar dropdown ao clicar fora
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setIsSearchFocused(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   // =========================================================================
-  // LISTA DE USUÁRIOS DISPONÍVEIS (FILTRAR DUPLICADOS)
+  // PESQUISA INLINE — FILTRAR USUÁRIOS DISPONÍVEIS
   // =========================================================================
   //
-  // Filtra a lista de usuários do sistema para mostrar apenas aqueles
-  // que AINDA NÃO são membros do projeto — evita duplicidade na UI,
-  // seguindo o mesmo padrão do módulo de Timesheet.
+  // A pesquisa filtra usuários do sistema que AINDA NÃO são membros
+  // do projeto. Ao clicar num resultado, o usuário é adicionado
+  // diretamente com a função auto-preenchida do seu position.
 
   const availableUsers = useMemo(() => {
     const existingMemberIds = new Set(
@@ -68,42 +79,37 @@ export function ProjectMembersTab({
     return users.filter((u) => !existingMemberIds.has(u.id));
   }, [users, project.members]);
 
-  // =========================================================================
-  // HANDLERS - ADICIONAR MEMBRO
-  // =========================================================================
+  /**
+   * Resultados filtrados pela pesquisa (nome ou email).
+   * Mostra no máximo 8 resultados para manter o dropdown compacto.
+   */
+  const searchResults = useMemo(() => {
+    if (!searchQuery.trim()) return availableUsers;
+    const q = searchQuery.toLowerCase();
+    return availableUsers
+      .filter((u) =>
+        u.firstName.toLowerCase().includes(q) ||
+        u.lastName.toLowerCase().includes(q) ||
+        u.email.toLowerCase().includes(q)
+      )
+      .slice(0, 8);
+  }, [availableUsers, searchQuery]);
 
-  function openAddModal() {
-    setSelectedUserId('');
-    setMemberRole('');
-    setIsAddModalOpen(true);
-  }
+  const showDropdown = isSearchFocused && availableUsers.length > 0;
 
-  function closeAddModal() {
-    setIsAddModalOpen(false);
-    setSelectedUserId('');
-    setMemberRole('');
-  }
+  // =========================================================================
+  // HANDLERS - ADICIONAR MEMBRO (CLIQUE DIRETO)
+  // =========================================================================
 
   /**
-   * Ao selecionar um usuário, a função no projeto é automaticamente
-   * preenchida com o `position` (cargo) dele — mesmo padrão do Timesheet.
+   * Adiciona um usuário diretamente ao projeto.
+   * A função é auto-preenchida com o `position` do usuário.
    */
-  function handleUserSelect(userId: string) {
-    setSelectedUserId(userId);
-    const selectedUser = users.find((u) => u.id === userId);
-    if (selectedUser?.position) {
-      setMemberRole(selectedUser.position);
-    } else {
-      setMemberRole('');
-    }
-  }
-
-  function handleAddSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!selectedUserId) return;
-    onAddMember({ userId: selectedUserId, role: memberRole || undefined }, {
-      onSuccess: () => closeAddModal(),
-    });
+  function handleQuickAdd(user: { id: string; position?: string }) {
+    onAddMember(
+      { userId: user.id, role: user.position || undefined },
+      { onSuccess: () => setSearchQuery('') }
+    );
   }
 
   // =========================================================================
@@ -184,18 +190,63 @@ export function ProjectMembersTab({
 
   return (
     <>
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        {/* Header com botão de adicionar */}
-        <div className="p-4 border-b border-gray-200 flex justify-end">
-          <button
-            onClick={openAddModal}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <Plus size={18} />
-            {t('actions.addMember')}
-          </button>
+      {/* Barra de pesquisa inline para adicionar membros */}
+      <div ref={searchRef} className="relative mb-4">
+        <div className="relative">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onFocus={() => setIsSearchFocused(true)}
+            placeholder={t('memberSearch.placeholder')}
+            className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+          />
         </div>
 
+        {/* Dropdown de resultados */}
+        {showDropdown && (
+          <div className="absolute z-40 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
+            {/* Aviso quando não há resultados */}
+            {searchResults.length === 0 && searchQuery.trim() && (
+              <div className="px-4 py-3 text-sm text-gray-500">
+                {t('memberSearch.noResults')}
+              </div>
+            )}
+            {searchResults.length === 0 && !searchQuery.trim() && (
+              <div className="px-4 py-3 text-sm text-amber-600">
+                {t('memberModal.allUsersAlreadyMembers')}
+              </div>
+            )}
+            {searchResults.map((user) => (
+              <button
+                key={user.id}
+                type="button"
+                onClick={() => handleQuickAdd(user)}
+                disabled={isAddPending}
+                className="w-full px-4 py-2.5 flex items-center justify-between hover:bg-blue-50 transition-colors disabled:opacity-50 border-b border-gray-50 last:border-b-0"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center text-xs font-semibold text-gray-600">
+                    {user.firstName[0]}{user.lastName[0]}
+                  </div>
+                  <div className="text-left">
+                    <p className="text-sm font-medium text-gray-900">
+                      {user.firstName} {user.lastName}
+                    </p>
+                    {user.position && (
+                      <p className="text-xs text-gray-500">{user.position}</p>
+                    )}
+                  </div>
+                </div>
+                <UserPlus size={16} className="text-blue-500 flex-shrink-0" />
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         {/* Lista agrupada por Role e Função ou estado vazio */}
         {project.members?.length ? (
           <div className="p-4 space-y-6">
@@ -289,75 +340,6 @@ export function ProjectMembersTab({
           </div>
         )}
       </div>
-
-      {/* Modal de Adicionar Membro */}
-      {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md mx-4">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-900">
-                {t('memberModal.title')}
-              </h2>
-            </div>
-            <form onSubmit={handleAddSubmit} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t('memberModal.user')} *
-                </label>
-                <select
-                  required
-                  value={selectedUserId}
-                  onChange={(e) => handleUserSelect(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">{t('memberModal.selectUser')}</option>
-                  {availableUsers.map((user) => (
-                    <option key={user.id} value={user.id}>
-                      {user.firstName} {user.lastName}{user.position ? ` — ${user.position}` : ''}
-                    </option>
-                  ))}
-                </select>
-                {availableUsers.length === 0 && (
-                  <p className="mt-1.5 text-xs text-amber-600">
-                    {t('memberModal.allUsersAlreadyMembers')}
-                  </p>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t('memberModal.role')}
-                </label>
-                <input
-                  type="text"
-                  value={memberRole}
-                  readOnly
-                  placeholder={t('memberModal.roleAutoPlaceholder')}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-600 cursor-not-allowed"
-                />
-                <p className="mt-1 text-xs text-gray-400">
-                  {t('memberModal.roleAutoHint')}
-                </p>
-              </div>
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
-                <button
-                  type="button"
-                  onClick={closeAddModal}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  {t('modal.cancel')}
-                </button>
-                <button
-                  type="submit"
-                  disabled={isAddPending || !selectedUserId}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50"
-                >
-                  {t('modal.save')}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       {/* Modal de Editar Função do Membro */}
       {isEditModalOpen && editingMember && (
