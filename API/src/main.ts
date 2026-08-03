@@ -31,6 +31,7 @@ import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import compression from 'compression';
 import helmet from 'helmet';
+import express from 'express';
 
 import { AppModule } from './app.module.js';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter.js';
@@ -59,8 +60,8 @@ async function bootstrap() {
   });
 
   // Configura o limite do body parser para 10mb (base64 images podem ser grandes)
-  app.use(require('express').json({ limit: '10mb' }));
-  app.use(require('express').urlencoded({ limit: '10mb', extended: true }));
+  app.use(express.json({ limit: '10mb' }));
+  app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
   // Obtém o serviço de configuração para acessar variáveis de ambiente
   const configService = app.get(ConfigService);
