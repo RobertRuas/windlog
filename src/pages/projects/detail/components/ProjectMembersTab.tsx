@@ -10,7 +10,7 @@
  * ============================================================================
  */
 
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Search, Edit2, Trash2, Users, UserPlus, Plus, X } from 'lucide-react';
 import type { ProjectDetail, ProjectMember, AddMemberPayload, UpdateMemberPayload } from '@/services/project.service';
@@ -43,27 +43,14 @@ export function ProjectMembersTab({
 }: ProjectMembersTabProps) {
   const { t } = useTranslation('projects');
 
-  // Estado do painel de adicionar membro (botão + painel compacto)
-  const [isAddPanelOpen, setIsAddPanelOpen] = useState(false);
+  // Estado do modal de adicionar membro
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const searchRef = useRef<HTMLDivElement>(null);
 
   // Estados do modal de editar função
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingMember, setEditingMember] = useState<ProjectMember | null>(null);
   const [editMemberRole, setEditMemberRole] = useState('');
-
-  // Fechar painel ao clicar fora
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
-        setIsAddPanelOpen(false);
-        setSearchQuery('');
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   // =========================================================================
   // PESQUISA INLINE — FILTRAR USUÁRIOS DISPONÍVEIS
@@ -97,12 +84,12 @@ export function ProjectMembersTab({
   }, [availableUsers, searchQuery]);
 
   function toggleAddPanel() {
-    setIsAddPanelOpen((prev) => !prev);
+    setIsAddModalOpen((prev) => !prev);
     setSearchQuery('');
   }
 
   function closeAddPanel() {
-    setIsAddPanelOpen(false);
+    setIsAddModalOpen(false);
     setSearchQuery('');
   }
 
@@ -199,88 +186,15 @@ export function ProjectMembersTab({
 
   return (
     <>
-      {/* Botão + Painel compacto de pesquisa para adicionar membros */}
-      <div ref={searchRef} className="relative mb-4">
-        {/* Botão de abrir */}
-        {!isAddPanelOpen && (
-          <button
-            onClick={toggleAddPanel}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <Plus size={18} />
-            {t('actions.addMember')}
-          </button>
-        )}
-
-        {/* Painel compacto de pesquisa */}
-        {isAddPanelOpen && (
-          <div className="bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden w-full max-w-sm">
-            {/* Header do painel */}
-            <div className="px-3 py-2 border-b border-gray-100 flex items-center justify-between">
-              <span className="text-sm font-semibold text-gray-700">{t('actions.addMember')}</span>
-              <button
-                type="button"
-                onClick={closeAddPanel}
-                className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
-              >
-                <X size={14} />
-              </button>
-            </div>
-
-            {/* Campo de pesquisa */}
-            <div className="px-3 py-2 border-b border-gray-100">
-              <div className="relative">
-                <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input
-                  autoFocus
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder={t('memberSearch.placeholder')}
-                  className="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            </div>
-
-            {/* Lista de resultados */}
-            <div className="max-h-56 overflow-y-auto">
-              {searchResults.length === 0 && searchQuery.trim() && (
-                <div className="px-4 py-3 text-sm text-gray-500">
-                  {t('memberSearch.noResults')}
-                </div>
-              )}
-              {searchResults.length === 0 && !searchQuery.trim() && (
-                <div className="px-4 py-3 text-sm text-amber-600">
-                  {t('memberModal.allUsersAlreadyMembers')}
-                </div>
-              )}
-              {searchResults.map((user) => (
-                <button
-                  key={user.id}
-                  type="button"
-                  onClick={() => handleQuickAdd(user)}
-                  disabled={isAddPending}
-                  className="w-full px-3 py-2 flex items-center justify-between hover:bg-blue-50 transition-colors disabled:opacity-50 border-b border-gray-50 last:border-b-0"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-[10px] font-semibold text-gray-600">
-                      {user.firstName[0]}{user.lastName[0]}
-                    </div>
-                    <div className="text-left">
-                      <p className="text-sm font-medium text-gray-900">
-                        {user.firstName} {user.lastName}
-                      </p>
-                      {user.position && (
-                        <p className="text-xs text-gray-500">{user.position}</p>
-                      )}
-                    </div>
-                  </div>
-                  <UserPlus size={14} className="text-blue-500 flex-shrink-0" />
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+      {/* Botão de adicionar membro */}
+      <div className="flex justify-end mb-4">
+        <button
+          onClick={toggleAddPanel}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+        >
+          <Plus size={16} />
+          {t('actions.addMember')}
+        </button>
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
@@ -377,6 +291,78 @@ export function ProjectMembersTab({
           </div>
         )}
       </div>
+
+      {/* Modal de Adicionar Membro */}
+      {isAddModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-sm mx-4">
+            {/* Header */}
+            <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+              <span className="text-sm font-semibold text-gray-700">{t('actions.addMember')}</span>
+              <button
+                type="button"
+                onClick={closeAddPanel}
+                className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
+              >
+                <X size={14} />
+              </button>
+            </div>
+
+            {/* Pesquisa */}
+            <div className="px-4 py-3 border-b border-gray-100">
+              <div className="relative">
+                <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  autoFocus
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder={t('memberSearch.placeholder')}
+                  className="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+
+            {/* Resultados */}
+            <div className="max-h-64 overflow-y-auto">
+              {searchResults.length === 0 && searchQuery.trim() && (
+                <div className="px-4 py-4 text-sm text-gray-500 text-center">
+                  {t('memberSearch.noResults')}
+                </div>
+              )}
+              {searchResults.length === 0 && !searchQuery.trim() && (
+                <div className="px-4 py-4 text-sm text-amber-600 text-center">
+                  {t('memberModal.allUsersAlreadyMembers')}
+                </div>
+              )}
+              {searchResults.map((user) => (
+                <button
+                  key={user.id}
+                  type="button"
+                  onClick={() => handleQuickAdd(user)}
+                  disabled={isAddPending}
+                  className="w-full px-4 py-2.5 flex items-center justify-between hover:bg-blue-50 transition-colors disabled:opacity-50 border-b border-gray-50 last:border-b-0"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center text-[10px] font-semibold text-gray-600">
+                      {user.firstName[0]}{user.lastName[0]}
+                    </div>
+                    <div className="text-left">
+                      <p className="text-sm font-medium text-gray-900">
+                        {user.firstName} {user.lastName}
+                      </p>
+                      {user.position && (
+                        <p className="text-xs text-gray-500">{user.position}</p>
+                      )}
+                    </div>
+                  </div>
+                  <UserPlus size={14} className="text-blue-500 flex-shrink-0" />
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal de Editar Função do Membro */}
       {isEditModalOpen && editingMember && (
