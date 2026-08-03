@@ -649,7 +649,7 @@ export function TimesheetFormEditor({
             >
               <div className="flex items-center gap-3">
                 {isCollapsed ? <ChevronRight size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
-                <h3 className="text-sm font-semibold text-gray-900">{day.dayName}</h3>
+                <h3 className="text-sm font-semibold text-gray-900">{t('days.' + day.dayName)}</h3>
                 <span className="text-xs text-gray-500">{day.date}</span>
               </div>
               <div className="flex items-center gap-2">

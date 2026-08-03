@@ -91,7 +91,7 @@ export function TimesheetDaySection({
       <tr className="row-day-header">
         {/* Coluna 1: "{DayName} Date" (ex: "Monday Date") */}
         <th className="cell-day-header cell-day-header-bold">
-          {day.dayName} {t('sheet.dayDate')}
+          {t('days.' + day.dayName)} {t('sheet.dayDate')}
         </th>
 
         {/* Coluna 2: Technician Name */}
