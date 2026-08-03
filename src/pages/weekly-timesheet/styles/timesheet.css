@@ -242,6 +242,8 @@ table.ts-excel-table {
   font-family: var(--excel-font-family);
   font-size: 11px;
   line-height: 1.2;
+  /* Borda fina comum ao redor de toda a planilha */
+  border: 1px solid var(--excel-border-color);
 }
 
 /* ── Alturas de linhas (conformes ao XML do Excel) ──────────────────── */
@@ -347,6 +349,9 @@ table.ts-excel-table th {
   font-size: 12px;
   background-color: var(--excel-header-bg);
   border: 1px solid var(--excel-border-color);
+  /* Permite quebra de linha nos cabeçalhos dos dias, como no original */
+  white-space: normal;
+  word-wrap: break-word;
 }
 
 .cell-day-header-bold {
@@ -464,7 +469,10 @@ table.ts-excel-table th {
 @media print {
   @page {
     size: A4 landscape;
-    margin: 0.3in;
+    /* Margem zero: sem espaço para cabeçalhos/rodapés do navegador
+       (data, título, URL, número de página). O conteúdo é redimensionado
+       automaticamente para caber na folha. */
+    margin: 0;
   }
 
   /* Reset de backgrounds para impressão */
