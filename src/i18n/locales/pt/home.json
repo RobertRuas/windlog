@@ -245,5 +245,9 @@
     "ADMIN": "Administrador",
     "HR": "Recursos Humanos",
     "STANDARD": "Padrão"
+  },
+  "signatureSection": {
+    "title": "Assinatura",
+    "description": "Configure sua assinatura pessoal para assinar documentos"
   }
 }

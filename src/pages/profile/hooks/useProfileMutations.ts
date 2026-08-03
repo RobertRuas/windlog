@@ -40,6 +40,8 @@ import {
   addBankAccount,
   updateBankAccount,
   removeBankAccount,
+  updateSignature,
+  removeSignature,
   type PhoneNumber,
   type Certification,
   type Language,
@@ -152,6 +154,19 @@ export function useProfileMutations() {
     },
   });
 
+  const signatureMutation = useMutation({
+    mutationFn: async ({ action, data }: { action: 'save' | 'remove'; data?: string }) => {
+      if (action === 'save') return updateSignature(data!);
+      return removeSignature();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+    },
+    onError: () => {
+      toast.error(t('feedback.error'));
+    },
+  });
+
   return {
     profileMutation,
     phoneMutation,
@@ -159,5 +174,6 @@ export function useProfileMutations() {
     langMutation,
     docMutation,
     bankMutation,
+    signatureMutation,
   };
 }

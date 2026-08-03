@@ -294,6 +294,7 @@ export class AuthService {
       employeeId: user.employeeId,
       bio: user.bio,
       photoUrl: user.photoUrl,
+      signatureData: user.signatureData,
       role: user.role,
       createdAt: user.createdAt,
       phoneNumbers: user.phoneNumbers,
@@ -345,6 +346,7 @@ export class AuthService {
     if (dto.hireDate !== undefined) updateData.hireDate = dto.hireDate ? new Date(dto.hireDate) : null;
     if (dto.bio !== undefined) updateData.bio = dto.bio;
     if (dto.photoUrl !== undefined) updateData.photoUrl = dto.photoUrl;
+    if (dto.signatureData !== undefined) updateData.signatureData = dto.signatureData;
 
     // Atualiza o usuário no banco de dados
     const updatedUser = await this.prisma.user.update({

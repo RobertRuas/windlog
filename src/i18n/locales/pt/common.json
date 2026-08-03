@@ -47,5 +47,19 @@
     "file_load_error": "Ocorreu um erro ao carregar o ficheiro. Por favor, tente novamente.",
     "back": "[ ← Voltar ]",
     "login": "[ Login → ]"
+  },
+  "signature": {
+    "title": "Assinatura",
+    "description": "Desenhe sua assinatura para usar em documentos",
+    "clear": "Limpar",
+    "apply": "Aplicar",
+    "cancelEdit": "Cancelar",
+    "noSignature": "Nenhuma assinatura cadastrada",
+    "saved": "Assinatura salva com sucesso!",
+    "removed": "Assinatura removida com sucesso!",
+    "error": "Erro ao salvar assinatura",
+    "configure": "Configurar Assinatura",
+    "useMySignature": "Usar minha assinatura",
+    "removeSignature": "Remover assinatura"
   }
 }

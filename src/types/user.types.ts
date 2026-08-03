@@ -66,6 +66,8 @@ export interface User {
   bio?: string | null;
   /** URL da foto do usuário */
   photoUrl?: string | null;
+  /** Dados da assinatura (base64 PNG) */
+  signatureData?: string | null;
   /** Data de criação da conta (formato ISO) */
   createdAt?: string;
   /** Idiomas que o usuário fala */

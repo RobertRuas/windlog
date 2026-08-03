@@ -187,6 +187,9 @@ model User {
   /// URL da foto do usuário (ficheiro alojado)
   photoUrl            String?
 
+  /// Dados da assinatura do usuário (base64 PNG para uso em documentos)
+  signatureData       String?
+
   // Controle de acesso (RBAC)
   role      Role     @default(STANDARD)
   isActive  Boolean  @default(true)
@@ -613,6 +616,8 @@ enum LogAction {
   // Perfil
   PROFILE_UPDATE
   PROFILE_VIEW
+  SIGNATURE_UPDATE
+  SIGNATURE_DELETE
   
   // Telefones
   PHONE_ADD

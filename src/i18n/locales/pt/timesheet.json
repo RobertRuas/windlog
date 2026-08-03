@@ -85,7 +85,11 @@
     "clientSignature": "Client Signature",
     "name": "Name",
     "clientName": "Client Name",
-    "date": "Date"
+    "date": "Date",
+    "useMySignature": "Usar minha assinatura",
+    "clearSignature": "Limpar assinatura",
+    "mySignature": "Minha Assinatura",
+    "leaveBlank": "Deixar em branco"
   },
   "days": {
     "Monday": "Monday",

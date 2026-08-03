@@ -171,4 +171,13 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsString()
   photoUrl?: string;
+
+  @ApiProperty({
+    description: 'Dados da assinatura do usuário (base64 PNG). Enviar null para remover.',
+    example: 'data:image/png;base64,iVBORw0KGgo...',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  signatureData?: string | null;
 }

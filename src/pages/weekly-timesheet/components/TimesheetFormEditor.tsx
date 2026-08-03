@@ -34,7 +34,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import {
   Plus, Trash2, Save, RotateCcw, ChevronDown, ChevronRight,
-  X, User as UserIcon, Check,
+  X, User as UserIcon, Check, Pen,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type {
@@ -47,6 +47,7 @@ import { updateTimesheet } from '@/services/weekly-timesheet.service';
 import { getProfile } from '@/services/auth.service';
 import { getUsers } from '@/services/user.service';
 import { PREDEFINED_FUNCTIONS } from '@/constants/functions';
+import { SignaturePad } from '@/components/ui/SignaturePad';
 
 // =========================================================================
 // TYPES
@@ -385,6 +386,7 @@ export function TimesheetFormEditor({
     ? `${currentUser.firstName} ${currentUser.lastName}`
     : '';
   const currentUserPosition = currentUser?.position || '';
+  const currentUserSignature = currentUser?.signatureData || null;
 
   // ── Estado do formulário ───────────────────────────────────────────
   const [form, setForm] = useState<FormState>(() => timesheetToFormState(timesheet));
@@ -862,7 +864,32 @@ export function TimesheetFormEditor({
               </div>
               <div>
                 <label className={labelClass}>{t('signatures.signature')}</label>
-                <input type="text" value={form.technicianSignature} onChange={(e) => handleMetaChange('technicianSignature', e.target.value)} disabled={isSaving} className={inputClass} />
+                {/* Botão para usar assinatura do perfil */}
+                {currentUserSignature && !form.technicianSignature && (
+                  <button
+                    type="button"
+                    onClick={() => handleMetaChange('technicianSignature', currentUserSignature)}
+                    disabled={isSaving}
+                    className="mb-2 flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-indigo-700 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors disabled:opacity-50"
+                  >
+                    <Pen size={12} />
+                    {t('signatures.useMySignature')}
+                  </button>
+                )}
+                {/* Se a assinatura é uma imagem (base64), exibe o SignaturePad */}
+                {form.technicianSignature && form.technicianSignature.startsWith('data:image') ? (
+                  <div className="space-y-2">
+                    <SignaturePad
+                      initialValue={form.technicianSignature}
+                      height={120}
+                      isSaving={isSaving}
+                      onSave={(dataUrl) => handleMetaChange('technicianSignature', dataUrl)}
+                      onClear={() => handleMetaChange('technicianSignature', '')}
+                    />
+                  </div>
+                ) : (
+                  <input type="text" value={form.technicianSignature} onChange={(e) => handleMetaChange('technicianSignature', e.target.value)} disabled={isSaving} className={inputClass} placeholder={t('signatures.leaveBlank')} />
+                )}
               </div>
               <div>
                 <label className={labelClass}>{t('signatures.date')} (DD/MM/YYYY)</label>
@@ -877,7 +904,20 @@ export function TimesheetFormEditor({
               </div>
               <div>
                 <label className={labelClass}>{t('signatures.clientSignature')}</label>
-                <input type="text" value={form.clientSignature} onChange={(e) => handleMetaChange('clientSignature', e.target.value)} disabled={isSaving} className={inputClass} />
+                {/* Se a assinatura é uma imagem (base64), exibe o SignaturePad */}
+                {form.clientSignature && form.clientSignature.startsWith('data:image') ? (
+                  <div className="space-y-2">
+                    <SignaturePad
+                      initialValue={form.clientSignature}
+                      height={120}
+                      isSaving={isSaving}
+                      onSave={(dataUrl) => handleMetaChange('clientSignature', dataUrl)}
+                      onClear={() => handleMetaChange('clientSignature', '')}
+                    />
+                  </div>
+                ) : (
+                  <input type="text" value={form.clientSignature} onChange={(e) => handleMetaChange('clientSignature', e.target.value)} disabled={isSaving} className={inputClass} placeholder={t('signatures.leaveBlank')} />
+                )}
               </div>
               <div>
                 <label className={labelClass}>{t('signatures.date')} (DD/MM/YYYY)</label>

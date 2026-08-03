@@ -268,3 +268,28 @@ export async function updateBankAccount(id: string, data: Partial<BankAccount>):
 export async function removeBankAccount(id: string): Promise<void> {
   await api.delete(`/api/v1/auth/bank-accounts/${id}`);
 }
+
+// ============================================================================
+// SIGNATURE - Gerenciamento da Assinatura
+// ============================================================================
+
+/**
+ * Atualiza a assinatura do usuário autenticado.
+ *
+ * @param signatureData - Dados da assinatura em base64 PNG (data URL)
+ * @returns Promise com o perfil atualizado
+ */
+export async function updateSignature(signatureData: string): Promise<ProfileResponse> {
+  const response = await api.put<ApiResponse<ProfileResponse>>('/api/v1/auth/profile', { signatureData });
+  return response.data;
+}
+
+/**
+ * Remove a assinatura do usuário autenticado.
+ *
+ * @returns Promise com o perfil atualizado
+ */
+export async function removeSignature(): Promise<ProfileResponse> {
+  const response = await api.put<ApiResponse<ProfileResponse>>('/api/v1/auth/profile', { signatureData: null });
+  return response.data;
+}

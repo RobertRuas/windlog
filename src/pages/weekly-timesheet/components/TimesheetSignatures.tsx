@@ -84,7 +84,15 @@ export function TimesheetSignatures({
           suppressContentEditableWarning
           onBlur={(e) => handleBlur('technicianSignature', e)}
         >
-          {timesheet.technicianSignature || ''}
+          {timesheet.technicianSignature?.startsWith('data:image') ? (
+            <img
+              src={timesheet.technicianSignature}
+              alt="Technician Signature"
+              className="max-h-12 object-contain"
+            />
+          ) : (
+            timesheet.technicianSignature || ''
+          )}
         </td>
 
         {/* Label "Client Signature" */}
@@ -98,7 +106,15 @@ export function TimesheetSignatures({
           suppressContentEditableWarning
           onBlur={(e) => handleBlur('clientSignature', e)}
         >
-          {timesheet.clientSignature || ''}
+          {timesheet.clientSignature?.startsWith('data:image') ? (
+            <img
+              src={timesheet.clientSignature}
+              alt="Client Signature"
+              className="max-h-12 object-contain"
+            />
+          ) : (
+            timesheet.clientSignature || ''
+          )}
         </td>
 
         {/* Células vazias restantes */}

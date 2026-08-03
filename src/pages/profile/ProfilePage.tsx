@@ -26,7 +26,8 @@
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { Phone, Award, Globe, User, Mail, MapPin, Briefcase, FileText, CreditCard, Landmark } from 'lucide-react';
+import { toast } from 'sonner';
+import { Phone, Award, Globe, User, Mail, MapPin, Briefcase, FileText, CreditCard, Landmark, Pen } from 'lucide-react';
 
 // Layout
 import { AppLayout } from '@/components/layout/AppLayout';
@@ -40,6 +41,7 @@ import { DocumentSection } from '@/pages/home/components/DocumentSection';
 import { BankAccountSection } from '@/pages/home/components/BankAccountSection';
 import { AvatarUpload } from '@/pages/home/components/AvatarUpload';
 import { Accordion } from '@/components/ui/Accordion';
+import { SignaturePad } from '@/components/ui/SignaturePad';
 import { ProfileCompleteness } from '@/pages/home/components/ProfileCompleteness';
 import { ProfileWizard } from '@/pages/home/components/ProfileWizard';
 
@@ -81,6 +83,7 @@ export function ProfilePage() {
     langMutation,
     docMutation,
     bankMutation,
+    signatureMutation,
   } = useProfileMutations();
 
   const countryOptions = PREDEFINED_COUNTRIES.map((c: { code: string; name: string }) => ({
@@ -358,6 +361,34 @@ export function ProfilePage() {
                 onUpdate={handleUpdateLanguage}
                 onRemove={handleRemoveLanguage}
               />
+            </Accordion>
+          </div>
+
+          {/* 7. Assinatura */}
+          <div id="section-signature">
+            <Accordion
+              title={t('signatureSection.title')}
+              icon={<Pen className="w-5 h-5 text-indigo-600" />}
+              defaultOpen={false}
+            >
+              <div className="p-4">
+                <p className="text-sm text-gray-500 mb-4">
+                  {t('signatureSection.description')}
+                </p>
+                <SignaturePad
+                  initialValue={data?.signatureData}
+                  height={160}
+                  isSaving={signatureMutation.isPending}
+                  onSave={(dataUrl) => {
+                    signatureMutation.mutate({ action: 'save', data: dataUrl });
+                    toast.success(t('common:signature.saved'));
+                  }}
+                  onClear={() => {
+                    signatureMutation.mutate({ action: 'remove' });
+                    toast.success(t('common:signature.removed'));
+                  }}
+                />
+              </div>
             </Accordion>
           </div>
         </div>
