@@ -268,8 +268,10 @@ interface TechnicianSelectProps {
 
 /**
  * Dropdown com pesquisa para selecionar técnico.
- * Restritivo: o usuário DEVE selecionar da lista (não permite texto livre).
- * Mostra todos os membros do projeto, filtráveis por nome.
+ * Restritivo: o usuário DEVE selecionar da lista.
+ * - Clique abre dropdown com todos os membros (filtrável por nome)
+ * - Se digitar algo que não corresponde a nenhum membro, reverte ao último valor válido
+ * - Ao fechar sem seleção válida, limpa se não havia valor anterior
  */
 function TechnicianSelect({
   value,
@@ -281,30 +283,33 @@ function TechnicianSelect({
 }: TechnicianSelectProps) {
   const { t } = useTranslation('timesheet');
   const [isOpen, setIsOpen] = useState(false);
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState(value);
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  // Guarda o último valor válido (nome selecionado) para reverter em caso de texto inválido
+  const lastValidValue = useRef(value);
 
   // Sincroniza valor externo → display
   useEffect(() => {
     setQuery(value);
+    if (value) lastValidValue.current = value;
   }, [value]);
 
-  // Fecha dropdown ao clicar fora
+  // Fecha dropdown ao clicar fora e valida o conteúdo
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
         setIsOpen(false);
-        // Se o campo ficou vazio ou com texto que não corresponde a um usuário, limpa
-        if (value && !users.some((u) => u.fullName === value)) {
-          setQuery('');
-          onChange('');
+        // Se o texto atual não corresponde a nenhum usuário, reverte
+        const matchedUser = users.find((u) => u.fullName === query);
+        if (!matchedUser) {
+          // Reverte para o último valor válido (ou limpa se não havia)
+          setQuery(lastValidValue.current);
         }
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [value, users, onChange]);
+  }, [query, users]);
 
   const filtered = query.trim().length > 0
     ? users.filter((u) => u.fullName.toLowerCase().includes(query.toLowerCase()))
@@ -312,39 +317,69 @@ function TechnicianSelect({
 
   function handleSelect(user: SystemUser) {
     setQuery(user.fullName);
+    lastValidValue.current = user.fullName;
     onChange(user.fullName);
     onSelectUser(user);
     setIsOpen(false);
   }
 
+  function handleClear() {
+    setQuery('');
+    lastValidValue.current = '';
+    onChange('');
+  }
+
   return (
     <div ref={wrapperRef} className="relative">
-      <input
-        ref={inputRef}
-        type="text"
-        value={query}
-        onChange={(e) => {
-          setQuery(e.target.value);
-          setIsOpen(true);
-          // Se apagou tudo, limpa o valor
-          if (e.target.value.trim() === '') {
-            onChange('');
-          }
-        }}
-        onFocus={() => setIsOpen(true)}
-        disabled={disabled}
-        placeholder={placeholder}
-        autoComplete="off"
-        className="w-full px-2 py-1.5 border border-gray-200 rounded text-sm font-medium focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-60"
-      />
-      {/* Ícone de seta para indicar dropdown */}
-      <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-          <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
+      <div className="relative">
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setIsOpen(true);
+            // Se apagou tudo, limpa o valor
+            if (e.target.value.trim() === '') {
+              lastValidValue.current = '';
+              onChange('');
+            }
+          }}
+          onFocus={() => setIsOpen(true)}
+          onKeyDown={(e) => {
+            // Se pressionou Escape, reverte ao último valor válido
+            if (e.key === 'Escape') {
+              setQuery(lastValidValue.current);
+              setIsOpen(false);
+            }
+          }}
+          disabled={disabled}
+          placeholder={placeholder}
+          autoComplete="off"
+          className="w-full px-2 py-1.5 pr-12 border border-gray-200 rounded text-sm font-medium focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-60"
+        />
+        {/* Botões à direita: limpar (se tem valor) + seta */}
+        <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
+          {query && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleClear();
+              }}
+              className="p-0.5 text-gray-400 hover:text-gray-600 transition-colors"
+              title="Limpar"
+            >
+              <X size={12} />
+            </button>
+          )}
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="text-gray-400">
+            <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
       </div>
+      {/* Dropdown — z-50 para ficar sobre todos os outros elementos */}
       {isOpen && filtered.length > 0 && (
-        <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden max-h-48 overflow-y-auto">
+        <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden max-h-48 overflow-y-auto">
           {filtered.map((user) => (
             <button
               key={user.id}
@@ -365,8 +400,8 @@ function TechnicianSelect({
           ))}
         </div>
       )}
-      {isOpen && filtered.length === 0 && query.trim().length > 0 && (
-        <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg p-3 text-center text-xs text-gray-400">
+      {isOpen && filtered.length === 0 && (
+        <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg p-3 text-center text-xs text-gray-400">
           {t('form.noMemberFound')}
         </div>
       )}
