@@ -47,6 +47,7 @@ import { updateTimesheet } from '@/services/weekly-timesheet.service';
 import { getProfile } from '@/services/auth.service';
 import { getUsers } from '@/services/user.service';
 import { PREDEFINED_FUNCTIONS } from '@/constants/functions';
+import { DatePicker } from '@/components/ui/DatePicker';
 
 // =========================================================================
 // TYPES
@@ -908,8 +909,12 @@ export function TimesheetFormEditor({
                 )}
               </div>
               <div>
-                <label className={labelClass}>{t('signatures.date')} (DD/MM/YYYY)</label>
-                <input type="text" value={form.technicianDate} onChange={(e) => handleMetaChange('technicianDate', e.target.value)} placeholder="DD/MM/YYYY" disabled={isSaving} className={inputClass} />
+                <label className={labelClass}>{t('signatures.date')}</label>
+                <DatePicker
+                  value={form.technicianDate}
+                  onChange={(v) => handleMetaChange('technicianDate', v)}
+                  disabled={isSaving}
+                />
               </div>
             </div>
             {/* ── Coluna: Cliente (apenas nome e data) ──────────────── */}
@@ -925,8 +930,12 @@ export function TimesheetFormEditor({
                 </p>
               </div>
               <div>
-                <label className={labelClass}>{t('signatures.date')} (DD/MM/YYYY)</label>
-                <input type="text" value={form.clientDate} onChange={(e) => handleMetaChange('clientDate', e.target.value)} placeholder="DD/MM/YYYY" disabled={isSaving} className={inputClass} />
+                <label className={labelClass}>{t('signatures.date')}</label>
+                <DatePicker
+                  value={form.clientDate}
+                  onChange={(v) => handleMetaChange('clientDate', v)}
+                  disabled={isSaving}
+                />
               </div>
             </div>
           </div>
