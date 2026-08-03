@@ -896,7 +896,8 @@ export function TimesheetFormEditor({
                     <img
                       src={form.technicianSignature}
                       alt="Your signature"
-                      className="max-h-16 object-contain"
+                      className="w-auto object-contain"
+                      style={{ maxHeight: '80px' }}
                     />
                   </div>
                 )}

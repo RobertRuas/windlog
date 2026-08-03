@@ -88,7 +88,8 @@ export function TimesheetSignatures({
             <img
               src={timesheet.technicianSignature}
               alt="Technician Signature"
-              className="max-h-12 object-contain"
+              className="w-auto object-contain"
+              style={{ maxHeight: '60px' }}
             />
           ) : (
             timesheet.technicianSignature || ''
@@ -110,7 +111,8 @@ export function TimesheetSignatures({
             <img
               src={timesheet.clientSignature}
               alt="Client Signature"
-              className="max-h-12 object-contain"
+              className="w-auto object-contain"
+              style={{ maxHeight: '60px' }}
             />
           ) : (
             timesheet.clientSignature || ''
