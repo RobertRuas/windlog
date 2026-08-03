@@ -513,6 +513,34 @@ table.ts-excel-table th {
     page-break-inside: avoid;
   }
 
+  /* ----------------------------------------------------------------
+     MODAL DE VISUALIZAÇÃO ABERTO: imprime apenas a planilha.
+     O modal é renderizado via portal como filho direto do body
+     (.ts-view-modal-root); esconde todo o resto da aplicação.
+     ---------------------------------------------------------------- */
+  body.ts-print-view-open > *:not(.ts-view-modal-root) {
+    display: none !important;
+  }
+
+  .ts-view-modal-root {
+    position: static !important;
+    background: none !important;
+  }
+
+  .ts-view-modal-body {
+    overflow: visible !important;
+    background: none !important;
+    padding: 0 !important;
+    height: auto !important;
+    flex: none !important;
+  }
+
+  /* Reseta o zoom da planilha para impressão fiel */
+  body.ts-print-view-open .ts-sheet-scroll-wrapper {
+    transform: none !important;
+    zoom: 1 !important;
+  }
+
   /* Garante que as cores sejam impressas */
   * {
     -webkit-print-color-adjust: exact !important;

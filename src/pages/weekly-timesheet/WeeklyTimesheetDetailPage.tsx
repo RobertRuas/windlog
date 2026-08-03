@@ -1,30 +1,30 @@
 /**
  * ============================================================================
- * WEEKLY TIMESHEET DETAIL PAGE - Página de Visualização/Edição
+ * WEEKLY TIMESHEET DETAIL PAGE - Página de Edição
  * ============================================================================
  *
  * O QUE É ESTE ARQUIVO?
  * ---------------------
  * Página principal do módulo de Weekly Timesheets para um timesheet específico.
- * Possui DUAS abas de visualização:
+ * Abre SEMPRE no modo Editor (formulário de edição).
  *
- * 1. PLANILHA (Sheet): visualização fiel ao design original do Excel.
- *    - Apenas leitura (sem edição inline)
- *    - Zoom in/out, exportar Excel, imprimir/PDF
- *    - Ideal para visualizar o resultado final e imprimir
- *
- * 2. EDITOR (Form): formulário organizado no padrão da aplicação.
+ * MODOS:
+ * ------
+ * 1. EDITOR (padrão): formulário organizado no padrão da aplicação.
  *    - Inputs reais do React com estado controlado
  *    - Seções colapsáveis por dia
  *    - Tabela de entradas editáveis por dia
  *    - Botão "Salvar" envia tudo de uma vez
- *    - Ideal para editar dados de forma clara e organizada
+ *
+ * 2. VISUALIZAÇÃO (modal): o botão "Visualização" abre um modal com a
+ *    planilha preenchida em modo de impressão (fiel ao Excel), com
+ *    zoom, exportar Excel e imprimir/gerar PDF.
  *
  * ESTRUTURA:
  * ----------
  * 1. AppLayout (sidebar + header)
- * 2. Header com botão voltar + tabs (Planilha / Editor)
- * 3. Conteúdo da tab selecionada
+ * 2. Header com botão voltar + título + botão Visualização
+ * 3. Editor (conteúdo principal) + modal de visualização opcional
  * ============================================================================
  */
 
@@ -32,12 +32,11 @@ import { useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Minus, Plus, TableProperties, PenLine, FileSpreadsheet, Printer } from 'lucide-react';
+import { ArrowLeft, Eye } from 'lucide-react';
 
 import { AppLayout } from '@/components/layout/AppLayout';
-import { TimesheetSheet } from './components/TimesheetSheet';
 import { TimesheetFormEditor } from './components/TimesheetFormEditor';
-import { useTimesheetZoom } from './hooks/useTimesheetZoom';
+import { TimesheetViewModal } from './components/TimesheetViewModal';
 import { useTimesheetMutations } from './hooks/useTimesheetMutations';
 import {
   getTimesheetById,
@@ -48,11 +47,10 @@ import {
 import './styles/timesheet.css';
 
 /**
- * Página WeeklyTimesheetDetailPage - Visualização e edição do timesheet.
+ * Página WeeklyTimesheetDetailPage - edição do timesheet.
  *
- * Duas abas:
- * - Planilha: visualização fiel ao Excel (read-only)
- * - Editor: formulário organizado para edição
+ * Sempre no modo Editor; o botão Visualização abre um modal com a
+ * planilha preenchida em modo de impressão.
  */
 export function WeeklyTimesheetDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -60,10 +58,8 @@ export function WeeklyTimesheetDetailPage() {
   const { t } = useTranslation('timesheet');
 
   // ── Estado local ────────────────────────────────────────────────────
-  const [activeTab, setActiveTab] = useState<'sheet' | 'editor'>('sheet');
-
-  // ── Hook de zoom ────────────────────────────────────────────────────
-  const { zoom, zoomIn, zoomOut, zoomPercent } = useTimesheetZoom();
+  // Controla a abertura do modal de visualização (planilha em modo de impressão)
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
   // ── Hook de mutations ──────────────────────────────────────────────
   const mutations = useTimesheetMutations(id);
@@ -90,24 +86,6 @@ export function WeeklyTimesheetDetailPage() {
     },
     [id, mutations],
   );
-
-  /**
-   * Exporta o timesheet para Excel.
-   */
-  const handleExportExcel = useCallback(() => {
-    if (timesheet) {
-      import('./components/TimesheetExportExcel').then(({ exportToExcel }) => {
-        exportToExcel(timesheet);
-      });
-    }
-  }, [timesheet]);
-
-  /**
-   * Imprime o timesheet.
-   */
-  const handlePrint = useCallback(() => {
-    window.print();
-  }, []);
 
   // ── Loading state ───────────────────────────────────────────────────
   if (isLoading) {
@@ -168,7 +146,7 @@ export function WeeklyTimesheetDetailPage() {
                   // Extrai range de datas (Seg-Dom) diretamente dos dias do timesheet
                   const fmt = (d: string) => {
                     const pure = d.split('T')[0];
-                    const [y, m, day] = pure.split('-');
+                    const [, m, day] = pure.split('-');
                     return `${day}/${m}`;
                   };
                   const first = fmt(timesheet.days[0].date);
@@ -181,116 +159,42 @@ export function WeeklyTimesheetDetailPage() {
               </p>
             </div>
 
-            {/* Status badge */}
-            <span
-              className={`px-3 py-1 text-sm font-medium rounded-full ${
-                timesheet.status === 'DRAFT'
-                  ? 'bg-yellow-100 text-yellow-800'
-                  : timesheet.status === 'SUBMITTED'
-                    ? 'bg-blue-100 text-blue-800'
-                    : 'bg-green-100 text-green-800'
-              }`}
-            >
-              {t('status.' + timesheet.status)}
-            </span>
-          </div>
-
-          {/* ── Tabs ─────────────────────────────────────────────────── */}
-          <div className="border-b border-gray-200 mt-6">
-            <nav className="flex gap-6">
+            {/* Botão Visualização + Status badge */}
+            <div className="flex items-center gap-3">
               <button
-                onClick={() => setActiveTab('sheet')}
-                className={`flex items-center gap-2 pb-3 text-sm font-medium border-b-2 transition-colors ${
-                  activeTab === 'sheet'
-                    ? 'border-blue-600 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                onClick={() => setIsViewModalOpen(true)}
+                className="flex items-center gap-2 px-4 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
+              >
+                <Eye size={16} />
+                {t('detail.viewButton')}
+              </button>
+              <span
+                className={`px-3 py-1 text-sm font-medium rounded-full ${
+                  timesheet.status === 'DRAFT'
+                    ? 'bg-yellow-100 text-yellow-800'
+                    : timesheet.status === 'SUBMITTED'
+                      ? 'bg-blue-100 text-blue-800'
+                      : 'bg-green-100 text-green-800'
                 }`}
               >
-                <TableProperties size={16} />
-                {t('detail.tabSheet')}
-              </button>
-              <button
-                onClick={() => setActiveTab('editor')}
-                className={`flex items-center gap-2 pb-3 text-sm font-medium border-b-2 transition-colors ${
-                  activeTab === 'editor'
-                    ? 'border-blue-600 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                <PenLine size={16} />
-                {t('detail.tabEditor')}
-              </button>
-            </nav>
+                {t('status.' + timesheet.status)}
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* ── Conteúdo da Tab ───────────────────────────────────────── */}
+        {/* ── Editor (modo padrão) ──────────────────────────────────── */}
+        <TimesheetFormEditor
+          timesheet={timesheet}
+          onSave={handleFormSave}
+          isSaving={mutations.updateTimesheet.isPending}
+        />
 
-        {/* Tab: Planilha (read-only) */}
-        {activeTab === 'sheet' && (
-          <div className="ts-dashboard-container">
-            {/* Barra de ferramentas minimalista */}
-            <div className="flex items-center justify-between mb-4 ts-no-print">
-              {/* Zoom controls */}
-              <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5">
-                <button
-                  onClick={zoomOut}
-                  className="p-1.5 text-gray-500 hover:text-gray-800 hover:bg-white rounded transition-colors"
-                  title={t('detail.zoomOut')}
-                >
-                  <Minus size={14} />
-                </button>
-                <span className="text-xs font-semibold text-gray-700 w-10 text-center">
-                  {zoomPercent}
-                </span>
-                <button
-                  onClick={zoomIn}
-                  className="p-1.5 text-gray-500 hover:text-gray-800 hover:bg-white rounded transition-colors"
-                  title={t('detail.zoomIn')}
-                >
-                  <Plus size={14} />
-                </button>
-              </div>
-
-              {/* Ações discretas */}
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={handleExportExcel}
-                  className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                  title={t('detail.exportExcel')}
-                >
-                  <FileSpreadsheet size={16} />
-                </button>
-                <button
-                  onClick={handlePrint}
-                  className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                  title={t('detail.print')}
-                >
-                  <Printer size={16} />
-                </button>
-              </div>
-            </div>
-
-            {/* Planilha read-only */}
-            <TimesheetSheet
-              timesheet={timesheet}
-              isEditMode={false}
-              zoom={zoom}
-              onMetadataChange={() => {}}
-              onEntryChange={() => {}}
-              onProgressChange={() => {}}
-              onDateChange={() => {}}
-              onSignatureChange={() => {}}
-            />
-          </div>
-        )}
-
-        {/* Tab: Editor (formulário) */}
-        {activeTab === 'editor' && (
-          <TimesheetFormEditor
+        {/* ── Modal de Visualização (planilha em modo de impressão) ── */}
+        {isViewModalOpen && (
+          <TimesheetViewModal
             timesheet={timesheet}
-            onSave={handleFormSave}
-            isSaving={mutations.updateTimesheet.isPending}
+            onClose={() => setIsViewModalOpen(false)}
           />
         )}
       </div>

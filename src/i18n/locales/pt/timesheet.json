@@ -43,8 +43,9 @@
   "detail": {
     "loading": "Carregando timesheet...",
     "back": "Voltar",
-    "tabSheet": "Planilha",
-    "tabEditor": "Editor",
+    "viewButton": "Visualização",
+    "viewTitle": "Visualização — Modo de Impressão",
+    "close": "Fechar",
     "editMode": "Modo Edição",
     "editModeOn": "Ativado",
     "editModeOff": "Desativado",
