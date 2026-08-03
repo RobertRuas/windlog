@@ -33,7 +33,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import {
-  Plus, Trash2, RotateCcw, ChevronDown, ChevronRight,
+  Plus, Trash2, Save, RotateCcw, ChevronDown, ChevronRight,
   X, User as UserIcon, Check,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -621,7 +621,11 @@ export function TimesheetFormEditor({
     });
   }
 
-  // ── Cancel ────────────────────────────────────────────────────────
+  // ── Save / Cancel ─────────────────────────────────────────────────
+
+  function handleSave() {
+    onSave(formStateToPayload(form));
+  }
 
   function handleCancel() {
     setForm(timesheetToFormState(timesheet));
@@ -1036,6 +1040,10 @@ export function TimesheetFormEditor({
         <button onClick={handleCancel} disabled={isSaving} className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50">
           <RotateCcw size={14} />
           {t('form.cancel')}
+        </button>
+        <button onClick={handleSave} disabled={isSaving} className="flex items-center gap-2 px-5 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+          <Save size={14} />
+          {isSaving ? t('form.saving') : t('form.saveChanges')}
         </button>
       </div>
     </div>
