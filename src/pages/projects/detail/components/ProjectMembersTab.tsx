@@ -12,7 +12,7 @@
 
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Search, Edit2, Trash2, Users, UserPlus } from 'lucide-react';
+import { Search, Edit2, Trash2, Users, UserPlus, Plus, X } from 'lucide-react';
 import type { ProjectDetail, ProjectMember, AddMemberPayload, UpdateMemberPayload } from '@/services/project.service';
 
 /**
@@ -43,9 +43,9 @@ export function ProjectMembersTab({
 }: ProjectMembersTabProps) {
   const { t } = useTranslation('projects');
 
-  // Estado da pesquisa inline de usuários
+  // Estado do painel de adicionar membro (botão + painel compacto)
+  const [isAddPanelOpen, setIsAddPanelOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
 
   // Estados do modal de editar função
@@ -53,11 +53,12 @@ export function ProjectMembersTab({
   const [editingMember, setEditingMember] = useState<ProjectMember | null>(null);
   const [editMemberRole, setEditMemberRole] = useState('');
 
-  // Fechar dropdown ao clicar fora
+  // Fechar painel ao clicar fora
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
-        setIsSearchFocused(false);
+        setIsAddPanelOpen(false);
+        setSearchQuery('');
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -95,7 +96,15 @@ export function ProjectMembersTab({
       .slice(0, 8);
   }, [availableUsers, searchQuery]);
 
-  const showDropdown = isSearchFocused && availableUsers.length > 0;
+  function toggleAddPanel() {
+    setIsAddPanelOpen((prev) => !prev);
+    setSearchQuery('');
+  }
+
+  function closeAddPanel() {
+    setIsAddPanelOpen(false);
+    setSearchQuery('');
+  }
 
   // =========================================================================
   // HANDLERS - ADICIONAR MEMBRO (CLIQUE DIRETO)
@@ -190,58 +199,86 @@ export function ProjectMembersTab({
 
   return (
     <>
-      {/* Barra de pesquisa inline para adicionar membros */}
+      {/* Botão + Painel compacto de pesquisa para adicionar membros */}
       <div ref={searchRef} className="relative mb-4">
-        <div className="relative">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onFocus={() => setIsSearchFocused(true)}
-            placeholder={t('memberSearch.placeholder')}
-            className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
-          />
-        </div>
+        {/* Botão de abrir */}
+        {!isAddPanelOpen && (
+          <button
+            onClick={toggleAddPanel}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <Plus size={18} />
+            {t('actions.addMember')}
+          </button>
+        )}
 
-        {/* Dropdown de resultados */}
-        {showDropdown && (
-          <div className="absolute z-40 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
-            {/* Aviso quando não há resultados */}
-            {searchResults.length === 0 && searchQuery.trim() && (
-              <div className="px-4 py-3 text-sm text-gray-500">
-                {t('memberSearch.noResults')}
-              </div>
-            )}
-            {searchResults.length === 0 && !searchQuery.trim() && (
-              <div className="px-4 py-3 text-sm text-amber-600">
-                {t('memberModal.allUsersAlreadyMembers')}
-              </div>
-            )}
-            {searchResults.map((user) => (
+        {/* Painel compacto de pesquisa */}
+        {isAddPanelOpen && (
+          <div className="bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden w-full max-w-sm">
+            {/* Header do painel */}
+            <div className="px-3 py-2 border-b border-gray-100 flex items-center justify-between">
+              <span className="text-sm font-semibold text-gray-700">{t('actions.addMember')}</span>
               <button
-                key={user.id}
                 type="button"
-                onClick={() => handleQuickAdd(user)}
-                disabled={isAddPending}
-                className="w-full px-4 py-2.5 flex items-center justify-between hover:bg-blue-50 transition-colors disabled:opacity-50 border-b border-gray-50 last:border-b-0"
+                onClick={closeAddPanel}
+                className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center text-xs font-semibold text-gray-600">
-                    {user.firstName[0]}{user.lastName[0]}
-                  </div>
-                  <div className="text-left">
-                    <p className="text-sm font-medium text-gray-900">
-                      {user.firstName} {user.lastName}
-                    </p>
-                    {user.position && (
-                      <p className="text-xs text-gray-500">{user.position}</p>
-                    )}
-                  </div>
-                </div>
-                <UserPlus size={16} className="text-blue-500 flex-shrink-0" />
+                <X size={14} />
               </button>
-            ))}
+            </div>
+
+            {/* Campo de pesquisa */}
+            <div className="px-3 py-2 border-b border-gray-100">
+              <div className="relative">
+                <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  autoFocus
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder={t('memberSearch.placeholder')}
+                  className="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+
+            {/* Lista de resultados */}
+            <div className="max-h-56 overflow-y-auto">
+              {searchResults.length === 0 && searchQuery.trim() && (
+                <div className="px-4 py-3 text-sm text-gray-500">
+                  {t('memberSearch.noResults')}
+                </div>
+              )}
+              {searchResults.length === 0 && !searchQuery.trim() && (
+                <div className="px-4 py-3 text-sm text-amber-600">
+                  {t('memberModal.allUsersAlreadyMembers')}
+                </div>
+              )}
+              {searchResults.map((user) => (
+                <button
+                  key={user.id}
+                  type="button"
+                  onClick={() => handleQuickAdd(user)}
+                  disabled={isAddPending}
+                  className="w-full px-3 py-2 flex items-center justify-between hover:bg-blue-50 transition-colors disabled:opacity-50 border-b border-gray-50 last:border-b-0"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-[10px] font-semibold text-gray-600">
+                      {user.firstName[0]}{user.lastName[0]}
+                    </div>
+                    <div className="text-left">
+                      <p className="text-sm font-medium text-gray-900">
+                        {user.firstName} {user.lastName}
+                      </p>
+                      {user.position && (
+                        <p className="text-xs text-gray-500">{user.position}</p>
+                      )}
+                    </div>
+                  </div>
+                  <UserPlus size={14} className="text-blue-500 flex-shrink-0" />
+                </button>
+              ))}
+            </div>
           </div>
         )}
       </div>
