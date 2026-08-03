@@ -17,10 +17,11 @@ import type { ProjectDetail, ProjectMember, AddMemberPayload, UpdateMemberPayloa
 
 /**
  * Props do componente ProjectMembersTab.
+ * O campo `position` é necessário para auto-preencher a função no projeto.
  */
 interface ProjectMembersTabProps {
   project: ProjectDetail;
-  users: { id: string; firstName: string; lastName: string; email: string }[];
+  users: { id: string; firstName: string; lastName: string; email: string; position?: string }[];
   onAddMember: (payload: AddMemberPayload, options?: { onSuccess: () => void }) => void;
   onUpdateMemberRole: (memberId: string, payload: UpdateMemberPayload, options?: { onSuccess: () => void }) => void;
   onRemoveMember: (memberId: string) => void;
@@ -53,6 +54,21 @@ export function ProjectMembersTab({
   const [editMemberRole, setEditMemberRole] = useState('');
 
   // =========================================================================
+  // LISTA DE USUÁRIOS DISPONÍVEIS (FILTRAR DUPLICADOS)
+  // =========================================================================
+  //
+  // Filtra a lista de usuários do sistema para mostrar apenas aqueles
+  // que AINDA NÃO são membros do projeto — evita duplicidade na UI,
+  // seguindo o mesmo padrão do módulo de Timesheet.
+
+  const availableUsers = useMemo(() => {
+    const existingMemberIds = new Set(
+      (project.members || []).map((m) => m.userId)
+    );
+    return users.filter((u) => !existingMemberIds.has(u.id));
+  }, [users, project.members]);
+
+  // =========================================================================
   // HANDLERS - ADICIONAR MEMBRO
   // =========================================================================
 
@@ -66,6 +82,20 @@ export function ProjectMembersTab({
     setIsAddModalOpen(false);
     setSelectedUserId('');
     setMemberRole('');
+  }
+
+  /**
+   * Ao selecionar um usuário, a função no projeto é automaticamente
+   * preenchida com o `position` (cargo) dele — mesmo padrão do Timesheet.
+   */
+  function handleUserSelect(userId: string) {
+    setSelectedUserId(userId);
+    const selectedUser = users.find((u) => u.id === userId);
+    if (selectedUser?.position) {
+      setMemberRole(selectedUser.position);
+    } else {
+      setMemberRole('');
+    }
   }
 
   function handleAddSubmit(e: React.FormEvent) {
@@ -277,16 +307,21 @@ export function ProjectMembersTab({
                 <select
                   required
                   value={selectedUserId}
-                  onChange={(e) => setSelectedUserId(e.target.value)}
+                  onChange={(e) => handleUserSelect(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">{t('memberModal.selectUser')}</option>
-                  {users.map((user) => (
+                  {availableUsers.map((user) => (
                     <option key={user.id} value={user.id}>
-                      {user.firstName} {user.lastName} ({user.email})
+                      {user.firstName} {user.lastName}{user.position ? ` — ${user.position}` : ''}
                     </option>
                   ))}
                 </select>
+                {availableUsers.length === 0 && (
+                  <p className="mt-1.5 text-xs text-amber-600">
+                    {t('memberModal.allUsersAlreadyMembers')}
+                  </p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -295,10 +330,13 @@ export function ProjectMembersTab({
                 <input
                   type="text"
                   value={memberRole}
-                  onChange={(e) => setMemberRole(e.target.value)}
-                  placeholder={t('memberModal.rolePlaceholder')}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  readOnly
+                  placeholder={t('memberModal.roleAutoPlaceholder')}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-600 cursor-not-allowed"
                 />
+                <p className="mt-1 text-xs text-gray-400">
+                  {t('memberModal.roleAutoHint')}
+                </p>
               </div>
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
                 <button
@@ -310,7 +348,7 @@ export function ProjectMembersTab({
                 </button>
                 <button
                   type="submit"
-                  disabled={isAddPending}
+                  disabled={isAddPending || !selectedUserId}
                   className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50"
                 >
                   {t('modal.save')}

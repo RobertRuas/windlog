@@ -110,7 +110,10 @@
     "user": "Usuário",
     "selectUser": "Selecione um usuário",
     "role": "Função no Projeto",
-    "rolePlaceholder": "Ex: Lead Technician"
+    "rolePlaceholder": "Ex: Lead Technician",
+    "roleAutoPlaceholder": "Preenchido automaticamente pelo cargo do usuário",
+    "roleAutoHint": "A função é definida automaticamente com base no cargo do usuário no sistema",
+    "allUsersAlreadyMembers": "Todos os usuários do sistema já são membros deste projeto"
   },
   "editProjectModal": {
     "title": "Editar Projeto"
