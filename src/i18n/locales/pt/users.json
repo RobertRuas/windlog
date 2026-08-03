@@ -44,6 +44,8 @@
     "lastName": "Sobrenome",
     "email": "Email",
     "role": "Role",
+    "position": "Cargo/Função",
+    "positionPlaceholder": "Selecione um cargo...",
     "cancel": "Cancelar",
     "save": "Salvar",
     "create": "Criar",

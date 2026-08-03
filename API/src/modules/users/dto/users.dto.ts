@@ -23,10 +23,27 @@ import {
   IsOptional,
   IsEnum,
   IsBoolean,
+  IsIn,
 } from 'class-validator';
 // MinLength ainda usado no UpdateUserDto
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PaginationDto } from '../../../common/dto/pagination.dto.js';
+
+/**
+ * Lista restritiva de cargos/funções permitidos.
+ * Deve ser mantida em sincronia com src/constants/functions.ts do frontend.
+ */
+const ALLOWED_POSITIONS = [
+  'Administrador',
+  'Recursos Humanos',
+  'Gerente de Projetos',
+  'Gerente de Site',
+  'Team Leader',
+  'Team Leader (L3)',
+  'L1',
+  'L2',
+  'L3',
+] as const;
 
 /**
  * DTO para criar novo usuário.
@@ -71,9 +88,9 @@ export class CreateUserDto {
   @IsString()
   department?: string;
 
-  @ApiPropertyOptional({ description: 'Cargo', example: 'Technician' })
+  @ApiPropertyOptional({ description: 'Cargo (restrito à lista predefinida)', enum: ALLOWED_POSITIONS })
   @IsOptional()
-  @IsString()
+  @IsIn(ALLOWED_POSITIONS, { message: `Position must be one of: ${ALLOWED_POSITIONS.join(', ')}` })
   position?: string;
 }
 
@@ -133,9 +150,9 @@ export class UpdateUserDto {
   @IsString()
   department?: string;
 
-  @ApiPropertyOptional({ description: 'Cargo' })
+  @ApiPropertyOptional({ description: 'Cargo (restrito à lista predefinida)', enum: ALLOWED_POSITIONS })
   @IsOptional()
-  @IsString()
+  @IsIn(ALLOWED_POSITIONS, { message: `Position must be one of: ${ALLOWED_POSITIONS.join(', ')}` })
   position?: string;
 }
 

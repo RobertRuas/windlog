@@ -26,6 +26,7 @@
 import { Copy, Check } from 'lucide-react';
 import { useState } from 'react';
 import type { UserListItem, CreateUserPayload, UpdateUserPayload } from '@/services/user.service';
+import { PREDEFINED_FUNCTIONS } from '@/constants/functions';
 
 /**
  * Props do componente UserModal.
@@ -173,6 +174,23 @@ export function UserModal({
                 <option value="STANDARD">{t('roles.STANDARD')}</option>
                 <option value="HR">{t('roles.HR')}</option>
                 <option value="ADMIN">{t('roles.ADMIN')}</option>
+              </select>
+            </div>
+
+            {/* Cargo/Função restritiva - usa PREDEFINED_FUNCTIONS */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('modal.position')}</label>
+              <select
+                value={(formData as CreateUserPayload).position ?? ''}
+                onChange={(e) => onFormChange({ ...formData, position: e.target.value || undefined })}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">{t('modal.positionPlaceholder')}</option>
+                {PREDEFINED_FUNCTIONS.map((fn) => (
+                  <option key={fn.id} value={fn.label}>
+                    {fn.label}
+                  </option>
+                ))}
               </select>
             </div>
 
