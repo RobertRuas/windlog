@@ -46,6 +46,7 @@ import type {
 import { updateTimesheet } from '@/services/weekly-timesheet.service';
 import { getProfile } from '@/services/auth.service';
 import { getUsers } from '@/services/user.service';
+import { PREDEFINED_FUNCTIONS } from '@/constants/functions';
 
 // =========================================================================
 // TYPES
@@ -769,16 +770,26 @@ export function TimesheetFormEditor({
                             )}
                           </div>
 
-                          {/* Role */}
-                          <div className="w-32 shrink-0">
-                            <input
-                              type="text"
+                          {/* Role: função do técnico (lista restritiva PREDEFINED_FUNCTIONS) */}
+                          <div className="w-44 shrink-0">
+                            <select
                               value={entry.role}
                               onChange={(e) => handleEntryChange(dayIdx, entryIdx, 'role', e.target.value)}
-                              placeholder={t('sheet.role')}
                               disabled={isSaving || entry.isCurrentUser}
-                              className="w-full px-2 py-1.5 border border-gray-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-60"
-                            />
+                              className="w-full px-2 py-1.5 border border-gray-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-60 bg-white"
+                            >
+                              <option value="">{t('sheet.role')}</option>
+                              {/* Fallback para valores legados fora da lista */}
+                              {entry.role &&
+                                !PREDEFINED_FUNCTIONS.some((fn) => fn.label === entry.role) && (
+                                  <option value={entry.role}>{entry.role}</option>
+                                )}
+                              {PREDEFINED_FUNCTIONS.map((fn) => (
+                                <option key={fn.id} value={fn.label}>
+                                  {fn.label}
+                                </option>
+                              ))}
+                            </select>
                           </div>
 
                           {/* Toggle switch: removido — todos usam informações comuns */}
