@@ -54,7 +54,13 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     // Buffer de logs: mostra quando a aplicação iniciou
     bufferLogs: true,
+    // Aumenta o limite do body para 10mb (necessário para assinaturas em base64)
+    rawBody: false,
   });
+
+  // Configura o limite do body parser para 10mb (base64 images podem ser grandes)
+  app.use(require('express').json({ limit: '10mb' }));
+  app.use(require('express').urlencoded({ limit: '10mb', extended: true }));
 
   // Obtém o serviço de configuração para acessar variáveis de ambiente
   const configService = app.get(ConfigService);
