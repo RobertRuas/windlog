@@ -143,46 +143,39 @@ export function ProjectMembersTab({
   }
 
   // =========================================================================
-  // AGRUPAMENTO DE MEMBROS
+  // AGRUPAMENTO DE MEMBROS POR FUNÇÃO
   // =========================================================================
 
   /**
-   * Agrupa membros primeiro por Role do sistema (ADMIN, HR, STANDARD),
-   * depois por função no projeto (role).
-   * Estrutura: { ADMIN: { 'Lead Tech': [...], 'Field Eng': [...] }, HR: {...}, ... }
+   * Agrupa membros diretamente pela função no projeto (member.role).
+   * Membros sem função ficam no grupo '__no_function__'.
+   * Estrutura: { 'Lead Technician': [...], 'Wind Turbine Tech': [...], ... }
    */
-  const groupedByRoleAndFunction = useMemo(() => {
+  const groupedByFunction = useMemo(() => {
     if (!project.members?.length) return {};
 
-    // Ordem fixa dos roles do sistema
-    const roleOrder = ['ADMIN', 'HR', 'STANDARD'];
-    const result: Record<string, Record<string, ProjectMember[]>> = {};
-
-    // Inicializa todos os roles
-    roleOrder.forEach((role) => {
-      result[role] = {};
-    });
+    const result: Record<string, ProjectMember[]> = {};
 
     project.members.forEach((member) => {
-      const systemRole = member.user.role;
-      const projectRole = member.role || '__no_function__';
-
-      if (!result[systemRole]) result[systemRole] = {};
-      if (!result[systemRole][projectRole]) result[systemRole][projectRole] = [];
-      result[systemRole][projectRole].push(member);
+      const func = member.role || '__no_function__';
+      if (!result[func]) result[func] = [];
+      result[func].push(member);
     });
 
     return result;
   }, [project.members]);
 
   /**
-   * Lista de roles do sistema que possuem membros, na ordem correta.
+   * Chaves de função ordenadas alfabeticamente,
+   * com '__no_function__' sempre no final.
    */
-  const activeSystemRoles = useMemo(() => {
-    return Object.keys(groupedByRoleAndFunction).filter(
-      (role) => Object.keys(groupedByRoleAndFunction[role]).length > 0
-    );
-  }, [groupedByRoleAndFunction]);
+  const sortedFunctionKeys = useMemo(() => {
+    return Object.keys(groupedByFunction).sort((a, b) => {
+      if (a === '__no_function__') return 1;
+      if (b === '__no_function__') return -1;
+      return a.localeCompare(b);
+    });
+  }, [groupedByFunction]);
 
   return (
     <>
@@ -198,87 +191,58 @@ export function ProjectMembersTab({
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        {/* Lista agrupada por Role e Função ou estado vazio */}
+        {/* Lista agrupada por função ou estado vazio */}
         {project.members?.length ? (
-          <div className="p-4 space-y-6">
-            {activeSystemRoles.map((systemRole) => {
-              const functionGroups = groupedByRoleAndFunction[systemRole];
-              const functionKeys = Object.keys(functionGroups).sort((a, b) => {
-                if (a === '__no_function__') return 1;
-                if (b === '__no_function__') return -1;
-                return a.localeCompare(b);
-              });
-              const totalInRole = functionKeys.reduce((sum, k) => sum + functionGroups[k].length, 0);
+          <div className="p-4 space-y-3">
+            {sortedFunctionKeys.map((funcKey) => {
+              const members = groupedByFunction[funcKey];
+              const funcLabel = funcKey === '__no_function__' ? t('memberTable.noRole') : funcKey;
 
               return (
-                <div key={systemRole}>
-                  {/* Cabeçalho do Role */}
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className={`inline-flex px-2.5 py-1 text-xs font-semibold rounded-full ${
-                      systemRole === 'ADMIN' ? 'bg-purple-100 text-purple-700' :
-                      systemRole === 'HR' ? 'bg-blue-100 text-blue-700' :
-                      'bg-gray-100 text-gray-700'
-                    }`}>
-                      {systemRole}
-                    </span>
-                    <span className="text-xs text-gray-400">{t('memberTable.membersCount', { count: totalInRole })}</span>
+                <div key={funcKey} className="border border-gray-100 rounded-lg overflow-hidden">
+                  {/* Cabeçalho da função */}
+                  <div className="px-4 py-2 bg-gray-50/70 border-b border-gray-100">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-semibold text-gray-600">{funcLabel}</span>
+                      <span className="text-xs text-gray-400">({members.length})</span>
+                    </div>
                   </div>
 
-                  {/* Subgrupos por função */}
-                  <div className="space-y-2 ml-2">
-                    {functionKeys.map((funcKey) => {
-                      const members = functionGroups[funcKey];
-                      const funcLabel = funcKey === '__no_function__' ? t('memberTable.noRole') : funcKey;
-
-                      return (
-                        <div key={funcKey} className="border border-gray-100 rounded-lg overflow-hidden">
-                          {/* Cabeçalho da função */}
-                          <div className="px-4 py-2 bg-gray-50/70 border-b border-gray-100">
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs font-semibold text-gray-600">{funcLabel}</span>
-                              <span className="text-xs text-gray-400">({members.length})</span>
-                            </div>
+                  {/* Membros */}
+                  <div className="divide-y divide-gray-50">
+                    {members.map((member: ProjectMember) => (
+                      <div key={member.id} className="px-4 py-3 flex items-center justify-between hover:bg-gray-50/50 transition-colors">
+                        {/* Avatar + Nome */}
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-semibold text-gray-600">
+                            {member.user.firstName[0]}{member.user.lastName[0]}
                           </div>
-
-                          {/* Membros */}
-                          <div className="divide-y divide-gray-50">
-                            {members.map((member: ProjectMember) => (
-                              <div key={member.id} className="px-4 py-3 flex items-center justify-between hover:bg-gray-50/50 transition-colors">
-                                {/* Avatar + Nome */}
-                                <div className="flex items-center gap-3">
-                                  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-semibold text-gray-600">
-                                    {member.user.firstName[0]}{member.user.lastName[0]}
-                                  </div>
-                                  <div>
-                                    <p className="text-sm font-medium text-gray-900">
-                                      {member.user.firstName} {member.user.lastName}
-                                    </p>
-                                    <p className="text-xs text-gray-500">{member.user.email}</p>
-                                  </div>
-                                </div>
-
-                                {/* Ações */}
-                                <div className="flex items-center gap-1">
-                                  <button
-                                    onClick={() => openEditModal(member)}
-                                    className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                    title={t('actions.editMemberRole')}
-                                  >
-                                    <Edit2 size={14} />
-                                  </button>
-                                  <button
-                                    onClick={() => handleRemove(member)}
-                                    className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                  >
-                                    <Trash2 size={14} />
-                                  </button>
-                                </div>
-                              </div>
-                            ))}
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">
+                              {member.user.firstName} {member.user.lastName}
+                            </p>
+                            <p className="text-xs text-gray-500">{member.user.email}</p>
                           </div>
                         </div>
-                      );
-                    })}
+
+                        {/* Ações */}
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => openEditModal(member)}
+                            className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            title={t('actions.editMemberRole')}
+                          >
+                            <Edit2 size={14} />
+                          </button>
+                          <button
+                            onClick={() => handleRemove(member)}
+                            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               );
