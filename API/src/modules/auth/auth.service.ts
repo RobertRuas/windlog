@@ -509,6 +509,8 @@ export class AuthService {
         certNumber: dto.certNumber,
         issueDate: new Date(dto.issueDate),
         expiryDate: dto.expiryDate ? new Date(dto.expiryDate) : null,
+        // Ficheiro anexado (foto ou PDF da certificação)
+        filePath: dto.filePath ?? null,
       },
     });
     await this.syncProfileNotification(userId);
@@ -536,6 +538,8 @@ export class AuthService {
     if (dto.certNumber !== undefined) updateData.certNumber = dto.certNumber;
     if (dto.issueDate !== undefined) updateData.issueDate = new Date(dto.issueDate);
     if (dto.expiryDate !== undefined) updateData.expiryDate = dto.expiryDate ? new Date(dto.expiryDate) : null;
+    // filePath: string define/substitui o anexo; null remove o anexo
+    if (dto.filePath !== undefined) updateData.filePath = dto.filePath || null;
 
     return this.prisma.userCertification.update({
       where: { id: certId },
@@ -638,6 +642,8 @@ export class AuthService {
         issueDate: dto.issueDate ? new Date(dto.issueDate) : null,
         expiryDate: dto.expiryDate ? new Date(dto.expiryDate) : null,
         description: dto.description,
+        // Ficheiro anexado (foto ou PDF do documento)
+        filePath: dto.filePath ?? null,
       },
     });
     await this.syncProfileNotification(userId);
@@ -665,6 +671,8 @@ export class AuthService {
     if (dto.issueDate !== undefined) updateData.issueDate = dto.issueDate ? new Date(dto.issueDate) : null;
     if (dto.expiryDate !== undefined) updateData.expiryDate = dto.expiryDate ? new Date(dto.expiryDate) : null;
     if (dto.description !== undefined) updateData.description = dto.description;
+    // filePath: string define/substitui o anexo; null remove o anexo
+    if (dto.filePath !== undefined) updateData.filePath = dto.filePath || null;
 
     return this.prisma.userDocument.update({
       where: { id: documentId },

@@ -12,7 +12,7 @@
  * ----------------
  * - Lista todos os documentos (passaporte, ID, NIF, visto, etc.)
  * - Adiciona novo documento com tipo, número, datas
- * - Suporte a upload de múltiplos ficheiros (máx. 3 MB cada)
+ * - Suporte a anexo de foto ou PDF do documento (máx. 10 MB)
  * - Edita documentos existentes
  * - Remove documentos com confirmação
  * - Mostra alertas para documentos expirados
@@ -21,9 +21,12 @@
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, X, Check, AlertCircle, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import type { UserDocument } from '@/services/auth.service';
+import { uploadFile } from '@/services/upload.service';
+import { AttachmentField, AttachmentLink } from './AttachmentField';
 
 // Constantes
 import { PREDEFINED_COUNTRIES } from '@/constants/countries';
@@ -55,9 +58,36 @@ export function DocumentSection({ documents, onAdd, onUpdate, onRemove }: Docume
     issueDate: '',
     expiryDate: '',
     description: '',
+    filePath: null,
   });
 
+  // Estado do anexo (foto ou PDF do documento)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [removeAttachment, setRemoveAttachment] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
+  /**
+   * Resolve o filePath final ao salvar:
+   * - Se há ficheiro selecionado, faz upload e retorna o novo filePath
+   * - Se o usuário pediu remoção, retorna null (remove o anexo)
+   * - Caso contrário, retorna undefined (sem alteração)
+   */
+  const resolveFilePath = async (): Promise<string | null | undefined> => {
+    if (selectedFile) {
+      const response = await uploadFile(selectedFile, 'documents');
+      return response.data.filePath;
+    }
+    if (removeAttachment && formData.filePath) return null;
+    return undefined;
+  };
+
+  /**
+   * Reseta o estado do anexo.
+   */
+  const resetAttachmentState = () => {
+    setSelectedFile(null);
+    setRemoveAttachment(false);
+  };
 
   /**
    * Verifica se um documento está expirado.
@@ -114,28 +144,35 @@ export function DocumentSection({ documents, onAdd, onUpdate, onRemove }: Docume
       issueDate: doc.issueDate ? doc.issueDate.split('T')[0] : '',
       expiryDate: doc.expiryDate ? doc.expiryDate.split('T')[0] : '',
       description: doc.description || '',
+      filePath: doc.filePath ?? null,
     });
+    resetAttachmentState();
   };
 
   /**
    * Salva as alterações de um documento.
    */
   const handleSave = async () => {
-    if (editingId) {
-      try {
-        await onUpdate(editingId, {
-          type: formData.type,
-          documentNumber: formData.documentNumber || undefined,
-          issuingCountry: formData.issuingCountry || undefined,
-          issueDate: formData.issueDate || undefined,
-          expiryDate: formData.expiryDate || undefined,
-          description: formData.description || undefined,
-        });
+    if (!editingId) return;
+    setIsSaving(true);
+    try {
+      const filePath = await resolveFilePath();
+      await onUpdate(editingId, {
+        type: formData.type,
+        documentNumber: formData.documentNumber || undefined,
+        issuingCountry: formData.issuingCountry || undefined,
+        issueDate: formData.issueDate || undefined,
+        expiryDate: formData.expiryDate || undefined,
+        description: formData.description || undefined,
+        ...(filePath !== undefined ? { filePath } : {}),
+      });
 
-        setEditingId(null);
-      } catch (error) {
-        // error handling
-      }
+      setEditingId(null);
+      resetAttachmentState();
+    } catch (error) {
+      toast.error(t('common:error', { defaultValue: 'Erro ao salvar documento' }));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -143,7 +180,9 @@ export function DocumentSection({ documents, onAdd, onUpdate, onRemove }: Docume
    * Adiciona um novo documento.
    */
   const handleAdd = async () => {
+    setIsSaving(true);
     try {
+      const filePath = await resolveFilePath();
       await onAdd({
         type: formData.type,
         documentNumber: formData.documentNumber || undefined,
@@ -151,12 +190,15 @@ export function DocumentSection({ documents, onAdd, onUpdate, onRemove }: Docume
         issueDate: formData.issueDate || undefined,
         expiryDate: formData.expiryDate || undefined,
         description: formData.description || undefined,
+        filePath: filePath ?? null,
       } as unknown as Omit<UserDocument, 'id'>);
 
       setIsAdding(false);
       handleCancel();
     } catch (error) {
-      // error handling
+      toast.error(t('common:error', { defaultValue: 'Erro ao adicionar documento' }));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -173,7 +215,9 @@ export function DocumentSection({ documents, onAdd, onUpdate, onRemove }: Docume
       issueDate: '',
       expiryDate: '',
       description: '',
+      filePath: null,
     });
+    resetAttachmentState();
   };
 
   /**
@@ -267,10 +311,17 @@ export function DocumentSection({ documents, onAdd, onUpdate, onRemove }: Docume
         </div>
       </div>
 
-      {/* Upload desativado - sistema em manutenção */}
+      {/* Anexo: foto ou PDF do documento */}
+      <AttachmentField
+        filePath={formData.filePath}
+        selectedFile={selectedFile}
+        removeRequested={removeAttachment}
+        onFileChange={setSelectedFile}
+        onRemoveRequest={setRemoveAttachment}
+      />
 
       <div className="flex gap-2">
-        <Button size="sm" onClick={isAddMode ? handleAdd : handleSave}>
+        <Button size="sm" onClick={isAddMode ? handleAdd : handleSave} disabled={isSaving}>
           <Check className="w-4 h-4 mr-1" />
           {isAddMode ? t('actions.add') : t('actions.save')}
         </Button>
@@ -350,7 +401,12 @@ export function DocumentSection({ documents, onAdd, onUpdate, onRemove }: Docume
                   {doc.description && (
                     <p className="text-sm text-gray-500 mt-1">{doc.description}</p>
                   )}
-
+                  {/* Link para visualizar o anexo (foto ou PDF) */}
+                  {doc.filePath && (
+                    <div className="mt-2">
+                      <AttachmentLink filePath={doc.filePath} />
+                    </div>
+                  )}
                 </div>
                 <div className="flex gap-1">
                   <Button size="sm" variant="secondary" onClick={() => handleEdit(doc)}>

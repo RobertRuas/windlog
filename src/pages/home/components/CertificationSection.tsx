@@ -12,6 +12,7 @@
  * ----------------
  * - Lista todas as certificações
  * - Adiciona nova certificação
+ * - Suporte a anexo de foto ou PDF da certificação (máx. 10 MB)
  * - Edita certificações existentes
  * - Remove certificações com confirmação
  * - Mostra alertas para certificações expiradas
@@ -21,9 +22,12 @@
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, X, Check, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import type { Certification } from '@/services/auth.service';
+import { uploadFile } from '@/services/upload.service';
+import { AttachmentField, AttachmentLink } from './AttachmentField';
 
 /**
  * Props do componente.
@@ -54,7 +58,36 @@ export function CertificationSection({ certifications, onAdd, onUpdate, onRemove
     certNumber: '',
     issueDate: '',
     expiryDate: '',
+    filePath: null,
   });
+
+  // Estado do anexo (foto ou PDF da certificação)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [removeAttachment, setRemoveAttachment] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  /**
+   * Resolve o filePath final ao salvar:
+   * - Se há ficheiro selecionado, faz upload e retorna o novo filePath
+   * - Se o usuário pediu remoção, retorna null (remove o anexo)
+   * - Caso contrário, retorna undefined (sem alteração)
+   */
+  const resolveFilePath = async (): Promise<string | null | undefined> => {
+    if (selectedFile) {
+      const response = await uploadFile(selectedFile, 'certifications');
+      return response.data.filePath;
+    }
+    if (removeAttachment && formData.filePath) return null;
+    return undefined;
+  };
+
+  /**
+   * Reseta o estado do anexo.
+   */
+  const resetAttachmentState = () => {
+    setSelectedFile(null);
+    setRemoveAttachment(false);
+  };
 
   /**
    * Verifica se uma certificação está expirada.
@@ -99,7 +132,9 @@ export function CertificationSection({ certifications, onAdd, onUpdate, onRemove
       certNumber: cert.certNumber || '',
       issueDate: cert.issueDate ? cert.issueDate.split('T')[0] : '',
       expiryDate: cert.expiryDate ? cert.expiryDate.split('T')[0] : '',
+      filePath: cert.filePath ?? null,
     });
+    resetAttachmentState();
   };
 
   /**
@@ -116,7 +151,9 @@ export function CertificationSection({ certifications, onAdd, onUpdate, onRemove
       certNumber: '',
       issueDate: '',
       expiryDate: '',
+      filePath: null,
     });
+    resetAttachmentState();
   };
 
   /**
@@ -125,13 +162,23 @@ export function CertificationSection({ certifications, onAdd, onUpdate, onRemove
   const handleSave = async () => {
     if (!formData.name.trim() || !formData.issuer.trim() || !formData.issueDate) return;
     if (editingId) {
-      await onUpdate(editingId, {
-        ...formData,
-        expiryDate: formData.expiryDate || undefined,
-        description: formData.description || undefined,
-        certNumber: formData.certNumber || undefined,
-      });
-      setEditingId(null);
+      setIsSaving(true);
+      try {
+        const filePath = await resolveFilePath();
+        await onUpdate(editingId, {
+          ...formData,
+          expiryDate: formData.expiryDate || undefined,
+          description: formData.description || undefined,
+          certNumber: formData.certNumber || undefined,
+          ...(filePath !== undefined ? { filePath } : {}),
+        });
+        setEditingId(null);
+        resetAttachmentState();
+      } catch (error) {
+        toast.error(t('common:error', { defaultValue: 'Erro ao salvar certificação' }));
+      } finally {
+        setIsSaving(false);
+      }
     }
   };
 
@@ -140,22 +187,23 @@ export function CertificationSection({ certifications, onAdd, onUpdate, onRemove
    */
   const handleAdd = async () => {
     if (!formData.name.trim() || !formData.issuer.trim() || !formData.issueDate) return;
-    await onAdd({
-      ...formData,
-      expiryDate: formData.expiryDate || undefined,
-      description: formData.description || undefined,
-      certNumber: formData.certNumber || undefined,
-    });
-    setIsAdding(false);
-    setFormData({
-      name: '',
-      issuer: '',
-      type: 'CERTIFICATION',
-      description: '',
-      certNumber: '',
-      issueDate: '',
-      expiryDate: '',
-    });
+    setIsSaving(true);
+    try {
+      const filePath = await resolveFilePath();
+      await onAdd({
+        ...formData,
+        expiryDate: formData.expiryDate || undefined,
+        description: formData.description || undefined,
+        certNumber: formData.certNumber || undefined,
+        filePath: filePath ?? null,
+      });
+      setIsAdding(false);
+      handleCancel();
+    } catch (error) {
+      toast.error(t('common:error', { defaultValue: 'Erro ao adicionar certificação' }));
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   /**
@@ -281,8 +329,18 @@ export function CertificationSection({ certifications, onAdd, onUpdate, onRemove
                     />
                   </div>
                 </div>
+
+                {/* Anexo: foto ou PDF da certificação */}
+                <AttachmentField
+                  filePath={formData.filePath}
+                  selectedFile={selectedFile}
+                  removeRequested={removeAttachment}
+                  onFileChange={setSelectedFile}
+                  onRemoveRequest={setRemoveAttachment}
+                />
+
                 <div className="flex gap-2">
-                  <Button size="sm" onClick={handleSave}>
+                  <Button size="sm" onClick={handleSave} disabled={isSaving}>
                     <Check className="w-4 h-4 mr-1" />
                     {t('actions.save')}
                   </Button>
@@ -320,6 +378,12 @@ export function CertificationSection({ certifications, onAdd, onUpdate, onRemove
                   </div>
                   {cert.description && (
                     <p className="text-sm text-gray-500 mt-1">{cert.description}</p>
+                  )}
+                  {/* Link para visualizar o anexo (foto ou PDF) */}
+                  {cert.filePath && (
+                    <div className="mt-2">
+                      <AttachmentLink filePath={cert.filePath} />
+                    </div>
                   )}
                 </div>
                 <div className="flex gap-1">
@@ -416,8 +480,18 @@ export function CertificationSection({ certifications, onAdd, onUpdate, onRemove
                 />
               </div>
             </div>
+
+            {/* Anexo: foto ou PDF da certificação */}
+            <AttachmentField
+              filePath={formData.filePath}
+              selectedFile={selectedFile}
+              removeRequested={removeAttachment}
+              onFileChange={setSelectedFile}
+              onRemoveRequest={setRemoveAttachment}
+            />
+
             <div className="flex gap-2">
-              <Button size="sm" onClick={handleAdd}>
+              <Button size="sm" onClick={handleAdd} disabled={isSaving}>
                 <Check className="w-4 h-4 mr-1" />
                 {t('actions.add')}
               </Button>

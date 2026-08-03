@@ -135,6 +135,8 @@ export interface Certification {
   certNumber?: string;
   issueDate: string;
   expiryDate?: string;
+  /** Caminho do ficheiro anexado (foto ou PDF da certificação) */
+  filePath?: string | null;
 }
 
 export async function addCertification(data: Omit<Certification, 'id'>): Promise<Certification> {
@@ -221,6 +223,8 @@ export interface UserDocument {
   issueDate?: string;
   expiryDate?: string;
   description?: string;
+  /** Caminho do ficheiro anexado (foto ou PDF do documento) */
+  filePath?: string | null;
 }
 
 export async function addDocument(data: Omit<UserDocument, 'id'>): Promise<UserDocument> {

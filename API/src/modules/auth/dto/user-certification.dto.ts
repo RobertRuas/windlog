@@ -69,6 +69,14 @@ export class CreateCertificationDto {
   @IsOptional()
   @IsDateString()
   expiryDate?: string;
+
+  @ApiProperty({
+    description: 'Caminho do ficheiro anexado (foto ou PDF da certificação)',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  filePath?: string;
 }
 
 /**
@@ -109,4 +117,12 @@ export class UpdateCertificationDto {
   @IsOptional()
   @IsDateString()
   expiryDate?: string;
+
+  @ApiProperty({
+    description: 'Caminho do ficheiro anexado (null remove o anexo)',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  filePath?: string | null;
 }

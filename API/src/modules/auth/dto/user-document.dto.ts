@@ -101,6 +101,14 @@ export class CreateDocumentDto {
   @IsOptional()
   @IsString()
   description?: string;
+
+  @ApiPropertyOptional({
+    description: 'Caminho do ficheiro anexado (foto ou PDF do documento)',
+    example: 'userId/documents/uuid.pdf',
+  })
+  @IsOptional()
+  @IsString()
+  filePath?: string;
 }
 
 /**
@@ -137,4 +145,11 @@ export class UpdateDocumentDto {
   @IsOptional()
   @IsString()
   description?: string;
+
+  @ApiPropertyOptional({
+    description: 'Caminho do ficheiro anexado (null remove o anexo)',
+  })
+  @IsOptional()
+  @IsString()
+  filePath?: string | null;
 }

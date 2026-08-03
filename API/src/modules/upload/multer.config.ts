@@ -63,6 +63,8 @@ export const ALLOWED_MIME_TYPES: Record<string, string[]> = {
     'application/vnd.ms-powerpoint',
     'application/vnd.openxmlformats-officedocument.presentationml.presentation',
     'image/jpeg',
+    'image/png',
+    'image/webp',
   ],
   certifications: [
     'application/pdf',
