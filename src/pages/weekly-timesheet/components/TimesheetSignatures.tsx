@@ -18,7 +18,6 @@
  * ============================================================================
  */
 
-import { useTranslation } from 'react-i18next';
 import type { WeeklyTimesheet } from '@/services/weekly-timesheet.service';
 
 /**
@@ -54,7 +53,6 @@ export function TimesheetSignatures({
   isEditMode,
   onFieldChange,
 }: TimesheetSignaturesProps) {
-  const { t } = useTranslation('timesheet');
 
   /**
    * Handler de blur para campos editáveis.
@@ -74,7 +72,7 @@ export function TimesheetSignatures({
       {/* ── Linha 1: Labels e espaço para assinatura ────────────────── */}
       <tr className="row-signature-main">
         {/* Label "Signature" */}
-        <td className="cell-signature-label">{t('signatures.signature')}</td>
+        <td className="cell-signature-label">Signature</td>
 
         {/* Espaço para assinatura do técnico (colSpan=2) */}
         <td
@@ -97,7 +95,7 @@ export function TimesheetSignatures({
         </td>
 
         {/* Label "Client Signature" */}
-        <td className="cell-signature-label">{t('signatures.clientSignature')}</td>
+        <td className="cell-signature-label">Client Signature</td>
 
         {/* Espaço para assinatura do cliente (colSpan=3) */}
         <td
@@ -125,7 +123,7 @@ export function TimesheetSignatures({
 
       {/* ── Linha 2: Nome (com linha inferior) ─────────────────────── */}
       <tr className="row-signature-line">
-        <td className="cell-signature-label">{t('signatures.name')}</td>
+        <td className="cell-signature-label">Name</td>
         <td
           className={`cell-signature-line-value ${isEditMode ? 'cell-editable' : ''}`}
           colSpan={2}
@@ -136,7 +134,7 @@ export function TimesheetSignatures({
           {timesheet.technicianName || ''}
         </td>
 
-        <td className="cell-signature-label">{t('signatures.clientName')}</td>
+        <td className="cell-signature-label">Client Name</td>
         <td
           className={`cell-signature-line-value ${isEditMode ? 'cell-editable' : ''}`}
           colSpan={3}
@@ -152,7 +150,7 @@ export function TimesheetSignatures({
 
       {/* ── Linha 3: Data (com linha inferior) ─────────────────────── */}
       <tr className="row-signature-line">
-        <td className="cell-signature-label">{t('signatures.date')}</td>
+        <td className="cell-signature-label">Date</td>
         <td
           className={`cell-signature-line-value ${isEditMode ? 'cell-editable' : ''}`}
           colSpan={2}
@@ -163,7 +161,7 @@ export function TimesheetSignatures({
           {formatDateDisplay(timesheet.technicianDate)}
         </td>
 
-        <td className="cell-signature-label">{t('signatures.date')}</td>
+        <td className="cell-signature-label">Date</td>
         <td
           className={`cell-signature-line-value ${isEditMode ? 'cell-editable' : ''}`}
           colSpan={3}

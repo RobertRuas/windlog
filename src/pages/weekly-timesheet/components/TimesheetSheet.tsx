@@ -3,6 +3,13 @@
  * TIMESHEET SHEET - Container da Planilha (Tabela Completa)
  * ============================================================================
  *
+ * ⚠️  MODO VISUALIZAÇÃO / IMPRESSÃO — SEMPRE EM INGLÊS
+ * -------------------------------------------------------
+ * Esta planilha é o documento oficial do timesheet (formato Excel) usado
+ * para visualização e impressão/PDF. Todos os rótulos, headers e nomes
+ * de dias devem permanecer SEMPRE em inglês (formato original do documento).
+ * NÃO utilizar i18n para os rótulos internos da planilha.
+ *
  * O QUE É ESTE ARQUIVO?
  * ---------------------
  * Componente principal que renderiza a tabela completa do timesheet.
@@ -23,7 +30,6 @@
  * ============================================================================
  */
 
-import { useTranslation } from 'react-i18next';
 import { TimesheetMetadata } from './TimesheetMetadata';
 import { TimesheetDaySection } from './TimesheetDaySection';
 import { TimesheetSignatures } from './TimesheetSignatures';
@@ -81,7 +87,6 @@ export function TimesheetSheet({
   onAddEntry,
   onRemoveEntry,
 }: TimesheetSheetProps) {
-  const { t } = useTranslation('timesheet');
 
   return (
     /* ── Card branco (folha de papel) ─────────────────────────────────── */
@@ -103,7 +108,7 @@ export function TimesheetSheet({
           {/* ── Título "WEEKLY TIMESHEET" ──────────────────────────── */}
           <tr className="row-title">
             <td className="cell-title" colSpan={8}>
-              {t('sheet.title')}
+              WEEKLY TIMESHEET
             </td>
             <td className="cell-title" />
             <td className="cell-title" />

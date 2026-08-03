@@ -25,7 +25,6 @@
  * ============================================================================
  */
 
-import { useTranslation } from 'react-i18next';
 import type { WeeklyTimesheet } from '@/services/weekly-timesheet.service';
 
 /**
@@ -51,7 +50,6 @@ export function TimesheetMetadata({
   isEditMode,
   onFieldChange,
 }: TimesheetMetadataProps) {
-  const { t } = useTranslation('timesheet');
 
   /**
    * Handler para quando o usuário termina de editar um campo (blur).
@@ -67,16 +65,16 @@ export function TimesheetMetadata({
       {/* ── Linha de labels (cabeçalho verde claro) ───────────────────── */}
       <tr className="row-metadata-header">
         <th className="cell-meta-header cell-meta-header-left-top">
-          {t('sheet.jobNumber')}
+          Nordic Access Job Number
         </th>
-        <th className="cell-meta-header">{t('sheet.week')}</th>
-        <th className="cell-meta-header">{t('sheet.teamNo')}</th>
+        <th className="cell-meta-header">Week</th>
+        <th className="cell-meta-header">Team No.</th>
         <th className="cell-meta-header" colSpan={2}>
-          {t('sheet.jobScope')}
+          Job Scope
         </th>
-        <th className="cell-meta-header">{t('sheet.client')}</th>
+        <th className="cell-meta-header">Client</th>
         <th className="cell-meta-header" colSpan={4}>
-          {t('sheet.siteName')}
+          Site Name
         </th>
         {/* Células separadoras vazias (3 últimas colunas) */}
         <td className="cell-sep" />

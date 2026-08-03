@@ -3,6 +3,14 @@
  * TIMESHEET DAY SECTION - Seção Completa de um Dia da Semana
  * ============================================================================
  *
+ * ⚠️  MODO VISUALIZAÇÃO / IMPRESSÃO — SEMPRE EM INGLÊS
+ * -------------------------------------------------------
+ * Este componente faz parte da planilha oficial do timesheet (formato Excel)
+ * que é gerada para visualização e impressão/PDF.
+ * Os rótulos dos campos (headers das colunas) e nomes de dias são exibidos
+ * SEMPRE em inglês, conforme o formato original do documento.
+ * NÃO utilizar i18n para os rótulos da planilha — devem ser hardcoded em inglês.
+ *
  * O QUE É ESTE ARQUIVO?
  * ---------------------
  * Renderiza a seção completa de um dia na planilha, incluindo:
@@ -25,7 +33,6 @@
  * ============================================================================
  */
 
-import { useTranslation } from 'react-i18next';
 import { Plus, Trash2 } from 'lucide-react';
 import type { TimesheetDay } from '@/services/weekly-timesheet.service';
 
@@ -79,7 +86,6 @@ export function TimesheetDaySection({
   onAddEntry,
   onRemoveEntry,
 }: TimesheetDaySectionProps) {
-  const { t } = useTranslation('timesheet');
 
   /** Quantidade de linhas (técnicos) neste dia + 1 linha vazia sempre no final */
   const rowCount = Math.max(day.entries.length, 1) + 1;
@@ -91,57 +97,57 @@ export function TimesheetDaySection({
       <tr className="row-day-header">
         {/* Coluna 1: "{DayName} Date" (ex: "Monday Date") */}
         <th className="cell-day-header cell-day-header-bold">
-          {t('days.' + day.dayName)} {t('sheet.dayDate')}
+          {day.dayName} Date
         </th>
 
         {/* Coluna 2: Technician Name */}
-        <th className="cell-day-header">{t('sheet.technicianName')}</th>
+        <th className="cell-day-header">Technician Name</th>
 
         {/* Coluna 3: Role */}
-        <th className="cell-day-header">{t('sheet.role')}</th>
+        <th className="cell-day-header">Role</th>
 
         {/* Coluna 4: Local Turbine No. */}
-        <th className="cell-day-header">{t('sheet.localTurbineNo')}</th>
+        <th className="cell-day-header">Local Turbine No.</th>
 
         {/* Coluna 5: Turbine ID No. */}
-        <th className="cell-day-header">{t('sheet.turbineIdNo')}</th>
+        <th className="cell-day-header">Turbine ID No.</th>
 
         {/* Coluna 6: Max Bögl Tower No. */}
-        <th className="cell-day-header">{t('sheet.towerNo')}</th>
+        <th className="cell-day-header">Max Bögl Tower No.</th>
 
         {/* Coluna 7: Blade No. */}
-        <th className="cell-day-header">{t('sheet.bladeNo')}</th>
+        <th className="cell-day-header">Blade No.</th>
 
         {/* Coluna 8: Stand-by/h (texto rotacionado, fundo verde) */}
         <th className="cell-day-header-rotated">
           <div className="rotated-text-container">
-            <span className="rotated-text">{t('sheet.standbyHrs')}</span>
+            <span className="rotated-text">Stand-by/h</span>
           </div>
         </th>
 
         {/* Coluna 9: Working/h (texto rotacionado, fundo verde) */}
         <th className="cell-day-header-rotated">
           <div className="rotated-text-container">
-            <span className="rotated-text">{t('sheet.workingHrs')}</span>
+            <span className="rotated-text">Working/h</span>
           </div>
         </th>
 
         {/* Coluna 10: Travel/h (texto rotacionado, fundo cinza) */}
         <th className="cell-day-header-rotated-grey">
           <div className="rotated-text-container">
-            <span className="rotated-text-grey">{t('sheet.travelHrs')}</span>
+            <span className="rotated-text-grey">Travel / h</span>
           </div>
         </th>
 
         {/* Coluna 11: WTG Downtime hours */}
-        <th className="cell-day-header">{t('sheet.downtimeHrs')}</th>
+        <th className="cell-day-header">WTG Downtime hours</th>
 
         {/* Coluna 12: Stand-by Time Reason */}
-        <th className="cell-day-header">{t('sheet.standbyReason')}</th>
+        <th className="cell-day-header">Stand-by Time Reason</th>
 
         {/* Coluna 13: Daily Progress */}
         <th className="cell-day-header-progress">
-          {t('sheet.dailyProgress')}
+          Daily Progress
         </th>
       </tr>
 
@@ -238,7 +244,7 @@ export function TimesheetDaySection({
                 }}
               >
                 <Plus size={12} />
-                {t('sheet.addRow')}
+                Add Technician Row
               </button>
 
               {/* Botão: Remover última linha (só se houver entradas) */}
@@ -260,7 +266,7 @@ export function TimesheetDaySection({
                   }}
                 >
                   <Trash2 size={12} />
-                  {t('sheet.removeRow')}
+                  Remove Last Row
                 </button>
               )}
             </div>
