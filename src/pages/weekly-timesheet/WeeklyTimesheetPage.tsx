@@ -14,24 +14,27 @@
  * - Tabela paginada com timesheets
  * - Filtros por projeto, semana e status
  * - Botão "Novo Timesheet" (abre modal de criação)
- * - Ações: visualizar, excluir
- * - Navegação para página de detalhes ao clicar em uma linha
+ * - Ações: visualizar (modal impressão), editar (página detalhes), excluir (com confirmação)
+ * - Colunas sem quebras de linha (whitespace-nowrap)
  * ============================================================================
  */
 
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useState, useCallback } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Plus, Trash2, Eye, Calendar } from 'lucide-react';
+import { Plus, Trash2, Eye, Pencil, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { AppLayout } from '@/components/layout/AppLayout';
 import { TimesheetCreateModal } from './components/TimesheetCreateModal';
+import { TimesheetViewModal } from './components/TimesheetViewModal';
 import { useTimesheetMutations } from './hooks/useTimesheetMutations';
 import {
   getTimesheets,
+  getTimesheetById,
   type TimesheetListItem,
+  type WeeklyTimesheet,
 } from '@/services/weekly-timesheet.service';
 
 /**
@@ -46,6 +49,9 @@ export function WeeklyTimesheetPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState('');
+  const [viewTimesheet, setViewTimesheet] = useState<WeeklyTimesheet | null>(null);
+  const [viewLoading, setViewLoading] = useState(false);
+  const queryClient = useQueryClient();
 
   // ── Busca timesheets ────────────────────────────────────────────────
   const { data: response, isLoading } = useQuery({
@@ -79,6 +85,36 @@ export function WeeklyTimesheetPage() {
       </span>
     );
   }
+
+  /**
+   * Abre o modal de visualização (modo impressão).
+   * Busca os dados completos do timesheet se necessário.
+   */
+  const handleView = useCallback(
+    async (id: string, e: React.MouseEvent) => {
+      e.stopPropagation();
+      setViewLoading(true);
+      setViewTimesheet(null);
+
+      try {
+        // Tenta usar dados já cacheados pelo React Query
+        const cached = queryClient.getQueryData(['timesheet', id]);
+        if (cached) {
+          setViewTimesheet(cached as WeeklyTimesheet);
+          setViewLoading(false);
+          return;
+        }
+
+        const res = await getTimesheetById(id);
+        setViewTimesheet(res.data);
+      } catch {
+        toast.error(t('toasts.error'));
+      } finally {
+        setViewLoading(false);
+      }
+    },
+    [queryClient, t],
+  );
 
   /**
    * Exclui um timesheet (com confirmação).
@@ -154,25 +190,25 @@ export function WeeklyTimesheetPage() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="text-left px-4 py-3 font-medium text-gray-700">
+                  <th className="text-left px-4 py-3 font-medium text-gray-700 whitespace-nowrap">
                     {t('table.project')}
                   </th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-700">
+                  <th className="text-left px-4 py-3 font-medium text-gray-700 whitespace-nowrap">
                     {t('table.client')}
                   </th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-700">
+                  <th className="text-center px-4 py-3 font-medium text-gray-700 whitespace-nowrap">
                     {t('table.week')}
                   </th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-700">
+                  <th className="text-center px-4 py-3 font-medium text-gray-700 whitespace-nowrap">
                     {t('table.teamNo')}
                   </th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-700">
+                  <th className="text-center px-4 py-3 font-medium text-gray-700 whitespace-nowrap">
                     {t('table.status')}
                   </th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-700">
+                  <th className="text-left px-4 py-3 font-medium text-gray-700 whitespace-nowrap">
                     {t('table.createdBy')}
                   </th>
-                  <th className="text-right px-4 py-3 font-medium text-gray-700">
+                  <th className="text-center px-4 py-3 font-medium text-gray-700 whitespace-nowrap">
                     {t('table.actions')}
                   </th>
                 </tr>
@@ -181,43 +217,52 @@ export function WeeklyTimesheetPage() {
                 {timesheets.map((ts: TimesheetListItem) => (
                   <tr
                     key={ts.id}
-                    onClick={() => navigate(`/timesheets/${ts.id}`)}
-                    className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors"
+                    className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
                   >
-                    <td className="px-4 py-3 font-medium text-gray-900">
+                    <td className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap">
                       {ts.project.name}
                     </td>
-                    <td className="px-4 py-3 text-gray-600">
+                    <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
                       {ts.project.client}
                     </td>
-                    <td className="px-4 py-3 text-center text-gray-600">
+                    <td className="px-4 py-3 text-center text-gray-600 whitespace-nowrap">
                       {ts.week}
                     </td>
-                    <td className="px-4 py-3 text-center text-gray-600">
+                    <td className="px-4 py-3 text-center text-gray-600 whitespace-nowrap">
                       {ts.teamNo || '-'}
                     </td>
-                    <td className="px-4 py-3 text-center">
+                    <td className="px-4 py-3 text-center whitespace-nowrap">
                       <StatusBadge status={ts.status} />
                     </td>
-                    <td className="px-4 py-3 text-gray-600">
+                    <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
                       {ts.creator.firstName} {ts.creator.lastName}
                     </td>
-                    <td className="px-4 py-3 text-right">
-                      <div className="flex justify-end gap-2">
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <div className="flex items-center justify-center gap-1">
+                        {/* Visualizar / Baixar (modal modo impressão) */}
+                        <button
+                          onClick={(e) => handleView(ts.id, e)}
+                          className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors"
+                          title={t('actions.view')}
+                        >
+                          <Eye size={16} />
+                        </button>
+                        {/* Editar (modo edição) */}
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             navigate(`/timesheets/${ts.id}`);
                           }}
-                          className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors"
-                          title="Visualizar"
+                          className="p-1.5 text-gray-400 hover:text-amber-600 transition-colors"
+                          title={t('actions.edit')}
                         >
-                          <Eye size={16} />
+                          <Pencil size={16} />
                         </button>
+                        {/* Excluir (com confirmação) */}
                         <button
                           onClick={(e) => handleDelete(ts.id, e)}
                           className="p-1.5 text-gray-400 hover:text-red-600 transition-colors"
-                          title="Excluir"
+                          title={t('actions.delete')}
                         >
                           <Trash2 size={16} />
                         </button>
@@ -266,6 +311,21 @@ export function WeeklyTimesheetPage() {
           onClose={() => setShowCreateModal(false)}
           onSuccess={handleCreated}
         />
+      )}
+
+      {/* ── Modal de visualização (modo impressão) ──────────────────── */}
+      {viewTimesheet && (
+        <TimesheetViewModal
+          timesheet={viewTimesheet}
+          onClose={() => setViewTimesheet(null)}
+        />
+      )}
+
+      {/* ── Loading overlay ao abrir visualização ───────────────────── */}
+      {viewLoading && (
+        <div className="fixed inset-0 z-50 bg-gray-900/60 flex items-center justify-center">
+          <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full" />
+        </div>
       )}
     </AppLayout>
   );

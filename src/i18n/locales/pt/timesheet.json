@@ -129,6 +129,11 @@
     "you": "Você",
     "progressRequired": "Preencha o Daily Progress"
   },
+  "actions": {
+    "view": "Visualizar / Baixar",
+    "edit": "Editar",
+    "delete": "Excluir"
+  },
   "toasts": {
     "created": "Timesheet criado com sucesso!",
     "updated": "Timesheet atualizado com sucesso!",
