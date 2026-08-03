@@ -30,6 +30,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import {
@@ -285,7 +286,10 @@ function TechnicianSelect({
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState(value);
   const wrapperRef = useRef<HTMLDivElement>(null);
-  // Guarda o último valor válido (nome selecionado) para reverter em caso de texto inválido
+  const inputRef = useRef<HTMLInputElement>(null);
+  // Posição do dropdown (calculada a partir do input)
+  const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0, width: 0 });
+  // Guarda o último valor válido para reverter em caso de texto inválido
   const lastValidValue = useRef(value);
 
   // Sincroniza valor externo → display
@@ -294,15 +298,21 @@ function TechnicianSelect({
     if (value) lastValidValue.current = value;
   }, [value]);
 
+  // Calcula a posição do dropdown sempre que abre
+  useEffect(() => {
+    if (isOpen && inputRef.current) {
+      const rect = inputRef.current.getBoundingClientRect();
+      setDropdownPos({ top: rect.bottom + 4, left: rect.left, width: rect.width });
+    }
+  }, [isOpen]);
+
   // Fecha dropdown ao clicar fora e valida o conteúdo
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
         setIsOpen(false);
-        // Se o texto atual não corresponde a nenhum usuário, reverte
         const matchedUser = users.find((u) => u.fullName === query);
         if (!matchedUser) {
-          // Reverte para o último valor válido (ou limpa se não havia)
           setQuery(lastValidValue.current);
         }
       }
@@ -329,16 +339,54 @@ function TechnicianSelect({
     onChange('');
   }
 
+  /**
+   * Dropdown renderizado via portal (fora do container overflow-hidden do accordion).
+   */
+  const dropdown = isOpen
+    ? createPortal(
+        <div
+          className="fixed z-[9999] bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden max-h-48 overflow-y-auto"
+          style={{ top: dropdownPos.top, left: dropdownPos.left, width: dropdownPos.width }}
+        >
+          {filtered.length > 0 ? (
+            filtered.map((user) => (
+              <button
+                key={user.id}
+                type="button"
+                onClick={() => handleSelect(user)}
+                className={`w-full text-left px-3 py-2 text-sm hover:bg-blue-50 flex items-center gap-2 transition-colors ${
+                  value === user.fullName ? 'bg-blue-50' : ''
+                }`}
+              >
+                <UserIcon size={14} className="text-gray-400 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <span className="font-medium text-gray-900">{user.fullName}</span>
+                  {user.position && (
+                    <span className="ml-2 text-xs text-gray-500">{user.position}</span>
+                  )}
+                </div>
+              </button>
+            ))
+          ) : (
+            <div className="p-3 text-center text-xs text-gray-400">
+              {t('form.noMemberFound')}
+            </div>
+          )}
+        </div>,
+        document.body,
+      )
+    : null;
+
   return (
     <div ref={wrapperRef} className="relative">
       <div className="relative">
         <input
+          ref={inputRef}
           type="text"
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);
             setIsOpen(true);
-            // Se apagou tudo, limpa o valor
             if (e.target.value.trim() === '') {
               lastValidValue.current = '';
               onChange('');
@@ -346,7 +394,6 @@ function TechnicianSelect({
           }}
           onFocus={() => setIsOpen(true)}
           onKeyDown={(e) => {
-            // Se pressionou Escape, reverte ao último valor válido
             if (e.key === 'Escape') {
               setQuery(lastValidValue.current);
               setIsOpen(false);
@@ -357,7 +404,6 @@ function TechnicianSelect({
           autoComplete="off"
           className="w-full px-2 py-1.5 pr-12 border border-gray-200 rounded text-sm font-medium focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-60"
         />
-        {/* Botões à direita: limpar (se tem valor) + seta */}
         <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
           {query && (
             <button
@@ -377,34 +423,7 @@ function TechnicianSelect({
           </svg>
         </div>
       </div>
-      {/* Dropdown — z-50 para ficar sobre todos os outros elementos */}
-      {isOpen && filtered.length > 0 && (
-        <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden max-h-48 overflow-y-auto">
-          {filtered.map((user) => (
-            <button
-              key={user.id}
-              type="button"
-              onClick={() => handleSelect(user)}
-              className={`w-full text-left px-3 py-2 text-sm hover:bg-blue-50 flex items-center gap-2 transition-colors ${
-                value === user.fullName ? 'bg-blue-50' : ''
-              }`}
-            >
-              <UserIcon size={14} className="text-gray-400 shrink-0" />
-              <div className="flex-1 min-w-0">
-                <span className="font-medium text-gray-900">{user.fullName}</span>
-                {user.position && (
-                  <span className="ml-2 text-xs text-gray-500">{user.position}</span>
-                )}
-              </div>
-            </button>
-          ))}
-        </div>
-      )}
-      {isOpen && filtered.length === 0 && (
-        <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg p-3 text-center text-xs text-gray-400">
-          {t('form.noMemberFound')}
-        </div>
-      )}
+      {dropdown}
     </div>
   );
 }
