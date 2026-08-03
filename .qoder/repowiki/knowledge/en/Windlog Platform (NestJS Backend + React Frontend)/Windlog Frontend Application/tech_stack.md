@@ -1,1 +1,0 @@
-React 18 + Vite, React Router v6 for routing, TanStack Query for server state caching, react-i18next for Portuguese i18n, Sonner for toast notifications, Tailwind CSS for styling, and axios-based typed services for API communication.

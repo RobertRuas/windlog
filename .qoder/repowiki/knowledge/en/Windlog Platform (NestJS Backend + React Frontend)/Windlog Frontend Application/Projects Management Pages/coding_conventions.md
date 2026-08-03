@@ -1,6 +1,0 @@
-- TanStack Query keys follow the pattern `['entity', filter?]` for lists (e.g. `['projects', search, statusFilter, currentPage]`) and `['entity', id]` for details (e.g. `['project', id]`).
-- Every mutation triggers `toast.success(...)` / `toast.error(...)` via Sonner with i18n keys under `toast.*` and invalidates the relevant query key(s) in `onSuccess`.
-- Soft delete is used for business entities: delete mutations call the service's delete function and rely on the backend filtering by `deletedAt: null`.
-- Form data flows through controlled React state with explicit payload types (`CreateProjectPayload`, `UpdateProjectPayload`) imported from the service layer, never inferred locally.
-- All user-facing strings go through `useTranslation('projects')` with dot-notation keys (e.g. `t('table.name')`, `t('status.PLANNING')`, `t('modal.createTitle')`).
-- Components are pure presentational pieces receiving props and callbacks; business logic stays in the page component or custom hooks (`useProjectMutations`), never inside the UI components.

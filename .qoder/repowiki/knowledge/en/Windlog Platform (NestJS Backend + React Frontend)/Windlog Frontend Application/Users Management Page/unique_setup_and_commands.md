@@ -1,1 +1,0 @@
-No build or setup commands are specific to this module; it is consumed as part of the application's route configuration and depends on `@/services/user.service` being available.

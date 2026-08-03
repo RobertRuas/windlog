@@ -1,1 +1,0 @@
-No build or setup script is required beyond the standard Vite/React tooling. The module depends on a running NestJS backend exposing `/api/v1/*` endpoints; authentication requires an `accessToken` stored in `localStorage` before any protected call.

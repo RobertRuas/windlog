@@ -151,13 +151,32 @@ function isDayFilled(day: FormDay): boolean {
 function detectSharedValues(
   entries: { [key: string]: any }[],
 ): Record<SharedFieldKey, string> {
-  const shared: Record<string, string> = {};
-  for (const field of SHARED_FIELDS) {
-    const values = entries.map((e) => e[field] || '');
-    const allSame = values.length > 0 && values.every((v) => v === values[0]);
-    shared[field] = allSame ? values[0] : '';
+  function computeShared(list: { [key: string]: any }[]): Record<string, string> {
+    const result: Record<string, string> = {};
+    for (const field of SHARED_FIELDS) {
+      const values = list.map((e) => e[field] || '');
+      const allSame = values.length > 0 && values.every((v) => v === values[0]);
+      result[field] = allSame ? values[0] : '';
+    }
+    return result;
   }
-  return shared as Record<SharedFieldKey, string>;
+
+  // Pass 1: detecta shared considerando todos os entries
+  const shared1 = computeShared(entries);
+
+  // Identifica quais entries são "personalizados" com base no pass 1
+  const nonCustomized = entries.filter(
+    (e) => !SHARED_FIELDS.some((f) => (e[f] || '') !== shared1[f]),
+  );
+
+  // Pass 2: recalcula shared usando APENAS entries não-personalizados
+  // (entries personalizados não devem influenciar o que é "comum")
+  if (nonCustomized.length > 0) {
+    return computeShared(nonCustomized) as Record<SharedFieldKey, string>;
+  }
+
+  // Fallback: todos são personalizados — usa shared1
+  return shared1 as Record<SharedFieldKey, string>;
 }
 
 function timesheetToFormState(ts: WeeklyTimesheet): FormState {

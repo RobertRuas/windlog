@@ -1,9 +1,0 @@
-schema_version: 1
-module_path: ""
-title: Windlog Platform (NestJS Backend + React Frontend)
-scope:
-    - API/
-    - src/
-source_files: []
-depends_on: []
-related_to: []

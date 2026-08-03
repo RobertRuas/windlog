@@ -1,1 +1,0 @@
-React settings page that renders account and admin sections with role-based visibility, providing navigation shortcuts to profile and system logs.

@@ -1,1 +1,0 @@
-Administrative React page for browsing, filtering, and grouping system HTTP request logs with real-time polling, pagination, and severity-based statistics.

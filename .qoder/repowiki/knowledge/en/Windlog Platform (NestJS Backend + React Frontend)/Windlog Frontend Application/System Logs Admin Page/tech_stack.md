@@ -1,1 +1,0 @@
-React + TypeScript, TanStack Query for server state with polling intervals (30s for logs, 60s for stats), react-i18next for translations, Tailwind CSS for styling, and Lucide React icons.

@@ -20,10 +20,10 @@
 
 ## Update Summary
 **Changes Made**
-- Updated TimesheetFormEditor component analysis to reflect major enhancements including accordion-based day entry system, visual status indicators, enhanced validation logic, technician autocomplete improvements, customization toggle system, streamlined save functionality, and expanded internationalization support
-- Enhanced component architecture documentation with new UI patterns and state management approaches
-- Updated troubleshooting guide with new validation and user experience considerations
-- Added detailed analysis of the improved form interaction patterns and visual feedback systems
+- Updated TimesheetFormEditor component analysis to reflect major enhancements including manual save button, debounced auto-save (600ms), improved UI with toggle switches and collapsible customize panels, bug fixes for shared values synchronization, and internationalization support
+- Enhanced component architecture documentation with dual save mechanisms (manual + automatic) and better user feedback systems
+- Updated troubleshooting guide with new validation and user experience considerations for the enhanced save functionality
+- Added detailed analysis of the improved form interaction patterns with debounced auto-save and toggle switch implementations
 
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -42,7 +42,7 @@ The Timesheet Semanal (Weekly Timesheet) interface is a comprehensive React-base
 
 The implementation follows the project's design principles inspired by Apple's design system - minimalist, clean, with generous spacing and neutral colors with blue accents. The interface uses Tailwind CSS v4 with utility classes and implements internationalization (i18n) throughout all user-facing text.
 
-**Updated** Major enhancements have been applied to the TimesheetFormEditor component, introducing an improved accordion-based day entry system with visual status indicators, enhanced validation logic supporting partial day filling, technician autocomplete with role auto-population, customization toggle system with labeled pill badges, streamlined save functionality, and expanded internationalization support.
+**Updated** Major enhancements have been applied to the TimesheetFormEditor component, introducing dual save mechanisms with manual save button and debounced auto-save (600ms), improved UI with toggle switches and collapsible customize panels, bug fixes for shared values synchronization, and expanded internationalization support. The form now provides better user feedback and data persistence through these enhanced save mechanisms.
 
 ## Project Structure
 
@@ -91,7 +91,7 @@ The weekly timesheet interface consists of several key components that work toge
 ### UI Components
 - **TimesheetCreateModal**: Modal interface for creating new timesheets
 - **TimesheetDaySection**: Individual day sections within the timesheet editor with accordion functionality
-- **TimesheetFormEditor**: Comprehensive form editor with enhanced accordion-based day entry system, visual status indicators, and improved validation logic
+- **TimesheetFormEditor**: Comprehensive form editor with enhanced accordion-based day entry system, visual status indicators, improved validation logic, and dual save mechanisms
 - **TimesheetMetadata**: Displays and manages metadata like project selection and dates
 - **TimesheetSheet**: Main spreadsheet-like interface for timesheet data
 - **TimesheetSignatures**: Handles signature collection and validation
@@ -101,7 +101,7 @@ The weekly timesheet interface consists of several key components that work toge
 - **useTimesheetMutations**: Custom hook for handling timesheet CRUD operations
 - **useTimesheetZoom**: Hook for managing zoom levels in the timesheet view
 
-**Updated** The TimesheetFormEditor component has been significantly enhanced with an accordion-based day entry system that provides better organization and usability. Visual status indicators now display green/amber/red borders to show completion status, while enhanced validation logic allows for partial day filling. Technician autocomplete has been improved with automatic role population, and a customization toggle system with labeled pill badges provides better user control.
+**Updated** The TimesheetFormEditor component has been significantly enhanced with dual save mechanisms including a manual save button and debounced auto-save (600ms). The component now features improved UI with toggle switches and collapsible customize panels, bug fixes for shared values synchronization, and expanded internationalization support. These enhancements provide better user feedback and data persistence.
 
 **Section sources**
 - [TimesheetCreateModal.tsx](file://src/pages/weekly-timesheet/components/TimesheetCreateModal.tsx)
@@ -134,15 +134,15 @@ API-->>Service : Timesheet Data
 Service-->>Cache : Store in Cache
 Cache-->>Detail : Return Cached Data
 Detail->>Detail : Render Enhanced Timesheet Interface
-User->>Detail : Edit Timesheet with Accordion System
-Detail->>Service : Update Timesheet
+User->>Detail : Edit Timesheet with Dual Save Mechanisms
+Detail->>Service : Manual Save or Auto-Save (600ms debounce)
 Service->>API : PUT /api/weekly-timesheets/ : id
 API-->>Service : Success Response
 Service->>Cache : Invalidate Related Queries
-Detail->>Detail : Show Success Message with Status Indicators
+Detail->>Detail : Show Success Message with Enhanced Feedback
 ```
 
-**Updated** The enhanced architecture now includes improved user interaction patterns with accordion-based navigation, real-time visual feedback through status indicators, and more sophisticated validation workflows that support partial data entry.
+**Updated** The enhanced architecture now includes dual save mechanisms with manual save button and debounced auto-save (600ms), improved user interaction patterns with toggle switches and collapsible panels, and more sophisticated validation workflows with better user feedback.
 
 **Diagram sources**
 - [WeeklyTimesheetPage.tsx](file://src/pages/weekly-timesheet/WeeklyTimesheetPage.tsx)
@@ -177,6 +177,9 @@ class TimesheetFormEditor {
 +validateEnhanced()
 +accordionToggle()
 +statusIndicatorUpdate()
++manualSave()
++debouncedAutoSave()
++toggleSwitchChange()
 +render()
 }
 class TimesheetMetadata {
@@ -196,7 +199,7 @@ WeeklyTimesheetDetailPage --> TimesheetMetadata : "contains"
 WeeklyTimesheetDetailPage --> TimesheetSheet : "contains"
 ```
 
-**Updated** The component hierarchy now includes enhanced form editor capabilities with accordion management, status indicator updates, and improved validation methods.
+**Updated** The component hierarchy now includes enhanced form editor capabilities with dual save mechanisms (manual + debounced auto-save), toggle switch functionality, collapsible customize panels, and improved validation methods.
 
 **Diagram sources**
 - [WeeklyTimesheetDetailPage.tsx](file://src/pages/weekly-timesheet/WeeklyTimesheetDetailPage.tsx)
@@ -209,32 +212,35 @@ WeeklyTimesheetDetailPage --> TimesheetSheet : "contains"
 The TimesheetFormEditor component has undergone significant enhancements to improve user experience and functionality:
 
 #### Key Enhancements:
-- **Accordion-Based Day Entry System**: Organized day-by-day input with collapsible sections for better navigation
-- **Visual Status Indicators**: Real-time color-coded borders (green/amber/red) showing completion status
-- **Enhanced Validation Logic**: Supports partial day filling with flexible validation rules
-- **Improved Technician Autocomplete**: Automatic role population when selecting technicians
-- **Customization Toggle System**: Labeled pill badges for user preferences and settings
-- **Streamlined Save Functionality**: Optimized save workflow with better user feedback
-- **Expanded Internationalization**: Support for new UI elements across multiple languages
+- **Dual Save Mechanisms**: Manual save button and debounced auto-save (600ms) for optimal user control and data persistence
+- **Improved UI Components**: Toggle switches and collapsible customize panels for better user interaction
+- **Bug Fixes**: Resolved shared values synchronization issues for consistent data handling
+- **Enhanced Internationalization**: Expanded i18n support for all new UI elements
+- **Better User Feedback**: Improved success and error messaging for save operations
+- **Optimized Performance**: Debounced auto-save prevents excessive API calls while maintaining responsiveness
 
 #### Implementation Pattern:
 ```mermaid
 flowchart TD
-Start([User Interaction]) --> AccordionToggle["Toggle Day Section"]
-AccordionToggle --> ValidateInput["Validate Input"]
+Start([User Interaction]) --> InputChange["Input Change Event"]
+InputChange --> DebounceCheck{"Debounced Auto-Save?"}
+DebounceCheck --> |Yes| StartTimer["Start 600ms Timer"]
+DebounceCheck --> |No| ManualSave["Manual Save Button"]
+StartTimer --> TimerComplete["Timer Complete"]
+TimerComplete --> ValidateInput["Validate Input"]
+ManualSave --> ValidateInput
 ValidateInput --> PartialCheck{"Partial Entry?"}
 PartialCheck --> |Yes| AllowEntry["Allow Partial Entry"]
 PartialCheck --> |No| FullValidation["Full Validation"]
 AllowEntry --> UpdateStatus["Update Status Indicator"]
 FullValidation --> UpdateStatus
 UpdateStatus --> ColorCode["Apply Color Border"]
-ColorCode --> SaveFlow["Save Flow"]
-SaveFlow --> AutoPopulate["Auto-populate Roles"]
-AutoPopulate --> ToggleSystem["Update Toggle System"]
-ToggleSystem --> Success(["Success Feedback"])
+ColorCode --> ToggleSystem["Update Toggle System"]
+ToggleSystem --> CollapsiblePanels["Collapsible Customize Panels"]
+CollapsiblePanels --> Success(["Success Feedback"])
 ```
 
-**Updated** The component now provides a more intuitive and flexible user experience with real-time visual feedback and intelligent data handling.
+**Updated** The component now provides dual save mechanisms with manual control and automatic background saving, improved UI with toggle switches and collapsible panels, and enhanced internationalization support for better user experience.
 
 **Diagram sources**
 - [TimesheetFormEditor.tsx](file://src/pages/weekly-timesheet/components/TimesheetFormEditor.tsx)
@@ -248,6 +254,7 @@ This custom hook encapsulates all mutation logic for timesheet operations, provi
 - **Query Invalidation**: Automatically invalidates related queries after mutations
 - **Error Handling**: Centralized error handling and user feedback
 - **Loading States**: Manages loading states for better UX
+- **Dual Save Support**: Optimized for both manual and debounced auto-save operations
 
 #### Implementation Pattern:
 ```mermaid
@@ -284,28 +291,34 @@ D[Tailwind CSS]
 E[Form Libraries]
 F[Autocomplete Libraries]
 G[Animation Libraries]
+H[Debouncing Libraries]
+I[Toggle Switch Components]
 end
 subgraph "Internal Dependencies"
-H[weekly-timesheet.service.ts]
-I[auth.service.ts]
-J[api.ts]
-K[common components]
-L[enhanced form components]
+J[weekly-timesheet.service.ts]
+K[auth.service.ts]
+L[api.ts]
+M[common components]
+N[enhanced form components]
+O[dual save utilities]
 end
-A --> H
+A --> J
 B --> WeeklyTimesheetPage
 C --> WeeklyTimesheetDetailPage
 D --> AllComponents
 E --> TimesheetFormEditor
 F --> TimesheetFormEditor
 G --> TimesheetFormEditor
-H --> J
-I --> H
-K --> WeeklyTimesheetDetailPage
-L --> TimesheetFormEditor
+H --> TimesheetFormEditor
+I --> TimesheetFormEditor
+J --> L
+K --> J
+M --> WeeklyTimesheetDetailPage
+N --> TimesheetFormEditor
+O --> TimesheetFormEditor
 ```
 
-**Updated** New dependencies have been added to support the enhanced form editor functionality, including autocomplete libraries for technician selection and animation libraries for smooth accordion transitions.
+**Updated** New dependencies have been added to support the enhanced form editor functionality, including debouncing libraries for auto-save functionality, toggle switch components for improved UI, and dual save utilities for managing both manual and automatic save operations.
 
 **Diagram sources**
 - [weekly-timesheet.service.ts](file://src/services/weekly-timesheet.service.ts)
@@ -338,9 +351,12 @@ The weekly timesheet interface implements several performance optimizations:
 - **Form State**: Optimized form libraries for complex forms with enhanced validation
 
 ### Enhanced Performance Features
-- **Real-time Status Updates**: Efficient visual feedback without full component re-renders
+- **Debounced Auto-Save**: 600ms delay prevents excessive API calls while maintaining responsiveness
+- **Real-time Status Updates**: Efficient visual feedback without full component re-rendering
 - **Intelligent Validation**: Client-side validation reduces unnecessary API calls
 - **Autocomplete Debouncing**: Optimized search functionality for technician selection
+- **Toggle Switch Optimization**: Lightweight state management for UI toggles
+- **Collapsible Panel Efficiency**: Minimized re-renders when panels are collapsed
 
 ## Troubleshooting Guide
 
@@ -381,7 +397,22 @@ The weekly timesheet interface implements several performance optimizations:
 - **Solution**: Verify autocomplete data structure and role mapping
 - **Debug**: Check API responses and data transformation
 
-**Updated** New troubleshooting categories have been added to address the enhanced form editor features, including accordion functionality, status indicators, and autocomplete systems.
+#### Dual Save Mechanism Issues
+- **Symptom**: Auto-save not triggering or manual save not working
+- **Solution**: Check debouncing timer implementation and manual save event handlers
+- **Debug**: Verify 600ms debounce timing and save function execution
+
+#### Toggle Switch Problems
+- **Symptom**: Toggle switches not responding or state not persisting
+- **Solution**: Verify toggle state management and event handlers
+- **Debug**: Check component state updates and prop passing
+
+#### Collapsible Panel Issues
+- **Symptom**: Panels not collapsing/expanding correctly
+- **Solution**: Check panel state management and CSS transitions
+- **Debug**: Inspect animation classes and state synchronization
+
+**Updated** New troubleshooting categories have been added to address the enhanced form editor features, including dual save mechanisms, debounced auto-save functionality, toggle switches, collapsible panels, and improved user feedback systems.
 
 **Section sources**
 - [weekly-timesheet.service.ts](file://src/services/weekly-timesheet.service.ts)
@@ -399,6 +430,6 @@ Key strengths include:
 - **User Experience**: Intuitive interface with proper error handling and feedback
 - **Maintainability**: Well-structured codebase following React best practices
 
-**Updated** Recent enhancements have significantly improved the user experience through the introduction of an accordion-based day entry system, visual status indicators, enhanced validation logic, technician autocomplete with role auto-population, customization toggle system, streamlined save functionality, and expanded internationalization support. These improvements make the system more accessible and efficient for technicians while maintaining powerful features for time tracking and project management.
+**Updated** Recent enhancements have significantly improved the user experience through the introduction of dual save mechanisms with manual save button and debounced auto-save (600ms), improved UI with toggle switches and collapsible customize panels, bug fixes for shared values synchronization, and expanded internationalization support. These improvements make the system more accessible and efficient for technicians while providing powerful features for time tracking and project management with better data persistence and user feedback.
 
-The system successfully balances complexity with usability, making it accessible to technicians while providing powerful features for time tracking and project management.
+The system successfully balances complexity with usability, making it accessible to technicians while providing powerful features for time tracking and project management with enhanced save mechanisms and improved user interaction patterns.

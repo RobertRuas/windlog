@@ -1,1 +1,0 @@
-NestJS monorepo backend that wires seven domain modules under a shared common infrastructure layer and Prisma v7 data access, bootstrapped through a single AppModule with global pipes, filters, interceptors, and Swagger docs.

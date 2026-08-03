@@ -1,1 +1,0 @@
-Admin/HR-facing React page for managing users with search, role filtering, pagination, and a modal for create/edit operations backed by TanStack Query mutations.
