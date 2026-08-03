@@ -263,6 +263,8 @@ interface TechnicianSelectProps {
   onChange: (value: string) => void;
   onSelectUser: (user: SystemUser) => void;
   users: SystemUser[];
+  /** Nomes já em uso neste dia (para evitar duplicidade) */
+  excludeNames?: string[];
   disabled?: boolean;
   placeholder?: string;
 }
@@ -279,6 +281,7 @@ function TechnicianSelect({
   onChange,
   onSelectUser,
   users,
+  excludeNames = [],
   disabled,
   placeholder,
 }: TechnicianSelectProps) {
@@ -287,9 +290,8 @@ function TechnicianSelect({
   const [query, setQuery] = useState(value);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  // Posição do dropdown (calculada a partir do input)
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0, width: 0 });
-  // Guarda o último valor válido para reverter em caso de texto inválido
   const lastValidValue = useRef(value);
 
   // Sincroniza valor externo → display
@@ -306,10 +308,13 @@ function TechnicianSelect({
     }
   }, [isOpen]);
 
-  // Fecha dropdown ao clicar fora e valida o conteúdo
+  // Fecha dropdown ao clicar fora (input OU dropdown são considerados "dentro")
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      const isInsideWrapper = wrapperRef.current?.contains(target);
+      const isInsideDropdown = dropdownRef.current?.contains(target);
+      if (!isInsideWrapper && !isInsideDropdown) {
         setIsOpen(false);
         const matchedUser = users.find((u) => u.fullName === query);
         if (!matchedUser) {
@@ -321,9 +326,14 @@ function TechnicianSelect({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [query, users]);
 
+  // Filtra: exclui técnicos já adicionados neste dia (exceto o valor atual)
+  const availableUsers = users.filter(
+    (u) => !excludeNames.includes(u.fullName) || u.fullName === value,
+  );
+
   const filtered = query.trim().length > 0
-    ? users.filter((u) => u.fullName.toLowerCase().includes(query.toLowerCase()))
-    : users;
+    ? availableUsers.filter((u) => u.fullName.toLowerCase().includes(query.toLowerCase()))
+    : availableUsers;
 
   function handleSelect(user: SystemUser) {
     setQuery(user.fullName);
@@ -345,6 +355,7 @@ function TechnicianSelect({
   const dropdown = isOpen
     ? createPortal(
         <div
+          ref={dropdownRef}
           className="fixed z-[9999] bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden max-h-48 overflow-y-auto"
           style={{ top: dropdownPos.top, left: dropdownPos.left, width: dropdownPos.width }}
         >
@@ -843,6 +854,10 @@ export function TimesheetFormEditor({
                                 onChange={(v) => handleEntryChange(dayIdx, entryIdx, 'technicianName', v)}
                                 onSelectUser={(user) => handleSelectUser(dayIdx, entryIdx, user)}
                                 users={systemUsers}
+                                excludeNames={day.entries
+                                  .filter((_, i) => i !== entryIdx)
+                                  .map((e) => e.technicianName)
+                                  .filter(Boolean)}
                                 disabled={isSaving}
                                 placeholder={t('sheet.technicianName')}
                               />
