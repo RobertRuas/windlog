@@ -363,36 +363,47 @@ export function SignaturePad({
 
   /**
    * Aplica o recorte e gera a assinatura final.
+   * Lê diretamente da imagem original (rawImage) para evitar incluir a borda azul.
    */
   const applyCrop = useCallback(() => {
-    const cropCanvas = cropCanvasRef.current;
-    if (!cropCanvas || !cropRect || cropRect.w < 10 || cropRect.h < 10) return;
+    if (!rawImage || !cropRect || cropRect.w < 10 || cropRect.h < 10) return;
 
-    // Cria um canvas temporário com a área recortada
-    const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = cropRect.w;
-    tempCanvas.height = cropRect.h;
+    const img = new Image();
+    img.onload = () => {
+      // Calcula o fator de escala entre a imagem original e o canvas de recorte
+      const cropCanvas = cropCanvasRef.current;
+      if (!cropCanvas) return;
 
-    const tempCtx = tempCanvas.getContext('2d');
-    if (!tempCtx) return;
+      const scaleX = img.width / cropCanvas.width;
+      const scaleY = img.height / cropCanvas.height;
 
-    tempCtx.drawImage(
-      cropCanvas,
-      cropRect.x,
-      cropRect.y,
-      cropRect.w,
-      cropRect.h,
-      0,
-      0,
-      cropRect.w,
-      cropRect.h,
-    );
+      // Cria um canvas temporário com a área recortada (tamanho real)
+      const realW = Math.round(cropRect.w * scaleX);
+      const realH = Math.round(cropRect.h * scaleY);
+      const realX = Math.round(cropRect.x * scaleX);
+      const realY = Math.round(cropRect.y * scaleY);
 
-    const dataUrl = tempCanvas.toDataURL('image/png');
-    setCurrentImage(dataUrl);
-    setRawImage(null);
-    setCropRect(null);
-  }, [cropRect]);
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = realW;
+      tempCanvas.height = realH;
+
+      const tempCtx = tempCanvas.getContext('2d');
+      if (!tempCtx) return;
+
+      // Extrai diretamente da imagem original — sem bordas
+      tempCtx.drawImage(
+        img,
+        realX, realY, realW, realH,
+        0, 0, realW, realH,
+      );
+
+      const dataUrl = tempCanvas.toDataURL('image/png');
+      setCurrentImage(dataUrl);
+      setRawImage(null);
+      setCropRect(null);
+    };
+    img.src = rawImage;
+  }, [cropRect, rawImage]);
 
   const cancelCrop = useCallback(() => {
     setRawImage(null);
