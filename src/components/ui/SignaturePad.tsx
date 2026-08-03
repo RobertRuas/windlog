@@ -249,6 +249,8 @@ export function SignaturePad({
 
       setIsDrawing(true);
       setHasDrawn(true);
+      // Limpa currentImage para que handleSave() leia do canvas
+      setCurrentImage(null);
     },
     [readOnly, isSaving, getCoords],
   );
@@ -415,13 +417,20 @@ export function SignaturePad({
   }, [onClear]);
 
   const handleSave = useCallback(() => {
+    // Se temos uma imagem do fluxo de câmera/recorte, usa diretamente
+    if (currentImage) {
+      onSave?.(currentImage);
+      return;
+    }
+
+    // Caso contrário, lê do canvas de desenho
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     const dataUrl = canvas.toDataURL('image/png');
     setCurrentImage(dataUrl);
     onSave?.(dataUrl);
-  }, [onSave]);
+  }, [onSave, currentImage]);
 
   const handleCancel = useCallback(() => {
     if (initialValue) {
@@ -654,7 +663,7 @@ export function SignaturePad({
           <button
             type="button"
             onClick={handleSave}
-            disabled={isSaving || (captureMode === 'draw' && !hasDrawn)}
+            disabled={isSaving || (!hasDrawn && !currentImage)}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <Check size={12} />
