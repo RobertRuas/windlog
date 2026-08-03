@@ -73,6 +73,8 @@
     "cropInstruction": "Arraste para selecionar a área da assinatura",
     "applyCrop": "Recortar e Usar",
     "cancelCrop": "Voltar",
-    "currentPreview": "Pré-visualização atual:"
+    "currentPreview": "Pré-visualização atual:",
+    "savedSuccessfully": "Assinatura guardada com sucesso!",
+    "redoSignature": "Fazer nova assinatura"
   }
 }

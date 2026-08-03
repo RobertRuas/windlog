@@ -86,6 +86,10 @@ export function SignaturePad({
   const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
   const [showTips, setShowTips] = useState(false);
 
+  // Estado para mostrar preview após salvar
+  const [justSaved, setJustSaved] = useState(false);
+  const [savedImage, setSavedImage] = useState<string | null>(null);
+
   /**
    * Inicializa o estado quando initialValue muda.
    */
@@ -428,18 +432,22 @@ export function SignaturePad({
   }, [onClear]);
 
   const handleSave = useCallback(() => {
+    let dataUrl: string;
+
     // Se temos uma imagem do fluxo de câmera/recorte, usa diretamente
     if (currentImage) {
-      onSave?.(currentImage);
-      return;
+      dataUrl = currentImage;
+    } else {
+      // Caso contrário, lê do canvas de desenho
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      dataUrl = canvas.toDataURL('image/png');
+      setCurrentImage(dataUrl);
     }
 
-    // Caso contrário, lê do canvas de desenho
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const dataUrl = canvas.toDataURL('image/png');
-    setCurrentImage(dataUrl);
+    // Mostra o preview da assinatura salva
+    setSavedImage(dataUrl);
+    setJustSaved(true);
     onSave?.(dataUrl);
   }, [onSave, currentImage]);
 
@@ -529,6 +537,53 @@ export function SignaturePad({
           >
             <Check size={12} />
             {t('signature.applyCrop')}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Modo: Preview após salvar ─────────────────────────────────────
+  if (justSaved && savedImage) {
+    return (
+      <div className="space-y-3">
+        {label && <label className="block text-sm font-medium text-gray-700">{label}</label>}
+
+        {/* Preview da assinatura salva */}
+        <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+          <div className="flex items-center gap-2 mb-3">
+            <Check size={14} className="text-green-600" />
+            <span className="text-sm font-medium text-green-800">{t('signature.savedSuccessfully')}</span>
+          </div>
+          <div className="bg-white rounded-lg p-3 border border-green-100">
+            <img
+              src={savedImage}
+              alt="Saved signature"
+              className="w-auto object-contain"
+              style={{ maxHeight: '100px', mixBlendMode: 'multiply' }}
+            />
+          </div>
+        </div>
+
+        {/* Botões */}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              setJustSaved(false);
+              setSavedImage(null);
+              setHasDrawn(false);
+              setCurrentImage(null);
+              const canvas = canvasRef.current;
+              if (canvas) {
+                const ctx = canvas.getContext('2d');
+                if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+              }
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+          >
+            <Pen size={12} />
+            {t('signature.redoSignature')}
           </button>
         </div>
       </div>

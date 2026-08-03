@@ -208,10 +208,10 @@ function formStateToPayload(form: FormState): UpdateTimesheetPayload {
     client: form.client || undefined,
     siteName: form.siteName || undefined,
     technicianName: form.technicianName || undefined,
-    technicianSignature: form.technicianSignature || undefined,
+    technicianSignature: form.technicianSignature !== undefined ? (form.technicianSignature || '') : undefined,
     technicianDate: form.technicianDate ? formatDateISO(form.technicianDate) : undefined,
     clientName: form.clientName || undefined,
-    clientSignature: form.clientSignature || undefined,
+    clientSignature: form.clientSignature !== undefined ? (form.clientSignature || '') : undefined,
     clientDate: form.clientDate ? formatDateISO(form.clientDate) : undefined,
     days: form.days.map((day): UpdateDayPayload => ({
       id: day.id,
