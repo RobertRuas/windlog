@@ -1,1 +1,0 @@
-NestJS with class-validator decorators for DTO validation, Prisma ORM against PostgreSQL (schema in `API/prisma/schema.prisma`), TanStack Query for client-side caching, Sonner for toast notifications, i18n via react-i18next with Portuguese locale files under `src/i18n/locales/pt/`.

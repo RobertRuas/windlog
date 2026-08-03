@@ -1,1 +1,0 @@
-NestJS feature modules implementing the core business domains — authentication, users, projects, weekly timesheets, notifications, uploads, and system logging — each following a strict controller/service/DTO layout backed by Prisma.

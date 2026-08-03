@@ -1,1 +1,0 @@
-No build or test commands specific to this module; it consumes `@/services/system-log.service` which must expose `getLogs`, `getLogStats`, and the `SystemLog` / `LogFilters` types.

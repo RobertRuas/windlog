@@ -1,9 +1,0 @@
-schema_version: 1
-module_path: frontend_app/pages_logs
-title: System Logs Admin Page
-scope:
-    - src/pages/logs/
-source_files: []
-depends_on: []
-related_to:
-    - path: api_backend/modules

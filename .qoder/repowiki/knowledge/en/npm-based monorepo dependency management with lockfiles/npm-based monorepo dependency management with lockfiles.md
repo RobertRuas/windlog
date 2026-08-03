@@ -5,18 +5,36 @@ category: dependency_management
 scope:
     - '**'
 source_files:
-    - API/package.json
-    - API/package-lock.json
     - package.json
+    - API/package.json
     - package-lock.json
+    - API/package-lock.json
+    - API/prisma/schema.prisma
 ---
 
-This repository uses npm as the package manager across two separate Node.js projects: a NestJS backend API under `API/` and a React/Vite frontend at the root. Each project maintains its own `package.json` and corresponding `package-lock.json` (lockfileVersion 3), ensuring deterministic installs.
+This repository is a full-stack TypeScript project split into two npm workspaces: a NestJS backend under `API/` and a React/Vite frontend at the root. Dependency management follows standard npm conventions across both sides.
 
-**Backend (`API/package.json`)** — Declares NestJS framework dependencies (`@nestjs/*` packages v11.x), Prisma ORM (`@prisma/client`, `prisma` v7.9.1) with PostgreSQL adapter, authentication via `passport` + `passport-jwt` + `bcrypt`, validation through `class-validator`/`class-transformer`, Swagger/OpenAPI via `@nestjs/swagger`, and testing with Jest + Supertest. Dev tooling includes TypeScript, ESLint, Prettier, ts-node/tsconfig-paths for path resolution, and tsx for running scripts.
+**Systems and tools used**
+- **npm** is the package manager for both the frontend and the API, declared via `package.json` files in each workspace.
+- **Lockfiles**: `package-lock.json` exists in both the root (frontend) and `API/` directories, pinning exact resolved versions and integrity hashes for reproducible installs.
+- **Prisma** is used as the database client and migration tool in the API; its own CLI (`prisma`) is listed as a devDependency and invoked through npm scripts (`prisma:generate`, `prisma:migrate`, `prisma:studio`, `prisma:seed`).
+- No vendoring (no `node_modules` committed), no private registry configuration, and no `.npmrc` file was found — packages are resolved from the default public npm registry.
 
-**Frontend (`package.json`)** — Uses React 19 with Vite 6 as the build tool, TanStack Query for data fetching, react-router-dom v7 for routing, i18next for internationalization, Tailwind CSS v4, Lucide icons, and Sonner for notifications. Development tooling includes TypeScript ~5.8.3, ESLint with React hooks rules, and Vite plugins.
+**Key files**
+- `package.json` (root, frontend): declares React 19, Vite, Tailwind, i18next, react-query, and related dev tooling; build script runs `tsc -b && vite build`.
+- `API/package.json`: declares NestJS 11 ecosystem, Prisma 7, PostgreSQL driver (`pg`), Passport/JWT auth, class-validator/transformer, testing (Jest + Supertest), and formatting/linting tooling; includes dedicated scripts for Prisma operations.
+- `package-lock.json` (root and `API/`): lockfileVersion 3, ensuring deterministic installs across environments.
+- `API/prisma/schema.prisma` and `API/prisma/migrations/`: schema-driven DB dependencies managed alongside code changes.
 
-**Lockfiles and versioning** — Both projects use caret (`^`) ranges in `package.json` to allow compatible updates, while `package-lock.json` pins exact resolved versions and integrity hashes from `https://registry.npmjs.org`. No vendoring strategy (no `node_modules` committed) and no private registry configuration is present; all packages are pulled from the public npm registry.
+**Architecture and conventions**
+- Each workspace manages its own dependency graph independently; there is no shared `node_modules` or workspace-level `package.json` that aggregates dependencies.
+- Dependencies are pinned with caret ranges (`^x.y.z`) in `dependencies` and `devDependencies`, allowing minor/patch updates while keeping major versions stable.
+- Development tooling (linters, formatters, type checkers, bundlers) is kept separate from runtime dependencies by placing them under `devDependencies`.
+- The API uses NestJS modular architecture; each module imports only the libraries it needs (e.g., `@nestjs/jwt`, `multer`, `bcrypt`), avoiding unnecessary coupling.
+- Database access goes exclusively through Prisma Client generated from `schema.prisma`; raw SQL is avoided except in migrations.
 
-**Scripts and tooling** — The API exposes standard NestJS CLI commands plus Prisma-specific scripts (`prisma:generate`, `prisma:migrate`, `prisma:studio`, `prisma:seed`). The frontend provides dev/build/lint/preview scripts via Vite. There is no shared workspace or monorepo tool (no `pnpm-workspace.yaml`, `yarn.lock`, `lerna.json`, or `package.json` workspaces field), so each directory is an independent npm project.
+**Constraints and observed rules**
+- Both workspaces use npm lockfiles, so CI and local installs should run `npm ci` to honor the pinned tree.
+- No `.npmrc`, `yarn.lock`, `pnpm-lock.yaml`, or `bun.lock` files exist — npm is the sole package manager.
+- No `vendor/` directory or vendored dependencies are present; all third-party code comes from npm.
+- Prisma migrations live under `API/prisma/migrations/` and are versioned with timestamps, forming part of the source-of-truth for schema evolution.

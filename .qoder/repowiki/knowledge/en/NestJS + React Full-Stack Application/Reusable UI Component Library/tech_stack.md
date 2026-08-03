@@ -1,0 +1,1 @@
+React functional components with TypeScript, Tailwind CSS for styling, lucide-react for icons, react-i18next for internationalization, and HTML5 Canvas API for the SignaturePad drawing/cropping functionality.

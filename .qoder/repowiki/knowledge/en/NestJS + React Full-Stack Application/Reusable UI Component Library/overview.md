@@ -1,0 +1,1 @@
+Shared React component primitives (Button, Input, Accordion, DataTable, DatePicker) and specialized secure file/image components plus a canvas-based SignaturePad for drawing, camera capture, and cropping signatures.

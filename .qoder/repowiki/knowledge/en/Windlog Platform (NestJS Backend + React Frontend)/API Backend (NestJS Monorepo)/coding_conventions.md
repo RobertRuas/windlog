@@ -1,6 +1,0 @@
-- Each feature module follows the exact layout: `{name}.module.ts + {name}.controller.ts + {name}.service.ts + dto/{name}.dto.ts`; controllers contain no business logic — all delegation goes to the service.
-- DTOs use class-validator decorators (`@IsString`, `@IsEmail`, `@IsOptional`, etc.); every optional field must explicitly declare `@IsOptional()` — TypeScript's `?` alone is not sufficient.
-- All database access happens exclusively inside services via the shared `PrismaService`; controllers never touch the database directly.
-- Soft delete is mandatory for business entities (User, Project, etc.) by filtering `deletedAt: null` on every query; junction tables may use hard delete.
-- New endpoints must register their `LogAction` mapping in `LoggingInterceptor.determineAction()` so HTTP requests are automatically persisted to the system-log table.
-- Enums used throughout the codebase must mirror the enums defined in `prisma/schema.prisma`; Prisma schema is the single authoritative source of truth.

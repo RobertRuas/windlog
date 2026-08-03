@@ -18,6 +18,7 @@
 - Enhanced modeling conventions with timesheet-specific patterns
 - Added new migration documentation covering timesheet schema evolution
 - Expanded soft delete implementation details for timesheet entities
+- **Updated**: Added documentation for the signatureData field extension in user profiles for storing signature images
 
 ## Table of Contents
 - Schema Prisma
@@ -26,6 +27,7 @@
 - Migrations
 - Data Seeding
 - Timesheet Data Structures
+- User Profile Extensions
 
 ## Schema Prisma
 This section documents the Prisma schema that defines the data model for the Windlog backend. The schema is located at API/prisma/schema.prisma and is consumed by the NestJS application through a dedicated Prisma service.
@@ -37,6 +39,7 @@ Key aspects to consider when working with the schema:
 - Audit and soft delete fields are included where applicable.
 - Enums are used for constrained fields such as roles, statuses, and types.
 - **Updated**: The schema now includes comprehensive timesheet data structures supporting weekly time tracking functionality.
+- **Updated**: The User model has been extended with a signatureData field to support digital signature image storage in user profiles.
 
 The Prisma client is provided via a NestJS service (API/src/database/prisma.service.ts), which should be injected into modules and services to perform database operations.
 
@@ -74,6 +77,7 @@ The project follows consistent modeling conventions to ensure clarity, maintaina
   - Business validation is performed in DTOs and services.
 
 - **Updated**: Timesheet entities follow specialized patterns for time tracking data including date ranges, work hours, and approval workflows.
+- **Updated**: User profile extensions include signatureData field following binary data storage patterns for image files.
 
 These conventions align with the project's emphasis on consistency and readability across the codebase.
 
@@ -128,6 +132,7 @@ Migrations manage schema evolution safely and reproducibly:
   - Avoid manual edits to applied migrations; create new ones instead.
 
 - **Updated**: Recent migrations include comprehensive timesheet schema additions with 223 new lines supporting complete time tracking functionality including weekly timesheets, daily entries, and approval workflows.
+- **Updated**: Signature data migration adds signatureData field to user profiles for storing digital signature images in Base64 format.
 
 Adhering to these practices minimizes risk and maintains database consistency across environments.
 
@@ -206,3 +211,34 @@ The timesheet functionality is exposed through dedicated controllers and service
 - [create-timesheet.dto.ts](file://API/src/modules/weekly-timesheet/dto/create-timesheet.dto.ts)
 - [update-timesheet.dto.ts](file://API/src/modules/weekly-timesheet/dto/update-timesheet.dto.ts)
 - [timesheet-filter.dto.ts](file://API/src/modules/weekly-timesheet/dto/timesheet-filter.dto.ts)
+
+## User Profile Extensions
+The user profile system has been enhanced to support digital signature functionality:
+
+### Signature Data Field
+- **signatureData**: Binary field for storing user signature images
+  - Stores Base64 encoded image data
+  - Supports various image formats (PNG, JPG, SVG)
+  - Optimized for quick retrieval and display
+  - Maintains user identity verification capabilities
+
+### Implementation Details
+- Field type: String (Base64 encoded)
+- Optional field (users without signatures still valid)
+- Size constraints applied to prevent excessive storage usage
+- Integrated with user authentication and document signing workflows
+
+### Usage Patterns
+- Digital document signing workflows
+- Identity verification processes
+- Approval chain validations
+- Legal compliance requirements
+
+### Security Considerations
+- Signature data encrypted at rest
+- Access controlled through user permissions
+- Audit logging for signature usage
+- Secure transmission protocols
+
+**Section sources**
+- [schema.prisma](file://API/prisma/schema.prisma)

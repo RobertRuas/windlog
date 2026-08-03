@@ -2,425 +2,287 @@
 
 <cite>
 **Referenced Files in This Document**
-- [WeeklyTimesheetPage.tsx](file://src/pages/weekly-timesheet/WeeklyTimesheetPage.tsx)
-- [WeeklyTimesheetDetailPage.tsx](file://src/pages/weekly-timesheet/WeeklyTimesheetDetailPage.tsx)
-- [weekly-timesheet.service.ts](file://src/services/weekly-timesheet.service.ts)
-- [timesheet.json](file://src/i18n/locales/pt/timesheet.json)
-- [useTimesheetMutations.ts](file://src/pages/weekly-timesheet/hooks/useTimesheetMutations.ts)
-- [useTimesheetZoom.ts](file://src/pages/weekly-timesheet/hooks/useTimesheetZoom.ts)
-- [TimesheetCreateModal.tsx](file://src/pages/weekly-timesheet/components/TimesheetCreateModal.tsx)
 - [TimesheetDaySection.tsx](file://src/pages/weekly-timesheet/components/TimesheetDaySection.tsx)
-- [TimesheetExportExcel.tsx](file://src/pages/weekly-timesheet/components/TimesheetExportExcel.tsx)
 - [TimesheetFormEditor.tsx](file://src/pages/weekly-timesheet/components/TimesheetFormEditor.tsx)
-- [TimesheetMetadata.tsx](file://src/pages/weekly-timesheet/components/TimesheetMetadata.tsx)
-- [TimesheetSheet.tsx](file://src/pages/weekly-timesheet/components/TimesheetSheet.tsx)
-- [TimesheetSignatures.tsx](file://src/pages/weekly-timesheet/components/TimesheetSignatures.tsx)
 - [timesheet.css](file://src/pages/weekly-timesheet/styles/timesheet.css)
+- [WeeklyTimesheetDetailPage.tsx](file://src/pages/weekly-timesheet/WeeklyTimesheetDetailPage.tsx)
+- [WeeklyTimesheetPage.tsx](file://src/pages/weekly-timesheet/WeeklyTimesheetPage.tsx)
+- [timesheet.json](file://src/i18n/locales/pt/timesheet.json)
+- [common.json](file://src/i18n/locales/pt/common.json)
 </cite>
 
 ## Update Summary
 **Changes Made**
-- Updated TimesheetFormEditor component analysis to reflect major refactoring that removed over 200 lines of per-technician customization code and implemented new shared values system
-- Enhanced component architecture documentation with simplified structure where common information is managed through sharedValues system applied uniformly to all technicians
-- Removed documentation for complex two-pass detectSharedValues algorithm and customization UI elements that were eliminated
-- Updated troubleshooting guide to reflect the new simplified form structure and shared values approach
+- Major enhancement to technician selection system with restrictive dropdown replacing autocomplete functionality
+- Comprehensive internationalization improvements including Portuguese translations and English print labels
+- List page UX refinements with simplified columns, action icons, and modal integration
+- Enhanced user experience while maintaining backward compatibility
 
 ## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+1. [Overview](#overview)
+2. [Component Architecture](#component-architecture)
+3. [Technician Selection System Enhancement](#technician-selection-system-enhancement)
+4. [Internationalization Improvements](#internationalization-improvements)
+5. [List Page UX Refinements](#list-page-ux-refinements)
+6. [TimesheetDaySection Component](#timesheetdaysection-component)
+7. [TimesheetFormEditor Component](#timesheetformeditor-component)
+8. [Styling and Layout](#styling-and-layout)
+9. [User Experience Improvements](#user-experience-improvements)
+10. [Implementation Details](#implementation-details)
 
-## Introduction
+## Overview
+The Weekly Timesheet interface provides a comprehensive frontend solution for managing weekly timesheet entries. The system has been significantly enhanced with improved technician selection capabilities, comprehensive internationalization support, and refined user experience elements that ensure optimal usability across different devices and screen sizes.
 
-The Timesheet Semanal (Weekly Timesheet) interface is a comprehensive React-based frontend component that allows wind energy technicians to manage their weekly work hours and activities. Built with Vite and following modern React patterns, it provides an intuitive user experience for tracking time spent on various projects and tasks.
-
-The implementation follows the project's design principles inspired by Apple's design system - minimalist, clean, with generous spacing and neutral colors with blue accents. The interface uses Tailwind CSS v4 with utility classes and implements internationalization (i18n) throughout all user-facing text.
-
-**Updated** Major refactoring has been applied to the TimesheetFormEditor component, removing over 200 lines of per-technician customization code and implementing a new shared values system. The form now uses a simplified structure where common information is managed through sharedValues system applied uniformly to all technicians. This change eliminates the complex two-pass detectSharedValues algorithm and removes customization UI elements, resulting in a more streamlined and maintainable codebase.
-
-## Project Structure
-
-The weekly timesheet feature is organized within the `src/pages/weekly-timesheet/` directory, following a modular architecture pattern:
+## Component Architecture
+The weekly timesheet functionality is built around several key components that work together to provide a seamless user experience:
 
 ```mermaid
-graph TB
-subgraph "Weekly Timesheet Module"
-A[WeeklyTimesheetPage.tsx] --> B[WeeklyTimesheetDetailPage.tsx]
-B --> C[Components]
-C --> D[TimesheetCreateModal.tsx]
-C --> E[TimesheetDaySection.tsx]
-C --> F[TimesheetExportExcel.tsx]
-C --> G[TimesheetFormEditor.tsx]
-C --> H[TimesheetMetadata.tsx]
-C --> I[TimesheetSheet.tsx]
-C --> J[TimesheetSignatures.tsx]
-B --> K[Hooks]
-K --> L[useTimesheetMutations.ts]
-K --> M[useTimesheetZoom.ts]
-B --> N[Styles]
-N --> O[timesheet.css]
-end
-P[weekly-timesheet.service.ts] --> A
-Q[timesheet.json] --> A
+graph TD
+A[WeeklyTimesheetPage] --> B[WeeklyTimesheetDetailPage]
+B --> C[TimesheetDaySection]
+B --> D[TimesheetFormEditor]
+B --> E[TimesheetMetadata]
+B --> F[TimesheetSignatures]
+C --> G[Enhanced Technician Dropdown]
+D --> H[Improved Form Validation]
+C --> I[Row Height Management]
+D --> J[Internationalized Input Handling]
+E --> K[Simplified Column Display]
+F --> L[Modal Integration]
+style A fill:#e1f5fe
+style B fill:#f3e5f5
+style C fill:#e8f5e8
+style D fill:#fff3e0
+style E fill:#ffeaa7
+style F fill:#dfe6e9
 ```
 
 **Diagram sources**
 - [WeeklyTimesheetPage.tsx](file://src/pages/weekly-timesheet/WeeklyTimesheetPage.tsx)
 - [WeeklyTimesheetDetailPage.tsx](file://src/pages/weekly-timesheet/WeeklyTimesheetDetailPage.tsx)
-- [weekly-timesheet.service.ts](file://src/services/weekly-timesheet.service.ts)
-- [timesheet.json](file://src/i18n/locales/pt/timesheet.json)
-
-**Section sources**
-- [WeeklyTimesheetPage.tsx](file://src/pages/weekly-timesheet/WeeklyTimesheetPage.tsx)
-- [WeeklyTimesheetDetailPage.tsx](file://src/pages/weekly-timesheet/WeeklyTimesheetDetailPage.tsx)
-
-## Core Components
-
-The weekly timesheet interface consists of several key components that work together to provide a seamless user experience:
-
-### Main Pages
-- **WeeklyTimesheetPage**: Entry point for the timesheet module, handles routing and initial data loading
-- **WeeklyTimesheetDetailPage**: Main interface for viewing and editing individual timesheets
-
-### UI Components
-- **TimesheetCreateModal**: Modal interface for creating new timesheets
-- **TimesheetDaySection**: Individual day sections within the timesheet editor with accordion functionality
-- **TimesheetFormEditor**: Comprehensive form editor with enhanced accordion-based day entry system, visual status indicators, improved validation logic, and simplified shared values management
-- **TimesheetMetadata**: Displays and manages metadata like project selection and dates
-- **TimesheetSheet**: Main spreadsheet-like interface for timesheet data
-- **TimesheetSignatures**: Handles signature collection and validation
-- **TimesheetExportExcel**: Excel export functionality for timesheet data
-
-### Hooks and Utilities
-- **useTimesheetMutations**: Custom hook for handling timesheet CRUD operations
-- **useTimesheetZoom**: Hook for managing zoom levels in the timesheet view
-
-**Updated** The TimesheetFormEditor component has undergone significant refactoring, removing over 200 lines of per-technician customization code and implementing a new shared values system. The component now uses a simplified structure where common information is managed through sharedValues system applied uniformly to all technicians. This eliminates the need for complex customization UI elements and the two-pass detectSharedValues algorithm, resulting in cleaner, more maintainable code.
-
-**Section sources**
-- [TimesheetCreateModal.tsx](file://src/pages/weekly-timesheet/components/TimesheetCreateModal.tsx)
 - [TimesheetDaySection.tsx](file://src/pages/weekly-timesheet/components/TimesheetDaySection.tsx)
 - [TimesheetFormEditor.tsx](file://src/pages/weekly-timesheet/components/TimesheetFormEditor.tsx)
-- [TimesheetMetadata.tsx](file://src/pages/weekly-timesheet/components/TimesheetMetadata.tsx)
-- [TimesheetSheet.tsx](file://src/pages/weekly-timesheet/components/TimesheetSheet.tsx)
-- [TimesheetSignatures.tsx](file://src/pages/weekly-timesheet/components/TimesheetSignatures.tsx)
-- [TimesheetExportExcel.tsx](file://src/pages/weekly-timesheet/components/TimesheetExportExcel.tsx)
-- [useTimesheetMutations.ts](file://src/pages/weekly-timesheet/hooks/useTimesheetMutations.ts)
-- [useTimesheetZoom.ts](file://src/pages/weekly-timesheet/hooks/useTimesheetZoom.ts)
 
-## Architecture Overview
+## Technician Selection System Enhancement
+The technician selection system has undergone a major transformation from an autocomplete-based approach to a restrictive dropdown system that significantly improves data integrity and user experience.
 
-The weekly timesheet interface follows a modern React architecture pattern with clear separation of concerns:
+### Restrictive Dropdown Implementation
+The new dropdown system ensures that users can only select from pre-approved technicians, eliminating manual entry errors and maintaining data consistency across the system.
 
-```mermaid
-sequenceDiagram
-participant User as "User"
-participant Page as "WeeklyTimesheetPage"
-participant Detail as "WeeklyTimesheetDetailPage"
-participant Service as "weekly-timesheet.service"
-participant API as "Backend API"
-participant Cache as "TanStack Query Cache"
-User->>Page : Navigate to Timesheet
-Page->>Detail : Render Detail Page
-Detail->>Service : Fetch Timesheet Data
-Service->>API : GET /api/weekly-timesheets
-API-->>Service : Timesheet Data
-Service-->>Cache : Store in Cache
-Cache-->>Detail : Return Cached Data
-Detail->>Detail : Render Simplified Timesheet Interface
-User->>Detail : Edit Timesheet with Shared Values System
-Detail->>Service : Save with Unified Data Structure
-Service->>API : PUT /api/weekly-timesheets/ : id
-API-->>Service : Success Response
-Service->>Cache : Invalidate Related Queries
-Detail->>Detail : Show Success Message
-```
+**Key Features:**
+- **Pre-approved Technician List**: Only valid technicians from the database can be selected
+- **Searchable Interface**: Users can quickly find technicians by name or ID
+- **Validation Enforcement**: Real-time validation prevents invalid selections
+- **Visual Feedback**: Clear indication of selected vs available technicians
 
-**Updated** The enhanced architecture now features a simplified shared values system where common information is managed uniformly across all technicians, eliminating the previous complex per-technician customization approach. This results in cleaner data flow and more consistent user experience.
+### Improved Data Integrity
+The restrictive dropdown eliminates common data entry errors such as typos, inconsistent naming conventions, and unauthorized technician selections.
 
-**Diagram sources**
-- [WeeklyTimesheetPage.tsx](file://src/pages/weekly-timesheet/WeeklyTimesheetPage.tsx)
-- [WeeklyTimesheetDetailPage.tsx](file://src/pages/weekly-timesheet/WeeklyTimesheetDetailPage.tsx)
-- [weekly-timesheet.service.ts](file://src/services/weekly-timesheet.service.ts)
-
-## Detailed Component Analysis
-
-### WeeklyTimesheetDetailPage
-
-The main detail page serves as the central hub for timesheet operations, managing state and coordinating between various child components.
-
-#### Key Features:
-- **Data Management**: Uses TanStack Query for efficient data fetching and caching
-- **State Coordination**: Manages complex state across multiple components
-- **Validation**: Implements comprehensive form validation with enhanced error handling
-- **Error Handling**: Provides user-friendly error messages and recovery options
-
-#### Component Hierarchy:
-```mermaid
-classDiagram
-class WeeklyTimesheetDetailPage {
-+useState()
-+useEffect()
-+handleSave()
-+handleDelete()
-+render()
-}
-class TimesheetFormEditor {
-+useState()
-+handleChange()
-+validateEnhanced()
-+accordionToggle()
-+statusIndicatorUpdate()
-+sharedValuesManagement()
-+render()
-}
-class TimesheetMetadata {
-+useState()
-+handleDateChange()
-+handleProjectChange()
-+render()
-}
-class TimesheetSheet {
-+useState()
-+handleCellEdit()
-+calculateTotals()
-+render()
-}
-WeeklyTimesheetDetailPage --> TimesheetFormEditor : "contains"
-WeeklyTimesheetDetailPage --> TimesheetMetadata : "contains"
-WeeklyTimesheetDetailPage --> TimesheetSheet : "contains"
-```
-
-**Updated** The component hierarchy now reflects the simplified TimesheetFormEditor with shared values management instead of per-technician customization, resulting in cleaner component interactions and reduced complexity.
-
-**Diagram sources**
-- [WeeklyTimesheetDetailPage.tsx](file://src/pages/weekly-timesheet/WeeklyTimesheetDetailPage.tsx)
-- [TimesheetFormEditor.tsx](file://src/pages/weekly-timesheet/components/TimesheetFormEditor.tsx)
-- [TimesheetMetadata.tsx](file://src/pages/weekly-timesheet/components/TimesheetMetadata.tsx)
-- [TimesheetSheet.tsx](file://src/pages/weekly-timesheet/components/TimesheetSheet.tsx)
-
-### Simplified TimesheetFormEditor Component
-
-The TimesheetFormEditor component has undergone substantial refactoring to improve maintainability and user experience:
-
-#### Key Changes:
-- **Shared Values System**: Replaced per-technician customization with unified shared values management applied uniformly to all technicians
-- **Code Reduction**: Removed over 200 lines of complex per-technician customization code
-- **Simplified Algorithm**: Eliminated the complex two-pass detectSharedValues algorithm in favor of straightforward shared values application
-- **Removed Customization UI**: Deleted customization interface elements that allowed per-technician modifications
-- **Streamlined Data Flow**: Implemented direct shared values application without intermediate processing steps
-
-#### Implementation Pattern:
-```mermaid
-flowchart TD
-Start([User Interaction]) --> InputChange["Input Change Event"]
-InputChange --> SharedValues["Apply Shared Values Uniformly"]
-SharedValues --> ValidateInput["Validate Input"]
-ValidateInput --> PartialCheck{"Partial Entry?"}
-PartialCheck --> |Yes| AllowEntry["Allow Partial Entry"]
-PartialCheck --> |No| FullValidation["Full Validation"]
-AllowEntry --> UpdateStatus["Update Status Indicator"]
-FullValidation --> UpdateStatus
-UpdateStatus --> ColorCode["Apply Color Border"]
-ColorCode --> Success(["Success Feedback"])
-```
-
-**Updated** The component now uses a simplified shared values system where common information is applied uniformly to all technicians, eliminating the previous complex customization workflow and reducing code complexity significantly.
-
-**Diagram sources**
-- [TimesheetFormEditor.tsx](file://src/pages/weekly-timesheet/components/TimesheetFormEditor.tsx)
-
-### useTimesheetMutations Hook
-
-This custom hook encapsulates all mutation logic for timesheet operations, providing a clean API for components to interact with the backend.
-
-#### Functionality:
-- **CRUD Operations**: Create, Read, Update, Delete timesheets
-- **Query Invalidation**: Automatically invalidates related queries after mutations
-- **Error Handling**: Centralized error handling and user feedback
-- **Loading States**: Manages loading states for better UX
-- **Unified Data Structure**: Optimized for the new shared values data format
-
-#### Implementation Pattern:
-```mermaid
-flowchart TD
-Start([Mutation Triggered]) --> Validate["Validate Input"]
-Validate --> Valid{"Input Valid?"}
-Valid --> |No| ShowError["Show Validation Error"]
-Valid --> |Yes| CallAPI["Call Backend API"]
-CallAPI --> Success{"API Success?"}
-Success --> |No| HandleError["Handle API Error"]
-Success --> |Yes| InvalidateQueries["Invalidate Related Queries"]
-InvalidateQueries --> ShowSuccess["Show Success Message"]
-ShowError --> End([End])
-HandleError --> End
-ShowSuccess --> End
-```
+### User Experience Benefits
+- **Reduced Cognitive Load**: Users no longer need to remember exact technician names
+- **Faster Selection Process**: Search and select workflow is more intuitive
+- **Error Prevention**: Invalid selections are prevented at the input level
+- **Consistent Data Format**: All technician data follows standardized formatting
 
 **Section sources**
-- [WeeklyTimesheetDetailPage.tsx](file://src/pages/weekly-timesheet/WeeklyTimesheetDetailPage.tsx)
-- [useTimesheetMutations.ts](file://src/pages/weekly-timesheet/hooks/useTimesheetMutations.ts)
+- [TimesheetDaySection.tsx](file://src/pages/weekly-timesheet/components/TimesheetDaySection.tsx)
+- [TimesheetFormEditor.tsx](file://src/pages/weekly-timesheet/components/TimesheetFormEditor.tsx)
+
+## Internationalization Improvements
+The internationalization system has been comprehensively enhanced to support multiple languages and improve the overall localization experience.
+
+### Portuguese Translations
+Complete Portuguese language support has been implemented across all timesheet-related interfaces, including:
+- Form labels and placeholders
+- Error messages and validation feedback
+- Button text and navigation elements
+- Status indicators and notifications
+
+### English Print Labels
+English labels have been added specifically for print functionality, ensuring that printed timesheets display correctly regardless of the user's interface language preference.
+
+### Translation Structure
+The translation system now includes:
+- **Context-aware Messages**: Different translations for similar terms based on context
+- **Dynamic Content Support**: Proper handling of dynamic content in translated strings
+- **Fallback Mechanisms**: Graceful fallback to default language when translations are missing
+- **Performance Optimization**: Efficient loading of translation resources
+
+### Localization Best Practices
+- **Separation of Concerns**: UI logic separated from presentation text
+- **Scalable Architecture**: Easy addition of new languages without code changes
+- **Testing Support**: Comprehensive testing framework for translation accuracy
+- **Maintenance Tools**: Automated tools for translation management and updates
+
+**Section sources**
 - [timesheet.json](file://src/i18n/locales/pt/timesheet.json)
+- [common.json](file://src/i18n/locales/pt/common.json)
 
-## Dependency Analysis
+## List Page UX Refinements
+The list page interface has been refined to provide a cleaner, more focused user experience through simplified design elements and improved interaction patterns.
 
-The weekly timesheet module has well-defined dependencies that follow React best practices:
+### Simplified Columns
+The column layout has been streamlined to show only essential information:
+- **Essential Data Only**: Removed redundant columns to reduce visual clutter
+- **Responsive Design**: Columns adapt to different screen sizes
+- **Sortable Headers**: Click-to-sort functionality for better data exploration
+- **Collapsible Sections**: Advanced options hidden until needed
 
-```mermaid
-graph TB
-subgraph "External Dependencies"
-A[TanStack Query]
-B[React Router]
-C[i18next]
-D[Tailwind CSS]
-E[Form Libraries]
-F[Autocomplete Libraries]
-G[Animation Libraries]
-H[Debouncing Libraries]
-I[Toggle Switch Components]
-end
-subgraph "Internal Dependencies"
-J[weekly-timesheet.service.ts]
-K[auth.service.ts]
-L[api.ts]
-M[common components]
-N[simplified form components]
-O[shared values utilities]
-end
-A --> J
-B --> WeeklyTimesheetPage
-C --> WeeklyTimesheetDetailPage
-D --> AllComponents
-E --> TimesheetFormEditor
-F --> TimesheetFormEditor
-G --> TimesheetFormEditor
-H --> TimesheetFormEditor
-I --> TimesheetFormEditor
-J --> L
-K --> J
-M --> WeeklyTimesheetDetailPage
-N --> TimesheetFormEditor
-O --> TimesheetFormEditor
-```
+### Action Icons
+Action buttons have been replaced with intuitive icons that:
+- **Save Screen Space**: Compact representation of actions
+- **Universal Understanding**: Icons follow standard UI conventions
+- **Hover States**: Visual feedback on hover for better discoverability
+- **Accessibility**: Proper ARIA labels for screen readers
 
-**Updated** Dependencies have been streamlined to support the simplified shared values system, removing dependencies related to per-technician customization while maintaining core functionality for form management and data persistence.
+### Modal Integration
+Complex operations have been moved into modal dialogs to:
+- **Reduce Page Clutter**: Keep the main list view clean and focused
+- **Context Preservation**: Maintain user context during complex operations
+- **Progress Indicators**: Show progress for long-running operations
+- **Error Handling**: Centralized error handling and recovery
 
-**Diagram sources**
-- [weekly-timesheet.service.ts](file://src/services/weekly-timesheet.service.ts)
-- [WeeklyTimesheetPage.tsx](file://src/pages/weekly-timesheet/WeeklyTimesheetPage.tsx)
-- [WeeklyTimesheetDetailPage.tsx](file://src/pages/weekly-timesheet/WeeklyTimesheetDetailPage.tsx)
-- [TimesheetFormEditor.tsx](file://src/pages/weekly-timesheet/components/TimesheetFormEditor.tsx)
+### Interaction Improvements
+- **Keyboard Navigation**: Full keyboard support for accessibility
+- **Touch Optimization**: Touch-friendly interactions for mobile devices
+- **Loading States**: Clear feedback during data loading operations
+- **Undo Functionality**: Ability to reverse recent actions
 
 **Section sources**
-- [weekly-timesheet.service.ts](file://src/services/weekly-timesheet.service.ts)
 - [WeeklyTimesheetPage.tsx](file://src/pages/weekly-timesheet/WeeklyTimesheetPage.tsx)
+- [WeeklyTimesheetDetailPage.tsx](file://src/pages/weekly-timesheet/WeeklyTimesheetDetailPage.tsx)
 
-## Performance Considerations
+## TimesheetDaySection Component
+The TimesheetDaySection component has been significantly enhanced to improve visual consistency and user experience through automatic empty row management and improved layout handling.
 
-The weekly timesheet interface implements several performance optimizations:
+### Automatic Empty Row Addition
+The component now automatically adds empty rows when necessary to maintain visual consistency across all days in the timesheet. This ensures that users always have a consistent interface regardless of how many entries they've made.
 
-### Data Caching
-- **TanStack Query**: Efficient caching and background refetching
-- **Selective Refetching**: Only relevant queries are invalidated after mutations
-- **Optimistic Updates**: Immediate UI updates while waiting for server confirmation
+### Row Height Equalization
+A major improvement has been implemented to equalize row heights throughout the timesheet interface. The system now uses dynamic height calculation with a minimum threshold:
 
-### Component Optimization
-- **Memoization**: Strategic use of React.memo and useMemo for expensive computations
-- **Lazy Loading**: Components loaded only when needed
-- **Virtual Scrolling**: For large datasets in timesheet sheets
-- **Accordion Optimization**: Efficient accordion state management to minimize re-renders
+- **Previous Implementation**: Fixed 16px height for all rows
+- **New Implementation**: Auto height with minimum 28px threshold
+- **Benefit**: Better readability and more comfortable data entry experience
+
+### Enhanced Text Alignment
+The Daily Progress column now features improved CSS text alignment with left-alignment overrides to ensure consistent presentation of progress indicators and status messages across different browsers and devices.
+
+### Technician Integration
+The component now seamlessly integrates with the new restrictive dropdown system for technician selection, providing real-time validation and visual feedback.
+
+**Section sources**
+- [TimesheetDaySection.tsx](file://src/pages/weekly-timesheet/components/TimesheetDaySection.tsx)
+- [timesheet.css](file://src/pages/weekly-timesheet/styles/timesheet.css)
+
+## TimesheetFormEditor Component
+The TimesheetFormEditor component has received significant enhancements to support the new technician selection system and improved internationalization.
+
+### Form Validation Enhancements
+- **Real-time Validation**: Immediate feedback on form field validity
+- **Technician Validation**: Integration with the restrictive dropdown system
+- **Internationalized Messages**: Context-aware error messages in multiple languages
+- **Enhanced Input Sanitization**: Improved data cleaning and validation
+
+### Technician Selection Integration
+- **Dropdown Integration**: Seamless connection with the new technician selection system
+- **Data Binding**: Two-way binding between form fields and technician data
+- **Validation Rules**: Enforced validation rules for technician selection
+- **Error Handling**: Comprehensive error handling for invalid selections
+
+### Internationalization Support
+- **Dynamic Label Updates**: Form labels update based on selected language
+- **Placeholder Text**: Context-appropriate placeholder text in multiple languages
+- **Help Text**: Additional guidance text for complex form fields
+- **Print Formatting**: Optimized formatting for print output in English
+
+### User Experience Improvements
+- **Smoother Transitions**: Better transition effects between form states
+- **Keyboard Navigation**: Enhanced keyboard support for accessibility
+- **Mobile Optimization**: Improved touch interactions for mobile devices
+- **Loading States**: Clear feedback during data operations
+
+**Section sources**
+- [TimesheetFormEditor.tsx](file://src/pages/weekly-timesheet/components/TimesheetFormEditor.tsx)
+
+## Styling and Layout
+The styling system has been optimized to support the new technician selection dropdown, internationalization requirements, and improved list page design.
+
+### CSS Improvements
+- **Responsive Dropdown Styles**: Custom styling for the new technician dropdown
+- **Internationalization Support**: Language-specific font and layout adjustments
+- **Print Styles**: Optimized styles for English print output
+- **Accessibility Enhancements**: Improved color contrast and focus indicators
+
+### Layout Optimization
+- **Flexible Grid System**: Adaptive layout for different screen sizes
+- **Consistent Spacing**: Standardized spacing between form elements
+- **Improved Alignment**: Better alignment of table cells and form fields
+- **Scroll Optimization**: Enhanced scrolling behavior for large datasets
+
+### Component Styling
+- **Dropdown Animations**: Smooth animations for dropdown open/close states
+- **Icon Integration**: Consistent icon styling across the application
+- **Modal Styling**: Professional modal dialog appearance
+- **Status Indicators**: Clear visual indicators for form state and validation
+
+**Section sources**
+- [timesheet.css](file://src/pages/weekly-timesheet/styles/timesheet.css)
+
+## User Experience Improvements
+The recent updates focus primarily on improving the overall user experience through better data validation, internationalization support, and refined interface design.
+
+### Data Validation Improvements
+- **Proactive Error Prevention**: Errors caught before submission
+- **Clear Error Messaging**: Descriptive error messages in user's language
+- **Visual Validation Feedback**: Real-time visual indicators of field validity
+- **Smart Defaults**: Intelligent default values for common scenarios
+
+### Accessibility Enhancements
+- **Screen Reader Support**: Comprehensive ARIA labels and descriptions
+- **Keyboard Navigation**: Full keyboard operability
+- **Color Contrast**: Improved color contrast ratios for better visibility
+- **Focus Management**: Logical focus order and visible focus indicators
+
+### Performance Optimizations
+- **Lazy Loading**: Deferred loading of non-critical resources
+- **Optimized Re-renders**: Minimized unnecessary component re-renders
+- **Efficient State Management**: Optimized state updates and data flow
+- **Memory Management**: Proper cleanup of event listeners and subscriptions
+
+### Mobile Experience
+- **Touch Optimization**: Touch-friendly interface elements
+- **Responsive Design**: Optimal display across all device sizes
+- **Gesture Support**: Intuitive touch gestures for common actions
+- **Offline Considerations**: Graceful handling of network connectivity issues
+
+## Implementation Details
+The technical implementation of these improvements involves several key areas of the codebase working together to deliver a seamless user experience.
 
 ### State Management
-- **Local State**: Minimal state at component level
-- **Global State**: TanStack Query for shared data
-- **Form State**: Optimized form libraries for complex forms with enhanced validation
+- **Centralized State Management**: Unified state management for form data and technician selection
+- **Efficient Reactivity Patterns**: Optimized reactivity for real-time updates
+- **Data Binding Optimization**: Efficient data binding between components
+- **Event Listener Management**: Proper cleanup of event listeners and subscriptions
 
-### Enhanced Performance Features
-- **Simplified Data Processing**: Direct shared values application eliminates complex processing steps
-- **Reduced Re-renders**: Streamlined component structure minimizes unnecessary updates
-- **Efficient Validation**: Client-side validation reduces unnecessary API calls
-- **Optimized Search Functionality**: Improved autocomplete performance for technician selection
-- **Lightweight State Management**: Simplified state management for UI toggles
-- **Collapsible Panel Efficiency**: Minimized re-renders when panels are collapsed
+### Technician Selection System
+- **Dropdown Component Architecture**: Modular dropdown component with search and filtering
+- **Data Synchronization**: Real-time synchronization with backend technician data
+- **Validation Pipeline**: Multi-stage validation pipeline for data integrity
+- **Error Recovery**: Robust error handling and recovery mechanisms
 
-## Troubleshooting Guide
+### Internationalization Framework
+- **Translation File Structure**: Organized translation file structure for maintainability
+- **Dynamic Language Switching**: Runtime language switching without page reload
+- **Context-aware Translations**: Context-sensitive translation selection
+- **Fallback Mechanisms**: Graceful fallback to default language when translations are missing
 
-### Common Issues and Solutions
-
-#### Data Loading Problems
-- **Symptom**: Timesheet data not loading or showing stale data
-- **Solution**: Check network requests and cache invalidation
-- **Debug**: Use React DevTools to inspect query state
-
-#### Form Validation Errors
-- **Symptom**: Form submission failing without clear error messages
-- **Solution**: Verify validation rules and error handling
-- **Debug**: Check browser console for validation errors
-
-#### i18n Issues
-- **Symptom**: Missing translations or incorrect language display
-- **Solution**: Ensure translation keys exist and locale is properly configured
-- **Debug**: Check i18n configuration and loaded namespaces
-
-#### Performance Issues
-- **Symptom**: Slow rendering or unresponsive interface
-- **Solution**: Identify bottlenecks using React Profiler
-- **Debug**: Monitor memory usage and re-renders
-
-#### Enhanced Form Issues
-- **Symptom**: Accordion sections not toggling correctly
-- **Solution**: Check accordion state management and event handlers
-- **Debug**: Inspect component state and event propagation
-
-#### Status Indicator Problems
-- **Symptom**: Visual status indicators not updating properly
-- **Solution**: Verify validation logic and state synchronization
-- **Debug**: Check color class application and conditional rendering
-
-#### Technician Autocomplete Issues
-- **Symptom**: Role auto-population not working correctly
-- **Solution**: Verify autocomplete data structure and role mapping
-- **Debug**: Check API responses and data transformation
-
-#### Shared Values System Issues
-- **Symptom**: Shared values not applying correctly to all technicians
-- **Solution**: Verify shared values data structure and uniform application logic
-- **Debug**: Check data flow from form input to shared values storage
-
-#### Customization Removal Issues
-- **Symptom**: Per-technician customization features not working as expected
-- **Solution**: Understand that customization features have been removed; use shared values instead
-- **Debug**: Verify that shared values are being applied uniformly across all technicians
-
-#### Data Synchronization Problems
-- **Symptom**: Data inconsistencies between technicians
-- **Solution**: Ensure shared values system is properly synchronizing data
-- **Debug**: Check data flow and state management in the simplified form structure
-
-**Updated** New troubleshooting categories have been added to address the simplified shared values system and removal of per-technician customization features, including guidance on understanding the new unified approach to data management.
+### Modal and Dialog Management
+- **Modal State Management**: Centralized modal state management
+- **Animation System**: Smooth animations for modal open/close transitions
+- **Focus Management**: Proper focus trapping within modals
+- **Accessibility Compliance**: Full accessibility compliance for modal dialogs
 
 **Section sources**
-- [weekly-timesheet.service.ts](file://src/services/weekly-timesheet.service.ts)
-- [useTimesheetMutations.ts](file://src/pages/weekly-timesheet/hooks/useTimesheetMutations.ts)
-- [TimesheetFormEditor.tsx](file://src/pages/weekly-timesheet/components/TimesheetFormEditor.tsx)
-
-## Conclusion
-
-The Timesheet Semanal interface represents a well-architected React application that effectively manages weekly timesheet operations for wind energy technicians. The implementation follows modern React patterns, includes comprehensive internationalization, and provides a user-friendly interface for complex data entry tasks.
-
-Key strengths include:
-- **Modular Architecture**: Clear separation of concerns with reusable components
-- **Performance Optimization**: Efficient data management with TanStack Query
-- **Internationalization**: Complete support for Portuguese language
-- **User Experience**: Intuitive interface with proper error handling and feedback
-- **Maintainability**: Well-structured codebase following React best practices
-
-**Updated** Recent refactoring has significantly improved the system's maintainability and user experience through the implementation of a shared values system that applies common information uniformly to all technicians. This change removed over 200 lines of complex per-technician customization code, eliminated the need for a two-pass detectSharedValues algorithm, and removed customization UI elements. The result is a cleaner, more streamlined codebase that provides consistent behavior across all technicians while maintaining powerful features for time tracking and project management with enhanced data persistence and simplified user interaction patterns.
-
-The system successfully balances simplicity with functionality, making it accessible to technicians while providing robust features for time tracking and project management with the new unified shared values approach.
+- [WeeklyTimesheetDetailPage.tsx](file://src/pages/weekly-timesheet/WeeklyTimesheetDetailPage.tsx)
+- [WeeklyTimesheetPage.tsx](file://src/pages/weekly-timesheet/WeeklyTimesheetPage.tsx)

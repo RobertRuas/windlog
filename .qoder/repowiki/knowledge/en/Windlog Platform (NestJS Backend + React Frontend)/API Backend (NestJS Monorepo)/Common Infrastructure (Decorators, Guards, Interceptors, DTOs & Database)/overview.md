@@ -1,1 +1,0 @@
-Shared NestJS infrastructure providing RBAC decorators/guards, global HTTP exception filter, request logging and response transformation interceptors, reusable DTOs with class-validator validation, and the Prisma v7 database service.

@@ -1,5 +1,0 @@
-- Each component file starts with a JSDoc block describing purpose, props, and behavior in Portuguese.
-- TanStack Query keys use the `['system-logs', filters]` pattern for lists and `['system-logs-stats']` for aggregates, with `refetchInterval` for auto-refresh.
-- All user-facing strings go through `t()` from `useTranslation('logs')` using dot-notation keys like `table.loading`, `severity.error`, `actions.${action}`.
-- Props interfaces are defined as local `interface XxxProps` types and passed explicitly rather than using implicit prop inference.
-- Severity and HTTP method visual mapping is centralized in `SEVERITY_CONFIG` and `METHOD_COLORS` records exported from `LogRow.tsx` and reused by sibling components.

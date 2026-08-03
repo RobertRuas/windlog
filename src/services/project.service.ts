@@ -219,6 +219,7 @@ export interface ProjectMember {
     lastName: string;
     email: string;
     role: string;
+    position?: string;
   };
 }
 

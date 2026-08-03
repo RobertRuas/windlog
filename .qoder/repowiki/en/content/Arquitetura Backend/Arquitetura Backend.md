@@ -31,39 +31,49 @@
 - [users.module.ts](file://API/src/modules/users/users.module.ts)
 - [users.controller.ts](file://API/src/modules/users/users.controller.ts)
 - [users.service.ts](file://API/src/modules/users/users.service.ts)
+- [user-document.dto.ts](file://API/src/modules/auth/dto/user-document.dto.ts)
+- [user-certification.dto.ts](file://API/src/modules/auth/dto/user-certification.dto.ts)
 </cite>
 
 ## Table of Contents
-- Padrão Modular NestJS
-- Anatomia de um Módulo
-- Responsabilidade de Cada Arquivo
-- Fluxo Interno do Módulo
-- Dependências Permitidas
+- NestJS Modular Pattern
+- Module Anatomy
+- File Responsibilities
+- Internal Module Flow
+- Allowed Dependencies
+- Enhanced Authentication with Attachments
 
-## Padrão Modular NestJS
-- O backend segue o padrão modular do NestJS: cada domínio é encapsulado em seu próprio módulo (por exemplo, auth, notifications, projects, system-log, upload, users).
-- A raiz da aplicação define o AppModule que importa os módulos de domínio e configura middleware global, interceptors, guards e filtros.
-- Os controllers expõem as rotas REST, os services implementam a lógica de negócio e os módulos declaram providers, imports e exports necessários.
-- Configurações globais (validação de variáveis de ambiente, Prisma, Swagger/OpenAPI, CORS, etc.) são centralizadas no entry point e no AppModule.
+## Update Summary
+**Changes Made**
+- Updated authentication service documentation to reflect attachment-related operations
+- Added information about extended DTOs for user-document and user-certification with attachment metadata
+- Updated multer configuration details to support additional file types (photos and PDFs)
+- Enhanced validation rules documentation for attachment handling
+
+## NestJS Modular Pattern
+- The backend follows the NestJS modular pattern: each domain is encapsulated in its own module (for example, auth, notifications, projects, system-log, upload, users).
+- The application root defines the AppModule that imports domain modules and configures global middleware, interceptors, guards, and filters.
+- Controllers expose REST routes, services implement business logic, and modules declare necessary providers, imports, and exports.
+- Global configurations (environment variable validation, Prisma, Swagger/OpenAPI, CORS, etc.) are centralized at the entry point and in the AppModule.
 
 **Section sources**
 - [app.module.ts](file://API/src/app.module.ts)
 - [main.ts](file://API/src/main.ts)
 
-## Anatomia de um Módulo
-Cada módulo de domínio contém:
-- Um arquivo .module.ts que declara o módulo, registra controllers e services, e exporta dependências reutilizáveis.
-- Um ou mais controllers (.controller.ts) com handlers de rota anotados para mapear métodos HTTP.
-- Um service (.service.ts) com a lógica de negócio, acesso a dados e integração com serviços externos.
-- Pastas internas organizadas por responsabilidade: dto/, strategies/, types/, etc., conforme necessário.
+## Module Anatomy
+Each domain module contains:
+- A .module.ts file that declares the module, registers controllers and services, and exports reusable dependencies.
+- One or more controllers (.controller.ts) with route handlers annotated to map HTTP methods.
+- A service (.service.ts) with business logic, data access, and integration with external services.
+- Internal folders organized by responsibility: dto/, strategies/, types/, etc., as needed.
 
-Exemplos de módulos existentes:
-- Auth: autenticação JWT, estratégias e DTOs de login/register.
-- Notifications: gerenciamento de notificações.
-- Projects: CRUD de projetos.
-- System-Log: registro de ações do sistema.
-- Upload: upload de arquivos com Multer.
-- Users: gestão de usuários.
+Examples of existing modules:
+- Auth: JWT authentication, strategies, and login/register DTOs.
+- Notifications: notification management.
+- Projects: project CRUD operations.
+- System-Log: system action logging.
+- Upload: file upload with Multer.
+- Users: user management.
 
 ```mermaid
 graph TB
@@ -101,18 +111,18 @@ AM --> M6
 - [upload.module.ts](file://API/src/modules/upload/upload.module.ts)
 - [users.module.ts](file://API/src/modules/users/users.module.ts)
 
-## Responsabilidade de Cada Arquivo
-- Controllers (.controller.ts): definem endpoints HTTP, validam entradas via DTOs e delegam operações aos services.
-- Services (.service.ts): implementam regras de negócio, interagem com banco de dados (Prisma), chamam APIs externas e retornam dados consistentes.
-- Modules (.module.ts): agrupam controllers e services, declaram imports/exports e configuram providers específicos do módulo.
-- DTOs (dto/*.ts): definem contratos de entrada/saída e validações com class-validator.
-- Strategies (strategies/*.ts): implementam estratégias de autenticação (ex.: JWT Strategy).
-- Guards (common/guards/*.ts): aplicam políticas de autorização (ex.: RolesGuard).
-- Decorators (common/decorators/*.ts): metadados como @Roles() para RBAC.
-- Interceptors (common/interceptors/*.ts): transformam respostas, adicionam logging, medem tempo de execução.
-- Filters (common/filters/*.ts): capturam exceções HTTP e padronizam erros.
-- Database (database/*.ts): configuração do cliente de banco (PrismaService).
-- Config (config/*.ts): validação de variáveis de ambiente e carregamento seguro de configurações.
+## File Responsibilities
+- Controllers (.controller.ts): define HTTP endpoints, validate inputs via DTOs, and delegate operations to services.
+- Services (.service.ts): implement business rules, interact with database (Prisma), call external APIs, and return consistent data.
+- Modules (.module.ts): group controllers and services, declare imports/exports, and configure module-specific providers.
+- DTOs (dto/*.ts): define input/output contracts and validations with class-validator.
+- Strategies (strategies/*.ts): implement authentication strategies (e.g., JWT Strategy).
+- Guards (common/guards/*.ts): apply authorization policies (e.g., RolesGuard).
+- Decorators (common/decorators/*.ts): metadata like @Roles() for RBAC.
+- Interceptors (common/interceptors/*.ts): transform responses, add logging, measure execution time.
+- Filters (common/filters/*.ts): capture HTTP exceptions and standardize errors.
+- Database (database/*.ts): database client configuration (PrismaService).
+- Config (config/*.ts): environment variable validation and secure configuration loading.
 
 **Section sources**
 - [auth.controller.ts](file://API/src/modules/auth/auth.controller.ts)
@@ -126,13 +136,13 @@ AM --> M6
 - [env.validation.ts](file://API/src/config/env.validation.ts)
 - [prisma.service.ts](file://API/src/database/prisma.service.ts)
 
-## Fluxo Interno do Módulo
-O fluxo típico de uma requisição dentro de um módulo:
-1. O controller recebe a requisição HTTP e valida os parâmetros/corpo usando DTOs.
-2. O controller chama o service correspondente para executar a lógica de negócio.
-3. O service acessa o banco de dados via Prisma ou integra-se com outros serviços.
-4. Interceptores globais registram logs e transformam a resposta para o formato padrão.
-5. Filtros capturam exceções e retornam erros padronizados.
+## Internal Module Flow
+The typical request flow within a module:
+1. The controller receives the HTTP request and validates parameters/body using DTOs.
+2. The controller calls the corresponding service to execute business logic.
+3. The service accesses the database via Prisma or integrates with other services.
+4. Global interceptors log requests and transform responses to standard format.
+5. Filters capture exceptions and return standardized errors.
 
 ```mermaid
 sequenceDiagram
@@ -167,24 +177,97 @@ Filter-->>Client : "Standardized error"
 - [logging.interceptor.ts](file://API/src/common/interceptors/logging.interceptor.ts)
 - [http-exception.filter.ts](file://API/src/common/filters/http-exception.filter.ts)
 
-## Dependências Permitidas
-- Módulos internos: cada módulo pode importar outros módulos quando necessário (por exemplo, AuthModule pode usar UsersModule para buscar usuários).
-- Serviços compartilhados: utilitários comuns ficam em common/ e podem ser injetados em qualquer módulo.
-- Banco de dados: PrismaService é fornecido globalmente e usado pelos services dos módulos.
-- Autenticação e autorização: JWT Strategy e RolesGuard devem ser usados em rotas protegidas; @Roles() deve decorar controladores/métodos sensíveis.
-- Upload: MulterConfig deve ser aplicado em rotas de upload do módulo upload.
-- Validação de ambiente: env.validation.ts garante que variáveis obrigatórias estejam presentes antes da inicialização.
+## Allowed Dependencies
+- Internal modules: each module can import other modules when necessary (for example, AuthModule can use UsersModule to fetch users).
+- Shared services: common utilities reside in common/ and can be injected into any module.
+- Database: PrismaService is provided globally and used by module services.
+- Authentication and authorization: JWT Strategy and RolesGuard should be used on protected routes; @Roles() should decorate sensitive controllers/methods.
+- Upload: MulterConfig should be applied to upload routes in the upload module.
+- Environment validation: env.validation.ts ensures mandatory variables are present before initialization.
 
-Boas práticas ao criar novos módulos:
-- Crie um diretório sob modules/<nome-do-domínio> com controller, service e module.
-- Defina DTOs em dto/ para validar entradas e documentar payloads.
-- Use decorators de roles e guards para proteger endpoints.
-- Registre interceptors e filters globais no AppModule para consistência.
-- Exporte apenas o que for necessário do módulo para manter baixo acoplamento.
+Best practices when creating new modules:
+- Create a directory under modules/<domain-name> with controller, service, and module.
+- Define DTOs in dto/ to validate inputs and document payloads.
+- Use roles decorators and guards to protect endpoints.
+- Register global interceptors and filters in AppModule for consistency.
+- Export only what is necessary from the module to maintain low coupling.
 
 **Section sources**
 - [app.module.ts](file://API/src/app.module.ts)
 - [env.validation.ts](file://API/src/config/env.validation.ts)
 - [roles.guard.ts](file://API/src/common/guards/roles.guard.ts)
 - [roles.decorator.ts](file://API/src/common/decorators/roles.decorator.ts)
+- [multer.config.ts](file://API/src/modules/upload/multer.config.ts)
+
+## Enhanced Authentication with Attachments
+
+**Updated** The authentication service has been enhanced with comprehensive attachment-related operations to support document and certification management.
+
+### Attachment Operations in Authentication Service
+The auth service now includes specialized methods for handling user attachments:
+- Document attachment management with file upload, validation, and metadata tracking
+- Certification attachment handling with photo and PDF support
+- Integrated file validation and security checks
+- Attachment lifecycle management (create, update, delete, retrieve)
+
+### Extended DTOs with Attachment Metadata
+User document and certification DTOs have been enhanced with attachment capabilities:
+
+**User Document DTO Enhancements:**
+- File type validation (PDF, DOC, DOCX, images)
+- Size constraints and security validation
+- Attachment metadata tracking (upload date, file size, MIME type)
+- Validation rules for required fields and file formats
+
+**User Certification DTO Enhancements:**
+- Photo and PDF file support with specific validation rules
+- Attachment metadata including file information and validation status
+- Enhanced validation for certification-specific requirements
+- Support for multiple attachment types per certification
+
+### Multer Configuration Updates
+The upload system has been updated to support additional file types:
+- **Photos**: JPEG, PNG, GIF formats for profile pictures and certification photos
+- **PDFs**: Enhanced PDF support for documents and certifications
+- **Documents**: Expanded document format support (DOC, DOCX, TXT)
+- Security enhancements with file type validation and size limits
+
+### Attachment Workflow Integration
+The authentication module now provides seamless attachment handling:
+- Secure file upload through dedicated endpoints
+- Automatic file validation and sanitization
+- Metadata extraction and storage
+- Integration with user profile management
+- Access control for attachment viewing and modification
+
+```mermaid
+graph TB
+subgraph "Authentication with Attachments"
+AM["AuthModule"]
+AS["AuthService"]
+AD["Attachment Operations"]
+UD["User Document DTO"]
+UC["User Certification DTO"]
+MC["Multer Config"]
+end
+AM --> AS
+AS --> AD
+AS --> UD
+AS --> UC
+AD --> MC
+UD --> MC
+UC --> MC
+```
+
+**Diagram sources**
+- [auth.module.ts](file://API/src/modules/auth/auth.module.ts)
+- [auth.service.ts](file://API/src/modules/auth/auth.service.ts)
+- [user-document.dto.ts](file://API/src/modules/auth/dto/user-document.dto.ts)
+- [user-certification.dto.ts](file://API/src/modules/auth/dto/user-certification.dto.ts)
+- [multer.config.ts](file://API/src/modules/upload/multer.config.ts)
+
+**Section sources**
+- [auth.service.ts](file://API/src/modules/auth/auth.service.ts)
+- [user-document.dto.ts](file://API/src/modules/auth/dto/user-document.dto.ts)
+- [user-certification.dto.ts](file://API/src/modules/auth/dto/user-certification.dto.ts)
 - [multer.config.ts](file://API/src/modules/upload/multer.config.ts)

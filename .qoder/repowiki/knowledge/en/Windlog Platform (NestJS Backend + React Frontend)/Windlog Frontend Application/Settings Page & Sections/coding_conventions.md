@@ -1,4 +1,0 @@
-- Each section component accepts only a `t` translation function prop and uses it for all displayed text via namespaced keys like `sections.account`, `admin.systemLogs.title`.
-- Section components follow a uniform layout pattern: a white rounded card with a bordered header containing an icon and title, followed by a `divide-y` list of action buttons with left-aligned label/description and a right-aligned chevron.
-- Role-based rendering is performed at the parent page level by inspecting the decoded JWT payload from localStorage rather than delegating to a dedicated auth hook.
-- Navigation is handled through `react-router-dom`'s `useNavigate` hook with hardcoded string routes (`/profile`, `/logs`) inside button `onClick` handlers.

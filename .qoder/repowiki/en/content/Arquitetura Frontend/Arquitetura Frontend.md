@@ -12,6 +12,9 @@
 - [upload.service.ts](file://src/services/upload.service.ts)
 - [user.service.ts](file://src/services/user.service.ts)
 - [useFileUrl.ts](file://src/hooks/useFileUrl.ts)
+- [AttachmentField.tsx](file://src/pages/home/components/AttachmentField.tsx)
+- [DocumentSection.tsx](file://src/pages/home/components/DocumentSection.tsx)
+- [CertificationSection.tsx](file://src/pages/home/components/CertificationSection.tsx)
 - [AppLayout.tsx](file://src/components/layout/AppLayout.tsx)
 - [Sidebar.tsx](file://src/components/layout/Sidebar.tsx)
 - [NotificationBell.tsx](file://src/components/notifications/NotificationBell.tsx)
@@ -27,6 +30,13 @@
 - [SettingsPage.tsx](file://src/pages/settings/SettingsPage.tsx)
 - [UsersPage.tsx](file://src/pages/users/UsersPage.tsx)
 </cite>
+
+## Update Summary
+**Changes Made**
+- Added new AttachmentField component section documenting standardized file upload handling
+- Updated Shared Components section to include the new AttachmentField component
+- Enhanced Profile Management section to document integration with DocumentSection and CertificationSection
+- Updated component architecture diagrams to reflect the new attachment handling capabilities
 
 ## Table of Contents
 1. Page Organization
@@ -51,7 +61,7 @@ The application is organized into distinct feature modules:
 - `pages/users/` - User administration interface
 
 **Business Features:**
-- `pages/home/` - Dashboard with profile completeness tracking
+- `pages/home/` - Dashboard with profile completeness tracking and enhanced attachment handling
 - `pages/projects/` - Project management with detailed views
 - `pages/notifications/` - Notification system with detail pages
 - `pages/logs/` - System logging and monitoring interface
@@ -80,6 +90,7 @@ Router --> NotificationsPage[Notifications Page]
 Router --> SettingsPage[Settings Page]
 LoginPage --> LoginForm[LoginForm Component]
 HomePage --> ProfileWizard[Profile Wizard]
+HomePage --> AttachmentField[AttachmentField Component]
 ProjectsPage --> ProjectsTable[Projects Table]
 UsersPage --> UsersTable[Users Table]
 LogsPage --> LogTable[Log Table]
@@ -128,6 +139,17 @@ The UI components follow a consistent API design pattern:
 - `SecureImage.tsx` - Image component with JWT authentication
 - `SecureFileLink.tsx` - File download link with temporary token generation
 
+### Attachment Management Components
+
+**AttachmentField.tsx** - Standardized file upload component:
+- Unified interface for photo and PDF document uploads
+- Drag-and-drop file selection with visual feedback
+- File type validation (images and PDFs only)
+- Progress tracking during upload
+- Preview support for images before upload
+- Error handling for invalid file types and sizes
+- Integration with upload service for secure file handling
+
 ### Notification Components
 
 **NotificationBell.tsx** - Real-time notification system:
@@ -165,10 +187,18 @@ class DataTable {
 +filtering : boolean
 +render() ReactElement
 }
+class AttachmentField {
++acceptTypes : string[]
++maxFileSize : number
++onUploadComplete : Function
++onError : Function
++render() ReactElement
+}
 AppLayout --> Sidebar : contains
 AppLayout --> children : renders
 Button --> Input : uses similar patterns
 DataTable --> Button : uses for actions
+AttachmentField --> UploadService : integrates with
 ```
 
 **Diagram sources**
@@ -176,6 +206,7 @@ DataTable --> Button : uses for actions
 - [Sidebar.tsx](file://src/components/layout/Sidebar.tsx)
 - [Button.tsx](file://src/components/ui/Button.tsx)
 - [DataTable.tsx](file://src/components/ui/DataTable.tsx)
+- [AttachmentField.tsx](file://src/pages/home/components/AttachmentField.tsx)
 
 **Section sources**
 - [AppLayout.tsx](file://src/components/layout/AppLayout.tsx)
@@ -186,6 +217,58 @@ DataTable --> Button : uses for actions
 - [Input.tsx](file://src/components/ui/Input.tsx)
 - [SecureFileLink.tsx](file://src/components/ui/SecureFileLink.tsx)
 - [SecureImage.tsx](file://src/components/ui/SecureImage.tsx)
+- [AttachmentField.tsx](file://src/pages/home/components/AttachmentField.tsx)
+
+## Profile Management Enhancement
+
+The profile management system has been significantly enhanced with standardized attachment handling capabilities through the new AttachmentField component.
+
+### Enhanced Profile Sections
+
+**DocumentSection.tsx** - Professional document management:
+- Integrated with AttachmentField for standardized uploads
+- Support for professional certifications and licenses
+- Document categorization and metadata management
+- Bulk upload capabilities for multiple documents
+
+**CertificationSection.tsx** - Certification tracking:
+- Specialized attachment handling for certification documents
+- Expiration date tracking and renewal reminders
+- Verification status management
+- Integration with AttachmentField for consistent user experience
+
+### Attachment Workflow Integration
+
+The AttachmentField component provides a unified approach to file handling across all profile sections:
+- Consistent drag-and-drop interface
+- Standardized validation rules for photos and PDFs
+- Unified error handling and user feedback
+- Seamless integration with backend upload services
+
+```mermaid
+flowchart TD
+UserAction[User Action] --> AttachmentField[AttachmentField Component]
+AttachmentField --> Validation[File Validation]
+Validation --> TypeCheck{"Valid File Type?"}
+TypeCheck --> |Yes| SizeCheck["Size Check"]
+TypeCheck --> |No| ValidationError[Show Error]
+SizeCheck --> SizeValid{"Within Size Limit?"}
+SizeValid --> |Yes| Preview["Generate Preview"]
+SizeValid --> |No| SizeError[Show Size Error]
+Preview --> UploadStart[Start Upload]
+UploadStart --> ProgressTracking[Track Progress]
+ProgressSuccess[Upload Success] --> Integration[Integrate with Section]
+ValidationError --> UserFeedback[User Feedback]
+SizeError --> UserFeedback
+ProgressTracking --> ProgressSuccess
+Integration --> DocumentSection[DocumentSection]
+Integration --> CertificationSection[CertificationSection]
+```
+
+**Section sources**
+- [AttachmentField.tsx](file://src/pages/home/components/AttachmentField.tsx)
+- [DocumentSection.tsx](file://src/pages/home/components/DocumentSection.tsx)
+- [CertificationSection.tsx](file://src/pages/home/components/CertificationSection.tsx)
 
 ## Services (API Layer)
 
@@ -239,26 +322,34 @@ Each business domain has its own service module following consistent patterns:
 - MIME type validation
 - Temporary token generation
 - Secure file access
+- Enhanced integration with AttachmentField component
 
 ```mermaid
 sequenceDiagram
 participant Component as React Component
-participant Service as API Service
+participant AttachmentField as AttachmentField
+participant UploadService as Upload Service
 participant ApiClient as HTTP Client
 participant Backend as NestJS API
-Component->>Service : fetchUserData(userId)
-Service->>ApiClient : GET /users/ : id
+Component->>AttachmentField : handleFileSelect(file)
+AttachmentField->>AttachmentField : validateFileType(file)
+AttachmentField->>AttachmentField : checkFileSize(file)
+AttachmentField->>UploadService : startUpload(file)
+UploadService->>ApiClient : POST /upload with FormData
 ApiClient->>Backend : HTTP Request with JWT
-Backend-->>ApiClient : JSON Response
-ApiClient-->>Service : Transformed Data
-Service-->>Component : Typed Data Object
-Note over Component,Service : Error handling and caching applied automatically
+Backend-->>ApiClient : Upload Progress Response
+ApiClient-->>UploadService : Progress Updates
+UploadService-->>AttachmentField : Progress Callbacks
+AttachmentField-->>Component : Upload Complete Event
+Note over Component,AttachmentField : Error handling and validation applied throughout
 ```
 
 **Diagram sources**
 - [api.ts](file://src/services/api.ts)
 - [auth.service.ts](file://src/services/auth.service.ts)
 - [user.service.ts](file://src/services/user.service.ts)
+- [upload.service.ts](file://src/services/upload.service.ts)
+- [AttachmentField.tsx](file://src/pages/home/components/AttachmentField.tsx)
 
 **Section sources**
 - [api.ts](file://src/services/api.ts)

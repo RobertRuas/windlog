@@ -520,6 +520,7 @@ export class ProjectsService {
             lastName: true,
             email: true,
             role: true,
+            position: true,
           },
         },
       },

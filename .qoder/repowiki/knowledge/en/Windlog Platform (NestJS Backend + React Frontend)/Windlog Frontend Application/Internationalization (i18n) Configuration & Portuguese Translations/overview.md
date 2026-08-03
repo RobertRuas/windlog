@@ -1,1 +1,0 @@
-Configures react-i18next for the Windlog application and provides Portuguese translation resources organized by feature-scoped namespaces under locales/pt/.

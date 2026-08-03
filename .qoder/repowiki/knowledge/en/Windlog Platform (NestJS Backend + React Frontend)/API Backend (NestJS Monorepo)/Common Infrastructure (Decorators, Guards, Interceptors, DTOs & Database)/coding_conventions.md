@@ -1,6 +1,0 @@
-- DTOs use `class-validator` decorators (`@IsString`, `@IsEmail`, `@IsOptional`, etc.) and every optional field explicitly includes `@IsOptional()` — TypeScript's `?` alone is not sufficient.
-- Cross-cutting behavior is implemented as NestJS primitives: guards implement `CanActivate`, filters implement `ExceptionFilter`, and interceptors implement `NestInterceptor`, all exported through the `common/index.ts` barrel.
-- Swagger documentation uses separate class-based DTOs decorated with `@ApiProperty`/`@ApiPropertyOptional` rather than interfaces, since interfaces are erased at runtime.
-- Environment variables are validated via a single `EnvironmentVariables` class where each property maps to an `.env` key with `class-validator` decorators, failing fast at startup.
-- Database access goes exclusively through the `PrismaService` singleton; services never instantiate `PrismaClient` directly and rely on dependency injection.
-- New endpoints must add their action mapping in `LoggingInterceptor.determineAction()` so that HTTP method + URL resolve to a `LogAction` enum value for audit logging.

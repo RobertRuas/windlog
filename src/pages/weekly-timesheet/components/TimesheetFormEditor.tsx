@@ -47,7 +47,6 @@ import type {
 import { updateTimesheet } from '@/services/weekly-timesheet.service';
 import { getProfile } from '@/services/auth.service';
 import { getProjectMembers, type ProjectMember } from '@/services/project.service';
-import { PREDEFINED_FUNCTIONS } from '@/constants/functions';
 import { DatePicker } from '@/components/ui/DatePicker';
 
 // =========================================================================
@@ -461,7 +460,7 @@ export function TimesheetFormEditor({
     firstName: m.user.firstName,
     lastName: m.user.lastName,
     fullName: `${m.user.firstName} ${m.user.lastName}`,
-    position: m.role || '',
+    position: m.user.position || '',
   }));
 
   // ── Busca perfil do usuário atual ──────────────────────────────────
@@ -864,26 +863,15 @@ export function TimesheetFormEditor({
                             )}
                           </div>
 
-                          {/* Role: função do técnico (lista restritiva PREDEFINED_FUNCTIONS) */}
+                          {/* Role: preenchida automaticamente ao selecionar o técnico — somente leitura */}
                           <div className="w-44 shrink-0">
-                            <select
+                            <input
+                              type="text"
                               value={entry.role}
-                              onChange={(e) => handleEntryChange(dayIdx, entryIdx, 'role', e.target.value)}
-                              disabled={isSaving || entry.isCurrentUser}
-                              className="w-full px-2 py-1.5 border border-gray-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-60 bg-white"
-                            >
-                              <option value="">{t('sheet.role')}</option>
-                              {/* Fallback para valores legados fora da lista */}
-                              {entry.role &&
-                                !PREDEFINED_FUNCTIONS.some((fn) => fn.label === entry.role) && (
-                                  <option value={entry.role}>{entry.role}</option>
-                                )}
-                              {PREDEFINED_FUNCTIONS.map((fn) => (
-                                <option key={fn.id} value={fn.label}>
-                                  {fn.label}
-                                </option>
-                              ))}
-                            </select>
+                              readOnly
+                              placeholder={t('sheet.role')}
+                              className="w-full px-2 py-1.5 border border-gray-200 rounded text-sm bg-gray-50 text-gray-600 cursor-default"
+                            />
                           </div>
 
                           {/* Toggle switch: removido — todos usam informações comuns */}

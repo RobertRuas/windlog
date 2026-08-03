@@ -1,6 +1,0 @@
-- Every feature follows the exact shape `{name}.module.ts` + `{name}.controller.ts` + `{name}.service.ts` + `dto/{name}.dto.ts`; controllers never contain business logic and only forward calls to their service.
-- DTOs use `class-validator` decorators (`@IsString`, `@IsEmail`, `@IsNotEmpty`, `@MinLength`) and every optional field explicitly carries `@IsOptional()` — TypeScript's `?` alone is not sufficient.
-- Services access the database exclusively through `PrismaService` methods like `findUnique`, `create`, `update`, `delete`; no raw SQL or direct client usage outside services.
-- Protected endpoints consistently apply `@UseGuards(AuthGuard('jwt'))` and `@ApiBearerAuth()`, extracting the current user via a `@CurrentUser()` decorator that yields a `JwtPayload`.
-- Swagger documentation is added per endpoint using `@ApiOperation`, `@ApiResponse`, and `@ApiBody` decorators referencing shared response DTOs from `common/dto/swagger-response.dto.js`.
-- Cross-cutting concerns like notifications and system logs are provided by `@Global()` modules (`NotificationsModule`, `SystemLogModule`) so they can be injected into any service without explicit imports.

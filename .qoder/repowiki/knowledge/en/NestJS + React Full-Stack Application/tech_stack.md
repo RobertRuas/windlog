@@ -1,0 +1,1 @@
+NestJS with Prisma ORM on the backend, React + TypeScript + Vite + Tailwind CSS + TanStack Query + React Router on the frontend, Sonner for toast notifications, i18next for Portuguese localization, class-validator for DTO validation, and JWT for authentication.

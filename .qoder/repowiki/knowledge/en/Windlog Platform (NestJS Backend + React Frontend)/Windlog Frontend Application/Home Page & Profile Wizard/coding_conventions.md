@@ -1,6 +1,0 @@
-- Each component file begins with a JSDoc block describing purpose, how it works, and props/interface — consistent across all components in this module.
-- TanStack Query keys follow the `['entity', filter?]` pattern (e.g., `['profile']`, `['notifications']`) and mutations invalidate all related keys via `queryClient.invalidateQueries`.
-- Toast notifications use Sonner with Portuguese messages via `t('feedback.success')` / `t('feedback.error')` for every CRUD operation.
-- Form fields are configured declaratively through `FieldConfig` objects with `key`, `label`, `type`, `required`, `minLength`, and optional `formatDisplay`/`virtual` flags rather than imperative validation logic.
-- Responsive layouts use Tailwind mobile-first breakpoints (`grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`) consistently across all card and form layouts.
-- All user-facing strings go through `useTranslation('home')` with namespaced keys (e.g., `wizard.steps.identity`, `completeness.sections.documents`) instead of hardcoded text.

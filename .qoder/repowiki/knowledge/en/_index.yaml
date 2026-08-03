@@ -3,161 +3,23 @@ schema_version: 1
 locale: en-US
 branch: main
 nodes_managed: true
-exported_at: "2026-08-03T00:44:05Z"
+exported_at: "2026-08-03T21:40:37Z"
 modules:
     "":
-        dir_name: Weekly Timesheet Module (Backend & Frontend)
-        title: Weekly Timesheet Module (Backend & Frontend)
+        dir_name: NestJS + React Full-Stack Application
+        title: NestJS + React Full-Stack Application
         scope: []
         source_files: []
-        children: []
-        depends_on: []
-        related_to: []
-    api_backend:
-        dir_name: API Backend (NestJS Monorepo)
-        title: API Backend (NestJS Monorepo)
-        scope:
-            - API/
-        source_files: []
         children:
-            - api_backend/common_infrastructure
-            - api_backend/modules
+            - components_ui
         depends_on: []
         related_to: []
-    api_backend/common_infrastructure:
-        dir_name: Common Infrastructure (Decorators, Guards, Interceptors, DTOs & Database)
-        title: Common Infrastructure (Decorators, Guards, Interceptors, DTOs & Database)
+    components_ui:
+        dir_name: Reusable UI Component Library
+        title: Reusable UI Component Library
         scope:
-            - API/src/common/
-            - API/src/config/
-            - API/src/database/
-        source_files: []
-        children: []
-        depends_on: []
-        related_to:
-            - path: api_backend/modules
-    api_backend/modules:
-        dir_name: API Business Modules
-        title: API Business Modules
-        scope:
-            - API/src/modules/
-        source_files: []
-        children:
-            - api_backend/modules/weekly_timesheet
-        depends_on: []
-        related_to:
-            - path: api_backend/common_infrastructure
-            - path: frontend_app/pages_logs
-            - path: frontend_app/pages_projects
-            - path: frontend_app/pages_users
-    api_backend/modules/weekly_timesheet:
-        dir_name: Weekly Timesheet Management Module
-        title: Weekly Timesheet Management Module
-        scope:
-            - API/src/modules/weekly-timesheet/
+            - src/components/ui/
         source_files: []
         children: []
         depends_on: []
         related_to: []
-    frontend_app:
-        dir_name: Windlog Frontend Application
-        title: Windlog Frontend Application
-        scope:
-            - src/
-        source_files: []
-        children:
-            - frontend_app/app_shell
-            - frontend_app/i18n
-            - frontend_app/pages_home
-            - frontend_app/pages_logs
-            - frontend_app/pages_projects
-            - frontend_app/pages_settings
-            - frontend_app/pages_users
-            - frontend_app/shared_layers
-        depends_on: []
-        related_to: []
-    frontend_app/app_shell:
-        dir_name: Application Bootstrap & Root Shell
-        title: Application Bootstrap & Root Shell
-        scope:
-            - src/App.tsx
-            - src/main.tsx
-            - src/index.css
-            - src/vite-env.d.ts
-        source_files: []
-        children: []
-        depends_on: []
-        related_to:
-            - path: frontend_app/shared_layers
-    frontend_app/i18n:
-        dir_name: Internationalization (i18n) Configuration & Portuguese Translations
-        title: Internationalization (i18n) Configuration & Portuguese Translations
-        scope:
-            - src/i18n/
-        source_files: []
-        children: []
-        depends_on: []
-        related_to: []
-    frontend_app/pages_home:
-        dir_name: Home Page & Profile Wizard
-        title: Home Page & Profile Wizard
-        scope:
-            - src/pages/home/
-        source_files: []
-        children: []
-        depends_on: []
-        related_to: []
-    frontend_app/pages_logs:
-        dir_name: System Logs Admin Page
-        title: System Logs Admin Page
-        scope:
-            - src/pages/logs/
-        source_files: []
-        children: []
-        depends_on: []
-        related_to:
-            - path: api_backend/modules
-    frontend_app/pages_projects:
-        dir_name: Projects Management Pages
-        title: Projects Management Pages
-        scope:
-            - src/pages/projects/
-        source_files: []
-        children: []
-        depends_on: []
-        related_to:
-            - path: api_backend/modules
-    frontend_app/pages_settings:
-        dir_name: Settings Page & Sections
-        title: Settings Page & Sections
-        scope:
-            - src/pages/settings/
-        source_files: []
-        children: []
-        depends_on: []
-        related_to: []
-    frontend_app/pages_users:
-        dir_name: Users Management Page
-        title: Users Management Page
-        scope:
-            - src/pages/users/
-        source_files: []
-        children: []
-        depends_on: []
-        related_to:
-            - path: api_backend/modules
-    frontend_app/shared_layers:
-        dir_name: Shared Frontend Layers — UI Components, Services & Utilities
-        title: Shared Frontend Layers — UI Components, Services & Utilities
-        scope:
-            - src/components/
-            - src/hooks/
-            - src/services/
-            - src/constants/
-            - src/utils/
-            - src/types/
-        source_files: []
-        children: []
-        depends_on: []
-        related_to:
-            - path: frontend_app/app_shell

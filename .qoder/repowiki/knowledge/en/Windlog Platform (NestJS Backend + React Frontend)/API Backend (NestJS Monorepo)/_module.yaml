@@ -1,8 +1,0 @@
-schema_version: 1
-module_path: api_backend
-title: API Backend (NestJS Monorepo)
-scope:
-    - API/
-source_files: []
-depends_on: []
-related_to: []

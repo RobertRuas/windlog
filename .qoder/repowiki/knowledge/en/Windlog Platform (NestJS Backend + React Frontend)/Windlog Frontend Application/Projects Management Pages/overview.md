@@ -1,1 +1,0 @@
-React pages for listing, creating, editing, and deleting projects, plus a detail page with tabs for project info, turbines, members, and files — all backed by TanStack Query mutations and Sonner toasts.

@@ -1,1 +1,0 @@
-Entry point is `src/main.tsx` rendering `<App />` inside React StrictMode; development served by Vite. The app initializes i18n via `import '@/i18n'` at the top of `App.tsx` before any route renders.

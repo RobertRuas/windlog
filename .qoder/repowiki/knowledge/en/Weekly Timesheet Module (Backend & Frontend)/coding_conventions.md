@@ -1,6 +1,0 @@
-- Backend modules follow the fixed file layout: `{name}.module.ts` + `{name}.controller.ts` + `{name}.service.ts` + `dto/{name}.dto.ts`, with no business logic in controllers.
-- DTOs use class-validator decorators (`@IsString`, `@IsUUID`, `@IsOptional`, etc.) and every optional field must explicitly carry `@IsOptional()` — TypeScript's `?` alone is not sufficient.
-- Soft delete is enforced everywhere by filtering `deletedAt: null` on all queries and setting `deletedAt = new Date()` on removal instead of deleting rows.
-- TanStack Query keys follow the pattern `['entity', filter?]` for list queries and `['entity', id]` for detail queries, with mutations invalidating all related keys via `invalidateQueries`.
-- Frontend pages are split into `{PageName}.tsx` + `components/` + `hooks/`, with API calls isolated in `src/services/*.ts` and mutations grouped in per-module hooks like `useTimesheetMutations`.
-- All CRUD operations surface user feedback through Sonner toasts with Portuguese messages following the pattern 'X criado/atualizado/removido com sucesso'.

@@ -1,0 +1,5 @@
+- Each component is a named function export paired with a local `interface XxxProps` that extends native HTML attributes when wrapping an HTML element (e.g. `ButtonHTMLAttributes<HTMLButtonElement>`, `InputHTMLAttributes<HTMLInputElement>`).
+- Styling uses Tailwind utility class strings concatenated via template literals with a trailing `.trim()`, and default prop values are provided inline in the destructuring signature.
+- User-facing text goes through `useTranslation('common')` and is accessed via `t('key')` rather than hardcoded strings.
+- Components expose behavior through optional callback props (`onChange`, `onSave`, `onClear`, `onCancel`) with the `?.()` safe-call pattern instead of internal state mutation.
+- Secure resource access (`SecureFileLink`, `SecureImage`) delegates URL resolution to the `useFileUrl` hook, never embedding raw server paths in `href`/`src` attributes.

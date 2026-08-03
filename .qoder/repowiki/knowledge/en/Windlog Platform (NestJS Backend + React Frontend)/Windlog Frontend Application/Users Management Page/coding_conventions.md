@@ -1,6 +1,0 @@
-- TanStack Query keys follow the `['users', ...filterParams]` pattern for lists and are invalidated with `{ queryKey: ['users'] }` after every mutation.
-- All user-facing messages use `react-i18next` via the `t` prop passed down from `UsersPage`, never hardcoded strings inside child components.
-- Every mutation uses `useMutation` with `onSuccess` calling `toast.success(t('toast.*'))` and `onError` calling `toast.error(error.message || t('toast.*Error'))`.
-- Child components receive props via explicit TypeScript interfaces (`UserModalProps`, `UsersTableProps`, `UsersFiltersProps`) rather than implicit prop spreading.
-- Soft-delete operations confirm with native `confirm()` using an i18n key before invoking the mutation.
-- Role values are cast to the union `'ADMIN' | 'HR' | 'STANDARD'` wherever they cross component boundaries.

@@ -1,1 +1,0 @@
-React + TypeScript, TanStack Query (`useQuery`, `useMutation`, `useQueryClient`) for data fetching and cache invalidation, Sonner (`toast`) for notifications, react-i18next for translations, and Tailwind CSS for styling. Icons from lucide-react.
