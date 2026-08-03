@@ -74,6 +74,7 @@ export function WeeklyTimesheetDetailPage() {
     queryKey: ['timesheet', id],
     queryFn: () => getTimesheetById(id!),
     enabled: !!id,
+    refetchOnMount: 'always', // Sempre busca dados frescos ao (re)montar o componente
   });
 
   // Extrai o timesheet da resposta da API

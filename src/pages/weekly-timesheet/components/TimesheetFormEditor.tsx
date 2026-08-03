@@ -30,7 +30,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import {
   Plus, Trash2, Save, RotateCcw, ChevronDown, ChevronRight,
@@ -421,6 +421,9 @@ export function TimesheetFormEditor({
   // ── Estado do formulário ───────────────────────────────────────────
   const [form, setForm] = useState<FormState>(() => timesheetToFormState(timesheet));
 
+  // Ref para evitar reset do form durante auto-save (o form só reinicializa no remount)
+  const isInitialLoad = useRef(true);
+
   // Accordion: primeiro dia aberto, demais recolhidos
   const [collapsedDays, setCollapsedDays] = useState<Set<number>>(
     () => new Set(form.days.slice(1).map((_, i) => i + 1)),
@@ -432,13 +435,16 @@ export function TimesheetFormEditor({
   // Painéis de personalização recolhidos (key: "dayIdx-entryIdx")
   const [collapsedCustomize, setCollapsedCustomize] = useState<Set<string>>(new Set());
 
-  // Inicializa form sempre que os dados do timesheet mudam
-  // (cobre: carga inicial, refetch manual, navegação de volta ao componente)
+  // Inicializa form apenas na primeira carga do componente
+  // O refetch é garantido pelo refetchOnMount:'always' na query (dados sempre frescos)
   useEffect(() => {
-    const state = timesheetToFormState(timesheet);
-    setForm(state);
-    setCollapsedDays(new Set(state.days.slice(1).map((_, i) => i + 1)));
-    setCollapsedCustomize(new Set());
+    if (isInitialLoad.current) {
+      isInitialLoad.current = false;
+      const state = timesheetToFormState(timesheet);
+      setForm(state);
+      setCollapsedDays(new Set(state.days.slice(1).map((_, i) => i + 1)));
+      setCollapsedCustomize(new Set());
+    }
   }, [timesheet]);
 
   // Pré-preenche usuário atual como primeiro entry em todos os dias (só na primeira carga)
@@ -483,14 +489,12 @@ export function TimesheetFormEditor({
   }, [currentUserName, currentUserPosition]);
 
   // Auto-save silencioso com debounce: salva 600ms após a última edição
-  const queryClient = useQueryClient();
+  // Não atualiza cache — o refetchOnMount:'always' garante dados frescos no remount
   useEffect(() => {
     const timer = setTimeout(async () => {
       if (timesheet.id) {
         try {
           await updateTimesheet(timesheet.id, formStateToPayload(form));
-          // Invalida cache silenciosamente para que ao navegar de volta os dados estejam corretos
-          queryClient.invalidateQueries({ queryKey: ['timesheet', timesheet.id] });
         } catch {
           // silencioso — auto-save não mostra erros
         }
