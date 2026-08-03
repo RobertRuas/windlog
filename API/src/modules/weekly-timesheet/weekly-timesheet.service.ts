@@ -465,7 +465,6 @@ export class WeeklyTimesheetService {
     userId: string,
     userRole: string,
   ) {
-    try {
     // PASSO 1: Busca o timesheet
     const timesheet = await this.prisma.weeklyTimesheet.findFirst({
       where: { id, deletedAt: null },
@@ -665,10 +664,6 @@ export class WeeklyTimesheetService {
 
     // PASSO 5: Retorna o timesheet atualizado
     return this.findById(id);
-    } catch (err) {
-      this.logger.error(`UPDATE ERROR for ${id}: ${err instanceof Error ? err.message : String(err)}`, err instanceof Error ? err.stack : undefined);
-      throw err;
-    }
   }
 
   /**
