@@ -43,6 +43,7 @@ import type {
   UpdateDayPayload,
   UpdateEntryPayload,
 } from '@/services/weekly-timesheet.service';
+import { updateTimesheet } from '@/services/weekly-timesheet.service';
 import { getProfile } from '@/services/auth.service';
 import { getUsers } from '@/services/user.service';
 
@@ -401,6 +402,9 @@ export function TimesheetFormEditor({
   // ── Estado do formulário ───────────────────────────────────────────
   const [form, setForm] = useState<FormState>(() => timesheetToFormState(timesheet));
 
+  // Ref para evitar reset do form em refetches causados pelo auto-save
+  const isInitialLoad = useRef(true);
+
   // Accordion: primeiro dia aberto, demais recolhidos
   const [collapsedDays, setCollapsedDays] = useState<Set<number>>(
     () => new Set(form.days.slice(1).map((_, i) => i + 1)),
@@ -412,11 +416,14 @@ export function TimesheetFormEditor({
   // Painéis de personalização recolhidos (key: "dayIdx-entryIdx")
   const [collapsedCustomize, setCollapsedCustomize] = useState<Set<string>>(new Set());
 
-  // Atualiza form quando timesheet muda
+  // Inicializa form apenas na primeira carga (não reseta em refetches do auto-save)
   useEffect(() => {
-    const state = timesheetToFormState(timesheet);
-    setForm(state);
-    setCollapsedDays(new Set(state.days.slice(1).map((_, i) => i + 1)));
+    if (isInitialLoad.current) {
+      isInitialLoad.current = false;
+      const state = timesheetToFormState(timesheet);
+      setForm(state);
+      setCollapsedDays(new Set(state.days.slice(1).map((_, i) => i + 1)));
+    }
   }, [timesheet]);
 
   // Pré-preenche usuário atual como primeiro entry em todos os dias (só na primeira carga)
@@ -460,10 +467,13 @@ export function TimesheetFormEditor({
     });
   }, [currentUserName, currentUserPosition]);
 
-  // Auto-save silencioso com debounce: salva 600ms após a última edição (sem feedback visual)
+  // Auto-save silencioso com debounce: salva 600ms após a última edição
+  // Chama a API diretamente (sem mutation) para evitar toasts e cache invalidation
   useEffect(() => {
     const timer = setTimeout(() => {
-      onSave(formStateToPayload(form));
+      if (timesheet.id) {
+        updateTimesheet(timesheet.id, formStateToPayload(form)).catch(() => {});
+      }
     }, 600);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
