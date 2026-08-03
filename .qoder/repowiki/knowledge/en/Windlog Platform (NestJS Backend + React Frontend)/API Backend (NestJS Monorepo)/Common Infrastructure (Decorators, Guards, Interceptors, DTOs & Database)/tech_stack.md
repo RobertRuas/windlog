@@ -1,0 +1,1 @@
+NestJS with class-validator/class-transformer for DTO validation, Prisma v7 with `@prisma/adapter-pg` driver adapter for PostgreSQL, RxJS streams for interceptor pipelines, and OpenAPI/Swagger decorators for API documentation.

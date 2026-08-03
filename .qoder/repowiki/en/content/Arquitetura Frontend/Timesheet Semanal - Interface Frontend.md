@@ -20,10 +20,10 @@
 
 ## Update Summary
 **Changes Made**
-- Updated TimesheetFormEditor component analysis to reflect major enhancements including manual save button, debounced auto-save (600ms), improved UI with toggle switches and collapsible customize panels, bug fixes for shared values synchronization, and internationalization support
-- Enhanced component architecture documentation with dual save mechanisms (manual + automatic) and better user feedback systems
-- Updated troubleshooting guide with new validation and user experience considerations for the enhanced save functionality
-- Added detailed analysis of the improved form interaction patterns with debounced auto-save and toggle switch implementations
+- Updated TimesheetFormEditor component analysis to reflect major refactoring that removed over 200 lines of per-technician customization code and implemented new shared values system
+- Enhanced component architecture documentation with simplified structure where common information is managed through sharedValues system applied uniformly to all technicians
+- Removed documentation for complex two-pass detectSharedValues algorithm and customization UI elements that were eliminated
+- Updated troubleshooting guide to reflect the new simplified form structure and shared values approach
 
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -42,7 +42,7 @@ The Timesheet Semanal (Weekly Timesheet) interface is a comprehensive React-base
 
 The implementation follows the project's design principles inspired by Apple's design system - minimalist, clean, with generous spacing and neutral colors with blue accents. The interface uses Tailwind CSS v4 with utility classes and implements internationalization (i18n) throughout all user-facing text.
 
-**Updated** Major enhancements have been applied to the TimesheetFormEditor component, introducing dual save mechanisms with manual save button and debounced auto-save (600ms), improved UI with toggle switches and collapsible customize panels, bug fixes for shared values synchronization, and expanded internationalization support. The form now provides better user feedback and data persistence through these enhanced save mechanisms.
+**Updated** Major refactoring has been applied to the TimesheetFormEditor component, removing over 200 lines of per-technician customization code and implementing a new shared values system. The form now uses a simplified structure where common information is managed through sharedValues system applied uniformly to all technicians. This change eliminates the complex two-pass detectSharedValues algorithm and removes customization UI elements, resulting in a more streamlined and maintainable codebase.
 
 ## Project Structure
 
@@ -91,7 +91,7 @@ The weekly timesheet interface consists of several key components that work toge
 ### UI Components
 - **TimesheetCreateModal**: Modal interface for creating new timesheets
 - **TimesheetDaySection**: Individual day sections within the timesheet editor with accordion functionality
-- **TimesheetFormEditor**: Comprehensive form editor with enhanced accordion-based day entry system, visual status indicators, improved validation logic, and dual save mechanisms
+- **TimesheetFormEditor**: Comprehensive form editor with enhanced accordion-based day entry system, visual status indicators, improved validation logic, and simplified shared values management
 - **TimesheetMetadata**: Displays and manages metadata like project selection and dates
 - **TimesheetSheet**: Main spreadsheet-like interface for timesheet data
 - **TimesheetSignatures**: Handles signature collection and validation
@@ -101,7 +101,7 @@ The weekly timesheet interface consists of several key components that work toge
 - **useTimesheetMutations**: Custom hook for handling timesheet CRUD operations
 - **useTimesheetZoom**: Hook for managing zoom levels in the timesheet view
 
-**Updated** The TimesheetFormEditor component has been significantly enhanced with dual save mechanisms including a manual save button and debounced auto-save (600ms). The component now features improved UI with toggle switches and collapsible customize panels, bug fixes for shared values synchronization, and expanded internationalization support. These enhancements provide better user feedback and data persistence.
+**Updated** The TimesheetFormEditor component has undergone significant refactoring, removing over 200 lines of per-technician customization code and implementing a new shared values system. The component now uses a simplified structure where common information is managed through sharedValues system applied uniformly to all technicians. This eliminates the need for complex customization UI elements and the two-pass detectSharedValues algorithm, resulting in cleaner, more maintainable code.
 
 **Section sources**
 - [TimesheetCreateModal.tsx](file://src/pages/weekly-timesheet/components/TimesheetCreateModal.tsx)
@@ -133,16 +133,16 @@ Service->>API : GET /api/weekly-timesheets
 API-->>Service : Timesheet Data
 Service-->>Cache : Store in Cache
 Cache-->>Detail : Return Cached Data
-Detail->>Detail : Render Enhanced Timesheet Interface
-User->>Detail : Edit Timesheet with Dual Save Mechanisms
-Detail->>Service : Manual Save or Auto-Save (600ms debounce)
+Detail->>Detail : Render Simplified Timesheet Interface
+User->>Detail : Edit Timesheet with Shared Values System
+Detail->>Service : Save with Unified Data Structure
 Service->>API : PUT /api/weekly-timesheets/ : id
 API-->>Service : Success Response
 Service->>Cache : Invalidate Related Queries
-Detail->>Detail : Show Success Message with Enhanced Feedback
+Detail->>Detail : Show Success Message
 ```
 
-**Updated** The enhanced architecture now includes dual save mechanisms with manual save button and debounced auto-save (600ms), improved user interaction patterns with toggle switches and collapsible panels, and more sophisticated validation workflows with better user feedback.
+**Updated** The enhanced architecture now features a simplified shared values system where common information is managed uniformly across all technicians, eliminating the previous complex per-technician customization approach. This results in cleaner data flow and more consistent user experience.
 
 **Diagram sources**
 - [WeeklyTimesheetPage.tsx](file://src/pages/weekly-timesheet/WeeklyTimesheetPage.tsx)
@@ -177,9 +177,7 @@ class TimesheetFormEditor {
 +validateEnhanced()
 +accordionToggle()
 +statusIndicatorUpdate()
-+manualSave()
-+debouncedAutoSave()
-+toggleSwitchChange()
++sharedValuesManagement()
 +render()
 }
 class TimesheetMetadata {
@@ -199,7 +197,7 @@ WeeklyTimesheetDetailPage --> TimesheetMetadata : "contains"
 WeeklyTimesheetDetailPage --> TimesheetSheet : "contains"
 ```
 
-**Updated** The component hierarchy now includes enhanced form editor capabilities with dual save mechanisms (manual + debounced auto-save), toggle switch functionality, collapsible customize panels, and improved validation methods.
+**Updated** The component hierarchy now reflects the simplified TimesheetFormEditor with shared values management instead of per-technician customization, resulting in cleaner component interactions and reduced complexity.
 
 **Diagram sources**
 - [WeeklyTimesheetDetailPage.tsx](file://src/pages/weekly-timesheet/WeeklyTimesheetDetailPage.tsx)
@@ -207,40 +205,33 @@ WeeklyTimesheetDetailPage --> TimesheetSheet : "contains"
 - [TimesheetMetadata.tsx](file://src/pages/weekly-timesheet/components/TimesheetMetadata.tsx)
 - [TimesheetSheet.tsx](file://src/pages/weekly-timesheet/components/TimesheetSheet.tsx)
 
-### Enhanced TimesheetFormEditor Component
+### Simplified TimesheetFormEditor Component
 
-The TimesheetFormEditor component has undergone significant enhancements to improve user experience and functionality:
+The TimesheetFormEditor component has undergone substantial refactoring to improve maintainability and user experience:
 
-#### Key Enhancements:
-- **Dual Save Mechanisms**: Manual save button and debounced auto-save (600ms) for optimal user control and data persistence
-- **Improved UI Components**: Toggle switches and collapsible customize panels for better user interaction
-- **Bug Fixes**: Resolved shared values synchronization issues for consistent data handling
-- **Enhanced Internationalization**: Expanded i18n support for all new UI elements
-- **Better User Feedback**: Improved success and error messaging for save operations
-- **Optimized Performance**: Debounced auto-save prevents excessive API calls while maintaining responsiveness
+#### Key Changes:
+- **Shared Values System**: Replaced per-technician customization with unified shared values management applied uniformly to all technicians
+- **Code Reduction**: Removed over 200 lines of complex per-technician customization code
+- **Simplified Algorithm**: Eliminated the complex two-pass detectSharedValues algorithm in favor of straightforward shared values application
+- **Removed Customization UI**: Deleted customization interface elements that allowed per-technician modifications
+- **Streamlined Data Flow**: Implemented direct shared values application without intermediate processing steps
 
 #### Implementation Pattern:
 ```mermaid
 flowchart TD
 Start([User Interaction]) --> InputChange["Input Change Event"]
-InputChange --> DebounceCheck{"Debounced Auto-Save?"}
-DebounceCheck --> |Yes| StartTimer["Start 600ms Timer"]
-DebounceCheck --> |No| ManualSave["Manual Save Button"]
-StartTimer --> TimerComplete["Timer Complete"]
-TimerComplete --> ValidateInput["Validate Input"]
-ManualSave --> ValidateInput
+InputChange --> SharedValues["Apply Shared Values Uniformly"]
+SharedValues --> ValidateInput["Validate Input"]
 ValidateInput --> PartialCheck{"Partial Entry?"}
 PartialCheck --> |Yes| AllowEntry["Allow Partial Entry"]
 PartialCheck --> |No| FullValidation["Full Validation"]
 AllowEntry --> UpdateStatus["Update Status Indicator"]
 FullValidation --> UpdateStatus
 UpdateStatus --> ColorCode["Apply Color Border"]
-ColorCode --> ToggleSystem["Update Toggle System"]
-ToggleSystem --> CollapsiblePanels["Collapsible Customize Panels"]
-CollapsiblePanels --> Success(["Success Feedback"])
+ColorCode --> Success(["Success Feedback"])
 ```
 
-**Updated** The component now provides dual save mechanisms with manual control and automatic background saving, improved UI with toggle switches and collapsible panels, and enhanced internationalization support for better user experience.
+**Updated** The component now uses a simplified shared values system where common information is applied uniformly to all technicians, eliminating the previous complex customization workflow and reducing code complexity significantly.
 
 **Diagram sources**
 - [TimesheetFormEditor.tsx](file://src/pages/weekly-timesheet/components/TimesheetFormEditor.tsx)
@@ -254,7 +245,7 @@ This custom hook encapsulates all mutation logic for timesheet operations, provi
 - **Query Invalidation**: Automatically invalidates related queries after mutations
 - **Error Handling**: Centralized error handling and user feedback
 - **Loading States**: Manages loading states for better UX
-- **Dual Save Support**: Optimized for both manual and debounced auto-save operations
+- **Unified Data Structure**: Optimized for the new shared values data format
 
 #### Implementation Pattern:
 ```mermaid
@@ -299,8 +290,8 @@ J[weekly-timesheet.service.ts]
 K[auth.service.ts]
 L[api.ts]
 M[common components]
-N[enhanced form components]
-O[dual save utilities]
+N[simplified form components]
+O[shared values utilities]
 end
 A --> J
 B --> WeeklyTimesheetPage
@@ -318,7 +309,7 @@ N --> TimesheetFormEditor
 O --> TimesheetFormEditor
 ```
 
-**Updated** New dependencies have been added to support the enhanced form editor functionality, including debouncing libraries for auto-save functionality, toggle switch components for improved UI, and dual save utilities for managing both manual and automatic save operations.
+**Updated** Dependencies have been streamlined to support the simplified shared values system, removing dependencies related to per-technician customization while maintaining core functionality for form management and data persistence.
 
 **Diagram sources**
 - [weekly-timesheet.service.ts](file://src/services/weekly-timesheet.service.ts)
@@ -351,11 +342,11 @@ The weekly timesheet interface implements several performance optimizations:
 - **Form State**: Optimized form libraries for complex forms with enhanced validation
 
 ### Enhanced Performance Features
-- **Debounced Auto-Save**: 600ms delay prevents excessive API calls while maintaining responsiveness
-- **Real-time Status Updates**: Efficient visual feedback without full component re-rendering
-- **Intelligent Validation**: Client-side validation reduces unnecessary API calls
-- **Autocomplete Debouncing**: Optimized search functionality for technician selection
-- **Toggle Switch Optimization**: Lightweight state management for UI toggles
+- **Simplified Data Processing**: Direct shared values application eliminates complex processing steps
+- **Reduced Re-renders**: Streamlined component structure minimizes unnecessary updates
+- **Efficient Validation**: Client-side validation reduces unnecessary API calls
+- **Optimized Search Functionality**: Improved autocomplete performance for technician selection
+- **Lightweight State Management**: Simplified state management for UI toggles
 - **Collapsible Panel Efficiency**: Minimized re-renders when panels are collapsed
 
 ## Troubleshooting Guide
@@ -397,22 +388,22 @@ The weekly timesheet interface implements several performance optimizations:
 - **Solution**: Verify autocomplete data structure and role mapping
 - **Debug**: Check API responses and data transformation
 
-#### Dual Save Mechanism Issues
-- **Symptom**: Auto-save not triggering or manual save not working
-- **Solution**: Check debouncing timer implementation and manual save event handlers
-- **Debug**: Verify 600ms debounce timing and save function execution
+#### Shared Values System Issues
+- **Symptom**: Shared values not applying correctly to all technicians
+- **Solution**: Verify shared values data structure and uniform application logic
+- **Debug**: Check data flow from form input to shared values storage
 
-#### Toggle Switch Problems
-- **Symptom**: Toggle switches not responding or state not persisting
-- **Solution**: Verify toggle state management and event handlers
-- **Debug**: Check component state updates and prop passing
+#### Customization Removal Issues
+- **Symptom**: Per-technician customization features not working as expected
+- **Solution**: Understand that customization features have been removed; use shared values instead
+- **Debug**: Verify that shared values are being applied uniformly across all technicians
 
-#### Collapsible Panel Issues
-- **Symptom**: Panels not collapsing/expanding correctly
-- **Solution**: Check panel state management and CSS transitions
-- **Debug**: Inspect animation classes and state synchronization
+#### Data Synchronization Problems
+- **Symptom**: Data inconsistencies between technicians
+- **Solution**: Ensure shared values system is properly synchronizing data
+- **Debug**: Check data flow and state management in the simplified form structure
 
-**Updated** New troubleshooting categories have been added to address the enhanced form editor features, including dual save mechanisms, debounced auto-save functionality, toggle switches, collapsible panels, and improved user feedback systems.
+**Updated** New troubleshooting categories have been added to address the simplified shared values system and removal of per-technician customization features, including guidance on understanding the new unified approach to data management.
 
 **Section sources**
 - [weekly-timesheet.service.ts](file://src/services/weekly-timesheet.service.ts)
@@ -430,6 +421,6 @@ Key strengths include:
 - **User Experience**: Intuitive interface with proper error handling and feedback
 - **Maintainability**: Well-structured codebase following React best practices
 
-**Updated** Recent enhancements have significantly improved the user experience through the introduction of dual save mechanisms with manual save button and debounced auto-save (600ms), improved UI with toggle switches and collapsible customize panels, bug fixes for shared values synchronization, and expanded internationalization support. These improvements make the system more accessible and efficient for technicians while providing powerful features for time tracking and project management with better data persistence and user feedback.
+**Updated** Recent refactoring has significantly improved the system's maintainability and user experience through the implementation of a shared values system that applies common information uniformly to all technicians. This change removed over 200 lines of complex per-technician customization code, eliminated the need for a two-pass detectSharedValues algorithm, and removed customization UI elements. The result is a cleaner, more streamlined codebase that provides consistent behavior across all technicians while maintaining powerful features for time tracking and project management with enhanced data persistence and simplified user interaction patterns.
 
-The system successfully balances complexity with usability, making it accessible to technicians while providing powerful features for time tracking and project management with enhanced save mechanisms and improved user interaction patterns.
+The system successfully balances simplicity with functionality, making it accessible to technicians while providing robust features for time tracking and project management with the new unified shared values approach.

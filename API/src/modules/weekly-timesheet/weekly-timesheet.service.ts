@@ -61,6 +61,17 @@ export class WeeklyTimesheetService {
   // =========================================================================
 
   /**
+   * Converte uma string de data (YYYY-MM-DD) em Date com hora 12:00 UTC.
+   * Evita drift de timezone quando o frontend está em UTC negativo (ex: BRT = UTC-3).
+   * Sem isso, "2026-07-27" vira "2026-07-27 00:00 UTC" = "2026-07-26 21:00 BRT"
+   * e o frontend mostra dia 26 em vez de 27.
+   */
+  private parseDateSafe(dateStr: string): Date {
+    const [y, m, d] = dateStr.split('T')[0].split('-').map(Number);
+    return new Date(Date.UTC(y, m - 1, d, 12, 0, 0, 0));
+  }
+
+  /**
    * Calcula a data de início (segunda-feira) de uma semana ISO em um dado ano.
    *
    * COMO FUNCIONA:
@@ -238,9 +249,17 @@ export class WeeklyTimesheetService {
     });
 
     // PASSO 5: Gera os 7 dias da semana (Segunda a Domingo) com 1 entrada vazia cada
+    // Usa 12:00 UTC para evitar drift de timezone quando Prisma converte para UTC
+    // (ex: 00:00 BRT = 03:00 UTC do dia anterior → dia errado no frontend)
     const daysData = DAY_NAMES.map((dayName, index) => {
-      const date = new Date(monday);
-      date.setDate(monday.getDate() + index);
+      const date = new Date(
+        Date.UTC(
+          monday.getFullYear(),
+          monday.getMonth(),
+          monday.getDate() + index,
+          12, 0, 0, 0, // 12:00 UTC — seguro contra qualquer timezone
+        ),
+      );
 
       return {
         timesheetId: timesheet.id,
@@ -528,7 +547,7 @@ export class WeeklyTimesheetService {
           await this.prisma.weeklyTimesheetDay.update({
             where: { id: dayDto.id },
             data: {
-              date: dayDto.date ? new Date(dayDto.date) : undefined,
+              date: dayDto.date ? this.parseDateSafe(dayDto.date) : undefined,
               dayName: dayDto.dayName,
               progress: dayDto.progress,
               sortOrder: dayDto.sortOrder,
@@ -606,7 +625,7 @@ export class WeeklyTimesheetService {
           const newDay = await this.prisma.weeklyTimesheetDay.create({
             data: {
               timesheetId: id,
-              date: new Date(dayDto.date!),
+              date: this.parseDateSafe(dayDto.date!),
               dayName: dayDto.dayName || '',
               progress: dayDto.progress,
               sortOrder: dayDto.sortOrder || 0,

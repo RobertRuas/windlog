@@ -1,0 +1,12 @@
+schema_version: 1
+module_path: frontend_app/app_shell
+title: Application Bootstrap & Root Shell
+scope:
+    - src/App.tsx
+    - src/main.tsx
+    - src/index.css
+    - src/vite-env.d.ts
+source_files: []
+depends_on: []
+related_to:
+    - path: frontend_app/shared_layers

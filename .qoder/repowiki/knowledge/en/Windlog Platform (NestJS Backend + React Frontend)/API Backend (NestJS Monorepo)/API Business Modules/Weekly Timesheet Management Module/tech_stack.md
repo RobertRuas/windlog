@@ -1,0 +1,1 @@
+NestJS with `@nestjs/passport` (`AuthGuard('jwt')`) for authentication, `class-validator` + `class-transformer` for DTO validation, Prisma ORM via a custom `PrismaService`, and `@nestjs/swagger` decorators for API docs.

@@ -1,0 +1,1 @@
+NestJS module providing CRUD, submission workflow, and RBAC-controlled access for weekly timesheets linked to projects, with automatic ISO-week day generation and nested day/entry updates.

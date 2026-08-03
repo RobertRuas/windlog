@@ -1,0 +1,1 @@
+No build or setup scripts are defined in this scope; the app is started through the standard Vite dev server (e.g. `npm run dev`) which loads `src/main.tsx` as the entry point. The `@/` path alias used in imports must be configured in the project's Vite config outside this module.

@@ -1,0 +1,4 @@
+- Each feature page gets its own namespace file (e.g., `login.json`, `home.json`) under `locales/pt/` and is imported + registered in `index.ts`.
+- Shared UI strings (buttons, status messages, navigation labels) live in the `common.json` namespace used as the default namespace.
+- Translation keys use nested dot notation grouped by semantic area (e.g., `nav.*`, `buttons.*`, `error.*`, `notifications.*`).
+- New languages are added by duplicating the existing `pt` structure under a new language key and uncommenting the placeholder block in `index.ts`.

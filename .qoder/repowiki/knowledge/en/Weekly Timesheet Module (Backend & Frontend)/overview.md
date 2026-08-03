@@ -1,0 +1,1 @@
+Full-stack weekly timesheet management module providing CRUD, submission workflow, and RBAC for Team Leader/HR/Admin roles over project-linked timesheets with nested day/entry data.

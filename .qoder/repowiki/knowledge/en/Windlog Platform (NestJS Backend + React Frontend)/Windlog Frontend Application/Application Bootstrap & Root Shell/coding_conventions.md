@@ -1,0 +1,5 @@
+- Route protection is implemented via reusable wrapper components (`ProtectedRoute`, `AdminRoute`, `AdminOrHRRoute`) that check `isAuthenticated()` and `isTokenExpired()` before rendering children, rather than inline checks inside page components.
+- All routes are declared centrally in `App.tsx` using `react-router-dom`'s `<Route path=... element={<Page />} />` pattern, with protected routes wrapping their page component in the appropriate guard.
+- Global UI primitives (form inputs, selects, textareas, buttons, labels) share common CSS classes defined in `index.css` instead of being styled inline per component.
+- Toast notifications are provided globally via a single `<Toaster>` instance rendered at the root level, consumed by pages through the `sonner` API.
+- TypeScript ambient types for Vite are declared in `vite-env.d.ts` via `/// <reference types="vite/client" />` so module resolution works without explicit type imports.

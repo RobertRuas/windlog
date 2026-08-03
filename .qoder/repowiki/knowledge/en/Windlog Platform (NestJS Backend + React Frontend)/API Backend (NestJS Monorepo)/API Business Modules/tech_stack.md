@@ -1,0 +1,1 @@
+NestJS with Passport + `@nestjs/jwt` for JWT authentication (secret and expiry via `ConfigService`), `class-validator` decorators (`@IsString`, `@IsEmail`, `@IsOptional`, etc.) for DTO validation, Prisma ORM for all database access, Multer disk storage for file uploads with UUID filenames and category/MIME whitelisting, and `@nestjs/swagger` decorators for API documentation.

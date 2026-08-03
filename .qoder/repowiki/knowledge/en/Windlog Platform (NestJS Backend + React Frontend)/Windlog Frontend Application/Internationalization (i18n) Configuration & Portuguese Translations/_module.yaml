@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: frontend_app/i18n
+title: Internationalization (i18n) Configuration & Portuguese Translations
+scope:
+    - src/i18n/
+source_files: []
+depends_on: []
+related_to: []

@@ -1,0 +1,1 @@
+No special build or setup commands — standard NestJS module consumed by importing `WeeklyTimesheetModule` in a parent module. Requires the Prisma schema to define `weeklyTimesheet`, `weeklyTimesheetDay`, `weeklyTimesheetEntry`, and `projectMember` relations referenced by the service.

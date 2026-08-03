@@ -1,0 +1,1 @@
+Backend boots from API/src/main.ts with global pipes/filters/interceptors registered once in AppModule; frontend boots from src/main.ts with App.tsx wiring routes and providers. Prisma schema in API/prisma/schema.prisma is the single source of truth — types must be regenerated whenever the schema changes.

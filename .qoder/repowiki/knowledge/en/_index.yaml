@@ -3,18 +3,14 @@ schema_version: 1
 locale: en-US
 branch: main
 nodes_managed: true
-exported_at: "2026-08-03T00:14:03Z"
+exported_at: "2026-08-03T00:44:05Z"
 modules:
     "":
-        dir_name: Windlog Platform (NestJS Backend + React Frontend)
-        title: Windlog Platform (NestJS Backend + React Frontend)
-        scope:
-            - API/
-            - src/
+        dir_name: Weekly Timesheet Module (Backend & Frontend)
+        title: Weekly Timesheet Module (Backend & Frontend)
+        scope: []
         source_files: []
-        children:
-            - api_backend
-            - frontend_app
+        children: []
         depends_on: []
         related_to: []
     api_backend:

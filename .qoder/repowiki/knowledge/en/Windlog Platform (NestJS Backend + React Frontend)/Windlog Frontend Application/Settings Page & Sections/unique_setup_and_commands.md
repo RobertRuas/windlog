@@ -1,0 +1,1 @@
+No build or test commands specific to this module; it is consumed through the application's React Router configuration which must expose the `/settings` route and provide the `settings` i18n namespace.

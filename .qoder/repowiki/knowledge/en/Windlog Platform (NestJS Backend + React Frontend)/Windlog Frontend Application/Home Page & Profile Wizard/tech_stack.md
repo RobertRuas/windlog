@@ -1,0 +1,1 @@
+React + TypeScript with functional components, TanStack Query for data fetching/caching, react-i18next for internationalization (home namespace), Sonner for toast notifications, Lucide React icons, and Tailwind CSS with mobile-first responsive breakpoints (sm:, md:, lg:).

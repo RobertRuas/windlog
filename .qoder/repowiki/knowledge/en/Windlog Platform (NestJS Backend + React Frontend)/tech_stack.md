@@ -1,0 +1,1 @@
+NestJS + Prisma v7 for the backend; React + Vite + Tailwind CSS + TanStack Query + Sonner + i18next for the frontend; JWT for authentication; class-validator for DTO validation on both sides.

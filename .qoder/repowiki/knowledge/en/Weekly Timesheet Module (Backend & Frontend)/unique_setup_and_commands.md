@@ -1,0 +1,1 @@
+Database changes require running `npx prisma migrate dev --name <migration_name>` after editing `schema.prisma`, then regenerating the client from `./generated/prisma`. New LogAction values must be added to the `LogAction` enum before they can be used by `LoggingInterceptor.determineAction()`.

@@ -1,4 +1,4 @@
-# Timesheet Semanal - Módulo Backend
+# Weekly Timesheet - Backend Module
 
 <cite>
 **Referenced Files in This Document**
@@ -9,6 +9,7 @@
 - [timesheet-filter.dto.ts](file://API/src/modules/weekly-timesheet/dto/timesheet-filter.dto.ts)
 - [schema.prisma](file://API/prisma/schema.prisma)
 - [20260802222130_add_weekly_timesheet/migration.sql](file://API/prisma/migrations/20260802222130_add_weekly_timesheet/migration.sql)
+- [20260803002856_add_shared_values_to_day/migration.sql](file://API/prisma/migrations/20260803002856_add_shared_values_to_day/migration.sql)
 - [app.module.ts](file://API/src/app.module.ts)
 - [main.ts](file://API/src/main.ts)
 - [env.validation.ts](file://API/src/config/env.validation.ts)
@@ -19,6 +20,14 @@
 - [current-user.decorator.ts](file://API/src/common/decorators/current-user.decorator.ts)
 - [roles.decorator.ts](file://API/src/common/decorators/roles.decorator.ts)
 </cite>
+
+## Update Summary
+**Changes Made**
+- Added new sharedValues JSON column to WeeklyTimesheetDay model
+- Extended UpdateDayDto to accept sharedValues as Record<string, string>
+- Updated weekly-timesheet service to handle sharedValues in CRUD operations
+- Removed references to per-technician customization system that was completely removed
+- Added new migration file for shared values functionality
 
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -32,7 +41,7 @@
 9. [Conclusion](#conclusion)
 
 ## Introduction
-This document describes the backend implementation of the Weekly Timesheet (Timesheet Semanal) module within the Windlog system. It explains how weekly timesheets are modeled, created, updated, filtered, and persisted using NestJS, Prisma, and a PostgreSQL database. It also covers authentication, authorization, validation, logging, and error handling patterns used by this module.
+This document describes the backend implementation of the Weekly Timesheet (Timesheet Semanal) module within the Windlog system. It explains how weekly timesheets are modeled, created, updated, filtered, and persisted using NestJS, Prisma, and a PostgreSQL database. The module now includes enhanced support for shared values through a flexible JSON column system, allowing for dynamic key-value pair storage on timesheet days. It also covers authentication, authorization, validation, logging, and error handling patterns used by this module.
 
 ## Project Structure
 The Weekly Timesheet module is implemented as a NestJS feature module under API/src/modules/weekly-timesheet with:
@@ -40,7 +49,7 @@ The Weekly Timesheet module is implemented as a NestJS feature module under API/
 - Service: Business logic for data operations, validations, and interactions with the database via Prisma.
 - DTOs: Request/response schemas for input validation and Swagger documentation.
 
-Database schema and migrations are defined under API/prisma, including the migration that introduces the weekly timesheet entities.
+Database schema and migrations are defined under API/prisma, including the migration that introduces the weekly timesheet entities and the subsequent migration that adds shared values support.
 
 ```mermaid
 graph TB
@@ -56,12 +65,14 @@ end
 subgraph "Prisma & DB"
 H["schema.prisma"]
 I["migration.sql"]
+J["shared_values_migration.sql"]
 end
 A --> C
 A --> D
 C --> D
 D --> H
 H --> I
+H --> J
 B --> A
 ```
 
@@ -75,6 +86,7 @@ B --> A
 - [timesheet-filter.dto.ts](file://API/src/modules/weekly-timesheet/dto/timesheet-filter.dto.ts)
 - [schema.prisma](file://API/prisma/schema.prisma)
 - [20260802222130_add_weekly_timesheet/migration.sql](file://API/prisma/migrations/20260802222130_add_weekly_timesheet/migration.sql)
+- [20260803002856_add_shared_values_to_day/migration.sql](file://API/prisma/migrations/20260803002856_add_shared_values_to_day/migration.sql)
 
 **Section sources**
 - [weekly-timesheet.controller.ts](file://API/src/modules/weekly-timesheet/weekly-timesheet.controller.ts)
@@ -84,17 +96,21 @@ B --> A
 - [timesheet-filter.dto.ts](file://API/src/modules/weekly-timesheet/dto/timesheet-filter.dto.ts)
 - [schema.prisma](file://API/prisma/schema.prisma)
 - [20260802222130_add_weekly_timesheet/migration.sql](file://API/prisma/migrations/20260802222130_add_weekly_timesheet/migration.sql)
+- [20260803002856_add_shared_values_to_day/migration.sql](file://API/prisma/migrations/20260803002856_add_shared_values_to_day/migration.sql)
 
 ## Core Components
 - Controller: Exposes REST endpoints for weekly timesheet operations. Uses decorators for roles and current user context. Validates request payloads with class-validator and returns standardized responses.
-- Service: Encapsulates business rules for weekly timesheet creation, updates, queries, and filters. Interacts with Prisma client to persist and retrieve data.
+- Service: Encapsulates business rules for weekly timesheet creation, updates, queries, and filters. Interacts with Prisma client to persist and retrieve data, including handling shared values operations.
 - DTOs: Define strict request shapes for create, update, and filter operations. Used for validation and OpenAPI docs.
 
 Key responsibilities:
 - Input validation and sanitization via DTOs.
 - Authorization checks using roles guard and decorator.
 - Database operations through Prisma service.
+- Shared values management for flexible key-value pair storage.
 - Consistent response formatting and error handling.
+
+**Updated** Enhanced with shared values support for flexible data storage on timesheet days.
 
 **Section sources**
 - [weekly-timesheet.controller.ts](file://API/src/modules/weekly-timesheet/weekly-timesheet.controller.ts)
@@ -123,13 +139,15 @@ Controller->>Guard : "Validate role"
 Guard-->>Controller : "Authorized"
 Controller->>Controller : "Validate DTO"
 Controller->>Service : "Create timesheet"
-Service->>Prisma : "Persist record"
-Prisma->>DB : "INSERT"
+Service->>Prisma : "Persist record with sharedValues"
+Prisma->>DB : "INSERT with JSON column"
 DB-->>Prisma : "Success"
 Prisma-->>Service : "Record"
 Service-->>Controller : "Result"
 Controller-->>Client : "Standardized Response"
 ```
+
+**Updated** Enhanced sequence diagram to reflect shared values handling in the data persistence flow.
 
 **Diagram sources**
 - [weekly-timesheet.controller.ts](file://API/src/modules/weekly-timesheet/weekly-timesheet.controller.ts)
@@ -192,6 +210,7 @@ Responsibilities:
 - Validate constraints such as date ranges, user permissions, and data integrity.
 - Use Prisma client for efficient database operations.
 - Handle soft delete semantics if applicable.
+- Manage shared values operations for flexible key-value pair storage.
 
 Data flow:
 - Controller calls service methods with validated DTOs.
@@ -204,7 +223,10 @@ Start(["Service Method Entry"]) --> Validate["Validate Inputs"]
 Validate --> CheckAuth{"User Authorized?"}
 CheckAuth --> |No| ThrowError["Throw Unauthorized Error"]
 CheckAuth --> |Yes| BuildQuery["Build Prisma Query/Mutation"]
-BuildQuery --> Execute["Execute via Prisma Client"]
+BuildQuery --> HandleSharedValues{"Has sharedValues?"}
+HandleSharedValues --> |Yes| ProcessSharedValues["Process sharedValues JSON"]
+HandleSharedValues --> |No| Execute["Execute via Prisma Client"]
+ProcessSharedValues --> Execute
 Execute --> Success{"Operation Success?"}
 Success --> |No| HandleError["Handle DB Error"]
 Success --> |Yes| Transform["Transform Result"]
@@ -212,6 +234,8 @@ Transform --> Return(["Return Standardized Data"])
 HandleError --> Return
 ThrowError --> Return
 ```
+
+**Updated** Enhanced flowchart to include shared values processing step in the service method execution flow.
 
 **Diagram sources**
 - [weekly-timesheet.service.ts](file://API/src/modules/weekly-timesheet/weekly-timesheet.service.ts)
@@ -221,12 +245,14 @@ ThrowError --> Return
 
 ### DTOs Analysis
 - CreateTimesheetDto: Defines required fields for creating a weekly timesheet entry.
-- UpdateTimesheetDto: Partial fields for updating existing entries.
+- UpdateTimesheetDto: Partial fields for updating existing entries, now includes sharedValues as Record<string, string>.
 - TimesheetFilterDto: Query parameters for filtering lists (e.g., date range, user, status).
 
 Validation strategy:
 - Class-validator decorators ensure type safety and constraints.
 - Errors are caught and formatted by global exception filter.
+
+**Updated** UpdateTimesheetDto now supports sharedValues field for flexible key-value pair updates.
 
 ```mermaid
 classDiagram
@@ -235,11 +261,14 @@ class CreateTimesheetDto {
 }
 class UpdateTimesheetDto {
 +fields...
++sharedValues : Record<string, string>
 }
 class TimesheetFilterDto {
 +filters...
 }
 ```
+
+**Updated** Diagram shows the new sharedValues field in UpdateTimesheetDto.
 
 **Diagram sources**
 - [create-timesheet.dto.ts](file://API/src/modules/weekly-timesheet/dto/create-timesheet.dto.ts)
@@ -255,6 +284,9 @@ class TimesheetFilterDto {
 - The schema defines the weekly timesheet entities and relationships.
 - Migration adds necessary tables and indexes for performance and integrity.
 - Soft delete and timestamps are applied consistently across entities.
+- New migration adds sharedValues JSON column to WeeklyTimesheetDay model for flexible data storage.
+
+**Updated** Schema now includes sharedValues JSON column support for dynamic key-value pair storage.
 
 ```mermaid
 erDiagram
@@ -268,21 +300,35 @@ timestamp created_at
 timestamp updated_at
 timestamp deleted_at
 }
+WEEKLY_TIMESHEET_DAY {
+uuid id PK
+uuid timesheet_id FK
+date day_date
+json shared_values
+timestamp created_at
+timestamp updated_at
+timestamp deleted_at
+}
 USER {
 uuid id PK
 string email
 string role
 }
+WEEKLY_TIMESHEET ||--o{ WEEKLY_TIMESHEET_DAY : "has many"
 USER ||--o{ WEEKLY_TIMESHEET : "has many"
 ```
+
+**Updated** ER diagram now includes WEEKLY_TIMESHEET_DAY entity with shared_values JSON column.
 
 **Diagram sources**
 - [schema.prisma](file://API/prisma/schema.prisma)
 - [20260802222130_add_weekly_timesheet/migration.sql](file://API/prisma/migrations/20260802222130_add_weekly_timesheet/migration.sql)
+- [20260803002856_add_shared_values_to_day/migration.sql](file://API/prisma/migrations/20260803002856_add_shared_values_to_day/migration.sql)
 
 **Section sources**
 - [schema.prisma](file://API/prisma/schema.prisma)
 - [20260802222130_add_weekly_timesheet/migration.sql](file://API/prisma/migrations/20260802222130_add_weekly_timesheet/migration.sql)
+- [20260803002856_add_shared_values_to_day/migration.sql](file://API/prisma/migrations/20260803002856_add_shared_values_to_day/migration.sql)
 
 ## Dependency Analysis
 Module registration and application bootstrap:
@@ -338,8 +384,9 @@ AppModule --> Env["EnvValidation"]
 - Apply pagination on list endpoints to limit result sets.
 - Cache read-heavy operations where appropriate (e.g., static lookup data).
 - Ensure DTO validation occurs early to fail fast on invalid inputs.
+- Optimize JSON column operations by using appropriate database functions for shared values queries.
 
-[No sources needed since this section provides general guidance]
+**Updated** Added guidance for optimizing JSON column operations for shared values.
 
 ## Troubleshooting Guide
 Common issues and resolutions:
@@ -347,7 +394,10 @@ Common issues and resolutions:
 - Authorization errors: Confirm user role matches @Roles() expectations; check RolesGuard behavior.
 - Validation errors: Inspect DTO constraints; ensure request body matches expected shape.
 - Database errors: Review Prisma logs and migration status; verify foreign key constraints and unique indexes.
+- Shared values issues: Ensure sharedValues is properly formatted as Record<string, string>; validate JSON structure.
 - Logging and tracing: Use LoggingInterceptor output to identify slow endpoints and failed requests.
+
+**Updated** Added troubleshooting guidance for shared values functionality.
 
 **Section sources**
 - [roles.guard.ts](file://API/src/common/guards/roles.guard.ts)
@@ -356,6 +406,6 @@ Common issues and resolutions:
 - [http-exception.filter.ts](file://API/src/common/filters/http-exception.filter.ts)
 
 ## Conclusion
-The Weekly Timesheet module integrates cleanly with the Windlog backend’s established patterns: NestJS modularity, Prisma ORM, JWT-based authentication, RBAC, standardized responses, and comprehensive logging. By following the documented structure and best practices, developers can extend and maintain the module effectively while ensuring security, performance, and reliability.
+The Weekly Timesheet module integrates cleanly with the Windlog backend's established patterns: NestJS modularity, Prisma ORM, JWT-based authentication, RBAC, standardized responses, and comprehensive logging. The addition of shared values support provides flexible key-value pair storage capabilities while maintaining the module's security, performance, and reliability standards. By following the documented structure and best practices, developers can extend and maintain the module effectively.
 
-[No sources needed since this section summarizes without analyzing specific files]
+**Updated** Enhanced conclusion to reflect the new shared values functionality and its benefits.

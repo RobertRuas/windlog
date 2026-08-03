@@ -33,7 +33,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Minus, Plus, TableProperties, PenLine, FileSpreadsheet, Printer } from 'lucide-react';
-import { toast } from 'sonner';
 
 import { AppLayout } from '@/components/layout/AppLayout';
 import { TimesheetSheet } from './components/TimesheetSheet';
@@ -86,16 +85,10 @@ export function WeeklyTimesheetDetailPage() {
   const handleFormSave = useCallback(
     (payload: UpdateTimesheetPayload) => {
       if (!id) return;
-      mutations.updateTimesheet.mutate(
-        { id, data: payload },
-        {
-          onSuccess: () => {
-            toast.success(t('form.changesSaved'));
-          },
-        },
-      );
+      // Toast é exibido pelo hook useTimesheetMutations (evita duplicação)
+      mutations.updateTimesheet.mutate({ id, data: payload });
     },
-    [id, mutations, t],
+    [id, mutations],
   );
 
   /**
@@ -170,7 +163,19 @@ export function WeeklyTimesheetDetailPage() {
                 {timesheet.project.name}
               </h1>
               <p className="text-sm text-gray-500 mt-1">
-                {t('sheet.week')} {timesheet.week} •{' '}
+                {t('sheet.week')} {timesheet.week}
+                {timesheet.days.length > 0 && (() => {
+                  // Extrai range de datas (Seg-Dom) diretamente dos dias do timesheet
+                  const fmt = (d: string) => {
+                    const pure = d.split('T')[0];
+                    const [y, m, day] = pure.split('-');
+                    return `${day}/${m}`;
+                  };
+                  const first = fmt(timesheet.days[0].date);
+                  const last = fmt(timesheet.days[timesheet.days.length - 1].date);
+                  return ` — ${first} a ${last}`;
+                })()}
+                {' • '}
                 {t('status.' + timesheet.status)} •{' '}
                 {timesheet.creator.firstName} {timesheet.creator.lastName}
               </p>

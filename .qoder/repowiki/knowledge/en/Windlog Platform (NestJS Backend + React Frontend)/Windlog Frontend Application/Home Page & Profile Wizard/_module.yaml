@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: frontend_app/pages_home
+title: Home Page & Profile Wizard
+scope:
+    - src/pages/home/
+source_files: []
+depends_on: []
+related_to: []

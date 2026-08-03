@@ -1,0 +1,1 @@
+Full-stack Windlog platform pairing a NestJS backend monorepo with seven domain modules and a React+Vite frontend, unified by a single Prisma schema as the authoritative data contract and role-based authentication across both layers.

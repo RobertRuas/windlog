@@ -1,0 +1,1 @@
+Vite+React frontend for the Windlog platform, bootstrapping role-based routing, TanStack Query data layer, Portuguese i18n, Sonner toasts, and typed NestJS API services across shared UI components and feature pages.

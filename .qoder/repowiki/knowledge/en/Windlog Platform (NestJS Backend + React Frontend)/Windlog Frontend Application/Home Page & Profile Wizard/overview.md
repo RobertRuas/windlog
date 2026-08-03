@@ -1,0 +1,1 @@
+Home page dashboard displaying user profile summary cards and a multi-step wizard guiding users through completing missing profile information across identity, contact, location, professional, and document sections.
