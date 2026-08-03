@@ -77,8 +77,8 @@
     "standbyReason": "Stand-by Time Reason",
     "dailyProgress": "Daily Progress",
     "dailyProgressExample": "",
-    "addRow": "Add Technician Row",
-    "removeRow": "Remove Last Row"
+    "addRow": "Adicionar Linha de Técnico",
+    "removeRow": "Remover Última Linha"
   },
   "signatures": {
     "signature": "Signature",
