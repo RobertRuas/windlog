@@ -269,7 +269,13 @@ table.ts-excel-table tr.row-day-header {
 }
 
 table.ts-excel-table tr.row-data {
-  height: 16px;
+  height: auto;
+  min-height: 28px;
+}
+
+/* Garante que todas as linhas de dados tenham a mesma altura */
+table.ts-excel-table tr.row-data td {
+  vertical-align: middle;
 }
 
 table.ts-excel-table tr.row-signature-main {
