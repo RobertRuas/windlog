@@ -5,27 +5,32 @@
  *
  * O QUE É ESTE ARQUIVO?
  * ---------------------
- * Componente reutilizável que permite ao usuário desenhar sua assinatura
- * num canvas (rato ou toque) e exportá-la como imagem PNG em base64.
+ * Componente reutilizável que permite ao usuário criar sua assinatura de
+ * três formas diferentes:
+ *
+ * 1. DESENHAR: desenhar no canvas com rato ou dedo (touch)
+ * 2. CÂMARA:   tirar foto de uma assinatura em papel branco
+ * 3. FICHEIRO: carregar uma imagem do dispositivo
+ *
+ * Após capturar por imagem (câmara ou ficheiro), o usuário pode RECORTAR
+ * a área da assinatura para remover fundos e margens indesejadas.
  *
  * ONDE É USADO?
  * -------------
  * - Página de Perfil: o usuário configura a sua assinatura pessoal
  * - TimesheetFormEditor: o usuário aplica a sua assinatura no documento
  * - Qualquer outro documento que necessite de assinatura
- *
- * COMO FUNCIONA?
- * --------------
- * 1. O usuário desenha no canvas com o rato ou dedo (touch)
- * 2. Ao salvar, o canvas é convertido paraDataURL (base64 PNG)
- * 3. O callback onSave é chamado com os dados da imagem
- * 4. Pode receber um valor existente (initialValue) para exibição
  * ============================================================================
  */
 
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pen, Trash2, Check, X } from 'lucide-react';
+import { Pen, Trash2, Check, X, Camera, Upload, Crop, Lightbulb } from 'lucide-react';
+
+/**
+ * Modos de captura disponíveis.
+ */
+type CaptureMode = 'draw' | 'camera';
 
 /**
  * Props do componente SignaturePad.
@@ -50,7 +55,7 @@ interface SignaturePadProps {
 }
 
 /**
- * Componente SignaturePad - Captura de assinatura com canvas.
+ * Componente SignaturePad - Captura de assinatura com canvas, câmara e recorte.
  */
 export function SignaturePad({
   initialValue,
@@ -64,12 +69,24 @@ export function SignaturePad({
 }: SignaturePadProps) {
   const { t } = useTranslation('common');
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const cropCanvasRef = useRef<HTMLCanvasElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [hasDrawn, setHasDrawn] = useState(false);
   const [currentImage, setCurrentImage] = useState<string | null>(initialValue || null);
 
+  // Estado para modo de captura
+  const [captureMode, setCaptureMode] = useState<CaptureMode>('draw');
+
+  // Estado para recorte de imagem
+  const [rawImage, setRawImage] = useState<string | null>(null);
+  const [cropRect, setCropRect] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
+  const [showTips, setShowTips] = useState(false);
+
   /**
-   * Inicializa o canvas com a imagem existente (se houver).
+   * Inicializa o estado quando initialValue muda.
    */
   useEffect(() => {
     if (initialValue) {
@@ -78,8 +95,7 @@ export function SignaturePad({
   }, [initialValue]);
 
   /**
-   * Desenha a imagem existente no canvas quando o componente é montado
-   * ou quando o initialValue muda.
+   * Desenha a imagem existente no canvas quando currentImage muda.
    */
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -88,10 +104,8 @@ export function SignaturePad({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Limpa o canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Se há uma imagem existente, desenha no canvas
     if (currentImage) {
       const img = new Image();
       img.onload = () => {
@@ -102,9 +116,43 @@ export function SignaturePad({
   }, [currentImage]);
 
   /**
-   * Obtém as coordenadas do evento relativo ao canvas.
-   * Suporta tanto mouse quanto touch.
+   * Desenha a imagem bruta no canvas de recorte.
    */
+  useEffect(() => {
+    const cropCanvas = cropCanvasRef.current;
+    if (!cropCanvas || !rawImage) return;
+
+    const ctx = cropCanvas.getContext('2d');
+    if (!ctx) return;
+
+    const img = new Image();
+    img.onload = () => {
+      // Ajusta o canvas para caber a imagem (max 600px largura)
+      const maxW = 600;
+      const maxH = 300;
+      let w = img.width;
+      let h = img.height;
+      const ratio = Math.min(maxW / w, maxH / h, 1);
+      w = Math.round(w * ratio);
+      h = Math.round(h * ratio);
+
+      cropCanvas.width = w;
+      cropCanvas.height = h;
+      ctx.drawImage(img, 0, 0, w, h);
+
+      // Inicializa o retângulo de recorte com 80% da imagem
+      setCropRect({
+        x: Math.round(w * 0.1),
+        y: Math.round(h * 0.1),
+        w: Math.round(w * 0.8),
+        h: Math.round(h * 0.8),
+      });
+    };
+    img.src = rawImage;
+  }, [rawImage]);
+
+  // ── Funções de desenho no canvas ────────────────────────────────────
+
   const getCoords = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     const canvas = canvasRef.current;
     if (!canvas) return { x: 0, y: 0 };
@@ -127,9 +175,6 @@ export function SignaturePad({
     };
   }, []);
 
-  /**
-   * Inicia o desenho.
-   */
   const startDrawing = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     if (readOnly || isSaving) return;
     e.preventDefault();
@@ -153,9 +198,6 @@ export function SignaturePad({
     setHasDrawn(true);
   }, [readOnly, isSaving, getCoords]);
 
-  /**
-   * Desenha enquanto o rato/dedo se move.
-   */
   const draw = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     if (!isDrawing || readOnly || isSaving) return;
     e.preventDefault();
@@ -171,16 +213,134 @@ export function SignaturePad({
     ctx.stroke();
   }, [isDrawing, readOnly, isSaving, getCoords]);
 
-  /**
-   * Termina o desenho.
-   */
   const stopDrawing = useCallback(() => {
     setIsDrawing(false);
   }, []);
 
+  // ── Funções de captura por imagem ───────────────────────────────────
+
   /**
-   * Limpa o canvas e reseta o estado.
+   * Abre o seletor de ficheiros ou câmara.
    */
+  const handleCameraClick = useCallback(() => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  }, []);
+
+  /**
+   * Processa a imagem capturada (câmara ou ficheiro).
+   */
+  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const dataUrl = ev.target?.result as string;
+      setRawImage(dataUrl);
+      setCaptureMode('camera');
+    };
+    reader.readAsDataURL(file);
+
+    // Reset o input para permitir selecionar o mesmo ficheiro novamente
+    e.target.value = '';
+  }, []);
+
+  // ── Funções de recorte ──────────────────────────────────────────────
+
+  /**
+   * Obtém coordenadas do rato relativas ao canvas de recorte.
+   */
+  const getCropCoords = useCallback((e: React.MouseEvent) => {
+    const canvas = cropCanvasRef.current;
+    if (!canvas) return { x: 0, y: 0 };
+
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+
+    return {
+      x: (e.clientX - rect.left) * scaleX,
+      y: (e.clientY - rect.top) * scaleY,
+    };
+  }, []);
+
+  /**
+   * Inicia o arrasto do retângulo de recorte.
+   */
+  const startCropDrag = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    const { x, y } = getCropCoords(e);
+    setIsDragging(true);
+    setDragStart({ x, y });
+    setCropRect({ x, y, w: 0, h: 0 });
+  }, [getCropCoords]);
+
+  /**
+   * Arrasta o retângulo de recorte.
+   */
+  const doCropDrag = useCallback((e: React.MouseEvent) => {
+    if (!isDragging || !dragStart) return;
+    e.preventDefault();
+
+    const { x, y } = getCropCoords(e);
+    const cropCanvas = cropCanvasRef.current;
+    if (!cropCanvas) return;
+
+    const newX = Math.min(dragStart.x, x);
+    const newY = Math.min(dragStart.y, y);
+    const newW = Math.min(Math.abs(x - dragStart.x), cropCanvas.width - newX);
+    const newH = Math.min(Math.abs(y - dragStart.y), cropCanvas.height - newY);
+
+    setCropRect({ x: newX, y: newY, w: newW, h: newH });
+  }, [isDragging, dragStart, getCropCoords]);
+
+  /**
+   * Termina o arrasto do retângulo.
+   */
+  const stopCropDrag = useCallback(() => {
+    setIsDragging(false);
+    setDragStart(null);
+  }, []);
+
+  /**
+   * Aplica o recorte e gera a assinatura final.
+   */
+  const applyCrop = useCallback(() => {
+    const cropCanvas = cropCanvasRef.current;
+    if (!cropCanvas || !cropRect || cropRect.w < 10 || cropRect.h < 10) return;
+
+    // Cria um canvas temporário com a área recortada
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = cropRect.w;
+    tempCanvas.height = cropRect.h;
+
+    const tempCtx = tempCanvas.getContext('2d');
+    if (!tempCtx) return;
+
+    tempCtx.drawImage(
+      cropCanvas,
+      cropRect.x, cropRect.y, cropRect.w, cropRect.h,
+      0, 0, cropRect.w, cropRect.h,
+    );
+
+    const dataUrl = tempCanvas.toDataURL('image/png');
+    setCurrentImage(dataUrl);
+    setRawImage(null);
+    setCropRect(null);
+  }, [cropRect]);
+
+  /**
+   * Cancela o recorte e volta ao modo anterior.
+   */
+  const cancelCrop = useCallback(() => {
+    setRawImage(null);
+    setCropRect(null);
+  }, []);
+
+  // ── Funções gerais ──────────────────────────────────────────────────
+
   const handleClear = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -191,12 +351,11 @@ export function SignaturePad({
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     setHasDrawn(false);
     setCurrentImage(null);
+    setRawImage(null);
+    setCropRect(null);
     onClear?.();
   }, [onClear]);
 
-  /**
-   * Salva a assinatura como base64 PNG.
-   */
   const handleSave = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -206,20 +365,18 @@ export function SignaturePad({
     onSave?.(dataUrl);
   }, [onSave]);
 
-  /**
-   * Cancela a edição atual.
-   */
   const handleCancel = useCallback(() => {
-    // Restaura a imagem inicial (se existia)
     if (initialValue) {
       setCurrentImage(initialValue);
     } else {
       handleClear();
     }
+    setRawImage(null);
+    setCropRect(null);
     onCancel?.();
   }, [initialValue, handleClear, onCancel]);
 
-  // ── Modo de visualização (somente leitura) ──────────────────────
+  // ── Modo de visualização (somente leitura) ──────────────────────────
   if (readOnly) {
     if (!currentImage) {
       return (
@@ -244,43 +401,193 @@ export function SignaturePad({
     );
   }
 
-  // ── Modo de edição ──────────────────────────────────────────────
+  // ── Modo de recorte (após captura por imagem) ───────────────────────
+  if (rawImage) {
+    return (
+      <div className="space-y-3">
+        {label && <label className="block text-sm font-medium text-gray-700">{label}</label>}
+
+        {/* Instruções de recorte */}
+        <div className="flex items-center gap-2 text-sm text-indigo-700 bg-indigo-50 rounded-lg px-3 py-2">
+          <Crop size={14} />
+          <span>{t('signature.cropInstruction')}</span>
+        </div>
+
+        {/* Canvas de recorte com retângulo */}
+        <div
+          className="relative border border-gray-300 rounded-lg overflow-hidden bg-gray-100"
+          style={{ maxHeight: '300px' }}
+        >
+          <canvas
+            ref={cropCanvasRef}
+            className="w-full cursor-crosshair"
+            onMouseDown={startCropDrag}
+            onMouseMove={doCropDrag}
+            onMouseUp={stopCropDrag}
+            onMouseLeave={stopCropDrag}
+          />
+
+          {/* Overlay escuro fora do retângulo de recorte */}
+          {cropRect && cropRect.w > 5 && cropRect.h > 5 && (
+            <svg
+              className="absolute inset-0 w-full h-full pointer-events-none"
+              viewBox={`0 0 ${cropCanvasRef.current?.width || 600} ${cropCanvasRef.current?.height || 300}`}
+              preserveAspectRatio="none"
+            >
+              {/* Fundo escuro */}
+              <rect x="0" y="0" width="100%" height="100%" fill="rgba(0,0,0,0.4)" />
+              {/* Retângulo transparente (área selecionada) */}
+              <rect
+                x={cropRect.x}
+                y={cropRect.y}
+                width={cropRect.w}
+                height={cropRect.h}
+                fill="transparent"
+                stroke="#4f46e5"
+                strokeWidth="2"
+                strokeDasharray="6 3"
+              />
+            </svg>
+          )}
+        </div>
+
+        {/* Botões de ação do recorte */}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={cancelCrop}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+          >
+            <X size={12} />
+            {t('signature.cancelCrop')}
+          </button>
+          <button
+            type="button"
+            onClick={applyCrop}
+            disabled={!cropRect || cropRect.w < 10 || cropRect.h < 10}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <Check size={12} />
+            {t('signature.applyCrop')}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Modo de edição principal ────────────────────────────────────────
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {label && <label className="block text-sm font-medium text-gray-700">{label}</label>}
 
-      {/* Canvas de desenho */}
-      <div className="relative border border-gray-300 rounded-lg overflow-hidden bg-white">
-        <canvas
-          ref={canvasRef}
-          width={600}
-          height={height}
-          className="w-full cursor-crosshair touch-none"
-          style={{ height: `${height}px` }}
-          onMouseDown={startDrawing}
-          onMouseMove={draw}
-          onMouseUp={stopDrawing}
-          onMouseLeave={stopDrawing}
-          onTouchStart={startDrawing}
-          onTouchMove={draw}
-          onTouchEnd={stopDrawing}
-        />
-
-        {/* Linha guia para assinatura */}
-        <div
-          className="absolute left-4 right-4 border-b border-dashed border-gray-200 pointer-events-none"
-          style={{ bottom: `${height * 0.25}px` }}
-        />
-
-        {/* Ícone de caneta (decorativo) */}
-        {!hasDrawn && !currentImage && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none text-gray-300">
-            <Pen size={24} />
-          </div>
-        )}
+      {/* Seletor de modo: Desenhar | Câmara */}
+      <div className="flex items-center gap-1 p-1 bg-gray-100 rounded-lg">
+        <button
+          type="button"
+          onClick={() => setCaptureMode('draw')}
+          className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+            captureMode === 'draw'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <Pen size={12} />
+          {t('signature.drawMode')}
+        </button>
+        <button
+          type="button"
+          onClick={() => setCaptureMode('camera')}
+          className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+            captureMode === 'camera'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <Camera size={12} />
+          {t('signature.cameraMode')}
+        </button>
       </div>
 
-      {/* Botões de ação */}
+      {/* ── Modo: Desenhar ──────────────────────────────────────────── */}
+      {captureMode === 'draw' && (
+        <>
+          <div className="relative border border-gray-300 rounded-lg overflow-hidden bg-white">
+            <canvas
+              ref={canvasRef}
+              width={600}
+              height={height}
+              className="w-full cursor-crosshair touch-none"
+              style={{ height: `${height}px` }}
+              onMouseDown={startDrawing}
+              onMouseMove={draw}
+              onMouseUp={stopDrawing}
+              onMouseLeave={stopDrawing}
+              onTouchStart={startDrawing}
+              onTouchMove={draw}
+              onTouchEnd={stopDrawing}
+            />
+
+            {/* Linha guia */}
+            <div
+              className="absolute left-4 right-4 border-b border-dashed border-gray-200 pointer-events-none"
+              style={{ bottom: `${height * 0.25}px` }}
+            />
+
+            {/* Ícone decorativo */}
+            {!hasDrawn && !currentImage && (
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none text-gray-300">
+                <Pen size={24} />
+              </div>
+            )}
+          </div>
+        </>
+      )}
+
+      {/* ── Modo: Câmara / Ficheiro ─────────────────────────────────── */}
+      {captureMode === 'camera' && (
+        <>
+          {/* Dicas */}
+          <button
+            type="button"
+            onClick={() => setShowTips(!showTips)}
+            className="flex items-center gap-1.5 text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-2 hover:bg-amber-100 transition-colors w-full"
+          >
+            <Lightbulb size={12} />
+            <span className="font-medium">{t('signature.tips')}</span>
+          </button>
+
+          {showTips && (
+            <div className="text-xs text-gray-600 bg-gray-50 rounded-lg p-3 space-y-1.5 border border-gray-200">
+              <p>{t('signature.tip1')}</p>
+              <p>{t('signature.tip2')}</p>
+              <p>{t('signature.tip3')}</p>
+              <p>{t('signature.tip4')}</p>
+            </div>
+          )}
+
+          {/* Área de captura */}
+          <div
+            className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer"
+            onClick={handleCameraClick}
+          >
+            <Camera size={32} className="mx-auto text-gray-400 mb-2" />
+            <p className="text-sm text-gray-600 font-medium">{t('signature.clickToCapture')}</p>
+            <p className="text-xs text-gray-400 mt-1">{t('signature.supportsFormats')}</p>
+          </div>
+
+          {/* Input de ficheiro oculto (com captura por câmara em mobile) */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            onChange={handleFileChange}
+            className="hidden"
+          />
+        </>
+      )}
+
+      {/* ── Botões de ação ──────────────────────────────────────────── */}
       <div className="flex items-center gap-2">
         <button
           type="button"
@@ -296,7 +603,7 @@ export function SignaturePad({
           <button
             type="button"
             onClick={handleSave}
-            disabled={isSaving || !hasDrawn}
+            disabled={isSaving || (captureMode === 'draw' && !hasDrawn)}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <Check size={12} />

@@ -50,7 +50,7 @@
   },
   "signature": {
     "title": "Assinatura",
-    "description": "Desenhe sua assinatura para usar em documentos",
+    "description": "Desenhe sua assinatura ou capture de um papel para usar em documentos",
     "clear": "Limpar",
     "apply": "Aplicar",
     "cancelEdit": "Cancelar",
@@ -60,6 +60,18 @@
     "error": "Erro ao salvar assinatura",
     "configure": "Configurar Assinatura",
     "useMySignature": "Usar minha assinatura",
-    "removeSignature": "Remover assinatura"
+    "removeSignature": "Remover assinatura",
+    "drawMode": "Desenhar",
+    "cameraMode": "Câmara / Foto",
+    "tips": "Dicas para uma boa assinatura",
+    "tip1": "1. Assine numa folha de papel branco com caneta preta ou azul",
+    "tip2": "2. Use boa iluminação, sem sombras sobre a assinatura",
+    "tip3": "3. Tire a foto diretamente por cima, bem alinhada",
+    "tip4": "4. Recorte a imagem para ficar apenas a área da assinatura",
+    "clickToCapture": "Toque para tirar foto ou selecionar imagem",
+    "supportsFormats": "JPG, PNG ou WebP",
+    "cropInstruction": "Arraste para selecionar a área da assinatura",
+    "applyCrop": "Recortar e Usar",
+    "cancelCrop": "Voltar"
   }
 }
