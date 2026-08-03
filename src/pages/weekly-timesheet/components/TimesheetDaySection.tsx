@@ -81,8 +81,8 @@ export function TimesheetDaySection({
 }: TimesheetDaySectionProps) {
   const { t } = useTranslation('timesheet');
 
-  /** Quantidade de linhas (técnicos) neste dia (mínimo 1 para renderizar) */
-  const rowCount = Math.max(day.entries.length, 1);
+  /** Quantidade de linhas (técnicos) neste dia + 1 linha vazia sempre no final */
+  const rowCount = Math.max(day.entries.length, 1) + 1;
   const hasEntries = day.entries.length > 0;
 
   return (
@@ -147,54 +147,63 @@ export function TimesheetDaySection({
 
       {/* ── LINHAS DE DADOS (uma por técnico) ─────────────────────────── */}
       {hasEntries ? (
-        day.entries.map((entry, rowIdx) => (
-          <tr key={entry.id || rowIdx} className="row-data">
-            {/* Coluna 1: Data (apenas na primeira linha, com rowspan) */}
-            {rowIdx === 0 && (
-              <td
-                className={`cell-data-date ${isEditMode ? 'cell-editable' : ''}`}
-                rowSpan={rowCount}
-                contentEditable={isEditMode}
-                suppressContentEditableWarning
-                onBlur={(e) => onDateChange(dayIdx, e.currentTarget.innerText.trim())}
-              >
-                {formatDateDisplay(day.date)}
-              </td>
-            )}
+        <>
+          {day.entries.map((entry, rowIdx) => (
+            <tr key={entry.id || rowIdx} className="row-data">
+              {/* Coluna 1: Data (apenas na primeira linha, com rowspan) */}
+              {rowIdx === 0 && (
+                <td
+                  className={`cell-data-date ${isEditMode ? 'cell-editable' : ''}`}
+                  rowSpan={rowCount}
+                  contentEditable={isEditMode}
+                  suppressContentEditableWarning
+                  onBlur={(e) => onDateChange(dayIdx, e.currentTarget.innerText.trim())}
+                >
+                  {formatDateDisplay(day.date)}
+                </td>
+              )}
 
-            {/* Colunas 2-12: Dados do técnico */}
-            {[
-              'technicianName', 'role', 'localTurbineNo', 'turbineIdNo',
-              'towerNo', 'bladeNo', 'standbyHrs', 'workingHrs',
-              'travelHrs', 'downtimeHrs', 'standbyReason',
-            ].map((field) => (
-              <td
-                key={field}
-                className={`cell-data ${isEditMode ? 'cell-editable' : ''}`}
-                contentEditable={isEditMode}
-                suppressContentEditableWarning
-                onBlur={(e) =>
-                  onEntryChange(dayIdx, rowIdx, field, e.currentTarget.innerText.trim())
-                }
-              >
-                {(entry[field as keyof typeof entry] as string) || ''}
-              </td>
+              {/* Colunas 2-12: Dados do técnico */}
+              {[
+                'technicianName', 'role', 'localTurbineNo', 'turbineIdNo',
+                'towerNo', 'bladeNo', 'standbyHrs', 'workingHrs',
+                'travelHrs', 'downtimeHrs', 'standbyReason',
+              ].map((field) => (
+                <td
+                  key={field}
+                  className={`cell-data ${isEditMode ? 'cell-editable' : ''}`}
+                  contentEditable={isEditMode}
+                  suppressContentEditableWarning
+                  onBlur={(e) =>
+                    onEntryChange(dayIdx, rowIdx, field, e.currentTarget.innerText.trim())
+                  }
+                >
+                  {(entry[field as keyof typeof entry] as string) || ''}
+                </td>
+              ))}
+
+              {/* Coluna 13: Daily Progress (apenas na primeira linha, com rowspan) */}
+              {rowIdx === 0 && (
+                <td
+                  className={`cell-data-progress ${isEditMode ? 'cell-editable' : ''}`}
+                  rowSpan={rowCount}
+                  contentEditable={isEditMode}
+                  suppressContentEditableWarning
+                  onBlur={(e) => onProgressChange(dayIdx, e.currentTarget.innerText.trim())}
+                >
+                  {day.progress || ''}
+                </td>
+              )}
+            </tr>
+          ))}
+
+          {/* ── Linha vazia adicional no final (padronização visual) ──────── */}
+          <tr className="row-data">
+            {Array.from({ length: 11 }).map((_, i) => (
+              <td key={i} className="cell-data" />
             ))}
-
-            {/* Coluna 13: Daily Progress (apenas na primeira linha, com rowspan) */}
-            {rowIdx === 0 && (
-              <td
-                className={`cell-data-progress ${isEditMode ? 'cell-editable' : ''}`}
-                rowSpan={rowCount}
-                contentEditable={isEditMode}
-                suppressContentEditableWarning
-                onBlur={(e) => onProgressChange(dayIdx, e.currentTarget.innerText.trim())}
-              >
-                {day.progress || ''}
-              </td>
-            )}
           </tr>
-        ))
+        </>
       ) : (
         /* Dia sem entradas - renderiza linha vazia com data e progress */
         <tr className="row-data">
