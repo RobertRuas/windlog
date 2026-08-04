@@ -987,6 +987,8 @@ model Feedback {
   technicalContext Json?
   /// Logs do console capturados (erros, warnings) em formato JSON
   consoleLogs Json?
+  /// Logs recentes do sistema (erros do usuário) em formato JSON
+  recentSystemLogs Json?
 
   // Screenshot
   /// Caminho relativo do screenshot (relativo a uploads/{userId}/feedbacks/)

@@ -69,6 +69,7 @@ export class FeedbackService {
         screenResolution: dto.screenResolution,
         technicalContext: dto.technicalContext,
         consoleLogs: dto.consoleLogs,
+        recentSystemLogs: dto.recentSystemLogs,
         reportedBy: userId,
         status: 'NEW',
         priority: 'MEDIUM',

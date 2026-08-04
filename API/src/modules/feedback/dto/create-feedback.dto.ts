@@ -146,4 +146,15 @@ export class CreateFeedbackDto {
   @IsOptional()
   @IsArray()
   consoleLogs?: any[];
+
+  /**
+   * Logs recentes do sistema (erros do usuário).
+   * Buscado automaticamente pelo frontend.
+   */
+  @ApiPropertyOptional({
+    description: 'Logs recentes do sistema (erros)',
+  })
+  @IsOptional()
+  @IsArray()
+  recentSystemLogs?: any[];
 }
