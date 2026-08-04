@@ -67,6 +67,7 @@ import { RegisterDto } from './dto/register.dto.js';
 import { ChangeTempPasswordDto } from './dto/change-temp-password.dto.js';
 import { OnboardingDto } from './dto/onboarding.dto.js';
 import { UpdateProfileDto } from './dto/update-profile.dto.js';
+import { UpdateSettingsDto } from './dto/settings.dto.js';
 import { CreatePhoneDto, UpdatePhoneDto } from './dto/user-phone.dto.js';
 import { CreateCertificationDto, UpdateCertificationDto } from './dto/user-certification.dto.js';
 import { CreateLanguageDto, UpdateLanguageDto } from './dto/user-language.dto.js';
@@ -314,6 +315,54 @@ export class AuthController {
     @Body() dto: UpdateProfileDto,
   ) {
     return this.authService.updateProfile(user.sub, dto);
+  }
+
+  // ==========================================================================
+  // SETTINGS ENDPOINT
+  // ==========================================================================
+
+  /**
+   * GET /api/v1/auth/settings
+   *
+   * Obtém as preferências do usuário autenticado.
+   */
+  @ApiOperation({
+    summary: 'Get user settings',
+    description: 'Retorna as preferências do usuário (idioma, tema, escala).',
+  })
+  @ApiResponse({ status: 200, description: 'Preferências retornadas com sucesso' })
+  @ApiResponse({ status: 401, description: 'Não autenticado' })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Get('settings')
+  getSettings(@CurrentUser() user: JwtPayload) {
+    return this.authService.getProfile(user.sub).then((profile) => ({
+      language: profile.language,
+      theme: profile.theme,
+      scale: profile.scale,
+    }));
+  }
+
+  /**
+   * PUT /api/v1/auth/settings
+   *
+   * Atualiza as preferências do usuário autenticado.
+   */
+  @ApiOperation({
+    summary: 'Update user settings',
+    description: 'Atualiza idioma, tema e escala da interface.',
+  })
+  @ApiResponse({ status: 200, description: 'Preferências atualizadas com sucesso' })
+  @ApiResponse({ status: 400, description: 'Dados inválidos' })
+  @ApiResponse({ status: 401, description: 'Não autenticado' })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Put('settings')
+  updateSettings(
+    @CurrentUser() user: JwtPayload,
+    @Body() dto: UpdateSettingsDto,
+  ) {
+    return this.authService.updateSettings(user.sub, dto);
   }
 
   // ==========================================================================

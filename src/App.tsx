@@ -33,6 +33,9 @@ import { Toaster } from 'sonner';
 // Importa a configuração do i18next (deve ser importado antes de usar traduções)
 import '@/i18n';
 
+// Contexto global de preferências (tema, escala, idioma)
+import { SettingsProvider } from '@/contexts/SettingsContext';
+
 // Páginas da aplicação
 import { LoginPage } from '@/pages/login/LoginPage';
 import { HomePage } from '@/pages/home/HomePage';
@@ -239,6 +242,8 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       {/* Toaster - exibe notificações toast (sucesso, erro, etc.) */}
       <Toaster position="top-right" richColors closeButton />
+      {/* SettingsProvider - gere preferências globais (tema, escala, idioma) */}
+      <SettingsProvider>
       {/* BrowserRouter - disponibiliza o sistema de rotas.
        * Permite usar useNavigate(), <Link>, <Routes>, etc. */}
       <BrowserRouter>
@@ -393,6 +398,7 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
+      </SettingsProvider>
     </QueryClientProvider>
   );
 }

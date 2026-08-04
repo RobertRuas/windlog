@@ -31,12 +31,10 @@
 
 ## Update Summary
 **Changes Made**
-- Added comprehensive team leader role system with isTeamLeader field for granular access control
-- Enhanced permission controls in weekly-timesheet.service.ts with canPerformTeamLeaderAction utility function
-- Implemented comprehensive timesheet operation restrictions based on team leader status
-- Updated database schema to support team leader role identification
-- Enhanced role-based access control system with four-tier permission levels including team leaders
-- Improved timesheet visibility and editing permissions based on team leadership roles
+- Enhanced total calculation logic to use sharedValues from day objects instead of multiplying hours by team members
+- Fixed inflated totals issue that occurred when calculating weekly timesheet totals
+- Improved accuracy of timesheet calculations by leveraging existing shared values data structure
+- Updated calculation methods to properly aggregate hours from individual day entries rather than applying team member multipliers
 
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -56,7 +54,7 @@
 15. [Conclusion](#conclusion)
 
 ## Introduction
-This document describes the backend implementation of the Weekly Timesheet (Timesheet Semanal) module within the Windlog system. It explains how weekly timesheets are modeled, created, updated, filtered, and persisted using NestJS, Prisma, and a PostgreSQL database. The module now includes enhanced support for shared values through a flexible JSON column system, allowing for dynamic key-value pair storage on timesheet days. Most importantly, it features improved timezone handling with the parseDateSafe() helper function that prevents timezone drift issues for negative UTC timezones like BRT (UTC-3), ensuring reliable date calculations across different timezone scenarios. The module has been extended with comprehensive attachment management capabilities, supporting secure file uploads for user documents, certifications, and photos through enhanced authentication services and Multer configuration. Additionally, the module now includes robust signature functionality for PDF document signing, enabling clients to add digital signatures to timesheet documents with proper validation and storage. The backend configuration has been optimized to handle large base64-encoded signature images with increased body size limits and modernized module imports for better TypeScript compatibility. **Updated** The module now implements a comprehensive role-based access control system that ensures proper data visibility and security across different user types, along with advanced filtering capabilities and enhanced data integrity measures. **Updated** The system now includes a sophisticated team leader role system that provides hierarchical access control and project-specific management capabilities.
+This document describes the backend implementation of the Weekly Timesheet (Timesheet Semanal) module within the Windlog system. It explains how weekly timesheets are modeled, created, updated, filtered, and persisted using NestJS, Prisma, and a PostgreSQL database. The module now includes enhanced support for shared values through a flexible JSON column system, allowing for dynamic key-value pair storage on timesheet days. Most importantly, it features improved timezone handling with the parseDateSafe() helper function that prevents timezone drift issues for negative UTC timezones like BRT (UTC-3), ensuring reliable date calculations across different timezone scenarios. The module has been extended with comprehensive attachment management capabilities, supporting secure file uploads for user documents, certifications, and photos through enhanced authentication services and Multer configuration. Additionally, the module now includes robust signature functionality for PDF document signing, enabling clients to add digital signatures to timesheet documents with proper validation and storage. The backend configuration has been optimized to handle large base64-encoded signature images with increased body size limits and modernized module imports for better TypeScript compatibility. **Updated** The module now implements a comprehensive role-based access control system that ensures proper data visibility and security across different user types, along with advanced filtering capabilities and enhanced data integrity measures. **Updated** The system now includes a sophisticated team leader role system that provides hierarchical access control and project-specific management capabilities. **Updated** The total calculation logic has been enhanced to use sharedValues from day objects instead of multiplying hours by team members, fixing inflated totals issues and providing more accurate timesheet calculations.
 
 ## Project Structure
 The Weekly Timesheet module is implemented as a NestJS feature module under API/src/modules/weekly-timesheet with:
@@ -85,23 +83,25 @@ M["projects.service.ts"]
 N["Access Control System"]
 O["Advanced Filtering System"]
 P["Team Leader System"]
+Q["Enhanced Total Calculation"]
 end
 subgraph "Prisma & DB"
-Q["schema.prisma"]
-R["migration.sql"]
-S["shared_values_migration.sql"]
-T["signature_data_migration.sql"]
-U["team_leader_migration.sql"]
-V["Role-Based Filtering"]
-W["Creator-Based Permissions"]
-X["Multi-Field Filters"]
-Y["Team Leader Restrictions"]
+R["schema.prisma"]
+S["migration.sql"]
+T["shared_values_migration.sql"]
+U["signature_data_migration.sql"]
+V["team_leader_migration.sql"]
+W["Role-Based Filtering"]
+X["Creator-Based Permissions"]
+Y["Multi-Field Filters"]
+Z["Team Leader Restrictions"]
+AA["Shared Values Aggregation"]
 end
 subgraph "File Upload System"
-Z["upload.controller.ts"]
-AA["upload.service.ts"]
-AB["uploads/"]
-AC["signatures/"]
+AB["upload.controller.ts"]
+AC["upload.service.ts"]
+AD["uploads/"]
+AE["signatures/"]
 end
 A --> C
 A --> D
@@ -112,23 +112,25 @@ D --> K
 D --> N
 D --> O
 D --> P
-D --> V
+D --> Q
 D --> W
 D --> X
 D --> Y
-D --> Q
-H --> R
+D --> Z
+D --> AA
+D --> R
 H --> S
 H --> T
 H --> U
+H --> V
 I --> J
-I --> Z
-Z --> AA
-AA --> AB
-AA --> AC
+I --> AB
+AB --> AC
+AC --> AD
+AC --> AE
 A --> L
 L --> M
-M --> Q
+M --> R
 ```
 
 **Diagram sources**
@@ -179,8 +181,9 @@ Key responsibilities:
 - **Updated** Advanced filtering system supporting week, project, and author-based queries.
 - **Updated** Creator-based editing permissions for enhanced data integrity.
 - **Updated** Team leader role system with comprehensive operation restrictions and project-specific management capabilities.
+- **Updated** Enhanced total calculation logic using sharedValues from day objects instead of multiplying hours by team members, fixing inflated totals issue.
 
-**Updated** Enhanced with signature functionality including digital signature validation, PDF document signing capabilities, and integration with the signature management system through authentication service. **Updated** Enhanced project members API to include user.position data for automatic role assignment in timesheet form editor. **Updated** Implemented comprehensive role-based access control system with four-tier permission levels including team leaders. **Updated** Added advanced filtering capabilities with week, project, and author filters for improved data retrieval. **Updated** Integrated team leader role system with isTeamLeader field for hierarchical access control and project-specific management.
+**Updated** Enhanced with signature functionality including digital signature validation, PDF document signing capabilities, and integration with the signature management system through authentication service. **Updated** Enhanced project members API to include user.position data for automatic role assignment in timesheet form editor. **Updated** Implemented comprehensive role-based access control system with four-tier permission levels including team leaders. **Updated** Added advanced filtering capabilities with week, project, and author filters for improved data retrieval. **Updated** Integrated team leader role system with isTeamLeader field for hierarchical access control and project-specific management. **Updated** Enhanced total calculation logic to use sharedValues from day objects instead of multiplying hours by team members, providing more accurate timesheet totals and fixing inflated totals issues.
 
 **Section sources**
 - [weekly-timesheet.controller.ts](file://API/src/modules/weekly-timesheet/weekly-timesheet.controller.ts)
@@ -200,6 +203,7 @@ The Weekly Timesheet module follows NestJS modular architecture with enhanced si
 - **Updated** Role-based access control system enforces proper data visibility and security across different user types.
 - **Updated** Advanced filtering system processes multiple filter combinations efficiently at the database level.
 - **Updated** Team leader role system provides hierarchical access control with project-specific management capabilities.
+- **Updated** Enhanced total calculation system aggregates hours from sharedValues in day objects instead of applying team member multipliers.
 
 ```mermaid
 sequenceDiagram
@@ -210,6 +214,7 @@ participant Service as "WeeklyTimesheetService"
 participant AccessControl as "Access Control System"
 participant FilterSystem as "Advanced Filtering System"
 participant TeamLeaderSystem as "Team Leader System"
+participant TotalCalculation as "Enhanced Total Calculation"
 participant SignatureHandler as "Signature Handler"
 participant AuthService as "AuthService"
 participant DateHelper as "parseDateSafe()"
@@ -228,6 +233,8 @@ Service->>FilterSystem : "Process filter parameters"
 FilterSystem-->>Service : "Validated filters"
 Service->>TeamLeaderSystem : "Check team leader permissions"
 TeamLeaderSystem-->>Service : "Team leader restrictions applied"
+Service->>TotalCalculation : "Calculate totals from sharedValues"
+TotalCalculation-->>Service : "Accurate totals from day objects"
 Service->>DateHelper : "Parse dates safely"
 DateHelper-->>Service : "Timezone-safe dates"
 Service->>SignatureHandler : "Process signature data"
@@ -246,7 +253,7 @@ Service-->>Controller : "Result"
 Controller-->>Client : "Standardized Response"
 ```
 
-**Updated** Enhanced sequence diagram to reflect timezone-safe date processing, shared values handling, signature management integration, attachment management through the authentication service, project members API enhancement with position data support, comprehensive role-based access control enforcement, advanced filtering system integration, and team leader role system with hierarchical permission checking.
+**Updated** Enhanced sequence diagram to reflect timezone-safe date processing, shared values handling, signature management integration, attachment management through the authentication service, project members API enhancement with position data support, comprehensive role-based access control enforcement, advanced filtering system integration, team leader role system with hierarchical permission checking, and enhanced total calculation using sharedValues from day objects instead of multiplying hours by team members.
 
 **Diagram sources**
 - [weekly-timesheet.controller.ts](file://API/src/modules/weekly-timesheet/weekly-timesheet.controller.ts)
@@ -331,6 +338,7 @@ Responsibilities:
 - **Updated** Implement advanced filtering system with week, project, and author-based queries.
 - **Updated** Apply creator-based editing permissions for enhanced data integrity.
 - **Updated** Implement team leader role system with comprehensive operation restrictions.
+- **Updated** Enhanced total calculation logic using sharedValues from day objects instead of multiplying hours by team members.
 
 Data flow:
 - Controller calls service methods with validated DTOs including signature data.
@@ -340,6 +348,7 @@ Data flow:
 - **Updated** Access control validation determines data visibility based on user roles.
 - **Updated** Advanced filtering system processes multiple filter parameters efficiently.
 - **Updated** Team leader permission system applies hierarchical restrictions based on isTeamLeader field.
+- **Updated** Enhanced total calculation aggregates hours from sharedValues in day objects for accurate totals.
 
 ```mermaid
 flowchart TD
@@ -347,7 +356,7 @@ Start(["Service Method Entry"]) --> Validate["Validate Inputs + Signatures"]
 Validate --> CheckAuth{"User Authorized?"}
 CheckAuth --> |No| ThrowError["Throw Unauthorized Error"]
 CheckAuth --> |Yes| CheckAccessControl["Check Role-Based Access"]
-CheckAccessControl --> AccessGranted{"Access Granted?"}
+AccessControl --> AccessGranted{"Access Granted?"}
 AccessGranted --> |No| DenyAccess["Deny Access Based on Role"]
 AccessGranted --> |Yes| CheckTeamLeader["Check Team Leader Status"]
 CheckTeamLeader --> TeamLeader{"Is Team Leader?"}
@@ -368,7 +377,8 @@ CheckAttachments --> |No| CheckProjectMembers{"Need Project Members?"}
 CheckProjectMembers --> |Yes| GetMembersWithPositions["Get Members with Position Data"]
 CheckProjectMembers --> |No| Execute["Execute via Prisma Client"]
 GetMembersWithPositions --> Execute
-ProcessSharedValues --> Execute
+ProcessSharedValues --> CalculateTotals["Calculate Totals from sharedValues"]
+CalculateTotals --> Execute
 ProcessAttachments --> Execute
 Execute --> Success{"Operation Success?"}
 Success --> |No| HandleError["Handle DB Error"]
@@ -379,7 +389,7 @@ ThrowError --> Return
 DenyAccess --> Return
 ```
 
-**Updated** Enhanced flowchart to include timezone-safe date parsing, signature validation, shared values processing, attachment management integration, project members API enhancement with position data support, comprehensive role-based access control enforcement, advanced filtering system integration, and team leader role system with hierarchical permission checking in the service method execution flow.
+**Updated** Enhanced flowchart to include timezone-safe date parsing, signature validation, shared values processing, attachment management integration, project members API enhancement with position data support, comprehensive role-based access control enforcement, advanced filtering system integration, team leader role system with hierarchical permission checking, and enhanced total calculation using sharedValues from day objects instead of multiplying hours by team members in the service method execution flow.
 
 **Diagram sources**
 - [weekly-timesheet.service.ts](file://API/src/modules/weekly-timesheet/weekly-timesheet.service.ts)
@@ -887,7 +897,7 @@ Global cross-cutting concerns:
 - RolesGuard enforces RBAC based on JWT payload for signature operations and access control.
 - Env validation ensures required configuration variables exist for signature functionality and access control.
 
-**Updated** Enhanced dependency analysis to include signature management system integration, attachment management capabilities, project members API enhancement with position data support, comprehensive role-based access control system integration, advanced filtering system dependencies, and team leader role system integration.
+**Updated** Enhanced dependency analysis to include signature management system integration, attachment management capabilities, project members API enhancement with position data support, comprehensive role-based access control system integration, advanced filtering system dependencies, team leader role system integration, and enhanced total calculation system using sharedValues from day objects.
 
 ```mermaid
 graph TB
@@ -923,9 +933,12 @@ WeeklyModule --> TeamLeaderSystem["Team Leader System"]
 TeamLeaderSystem --> IsTeamLeaderField["isTeamLeader Field"]
 TeamLeaderSystem --> TeamLeaderPermissions["Team Leader Permissions"]
 TeamLeaderSystem --> ProjectScope["Project Scope Validation"]
+WeeklyModule --> TotalCalculation["Enhanced Total Calculation"]
+TotalCalculation --> SharedValuesAggregation["SharedValues Aggregation"]
+TotalCalculation --> DayObjectProcessing["Day Object Processing"]
 ```
 
-**Updated** Enhanced diagram to show signature management dependencies, attachment management integration, project members API enhancement with position data support, comprehensive role-based access control system with permission checking and role-based filtering, advanced filtering system with week, project, and author filter components, and team leader role system with isTeamLeader field, team leader permissions, and project scope validation.
+**Updated** Enhanced diagram to show signature management dependencies, attachment management integration, project members API enhancement with position data support, comprehensive role-based access control system with permission checking and role-based filtering, advanced filtering system with week, project, and author filter components, team leader role system with isTeamLeader field, team leader permissions, and project scope validation, and enhanced total calculation system using sharedValues aggregation from day objects instead of multiplying hours by team members.
 
 **Diagram sources**
 - [main.ts](file://API/src/main.ts)
@@ -982,8 +995,9 @@ TeamLeaderSystem --> ProjectScope["Project Scope Validation"]
 - **Updated** Optimize team leader role system with efficient isTeamLeader field queries and project association checks.
 - **Updated** Implement caching strategies for team leader permissions to reduce repeated permission checking overhead.
 - **Updated** Optimize project scope validation queries for team leader operations to minimize database lookups.
+- **Updated** Enhanced total calculation performance by aggregating sharedValues directly from day objects instead of applying team member multipliers, reducing computational overhead and improving accuracy.
 
-**Updated** Added guidance for optimizing signature data processing, JSON column operations for shared values, efficient file upload handling for attachment management, signature-specific performance considerations, modern module import benefits, project members API optimization for position data retrieval, role-based access control performance optimization through efficient database-level filtering and caching strategies, advanced filtering system performance optimization, creator-based permission efficiency, dual user identification field optimization, and team leader role system performance optimization through efficient isTeamLeader field queries, project association checks, and caching strategies for team leader permissions.
+**Updated** Added guidance for optimizing signature data processing, JSON column operations for shared values, efficient file upload handling for attachment management, signature-specific performance considerations, modern module import benefits, project members API optimization for position data retrieval, role-based access control performance optimization through efficient database-level filtering and caching strategies, advanced filtering system performance optimization, creator-based permission efficiency, dual user identification field optimization, team leader role system performance optimization through efficient isTeamLeader field queries, project association checks, and caching strategies for team leader permissions, and enhanced total calculation performance by using sharedValues aggregation from day objects instead of multiplying hours by team members.
 
 ## Troubleshooting Guide
 Common issues and resolutions:
@@ -1007,9 +1021,10 @@ Common issues and resolutions:
 - **Updated** Data integrity issues: Verify dual user identification field consistency; check userId vs technicianName synchronization; validate data migration completeness.
 - **Updated** Team leader role issues: Verify isTeamLeader field is properly set in user records; check team leader permission logic; debug project association validation; verify team leader operation restrictions.
 - **Updated** Team leader permission issues: Investigate canPerformTeamLeaderAction function logic; verify project scope validation; check team leader access control for timesheet operations; debug hierarchical permission denials.
+- **Updated** Total calculation issues: Verify sharedValues aggregation from day objects is working correctly; check that totals are calculated from actual day entries instead of multiplying hours by team members; debug inflated totals issues; validate day object sharedValues structure.
 - Logging and tracing: Use LoggingInterceptor output to identify slow endpoints and failed requests including signature operations and access control decisions.
 
-**Updated** Added troubleshooting guidance for shared values functionality, timezone-related date processing issues, attachment management problems, signature-related issues including PDF document signing and signature validation, body size limit configuration, module import syntax errors, project members API issues with position data and automatic role assignment, comprehensive role-based access control troubleshooting including permission debugging and filtering issues, advanced filtering system debugging, creator-based permission troubleshooting, data integrity issues with dual user identification fields, and team leader role system troubleshooting including isTeamLeader field validation, team leader permission debugging, project scope validation, and hierarchical permission issues.
+**Updated** Added troubleshooting guidance for shared values functionality, timezone-related date processing issues, attachment management problems, signature-related issues including PDF document signing and signature validation, body size limit configuration, module import syntax errors, project members API issues with position data and automatic role assignment, comprehensive role-based access control troubleshooting including permission debugging and filtering issues, advanced filtering system debugging, creator-based permission troubleshooting, data integrity issues with dual user identification fields, team leader role system troubleshooting including isTeamLeader field validation, team leader permission debugging, project scope validation, and hierarchical permission issues, and enhanced total calculation troubleshooting including sharedValues aggregation debugging and inflated totals resolution.
 
 **Section sources**
 - [roles.guard.ts](file://API/src/common/guards/roles.guard.ts)
@@ -1023,6 +1038,6 @@ Common issues and resolutions:
 - [projects.service.ts](file://API/src/modules/projects/projects.service.ts)
 
 ## Conclusion
-The Weekly Timesheet module integrates cleanly with the Windlog backend's established patterns: NestJS modularity, Prisma ORM, JWT-based authentication, RBAC, standardized responses, and comprehensive logging. The addition of shared values support provides flexible key-value pair storage capabilities while maintaining the module's security, performance, and reliability standards. Most importantly, the enhanced timezone handling with parseDateSafe() helper function ensures accurate date processing across different timezone scenarios, particularly benefiting users in negative UTC timezones like BRT (UTC-3). The recent extension with comprehensive attachment management capabilities through the authentication service and Multer configuration enables secure file uploads for user documents, certifications, and photos. Additionally, the new signature functionality provides robust digital document signing capabilities for PDF timesheet documents, enabling clients to add secure digital signatures with proper validation and storage. The backend configuration has been optimized with increased body size limits for signature images and modernized module imports for better TypeScript compatibility. **Updated** The project members API enhancement with user.position data support enables automatic role assignment functionality in the timesheet form editor, improving user experience and workflow automation. **Updated** The comprehensive role-based access control system ensures proper data visibility and security across different user types, providing administrators with full oversight, team leaders with project-specific management capabilities, and standard users with secure self-service functionality. **Updated** The advanced filtering system with week, project, and author filters provides powerful data retrieval capabilities for reporting and analysis. **Updated** The creator-based editing permissions enhance data integrity by ensuring only original authors can modify their timesheets. **Updated** The dual user identification field support (userId and technicianName) improves data compatibility and migration flexibility. **Updated** The team leader role system with isTeamLeader field provides hierarchical access control and project-specific management capabilities, enabling team leaders to effectively manage their project teams while maintaining appropriate security boundaries. By following the documented structure and best practices, developers can extend and maintain the module effectively while ensuring reliable date calculations, flexible data storage capabilities, robust attachment management functionality, comprehensive signature support for digital document workflows, automatic role assignment through position data, optimal performance through modern JavaScript module systems, secure access control through role-based filtering and permission management, advanced filtering capabilities for data analysis, enhanced data integrity through creator-based permissions, improved data compatibility through dual user identification fields, and hierarchical team leader management capabilities for effective project team coordination.
+The Weekly Timesheet module integrates cleanly with the Windlog backend's established patterns: NestJS modularity, Prisma ORM, JWT-based authentication, RBAC, standardized responses, and comprehensive logging. The addition of shared values support provides flexible key-value pair storage capabilities while maintaining the module's security, performance, and reliability standards. Most importantly, the enhanced timezone handling with parseDateSafe() helper function ensures accurate date processing across different timezone scenarios, particularly benefiting users in negative UTC timezones like BRT (UTC-3). The recent extension with comprehensive attachment management capabilities through the authentication service and Multer configuration enables secure file uploads for user documents, certifications, and photos. Additionally, the new signature functionality provides robust digital document signing capabilities for PDF timesheet documents, enabling clients to add secure digital signatures with proper validation and storage. The backend configuration has been optimized with increased body size limits for signature images and modernized module imports for better TypeScript compatibility. **Updated** The project members API enhancement with user.position data support enables automatic role assignment functionality in the timesheet form editor, improving user experience and workflow automation. **Updated** The comprehensive role-based access control system ensures proper data visibility and security across different user types, providing administrators with full oversight, team leaders with project-specific management capabilities, and standard users with secure self-service functionality. **Updated** The advanced filtering system with week, project, and author filters provides powerful data retrieval capabilities for reporting and analysis. **Updated** The creator-based editing permissions enhance data integrity by ensuring only original authors can modify their timesheets. **Updated** The dual user identification field support (userId and technicianName) improves data compatibility and migration flexibility. **Updated** The team leader role system with isTeamLeader field provides hierarchical access control and project-specific management capabilities, enabling team leaders to effectively manage their project teams while maintaining appropriate security boundaries. **Updated** The enhanced total calculation logic using sharedValues from day objects instead of multiplying hours by team members fixes inflated totals issues and provides more accurate timesheet calculations by aggregating hours directly from individual day entries. By following the documented structure and best practices, developers can extend and maintain the module effectively while ensuring reliable date calculations, flexible data storage capabilities, robust attachment management functionality, comprehensive signature support for digital document workflows, automatic role assignment through position data, optimal performance through modern JavaScript module systems, secure access control through role-based filtering and permission management, advanced filtering capabilities for data analysis, enhanced data integrity through creator-based permissions, improved data compatibility through dual user identification fields, hierarchical team leader management capabilities for effective project team coordination, and accurate timesheet totals through sharedValues aggregation from day objects.
 
-**Updated** Enhanced conclusion to reflect the new shared values functionality, timezone-safe date processing capabilities, attachment management system integration, signature functionality for PDF document signing, backend configuration optimizations including body size limits and ES module imports, project members API enhancement with position data support for automatic role assignment, comprehensive role-based access control system with four-tier permission levels including team leaders, advanced filtering system with week, project, and author filters, creator-based editing permissions for enhanced data integrity, dual user identification field support for improved data compatibility, and team leader role system with isTeamLeader field for hierarchical access control and project-specific management capabilities, and their collective benefits for international users, comprehensive document management workflows, secure multi-user collaboration environments, advanced data analysis capabilities, robust data integrity measures, and effective team leader project management.
+**Updated** Enhanced conclusion to reflect the new shared values functionality, timezone-safe date processing capabilities, attachment management system integration, signature functionality for PDF document signing, backend configuration optimizations including body size limits and ES module imports, project members API enhancement with position data support for automatic role assignment, comprehensive role-based access control system with four-tier permission levels including team leaders, advanced filtering system with week, project, and author filters, creator-based editing permissions for enhanced data integrity, dual user identification field support for improved data compatibility, team leader role system with isTeamLeader field for hierarchical access control and project-specific management capabilities, and enhanced total calculation logic using sharedValues from day objects instead of multiplying hours by team members for accurate timesheet totals, and their collective benefits for international users, comprehensive document management workflows, secure multi-user collaboration environments, advanced data analysis capabilities, robust data integrity measures, effective team leader project management, and accurate timesheet reporting.

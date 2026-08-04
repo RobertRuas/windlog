@@ -36,6 +36,7 @@ import { UploadService } from '../upload/upload.service.js';
 import { LoginDto } from './dto/login.dto.js';
 import { RegisterDto } from './dto/register.dto.js';
 import { UpdateProfileDto } from './dto/update-profile.dto.js';
+import { UpdateSettingsDto } from './dto/settings.dto.js';
 import { CreatePhoneDto, UpdatePhoneDto } from './dto/user-phone.dto.js';
 import { CreateCertificationDto, UpdateCertificationDto } from './dto/user-certification.dto.js';
 import { CreateLanguageDto, UpdateLanguageDto } from './dto/user-language.dto.js';
@@ -407,6 +408,10 @@ export class AuthService {
       preferredAirportCity: user.preferredAirportCity,
       preferredAirportCountry: user.preferredAirportCountry,
       isTeamLeader: user.isTeamLeader,
+      // Preferências do usuário
+      language: user.language,
+      theme: user.theme,
+      scale: user.scale,
       createdAt: user.createdAt,
       phoneNumbers: user.phoneNumbers,
       certifications: user.certifications,
@@ -518,6 +523,46 @@ export class AuthService {
       documents: updatedUser.documents,
       bankAccounts: updatedUser.bankAccounts,
     };
+  }
+
+  // ==========================================================================
+  // SETTINGS - Preferências do Usuário
+  // ==========================================================================
+
+  /**
+   * Atualiza as preferências do usuário (idioma, tema, escala).
+   *
+   * @param userId - ID do usuário (extraído do JWT)
+   * @param dto - Preferências a atualizar (todas opcionais)
+   * @returns Preferências atualizadas
+   */
+  async updateSettings(userId: string, dto: UpdateSettingsDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    const updateData: Record<string, unknown> = {};
+    if (dto.language !== undefined) updateData.language = dto.language;
+    if (dto.theme !== undefined) updateData.theme = dto.theme;
+    if (dto.scale !== undefined) updateData.scale = dto.scale;
+
+    const updatedUser = await this.prisma.user.update({
+      where: { id: userId },
+      data: updateData,
+      select: {
+        language: true,
+        theme: true,
+        scale: true,
+      },
+    });
+
+    this.logger.log(`Settings updated for user: ${user.email} (${user.id})`);
+
+    return updatedUser;
   }
 
   // ==========================================================================

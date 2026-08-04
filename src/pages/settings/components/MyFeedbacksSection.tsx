@@ -52,9 +52,11 @@ const CATEGORY_ICONS: Record<FeedbackCategory, typeof Bug> = {
 
 /**
  * Componente MyFeedbacksSection - Seção de feedbacks nas configurações.
+ * Começa colapsada (discreta) — o usuário pode expandir se quiser.
  */
 export function MyFeedbacksSection({ t }: MyFeedbacksSectionProps) {
   const [showModal, setShowModal] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   // Query: busca os feedbacks do usuário
   const { data: feedbacks, isLoading } = useQuery({
@@ -70,14 +72,32 @@ export function MyFeedbacksSection({ t }: MyFeedbacksSectionProps) {
   return (
     <>
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <div className="px-5 py-4 border-b border-gray-100">
+        {/* Cabeçalho clicável (sempre visível) */}
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="w-full px-5 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+        >
           <div className="flex items-center gap-2">
-            <MessageSquare size={18} className="text-gray-500" />
-            <h2 className="text-sm font-semibold text-gray-700">{t('sections.my_feedbacks')}</h2>
+            <MessageSquare size={18} className="text-gray-400" />
+            <h2 className="text-sm font-medium text-gray-500">{t('sections.my_feedbacks')}</h2>
+            {/* Contador de feedbacks não lidos */}
+            {feedbacks && feedbacks.length > 0 && (
+              <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-blue-100 text-blue-700 text-xs font-medium">
+                {feedbacks.length}
+              </span>
+            )}
           </div>
-        </div>
+          <svg
+            className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
 
-        <div className="divide-y divide-gray-100">
+        {/* Conteúdo expansível */}
+        {isExpanded && (
+          <div className="divide-y divide-gray-100 border-t border-gray-100">
           {/* Loading */}
           {isLoading && (
             <div className="px-5 py-8 text-center">
@@ -113,7 +133,8 @@ export function MyFeedbacksSection({ t }: MyFeedbacksSectionProps) {
               )}
             </>
           )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Modal com todos os feedbacks */}

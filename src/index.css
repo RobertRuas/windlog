@@ -98,6 +98,56 @@ body {
   color: var(--color-text);
   font-size: var(--form-font-size);
   line-height: 1.5;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+/* ==========================================================================
+   Dark Mode — Variáveis CSS para tema escuro
+   ==========================================================================
+   Ativado pela classe "dark" no <html>, gerida pelo SettingsContext.
+   ========================================================================== */
+html.dark {
+  --color-primary: #2997ff;
+  --color-primary-hover: #0077ed;
+  --color-primary-light: rgba(41, 151, 255, 0.12);
+  --color-primary-ring: rgba(41, 151, 255, 0.2);
+
+  --color-text: #f5f5f7;
+  --color-text-secondary: #a1a1a6;
+  --color-text-tertiary: #86868b;
+  --color-text-placeholder: #636366;
+
+  --color-surface: #1c1c1e;
+  --color-background: #000000;
+  --color-border: #38383a;
+  --color-border-focus: #2997ff;
+  --color-border-error: #ff453a;
+  --color-error-bg: rgba(255, 69, 58, 0.12);
+  --color-error-text: #ff453a;
+}
+
+html.dark body {
+  background-color: var(--color-background);
+  color: var(--color-text);
+}
+
+/* Ajustes de formulário para dark mode */
+html.dark .form-input,
+html.dark .form-select,
+html.dark .form-textarea {
+  background-color: var(--color-surface);
+  border-color: var(--color-border);
+  color: var(--color-text);
+}
+
+html.dark .form-button-secondary {
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+html.dark .form-button-secondary:hover:not(:disabled) {
+  background-color: #2c2c2e;
 }
 
 /* ==========================================================================

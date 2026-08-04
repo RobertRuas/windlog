@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "User" ADD COLUMN     "language" TEXT NOT NULL DEFAULT 'pt',
+ADD COLUMN     "scale" INTEGER NOT NULL DEFAULT 80,
+ADD COLUMN     "theme" TEXT NOT NULL DEFAULT 'auto';

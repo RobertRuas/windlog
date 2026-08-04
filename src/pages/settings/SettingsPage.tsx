@@ -30,6 +30,7 @@ import { PageHelp } from '@/components/ui/PageHelp';
 import { AccountSection } from './components/AccountSection';
 import { AdminSection } from './components/AdminSection';
 import { MyFeedbacksSection } from './components/MyFeedbacksSection';
+import { PreferencesSection } from './components/PreferencesSection';
 
 /**
  * Verifica se o usuário atual tem role ADMIN.
@@ -69,6 +70,7 @@ export function SettingsPage() {
         </PageHelp.Section>
 
         <PageHelp.Section title={t('help.sections_title')}>
+          <PageHelp.Step>{t('help.step_preferences')}</PageHelp.Step>
           <PageHelp.Step>{t('help.step_account')}</PageHelp.Step>
           <PageHelp.Step>{t('help.step_feedbacks')}</PageHelp.Step>
           <PageHelp.Step>{t('help.step_admin')}</PageHelp.Step>
@@ -81,9 +83,13 @@ export function SettingsPage() {
 
       {/* Secções */}
       <div className="space-y-4">
+        {/* Preferências (idioma, tema, escala) */}
+        <PreferencesSection t={t} />
+
+        {/* Conta */}
         <AccountSection t={t} />
 
-        {/* Secção: Meus Feedbacks */}
+        {/* Secção: Meus Feedbacks (discreta — só aparece se o usuário quiser) */}
         <MyFeedbacksSection t={t} />
 
         {/* Secção: Administração */}

@@ -200,6 +200,14 @@ model User {
   /// Indica se o usuário é Team Leader (independente do nível técnico ou role)
   isTeamLeader Boolean @default(false)
 
+  // Preferências do usuário (configurações pessoais)
+  /// Idioma preferido da interface (ex: "pt")
+  language        String  @default("pt")
+  /// Tema visual: "light", "dark" ou "auto"
+  theme           String  @default("auto")
+  /// Escala da interface em percentagem (60 a 110, padrão 80)
+  scale           Int     @default(80)
+
   // Dados profissionais específicos
   /// WINDA ID (ex: "RR092285BR")
   windaId           String?
