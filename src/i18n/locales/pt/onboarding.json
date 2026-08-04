@@ -5,6 +5,7 @@
   "success": "Perfil completo com sucesso!",
   "submit": "Salvar e continuar",
   "submitting": "A guardar...",
+  "cancel": "Cancelar e sair",
   "sections": {
     "personal": "Dados Pessoais",
     "passport": "Passaporte",

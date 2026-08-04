@@ -507,10 +507,22 @@ export function OnboardingPage() {
             </div>
           )}
 
-          {/* Botão de submit */}
-          <Button type="submit" disabled={isLoading} className="w-full">
-            {isLoading ? t('submitting') : t('submit')}
-          </Button>
+          {/* Botões de ação */}
+          <div className="flex flex-col gap-3">
+            <Button type="submit" disabled={isLoading} className="w-full">
+              {isLoading ? t('submitting') : t('submit')}
+            </Button>
+            <button
+              type="button"
+              onClick={() => {
+                localStorage.removeItem('accessToken');
+                navigate('/login');
+              }}
+              className="w-full py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              {t('cancel')}
+            </button>
+          </div>
         </form>
       </div>
     </div>
