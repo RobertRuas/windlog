@@ -37,6 +37,8 @@ import {
   type WeeklyTimesheet,
 } from '@/services/weekly-timesheet.service';
 import { getProfile } from '@/services/auth.service';
+import { getUsers, type UserListItem } from '@/services/user.service';
+import { getProjects, type ProjectListItem } from '@/services/project.service';
 
 /**
  * Página WeeklyTimesheetPage - Listagem de timesheets.
@@ -56,18 +58,36 @@ export function WeeklyTimesheetPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState('');
+  const [weekFilter, setWeekFilter] = useState('');
+  const [projectFilter, setProjectFilter] = useState('');
+  const [authorFilter, setAuthorFilter] = useState('');
   const [viewTimesheet, setViewTimesheet] = useState<WeeklyTimesheet | null>(null);
   const [viewLoading, setViewLoading] = useState(false);
   const queryClient = useQueryClient();
 
+  // ── Busca usuários e projetos para os filtros ─────────────────────
+  const { data: usersData } = useQuery({
+    queryKey: ['users-filter'],
+    queryFn: () => getUsers({ limit: 200, isActive: true }),
+  });
+  const { data: projectsData } = useQuery({
+    queryKey: ['projects-filter'],
+    queryFn: () => getProjects({ limit: 200 }),
+  });
+  const users: UserListItem[] = usersData?.data || [];
+  const projects: ProjectListItem[] = (projectsData as any)?.data || [];
+
   // ── Busca timesheets ────────────────────────────────────────────────
   const { data: response, isLoading } = useQuery({
-    queryKey: ['timesheets', page, statusFilter],
+    queryKey: ['timesheets', page, statusFilter, weekFilter, projectFilter, authorFilter],
     queryFn: () =>
       getTimesheets({
         page,
         limit: 10,
         status: statusFilter || undefined,
+        week: weekFilter || undefined,
+        projectId: projectFilter || undefined,
+        createdBy: authorFilter || undefined,
       }),
   });
 
@@ -177,19 +197,50 @@ export function WeeklyTimesheetPage() {
         </div>
 
         {/* ── Filtros ───────────────────────────────────────────────── */}
-        <div className="flex gap-3 mb-4">
+        <div className="flex flex-wrap gap-3 mb-4">
+          {/* Status */}
           <select
             value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter(e.target.value);
-              setPage(1);
-            }}
+            onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
             className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
           >
             <option value="">{t('filters.allStatuses')}</option>
             <option value="DRAFT">{t('status.DRAFT')}</option>
             <option value="SUBMITTED">{t('status.SUBMITTED')}</option>
             <option value="APPROVED">{t('status.APPROVED')}</option>
+          </select>
+
+          {/* Semana */}
+          <input
+            type="text"
+            value={weekFilter}
+            onChange={(e) => { setWeekFilter(e.target.value); setPage(1); }}
+            placeholder={t('filters.weekPlaceholder')}
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-28"
+          />
+
+          {/* Projeto */}
+          <select
+            value={projectFilter}
+            onChange={(e) => { setProjectFilter(e.target.value); setPage(1); }}
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
+          >
+            <option value="">{t('filters.allProjects')}</option>
+            {projects.map((p) => (
+              <option key={p.id} value={p.id}>{p.name}</option>
+            ))}
+          </select>
+
+          {/* Autor */}
+          <select
+            value={authorFilter}
+            onChange={(e) => { setAuthorFilter(e.target.value); setPage(1); }}
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
+          >
+            <option value="">{t('filters.allAuthors')}</option>
+            {users.map((u) => (
+              <option key={u.id} value={u.id}>{u.firstName} {u.lastName}</option>
+            ))}
           </select>
         </div>
 

@@ -5,6 +5,7 @@
   "filters": {
     "allProjects": "Todos os projetos",
     "allStatuses": "Todos os status",
+    "allAuthors": "Todos os autores",
     "weekPlaceholder": "Semana...",
     "searchPlaceholder": "Buscar por projeto ou cliente..."
   },
