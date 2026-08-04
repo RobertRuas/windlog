@@ -37,8 +37,6 @@ import {
   type WeeklyTimesheet,
 } from '@/services/weekly-timesheet.service';
 import { getProfile } from '@/services/auth.service';
-import { getUsers, type UserListItem } from '@/services/user.service';
-import { getProjects, type ProjectListItem } from '@/services/project.service';
 
 /**
  * Página WeeklyTimesheetPage - Listagem de timesheets.
@@ -65,17 +63,25 @@ export function WeeklyTimesheetPage() {
   const [viewLoading, setViewLoading] = useState(false);
   const queryClient = useQueryClient();
 
-  // ── Busca usuários e projetos para os filtros ─────────────────────
-  const { data: usersData } = useQuery({
-    queryKey: ['users-filter'],
-    queryFn: () => getUsers({ limit: 200, isActive: true }),
+  // ── Busca todos os timesheets para popular filtros ───────────────
+  const { data: allResponse } = useQuery({
+    queryKey: ['timesheets-all'],
+    queryFn: () => getTimesheets({ limit: 500 }),
   });
-  const { data: projectsData } = useQuery({
-    queryKey: ['projects-filter'],
-    queryFn: () => getProjects({ limit: 200 }),
-  });
-  const users: UserListItem[] = usersData?.data || [];
-  const projects: ProjectListItem[] = (projectsData as any)?.data || [];
+  const allTimesheets: TimesheetListItem[] = allResponse?.data?.data || [];
+
+  // Extrai projetos e autores únicos dos timesheets existentes
+  const filterProjects = Array.from(
+    new Map(
+      allTimesheets.map((ts) => [ts.project.id, { id: ts.project.id, name: ts.project.name }])
+    ).values()
+  ).sort((a, b) => a.name.localeCompare(b.name));
+
+  const filterAuthors = Array.from(
+    new Map(
+      allTimesheets.map((ts) => [ts.createdBy, { id: ts.createdBy, name: `${ts.creator.firstName} ${ts.creator.lastName}` }])
+    ).values()
+  ).sort((a, b) => a.name.localeCompare(b.name));
 
   // ── Busca timesheets ────────────────────────────────────────────────
   const { data: response, isLoading } = useQuery({
@@ -226,7 +232,7 @@ export function WeeklyTimesheetPage() {
             className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
           >
             <option value="">{t('filters.allProjects')}</option>
-            {projects.map((p) => (
+            {filterProjects.map((p) => (
               <option key={p.id} value={p.id}>{p.name}</option>
             ))}
           </select>
@@ -238,8 +244,8 @@ export function WeeklyTimesheetPage() {
             className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
           >
             <option value="">{t('filters.allAuthors')}</option>
-            {users.map((u) => (
-              <option key={u.id} value={u.id}>{u.firstName} {u.lastName}</option>
+            {filterAuthors.map((a) => (
+              <option key={a.id} value={a.id}>{a.name}</option>
             ))}
           </select>
         </div>
