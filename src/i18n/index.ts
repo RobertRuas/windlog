@@ -51,6 +51,7 @@ import ptSettings from './locales/pt/settings.json';
 import ptUsers from './locales/pt/users.json';
 import ptProjects from './locales/pt/projects.json';
 import ptTimesheet from './locales/pt/timesheet.json';
+import ptOnboarding from './locales/pt/onboarding.json';
 
 /**
  * Inicializa o i18next com as configurações do projeto.
@@ -69,6 +70,7 @@ i18n
         users: ptUsers,      // Traduções da página de usuários
         projects: ptProjects, // Traduções da página de projetos
         timesheet: ptTimesheet, // Traduções do módulo de timesheets
+        onboarding: ptOnboarding, // Traduções da página de onboarding
       },
       // Futuramente, adicione novos idiomas aqui:
       // en: {
