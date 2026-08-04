@@ -58,6 +58,7 @@ import {
   type TechnicalContext,
   type ConsoleLog,
 } from '@/services/feedback.service';
+import type { SystemLog } from '@/services/system-log.service';
 
 /**
  * Cores para cada status.
@@ -596,6 +597,37 @@ export function FeedbacksPage() {
                             [{log.level.toUpperCase()}]
                           </span>{' '}
                           <span className="text-gray-300">{log.message}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* ── Recent System Logs ──────────────────────────────────────────── */}
+                {selectedFeedback.recentSystemLogs && selectedFeedback.recentSystemLogs.length > 0 && (
+                  <div className="border-t border-gray-200 pt-5">
+                    <h4 className="text-sm font-semibold text-gray-900 flex items-center gap-2 mb-3">
+                      <FileText size={14} />
+                      Recent System Errors ({selectedFeedback.recentSystemLogs.length})
+                    </h4>
+                    <div className="bg-gray-900 rounded-lg p-3 max-h-48 overflow-y-auto">
+                      {selectedFeedback.recentSystemLogs.map((log: SystemLog, i: number) => (
+                        <div key={i} className="text-xs font-mono mb-2">
+                          <div className="flex items-center gap-2 mb-0.5">
+                            <span className="text-gray-500">
+                              {new Date(log.createdAt).toLocaleString('pt-BR')}
+                            </span>
+                            <span className="text-red-400">[{log.severity}]</span>
+                            {log.entity && (
+                              <span className="text-blue-400 text-[10px]">{log.entity}</span>
+                            )}
+                          </div>
+                          <div className="text-gray-300 ml-2">{log.message}</div>
+                          {log.details && (
+                            <div className="text-gray-500 ml-2 mt-0.5 whitespace-pre-wrap text-[10px]">
+                              {JSON.stringify(log.details, null, 2)}
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>

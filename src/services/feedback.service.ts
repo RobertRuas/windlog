@@ -21,6 +21,7 @@
  */
 
 import { api } from './api';
+import type { SystemLog } from './system-log.service';
 
 // =========================================================================
 // TYPES - Interfaces para tipagem dos dados
@@ -145,6 +146,7 @@ export interface Feedback {
   adminNotes?: string | null;
   technicalContext?: TechnicalContext | null;
   consoleLogs?: ConsoleLog[] | null;
+  recentSystemLogs?: SystemLog[] | null;
   reportedBy: string;
   reporter: FeedbackReporter;
   resolvedBy?: string | null;
