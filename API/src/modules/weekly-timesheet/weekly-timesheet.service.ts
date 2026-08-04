@@ -136,13 +136,14 @@ export class WeeklyTimesheetService {
    * - ADMIN e HR: sempre podem
    * - Criador do timesheet: sempre pode
    * - Técnico mencionado nas entradas: pode visualizar
+   * - Team Leader: mesma regra do STANDARD (apenas associados ao seu nome)
    *
    * @param timesheetId - ID do timesheet
    * @param userId - ID do usuário
    * @param userRole - Role do usuário
    * @returns true se pode visualizar
    */
-  private async canViewTimesheet(
+  async canViewTimesheet(
     timesheetId: string,
     userId: string,
     userRole: string,
@@ -150,13 +151,16 @@ export class WeeklyTimesheetService {
     // ADMIN e HR sempre podem
     if (userRole === 'ADMIN' || userRole === 'HR') return true;
 
-    // Verifica se é o criador
+    // Busca o timesheet para obter o createdBy
     const timesheet = await this.prisma.weeklyTimesheet.findUnique({
       where: { id: timesheetId },
       select: { createdBy: true },
     });
 
-    if (timesheet?.createdBy === userId) return true;
+    if (!timesheet) return false;
+
+    // Verifica se é o criador
+    if (timesheet.createdBy === userId) return true;
 
     // Verifica se o usuário aparece nas entradas do timesheet
     const entry = await this.prisma.weeklyTimesheetEntry.findFirst({
@@ -368,7 +372,7 @@ export class WeeklyTimesheetService {
     if (status) where.status = status;
     if (createdBy) where.createdBy = createdBy;
 
-    // Para usuários STANDARD, filtra apenas timesheets que eles podem ver
+    // Para não-ADMIN/HR, filtra apenas timesheets associados ao seu nome
     if (userRole !== 'ADMIN' && userRole !== 'HR') {
       where.OR = [
         { createdBy: userId },
@@ -451,13 +455,34 @@ export class WeeklyTimesheetService {
 
   /**
    * Lista todos os timesheets de um projeto específico.
+   * ADMIN/HR veem tudo; demais veem apenas timesheets associados ao seu nome.
    *
    * @param projectId - ID do projeto
+   * @param userId - ID do usuário logado
+   * @param userRole - Role do usuário
    * @returns Lista de timesheets do projeto
    */
-  async findByProject(projectId: string) {
+  async findByProject(projectId: string, userId: string, userRole: string) {
+    const where: any = { projectId, deletedAt: null };
+
+    // Para não-ADMIN/HR, filtra apenas timesheets associados ao seu nome
+    if (userRole !== 'ADMIN' && userRole !== 'HR') {
+      where.OR = [
+        { createdBy: userId },
+        {
+          days: {
+            some: {
+              entries: {
+                some: { userId },
+              },
+            },
+          },
+        },
+      ];
+    }
+
     return this.prisma.weeklyTimesheet.findMany({
-      where: { projectId, deletedAt: null },
+      where,
       include: {
         creator: {
           select: { id: true, firstName: true, lastName: true },

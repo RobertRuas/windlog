@@ -38,6 +38,7 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  ForbiddenException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
@@ -93,17 +94,22 @@ export class WeeklyTimesheetController {
 
   /**
    * Lista todos os timesheets de um projeto específico.
+   * ADMIN/HR veem tudo; demais veem apenas timesheets associados ao seu nome.
    *
    * NOTA: Esta rota deve vir ANTES da rota com :id para evitar conflito.
    * O NestJS processa rotas na ordem em que são definidas.
    *
    * @param projectId - ID do projeto
+   * @param user - Usuário autenticado
    */
   @Get('project/:projectId')
   @ApiOperation({ summary: 'Listar timesheets de um projeto específico' })
   @ApiResponse({ status: 200, description: 'Timesheets do projeto' })
-  async findByProject(@Param('projectId') projectId: string) {
-    return this.timesheetService.findByProject(projectId);
+  async findByProject(
+    @Param('projectId') projectId: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.timesheetService.findByProject(projectId, user.sub, user.role);
   }
 
   // =========================================================================
@@ -112,6 +118,7 @@ export class WeeklyTimesheetController {
 
   /**
    * Busca um timesheet completo com todos os dias e entradas.
+   * Verifica permissão: apenas ADMIN/HR, criador ou usuário nas entradas.
    *
    * @param id - ID do timesheet
    * @param user - Usuário autenticado
@@ -119,9 +126,22 @@ export class WeeklyTimesheetController {
   @Get(':id')
   @ApiOperation({ summary: 'Buscar timesheet completo por ID' })
   @ApiResponse({ status: 200, description: 'Timesheet com dias e entradas' })
+  @ApiResponse({ status: 403, description: 'Sem permissão para visualizar' })
   @ApiResponse({ status: 404, description: 'Timesheet não encontrado' })
   async findOne(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
-    // Busca o timesheet (o service verifica permissão indiretamente)
+    // Verifica permissão de visualização
+    const canView = await this.timesheetService.canViewTimesheet(
+      id,
+      user.sub,
+      user.role,
+    );
+
+    if (!canView) {
+      throw new ForbiddenException(
+        'You do not have permission to view this timesheet',
+      );
+    }
+
     return this.timesheetService.findById(id);
   }
 
