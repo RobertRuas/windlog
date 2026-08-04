@@ -472,13 +472,11 @@ export class WeeklyTimesheetService {
           },
           days: {
             select: {
+              sharedValues: true,
               entries: {
                 select: {
                   userId: true,
                   technicianName: true,
-                  workingHrs: true,
-                  standbyHrs: true,
-                  travelHrs: true,
                 },
               },
             },
@@ -492,30 +490,19 @@ export class WeeklyTimesheetService {
     ]);
 
     // Calcula totais de horas (trabalho, standby, viagem) por timesheet
-    // Para não-ADMIN/HR, soma apenas as entradas associadas ao próprio usuário
+    // Usa sharedValues do dia (horas compartilhadas UMA única vez por dia)
+    // em vez de somar entries individuais (que teriam valores duplicados).
     const data = rawData.map(({ days, ...rest }) => {
       let workingHrs = 0;
       let standbyHrs = 0;
       let travelHrs = 0;
 
       for (const day of days) {
-        for (const entry of day.entries) {
-          // Para ADMIN/HR, soma todas as entradas
-          // Para demais, soma apenas entradas onde o usuário aparece
-          if (userRole === 'ADMIN' || userRole === 'HR') {
-            workingHrs += parseFloat(entry.workingHrs || '0') || 0;
-            standbyHrs += parseFloat(entry.standbyHrs || '0') || 0;
-            travelHrs += parseFloat(entry.travelHrs || '0') || 0;
-          } else {
-            const isOwnEntry =
-              entry.userId === userId ||
-              (userFullName && entry.technicianName === userFullName);
-            if (isOwnEntry) {
-              workingHrs += parseFloat(entry.workingHrs || '0') || 0;
-              standbyHrs += parseFloat(entry.standbyHrs || '0') || 0;
-              travelHrs += parseFloat(entry.travelHrs || '0') || 0;
-            }
-          }
+        const sv = (day.sharedValues as Record<string, string>) || null;
+        if (sv) {
+          workingHrs += parseFloat(sv.workingHrs || '0') || 0;
+          standbyHrs += parseFloat(sv.standbyHrs || '0') || 0;
+          travelHrs += parseFloat(sv.travelHrs || '0') || 0;
         }
       }
 
