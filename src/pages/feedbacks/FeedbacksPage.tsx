@@ -372,14 +372,14 @@ export function FeedbacksPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-200 bg-gray-50">
-                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">{t('fields.title')}</th>
-                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">{t('fields.category')}</th>
-                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">{t('fields.screenshot', { ns: 'feedback' })}</th>
-                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Status</th>
-                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Prioridade</th>
-                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">{t('list.reported_by')}</th>
-                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Data</th>
-                    <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase">Ações</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase whitespace-nowrap">{t('fields.title')}</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase whitespace-nowrap">{t('fields.category')}</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase whitespace-nowrap">{t('fields.screenshot', { ns: 'feedback' })}</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Status</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Prioridade</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase whitespace-nowrap">{t('list.reported_by')}</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Data</th>
+                    <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Ações</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -391,36 +391,36 @@ export function FeedbacksPage() {
                           <p className="text-sm font-medium text-gray-900 truncate max-w-[200px]">{fb.title}</p>
                           <p className="text-xs text-gray-500 truncate max-w-[200px]">{fb.description}</p>
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3 whitespace-nowrap">
                           <span className="inline-flex items-center gap-1 text-xs text-gray-600">
                             <CatIcon size={14} />
                             {t(`categories.${fb.category}`)}
                           </span>
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3 whitespace-nowrap">
                           {fb.screenshotPath ? (
                             <span className="text-xs text-green-600">✓</span>
                           ) : (
                             <span className="text-xs text-gray-400">—</span>
                           )}
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3 whitespace-nowrap">
                           <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[fb.status]}`}>
                             {t(`statuses.${fb.status}`)}
                           </span>
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3 whitespace-nowrap">
                           <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${PRIORITY_COLORS[fb.priority]}`}>
                             {t(`priorities.${fb.priority}`)}
                           </span>
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3 whitespace-nowrap">
                           <p className="text-sm text-gray-700">{fb.reporter.firstName} {fb.reporter.lastName}</p>
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3 whitespace-nowrap">
                           <p className="text-xs text-gray-500">{new Date(fb.createdAt).toLocaleDateString('pt-BR')}</p>
                         </td>
-                        <td className="px-4 py-3 text-right">
+                        <td className="px-4 py-3 text-right whitespace-nowrap">
                           <div className="flex items-center justify-end gap-1">
                             <button
                               onClick={() => openDetail(fb)}
