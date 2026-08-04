@@ -798,6 +798,22 @@ model SystemLog {
 }
 
 // ---------------------------------------------------------------------------
+// MODEL: SYSTEM SETTING (Configurações do Sistema)
+// ---------------------------------------------------------------------------
+// Armazena configurações globais do sistema em formato chave/valor.
+// Usado para toggles e preferências administrativas que devem persistir
+// entre reinícios do servidor (ex: captura de logs ativa/pausada).
+// ---------------------------------------------------------------------------
+model SystemSetting {
+  /// Chave única da configuração (ex: "log_capture_enabled")
+  key       String   @id
+  /// Valor da configuração (armazenado como string, convertido pela aplicação)
+  value     String
+  /// Data da última alteração
+  updatedAt DateTime @updatedAt
+}
+
+// ---------------------------------------------------------------------------
 // ENUM: NOTIFICATION TYPE (Tipo de Notificação)
 // ---------------------------------------------------------------------------
 // Classifica o tipo/categoria da notificação enviada ao usuário.

@@ -23,22 +23,51 @@
  * ============================================================================
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service.js';
 import { CreateLogDto, LogFilterDto, LogAction, LogSeverity } from './dto/system-log.dto.js';
 
 /**
+ * Chave usada na tabela SystemSetting para armazenar o toggle de captura.
+ */
+const CAPTURE_SETTING_KEY = 'log_capture_enabled';
+
+/**
  * Serviço SystemLogService - Gerencia logs do sistema.
+ *
+ * A flag de captura é persistida no banco (tabela SystemSetting) e
+ * mantida em cache na memória para evitar consultas em cada request.
+ * Ao iniciar, o valor é carregado do banco; ao alterar, é gravado no banco.
  */
 @Injectable()
-export class SystemLogService {
+export class SystemLogService implements OnModuleInit {
   private readonly logger = new Logger(SystemLogService.name);
 
-  // Flag em memória que controla se a captura de logs está ativa.
+  // Cache em memória da flag de captura (carregado do banco na inicialização).
   // Quando false, apenas logs de erro (ERROR/CRITICAL) continuam sendo salvos.
   private captureEnabled: boolean = true;
 
   constructor(private readonly prisma: PrismaService) {}
+
+  /**
+   * Hook executado na inicialização do módulo.
+   * Carrega o valor da flag de captura diretamente do banco de dados.
+   * Se a chave não existir, o padrão é true (captura ativa).
+   */
+  async onModuleInit() {
+    try {
+      const setting = await this.prisma.systemSetting.findUnique({
+        where: { key: CAPTURE_SETTING_KEY },
+      });
+      if (setting) {
+        this.captureEnabled = setting.value === 'true';
+      }
+      this.logger.log(`Captura de logs inicializada: ${this.captureEnabled ? 'ATIVADA' : 'DESATIVADA'}`);
+    } catch (error) {
+      this.logger.error(`Erro ao carregar configuração de captura: ${error.message}`);
+      // Em caso de erro, mantém o padrão (ativa)
+    }
+  }
 
   /**
    * Retorna o status atual da captura de logs.
@@ -49,12 +78,21 @@ export class SystemLogService {
 
   /**
    * Ativa ou desativa a captura de logs.
+   * Persiste o valor no banco (SystemSetting) e atualiza o cache em memória.
    * Quando desativada, apenas logs de erro (ERROR/CRITICAL) continuam sendo registrados.
    *
    * @param enabled - true para ativar, false para desativar
    * @returns Status atualizado da captura
    */
-  setCaptureStatus(enabled: boolean) {
+  async setCaptureStatus(enabled: boolean) {
+    // Persiste no banco (upsert: cria se não existir, atualiza se já existir)
+    await this.prisma.systemSetting.upsert({
+      where: { key: CAPTURE_SETTING_KEY },
+      update: { value: String(enabled) },
+      create: { key: CAPTURE_SETTING_KEY, value: String(enabled) },
+    });
+
+    // Atualiza o cache em memória
     this.captureEnabled = enabled;
     this.logger.log(`Captura de logs ${enabled ? 'ATIVADA' : 'DESATIVADA'} (apenas erros continuam sendo registrados)`);
     return { enabled: this.captureEnabled };
