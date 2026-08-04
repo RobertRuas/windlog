@@ -171,6 +171,8 @@ export function ProjectFilesTab({
   const columns: DataTableColumn<ProjectFile>[] = [
     {
       header: t('filesTable.name'),
+      sortable: true,
+      sortKey: 'originalName',
       render: (file) => {
         const Icon = getFileIcon(file.mimeType);
         return (
@@ -187,6 +189,8 @@ export function ProjectFilesTab({
     },
     {
       header: t('filesTable.type'),
+      sortable: true,
+      sortKey: 'mimeType',
       render: (file) => (
         <span className="text-xs text-gray-500">
           {getFileTypeName(file.mimeType)}
@@ -195,12 +199,16 @@ export function ProjectFilesTab({
     },
     {
       header: t('filesTable.size'),
+      sortable: true,
+      sortKey: 'size',
       render: (file) => (
         <span className="text-xs text-gray-500">{formatFileSize(file.size)}</span>
       ),
     },
     {
       header: t('filesTable.date'),
+      sortable: true,
+      sortKey: 'createdAt',
       render: (file) => (
         <span className="text-xs text-gray-500">
           {new Date(file.createdAt).toLocaleDateString('pt-PT')}
@@ -263,6 +271,7 @@ export function ProjectFilesTab({
         columns={columns}
         data={files}
         isLoading={false}
+        clientSort
         emptyIcon={Paperclip}
         emptyMessage={t('files.empty')}
         loadingMessage={t('table.loading')}

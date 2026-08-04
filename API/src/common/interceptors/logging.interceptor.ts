@@ -56,8 +56,11 @@ const EXCLUDED_ENDPOINTS = [
 
 /**
  * Lista de campos sensíveis que devem ser removidos dos logs.
+ * Inclui campos de autenticação, dados pessoais, financeiros e documentos.
+ * A sanitização é recursiva (percorre todos os níveis de objetos aninhados).
  */
 const SENSITIVE_FIELDS = [
+  // Autenticação
   'password',
   'currentPassword',
   'newPassword',
@@ -65,6 +68,18 @@ const SENSITIVE_FIELDS = [
   'accessToken',
   'refreshToken',
   'token',
+  'temporaryPassword',
+  // Dados pessoais e documentos
+  'documentNumber',
+  'passportNumber',
+  'nationalId',
+  'signatureData',
+  // Dados financeiros/bancários
+  'iban',
+  'bicSwift',
+  'bankName',
+  'accountHolder',
+  'accountNumber',
 ];
 
 /**
@@ -165,17 +180,33 @@ export class LoggingInterceptor implements NestInterceptor {
   }
 
   /**
-   * Remove campos sensíveis dos dados.
+   * Remove campos sensíveis dos dados de forma RECURSIVA.
+   *
+   * SEGURANÇA: A versão anterior só sanitizava o primeiro nível do objeto.
+   * Objetos aninhados como `{ data: { password: "123" } }` passavam sem
+   * sanitização. Agora percorre TODOS os níveis em busca de campos sensíveis.
+   *
+   * @param data - Dados a serem sanitizados
+   * @returns Cópia dos dados com campos sensíveis substituídos por [REDACTED]
    */
   private sanitizeData(data: any): any {
     if (!data || typeof data !== 'object') return data;
 
+    // Se for array, sanitiza cada elemento recursivamente
+    if (Array.isArray(data)) {
+      return data.map((item) => this.sanitizeData(item));
+    }
+
     const sanitized = { ...data };
-    SENSITIVE_FIELDS.forEach((field) => {
-      if (field in sanitized) {
-        sanitized[field] = '[REDACTED]';
+    for (const key of Object.keys(sanitized)) {
+      if (SENSITIVE_FIELDS.includes(key)) {
+        // Campo sensível encontrado em qualquer nível — substitui
+        sanitized[key] = '[REDACTED]';
+      } else if (typeof sanitized[key] === 'object' && sanitized[key] !== null) {
+        // Objeto aninhado — sanitiza recursivamente
+        sanitized[key] = this.sanitizeData(sanitized[key]);
       }
-    });
+    }
 
     return sanitized;
   }

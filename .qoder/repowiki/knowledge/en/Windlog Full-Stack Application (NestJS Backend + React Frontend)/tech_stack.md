@@ -1,0 +1,1 @@
+NestJS with Passport + JWT authentication, Prisma v7 with `@prisma/adapter-pg` against PostgreSQL, class-validator DTOs, OpenAPI/Swagger via `@nestjs/swagger`. Frontend uses React + TypeScript, Vite, React Router v6, TanStack Query (React Query), Sonner for toasts, Tailwind CSS for responsive mobile-first styling, and i18next for Portuguese localization.

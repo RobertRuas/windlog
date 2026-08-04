@@ -1,6 +1,6 @@
 schema_version: 1
 module_path: ""
-title: Windlog Full-Stack Application (NestJS API + React Frontend)
+title: Windlog Full-Stack Application (NestJS Backend + React Frontend)
 scope: []
 source_files: []
 depends_on: []

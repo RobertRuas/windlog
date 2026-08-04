@@ -34,6 +34,7 @@ import { Plus } from 'lucide-react';
 
 // Layout
 import { AppLayout } from '@/components/layout/AppLayout';
+import { PageHeader } from '@/components/ui/PageHeader';
 
 // Componentes
 import { UsersFilters } from './components/UsersFilters';
@@ -246,22 +247,19 @@ export function UsersPage() {
 
   return (
     <AppLayout>
-      {/* Cabeçalho */}
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">{t('title')}</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            {t('subtitle')}
-          </p>
-        </div>
-        <button
-          onClick={openCreateModal}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <Plus size={18} />
-          {t('newUser')}
-        </button>
-      </div>
+      <PageHeader
+        title={t('title')}
+        subtitle={t('subtitle')}
+        actions={
+          <button
+            onClick={openCreateModal}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <Plus size={18} />
+            {t('newUser')}
+          </button>
+        }
+      />
 
       {/* Filtros */}
       <UsersFilters

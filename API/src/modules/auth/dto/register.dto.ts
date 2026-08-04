@@ -33,6 +33,7 @@ import {
   IsNotEmpty,
   IsString,
   MinLength,
+  MaxLength,
   IsOptional,
   IsDateString,
 } from 'class-validator';
@@ -52,16 +53,19 @@ export class RegisterDto {
   })
   @IsEmail({}, { message: 'Email must be a valid email address' })
   @IsNotEmpty({ message: 'Email is required' })
+  @MaxLength(255)
   email: string;
 
   @ApiProperty({
     description: 'Senha do usuário (mínimo 6 caracteres)',
     example: 'minhasenha123',
     minLength: 6,
+    maxLength: 128,
   })
   @IsString()
   @IsNotEmpty({ message: 'Password is required' })
   @MinLength(6, { message: 'Password must be at least 6 characters' })
+  @MaxLength(128)
   password: string;
 
   @ApiProperty({
@@ -70,6 +74,7 @@ export class RegisterDto {
   })
   @IsString()
   @IsNotEmpty({ message: 'First name is required' })
+  @MaxLength(100)
   firstName: string;
 
   @ApiProperty({
@@ -78,6 +83,7 @@ export class RegisterDto {
   })
   @IsString()
   @IsNotEmpty({ message: 'Last name is required' })
+  @MaxLength(100)
   lastName: string;
 
   // =========================================================================
@@ -90,6 +96,7 @@ export class RegisterDto {
   })
   @IsString()
   @IsOptional()
+  @MaxLength(20)
   phone?: string;
 
   @ApiPropertyOptional({
@@ -98,6 +105,7 @@ export class RegisterDto {
   })
   @IsString()
   @IsOptional()
+  @MaxLength(10)
   phoneCountryCode?: string;
 
   @ApiPropertyOptional({
@@ -114,6 +122,7 @@ export class RegisterDto {
   })
   @IsString()
   @IsOptional()
+  @MaxLength(50)
   nationality?: string;
 
   @ApiPropertyOptional({
@@ -122,6 +131,7 @@ export class RegisterDto {
   })
   @IsString()
   @IsOptional()
+  @MaxLength(100)
   department?: string;
 
   @ApiPropertyOptional({
@@ -130,5 +140,6 @@ export class RegisterDto {
   })
   @IsString()
   @IsOptional()
+  @MaxLength(100)
   position?: string;
 }

@@ -180,10 +180,27 @@ export async function removeLanguage(id: string): Promise<void> {
 /**
  * Realiza o logout do usuário.
  *
- * Remove o token JWT do localStorage, invalidando a sessão local.
+ * FLUXO:
+ * 1. Chama POST /api/v1/auth/logout para invalidar o refresh token no banco.
+ *    Isso garante que o token não possa ser reutilizado mesmo se alguém
+ *    copiar o cookie httpOnly antes de expirar.
+ * 2. Remove o access token do localStorage (invalida a sessão local).
+ * 3. Se a chamada à API falhar, ainda assim remove o token local
+ *    (garante que o logout sempre funcione, mesmo offline).
+ *
  * Após chamar esta função, o usuário deve ser redirecionado para a página de login.
  */
-export function logout(): void {
+export async function logout(): Promise<void> {
+  try {
+    // Chama o endpoint de logout para invalidar o refresh token no banco.
+    // O cookie httpOnly é enviado automaticamente (credentials: include no api.ts).
+    await api.post('/api/v1/auth/logout', {});
+  } catch (error) {
+    // Se a API falhar, apenas logamos o erro — o logout local continua.
+    // Isso garante que o usuário consiga sair mesmo sem conexão.
+    console.error('Logout error:', error);
+  }
+  // Remove o access token do localStorage (invalida a sessão local)
   localStorage.removeItem('accessToken');
 }
 

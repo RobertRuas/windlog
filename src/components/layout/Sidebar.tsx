@@ -106,9 +106,11 @@ export function Sidebar({ userName }: SidebarProps) {
 
   /**
    * Faz logout e redireciona para /login.
+   * O logout é assíncrono: primeiro invalida o refresh token na API,
+   * depois remove o token local e redireciona.
    */
-  function handleLogout() {
-    logout();
+  async function handleLogout() {
+    await logout();
     window.location.href = '/login';
   }
 

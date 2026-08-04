@@ -65,7 +65,7 @@ export function useTimesheetMutations(timesheetId?: string) {
    */
   const createTimesheetMutation = useMutation({
     mutationFn: (payload: CreateTimesheetPayload) => createTimesheet(payload),
-    onSuccess: (response) => {
+    onSuccess: () => {
       toast.success(t('toasts.created'));
       invalidateTimesheets();
     },

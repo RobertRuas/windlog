@@ -30,10 +30,11 @@
  * ============================================================================
  */
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import { PrismaService } from '../../../database/prisma.service.js';
 
 /**
  * Interface que define o formato do payload do JWT.
@@ -55,18 +56,17 @@ export interface JwtPayload {
  *
  * Configura como extrair e validar o token JWT das requisições.
  * O nome 'jwt' é usado para registrar esta estratégia no Passport.
+ *
+ * SEGURANÇA: O método validate() agora consulta o banco de dados para
+ * revalidar o usuário a cada requisição, garantindo que tokens de usuários
+ * desativados/deletados sejam rejeitados mesmo antes da expiração.
  */
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
-  /**
-   * Construtor da estratégia JWT.
-   *
-   * Configura as opções de extração e validação do token:
-   * - secretOrKey: chave secreta para validar a assinatura
-   * - jwtFromRequest: de onde extrair o token (header Authorization)
-   * - ignoreExpiration: se deve ignorar tokens expirados (false = rejeita)
-   */
-  constructor(configService: ConfigService) {
+  constructor(
+    configService: ConfigService,
+    private readonly prisma: PrismaService,
+  ) {
     super({
       // Extrai o token do header Authorization: Bearer <token>
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -81,22 +81,57 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   }
 
   /**
-   * Método chamado após validar o token com sucesso.
+   * Método chamado após validar a assinatura do token.
    *
-   * O retorno deste método é anexado ao request.user
-   * e pode ser acessado nos controllers via @CurrentUser().
+   * SEGURANÇA: Agora revalida o usuário no banco de dados para garantir que:
+   * 1. O usuário ainda existe (não foi deletado fisicamente)
+   * 2. O usuário está ativo (isActive: true)
+   * 3. O usuário não foi soft-deletado (deletedAt: null)
+   * 4. O role do usuário é atualizado do banco (não confia no token)
+   *
+   * Isso evita que tokens válidos continuem funcionando após:
+   * - Desativação do usuário pelo admin
+   * - Mudança de role (ex: rebaixamento de ADMIN para STANDARD)
+   * - Soft-delete do usuário
    *
    * @param payload - Dados decodificados do token JWT
-   * @returns Objeto que será anexado ao request.user
+   * @returns Objeto com dados ATUALIZADOS do banco
    */
-  validate(payload: JwtPayload): JwtPayload {
-    // Retorna o payload que será anexado ao request.user
-    // Os dados aqui ficam disponíveis via @CurrentUser()
+  async validate(payload: JwtPayload): Promise<JwtPayload> {
+    // Consulta o banco para verificar se o usuário existe e está ativo
+    const user = await this.prisma.user.findUnique({
+      where: { id: payload.sub },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        isActive: true,
+        deletedAt: true,
+        profileComplete: true,
+      },
+    });
+
+    // Usuário não existe mais no banco
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    // Usuário foi desativado pelo admin
+    if (!user.isActive) {
+      throw new UnauthorizedException('Account is disabled');
+    }
+
+    // Usuário foi soft-deletado
+    if (user.deletedAt !== null) {
+      throw new UnauthorizedException('Account has been deleted');
+    }
+
+    // Retorna dados ATUALIZADOS do banco (não confia no token para role/profileComplete)
     return {
-      sub: payload.sub,
-      email: payload.email,
-      role: payload.role,
-      profileComplete: payload.profileComplete,
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+      profileComplete: user.profileComplete,
     };
   }
 }

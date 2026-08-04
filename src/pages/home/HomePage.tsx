@@ -34,6 +34,7 @@ import {
 
 // Layout
 import { AppLayout } from '@/components/layout/AppLayout';
+import { PageHeader } from '@/components/ui/PageHeader';
 
 // Serviços
 import { getProfile } from '@/services/auth.service';
@@ -142,124 +143,117 @@ export function HomePage() {
 
   return (
     <AppLayout>
-      <div className="max-w-2xl mx-auto">
-        {/* ── Cabeçalho ── */}
-        <div className="mb-6">
-          <h1 className="text-lg font-semibold text-gray-900 dark:text-[#f5f5f7]">
-            {t('title')}, {profile?.firstName}
-          </h1>
-          <p className="text-xs text-gray-400 dark:text-[#636366] mt-0.5">
-            {t('homeSubtitle')}
+      <PageHeader
+        title={`${t('title')}, ${profile?.firstName}`}
+        subtitle={t('homeSubtitle')}
+      />
+
+      {/* ── Linha de resumos compactos ── */}
+      <div className="grid grid-cols-2 gap-3 mb-5">
+        {/* Timesheet — Horas do mês */}
+        <button
+          onClick={() => navigate('/timesheets')}
+          className="bg-white dark:bg-[#1c1c1e] rounded-lg border border-gray-100 dark:border-[#38383a] p-3 text-left hover:border-gray-200 dark:hover:border-[#48484a] transition-colors group"
+        >
+          <div className="flex items-center gap-1.5 mb-2">
+            <Clock size={13} className="text-gray-400 dark:text-[#636366]" />
+            <span className="text-[11px] font-medium text-gray-400 dark:text-[#636366] uppercase tracking-wide">
+              {t('dashboard.timesheets.title')}
+            </span>
+          </div>
+          {hasAnyHours ? (
+            <div className="space-y-0.5">
+              <div className="flex items-baseline justify-between">
+                <span className="text-lg font-semibold text-gray-900 dark:text-[#f5f5f7] tabular-nums">
+                  {monthlyHours.total}
+                  <span className="text-xs font-normal text-gray-400 dark:text-[#636366] ml-0.5">h</span>
+                </span>
+                <ChevronRight size={14} className="text-gray-300 group-hover:text-gray-400 transition-colors" />
+              </div>
+              <div className="flex gap-3 text-[10px] text-gray-400 dark:text-[#636366]">
+                <span>{t('dashboard.timesheets.working')} {monthlyHours.working}h</span>
+                <span>{t('dashboard.timesheets.standby')} {monthlyHours.standby}h</span>
+                <span>{t('dashboard.timesheets.travel')} {monthlyHours.travel}h</span>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-gray-300 dark:text-[#48484a] italic">{t('dashboard.timesheets.noData')}</span>
+              <ChevronRight size={14} className="text-gray-300 group-hover:text-gray-400 transition-colors" />
+            </div>
+          )}
+        </button>
+
+        {/* Projetos */}
+        <button
+          onClick={() => navigate('/projects')}
+          className="bg-white dark:bg-[#1c1c1e] rounded-lg border border-gray-100 dark:border-[#38383a] p-3 text-left hover:border-gray-200 dark:hover:border-[#48484a] transition-colors group"
+        >
+          <div className="flex items-center gap-1.5 mb-2">
+            <FolderOpen size={13} className="text-gray-400 dark:text-[#636366]" />
+            <span className="text-[11px] font-medium text-gray-400 dark:text-[#636366] uppercase tracking-wide">
+              {t('dashboard.projects.title')}
+            </span>
+          </div>
+          {projectStats.total > 0 ? (
+            <div>
+              <div className="flex items-baseline justify-between">
+                <span className="text-lg font-semibold text-gray-900 dark:text-[#f5f5f7] tabular-nums">
+                  {projectStats.active}
+                  <span className="text-xs font-normal text-gray-400 dark:text-[#636366] ml-0.5">
+                    /{projectStats.total} {t('dashboard.projects.active').toLowerCase()}
+                  </span>
+                </span>
+                <ChevronRight size={14} className="text-gray-300 group-hover:text-gray-400 transition-colors" />
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-gray-300 dark:text-[#48484a] italic">{t('dashboard.projects.noData')}</span>
+              <ChevronRight size={14} className="text-gray-300 group-hover:text-gray-400 transition-colors" />
+            </div>
+          )}
+        </button>
+      </div>
+
+      {/* ── Dica informativa ── */}
+      <div className="bg-gray-50/80 dark:bg-[#1c1c1e] rounded-lg px-3 py-2.5 mb-4 flex items-start gap-2">
+        <Lightbulb size={13} className="text-amber-400 mt-0.5 flex-shrink-0" />
+        <div className="min-w-0">
+          <p className="text-[10px] font-medium text-gray-400 dark:text-[#636366] uppercase tracking-wide mb-0.5">
+            {t('dashboard.tips.title')}
+          </p>
+          <p className="text-xs text-gray-500 dark:text-[#a1a1a6] leading-relaxed transition-opacity duration-500">
+            {tips[tipIndex]}
           </p>
         </div>
-
-        {/* ── Linha de resumos compactos ── */}
-        <div className="grid grid-cols-2 gap-3 mb-5">
-          {/* Timesheet — Horas do mês */}
-          <button
-            onClick={() => navigate('/timesheets')}
-            className="bg-white dark:bg-[#1c1c1e] rounded-lg border border-gray-100 dark:border-[#38383a] p-3 text-left hover:border-gray-200 dark:hover:border-[#48484a] transition-colors group"
-          >
-            <div className="flex items-center gap-1.5 mb-2">
-              <Clock size={13} className="text-gray-400 dark:text-[#636366]" />
-              <span className="text-[11px] font-medium text-gray-400 dark:text-[#636366] uppercase tracking-wide">
-                {t('dashboard.timesheets.title')}
-              </span>
-            </div>
-            {hasAnyHours ? (
-              <div className="space-y-0.5">
-                <div className="flex items-baseline justify-between">
-                  <span className="text-lg font-semibold text-gray-900 dark:text-[#f5f5f7] tabular-nums">
-                    {monthlyHours.total}
-                    <span className="text-xs font-normal text-gray-400 dark:text-[#636366] ml-0.5">h</span>
-                  </span>
-                  <ChevronRight size={14} className="text-gray-300 group-hover:text-gray-400 transition-colors" />
-                </div>
-                <div className="flex gap-3 text-[10px] text-gray-400 dark:text-[#636366]">
-                  <span>{t('dashboard.timesheets.working')} {monthlyHours.working}h</span>
-                  <span>{t('dashboard.timesheets.standby')} {monthlyHours.standby}h</span>
-                  <span>{t('dashboard.timesheets.travel')} {monthlyHours.travel}h</span>
-                </div>
-              </div>
-            ) : (
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-300 dark:text-[#48484a] italic">{t('dashboard.timesheets.noData')}</span>
-                <ChevronRight size={14} className="text-gray-300 group-hover:text-gray-400 transition-colors" />
-              </div>
-            )}
-          </button>
-
-          {/* Projetos */}
-          <button
-            onClick={() => navigate('/projects')}
-            className="bg-white dark:bg-[#1c1c1e] rounded-lg border border-gray-100 dark:border-[#38383a] p-3 text-left hover:border-gray-200 dark:hover:border-[#48484a] transition-colors group"
-          >
-            <div className="flex items-center gap-1.5 mb-2">
-              <FolderOpen size={13} className="text-gray-400 dark:text-[#636366]" />
-              <span className="text-[11px] font-medium text-gray-400 dark:text-[#636366] uppercase tracking-wide">
-                {t('dashboard.projects.title')}
-              </span>
-            </div>
-            {projectStats.total > 0 ? (
-              <div>
-                <div className="flex items-baseline justify-between">
-                  <span className="text-lg font-semibold text-gray-900 dark:text-[#f5f5f7] tabular-nums">
-                    {projectStats.active}
-                    <span className="text-xs font-normal text-gray-400 dark:text-[#636366] ml-0.5">
-                      /{projectStats.total} {t('dashboard.projects.active').toLowerCase()}
-                    </span>
-                  </span>
-                  <ChevronRight size={14} className="text-gray-300 group-hover:text-gray-400 transition-colors" />
-                </div>
-              </div>
-            ) : (
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-300 dark:text-[#48484a] italic">{t('dashboard.projects.noData')}</span>
-                <ChevronRight size={14} className="text-gray-300 group-hover:text-gray-400 transition-colors" />
-              </div>
-            )}
-          </button>
-        </div>
-
-        {/* ── Dica informativa ── */}
-        <div className="bg-gray-50/80 dark:bg-[#1c1c1e] rounded-lg px-3 py-2.5 mb-4 flex items-start gap-2">
-          <Lightbulb size={13} className="text-amber-400 mt-0.5 flex-shrink-0" />
-          <div className="min-w-0">
-            <p className="text-[10px] font-medium text-gray-400 dark:text-[#636366] uppercase tracking-wide mb-0.5">
-              {t('dashboard.tips.title')}
-            </p>
-            <p className="text-xs text-gray-500 dark:text-[#a1a1a6] leading-relaxed transition-opacity duration-500">
-              {tips[tipIndex]}
-            </p>
-          </div>
-        </div>
-
-        {/* ── Lembrete de perfil (apenas se incompleto) ── */}
-        {hasMissingProfile && (
-          <button
-            onClick={() => navigate('/profile')}
-            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50/60 border border-amber-100/60 hover:bg-amber-50 transition-colors group"
-          >
-            <AlertCircle size={13} className="text-amber-400 flex-shrink-0" />
-            <span className="text-xs text-amber-600/80 flex-1 text-left">
-              {t('dashboard.profileReminder.message')}
-            </span>
-            <span className="text-[10px] font-medium text-amber-500 group-hover:text-amber-600 transition-colors">
-              {t('dashboard.profileReminder.action')}
-            </span>
-          </button>
-        )}
-
-        {/* ── Perfil completo (mensagem subtil) ── */}
-        {!hasMissingProfile && completeness && (
-          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-green-50/40 border border-green-100/40">
-            <CheckCircle2 size={13} className="text-green-400 flex-shrink-0" />
-            <span className="text-xs text-green-500/70">
-              {t('dashboard.profileReminder.complete')}
-            </span>
-          </div>
-        )}
       </div>
+
+      {/* ── Lembrete de perfil (apenas se incompleto) ── */}
+      {hasMissingProfile && (
+        <button
+          onClick={() => navigate('/profile')}
+          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50/60 border border-amber-100/60 hover:bg-amber-50 transition-colors group"
+        >
+          <AlertCircle size={13} className="text-amber-400 flex-shrink-0" />
+          <span className="text-xs text-amber-600/80 flex-1 text-left">
+            {t('dashboard.profileReminder.message')}
+          </span>
+          <span className="text-[10px] font-medium text-amber-500 group-hover:text-amber-600 transition-colors">
+            {t('dashboard.profileReminder.action')}
+          </span>
+        </button>
+      )}
+
+      {/* ── Perfil completo (mensagem subtil) ── */}
+      {!hasMissingProfile && completeness && (
+        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-green-50/40 border border-green-100/40">
+          <CheckCircle2 size={13} className="text-green-400 flex-shrink-0" />
+          <span className="text-xs text-green-500/70">
+            {t('dashboard.profileReminder.complete')}
+          </span>
+        </div>
+      )}
     </AppLayout>
   );
 }

@@ -238,6 +238,7 @@ model User {
   timesheetEntries WeeklyTimesheetEntry[]
   feedbacks        Feedback[]
   ppes             UserPpe[]
+  refreshTokens    RefreshToken[]
 }
 // ---------------------------------------------------------------------------
 // MODEL: USER DOCUMENT (Documentos Pessoais do Usuário)
@@ -1367,4 +1368,52 @@ model UserPpe {
   @@index([userId])
   @@index([nextInspectionDate])
   @@index([condition])
+}
+
+// ---------------------------------------------------------------------------
+// MODEL: REFRESH TOKEN (Tokens de Renovação de Sessão)
+// ---------------------------------------------------------------------------
+// Armazena os refresh tokens dos usuários para permitir login persistente.
+//
+// COMO FUNCIONA?
+// --------------
+// 1. No login, um refresh token é gerado e salvo no DB + enviado como
+//    cookie httpOnly ao frontend
+// 2. Quando o access token expira, o frontend chama POST /auth/refresh
+//    com o cookie, que valida o token no DB e gera um novo access token
+// 3. No logout, o refresh token é invalidado (deletado do DB)
+// 4. Tokens expirados são limpos periodicamente
+//
+// SEGURANÇA:
+// ----------
+// - O token é armazenado hasheado (não o valor original)
+// - Rotação: cada refresh gera um novo token e invalida o anterior
+// - O cookie httpOnly protege contra XSS (não acessível via JavaScript)
+// - SameSite=Lax protege contra CSRF
+// ---------------------------------------------------------------------------
+model RefreshToken {
+  id        String   @id @default(uuid())
+
+  // Token hasheado (não armazenamos o valor original por segurança)
+  tokenHash String   @unique
+
+  // Relação com o usuário
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Metadados do dispositivo/browser (para auditoria)
+  /// User-Agent do browser que fez o login
+  userAgent String?
+  /// Endereço IP do cliente no momento do login
+  ipAddress String?
+
+  // Controle de expiração
+  /// Data de expiração do refresh token
+  expiresAt DateTime
+  /// Data de criação
+  createdAt DateTime @default(now())
+
+  // Índices para performance
+  @@index([userId])
+  @@index([expiresAt])
 }

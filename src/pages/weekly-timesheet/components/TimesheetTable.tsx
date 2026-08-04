@@ -102,6 +102,8 @@ export function TimesheetTable({
     {
       header: t('table.week'),
       align: 'center',
+      sortable: true,
+      sortKey: 'week',
       render: (ts) => <span className="whitespace-nowrap text-gray-600">#{ts.week}</span>,
     },
     {
@@ -119,6 +121,8 @@ export function TimesheetTable({
     {
       header: t('table.status'),
       align: 'center',
+      sortable: true,
+      sortKey: 'status',
       render: (ts) => <StatusBadge status={ts.status} label={t(`status.${ts.status}`)} />,
     },
     {
@@ -205,6 +209,7 @@ export function TimesheetTable({
       columns={columns}
       data={timesheets}
       isLoading={isLoading}
+      clientSort
       emptyMessage={t('table.empty')}
       loadingMessage={t('table.loading')}
       pagination={pagination}

@@ -399,6 +399,8 @@ export class ProjectsController {
     FileInterceptor(
       'file',
       createMulterConfig(
+        // NOTA: Em decorators, `this` não está disponível (avaliados em tempo de classe).
+        // As variáveis UPLOAD_DIR e MAX_FILE_SIZE são validadas pelo ConfigModule no startup.
         process.env['UPLOAD_DIR'] || './uploads',
         Number(process.env['MAX_FILE_SIZE']) || 10485760,
         'projects',

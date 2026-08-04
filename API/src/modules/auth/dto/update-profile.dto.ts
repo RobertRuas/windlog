@@ -27,7 +27,7 @@
  * ============================================================================
  */
 
-import { IsString, IsOptional, IsEmail, MinLength, IsDateString } from 'class-validator';
+import { IsString, IsOptional, IsEmail, MinLength, MaxLength, IsDateString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 /**
@@ -43,6 +43,7 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsString()
   @MinLength(2, { message: 'First name must be at least 2 characters' })
+  @MaxLength(100)
   firstName?: string;
 
   @ApiProperty({
@@ -53,6 +54,7 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsString()
   @MinLength(2, { message: 'Last name must be at least 2 characters' })
+  @MaxLength(100)
   lastName?: string;
 
   @ApiProperty({
@@ -62,6 +64,7 @@ export class UpdateProfileDto {
   })
   @IsOptional()
   @IsString()
+  @MaxLength(20)
   phone?: string;
 
   @ApiProperty({
@@ -71,6 +74,7 @@ export class UpdateProfileDto {
   })
   @IsOptional()
   @IsString()
+  @MaxLength(10)
   phoneCountryCode?: string;
 
   @ApiProperty({
@@ -89,6 +93,7 @@ export class UpdateProfileDto {
   })
   @IsOptional()
   @IsString()
+  @MaxLength(50)
   nationality?: string;
 
   @ApiProperty({
@@ -98,6 +103,7 @@ export class UpdateProfileDto {
   })
   @IsOptional()
   @IsString()
+  @MaxLength(300)
   address?: string;
 
   @ApiProperty({
@@ -107,6 +113,7 @@ export class UpdateProfileDto {
   })
   @IsOptional()
   @IsString()
+  @MaxLength(100)
   city?: string;
 
   @ApiProperty({
@@ -116,6 +123,7 @@ export class UpdateProfileDto {
   })
   @IsOptional()
   @IsString()
+  @MaxLength(20)
   postalCode?: string;
 
   @ApiProperty({
@@ -125,6 +133,7 @@ export class UpdateProfileDto {
   })
   @IsOptional()
   @IsString()
+  @MaxLength(100)
   country?: string;
 
   @ApiProperty({
@@ -134,6 +143,7 @@ export class UpdateProfileDto {
   })
   @IsOptional()
   @IsString()
+  @MaxLength(100)
   department?: string;
 
   @ApiProperty({
@@ -143,6 +153,7 @@ export class UpdateProfileDto {
   })
   @IsOptional()
   @IsString()
+  @MaxLength(100)
   position?: string;
 
   @ApiProperty({
@@ -161,6 +172,7 @@ export class UpdateProfileDto {
   })
   @IsOptional()
   @IsString()
+  @MaxLength(500)
   bio?: string;
 
   @ApiProperty({

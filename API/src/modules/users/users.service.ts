@@ -32,7 +32,6 @@ import * as crypto from 'crypto';
 import { PrismaService } from '../../database/prisma.service.js';
 import { UploadService } from '../upload/upload.service.js';
 import { CreateUserDto, UpdateUserDto, UserFilterDto } from './dto/users.dto.js';
-import { NotificationService } from '../notifications/notification.service.js';
 
 /**
  * Número de rounds do bcrypt para hashear senhas.
@@ -50,7 +49,6 @@ export class UsersService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly notificationService: NotificationService,
     private readonly uploadService: UploadService,
   ) {}
 
@@ -103,10 +101,6 @@ export class UsersService {
 
     // Registra a operação no log
     this.logger.log(`User created: ${user.email} (${user.id}) with temporary password`);
-
-    // Cria notificação de perfil incompleto para o novo usuário
-    const userName = `${dto.firstName} ${dto.lastName}`;
-    await this.notificationService.syncProfileIncompleteNotification(user.id, userName);
 
     // PASSO 5: Retorna sem a senha hash, mas com a senha temporária em texto puro
     const { password, ...userWithoutPassword } = user;
@@ -270,10 +264,6 @@ export class UsersService {
 
     // Registra a operação no log
     this.logger.log(`User updated: ${updatedUser.email} (${updatedUser.id})`);
-
-    // Sincroniza notificação de perfil incompleto
-    const userName = `${updatedUser.firstName} ${updatedUser.lastName}`;
-    await this.notificationService.syncProfileIncompleteNotification(updatedUser.id, userName);
 
     return this.sanitizeUser(updatedUser);
   }

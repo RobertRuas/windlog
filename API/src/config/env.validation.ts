@@ -72,6 +72,22 @@ export class EnvironmentVariables {
   NODE_ENV: NodeEnv = NodeEnv.DEVELOPMENT;
 
   // -------------------------------------------------------------------------
+  // CORS - Domínios Permitidos
+  // -------------------------------------------------------------------------
+
+  @IsString()
+  @IsOptional()
+  CORS_ORIGIN?: string;
+
+  // -------------------------------------------------------------------------
+  // REDE - Host de Escuta
+  // -------------------------------------------------------------------------
+
+  @IsString()
+  @IsOptional()
+  LISTEN_HOST?: string;
+
+  // -------------------------------------------------------------------------
   // JWT (Autenticação)
   // -------------------------------------------------------------------------
 
@@ -81,11 +97,11 @@ export class EnvironmentVariables {
 
   @IsString()
   @IsOptional()
-  JWT_EXPIRES_IN: string = '7d';
+  JWT_EXPIRES_IN: string = '2h';
 
   @IsString()
   @IsOptional()
-  JWT_REFRESH_EXPIRES_IN: string = '7d';
+  JWT_REFRESH_EXPIRES_IN: string = '30d';
 
   // -------------------------------------------------------------------------
   // UPLOAD DE FICHEIROS

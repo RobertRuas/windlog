@@ -50,6 +50,7 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { Throttle } from '@nestjs/throttler';
 import {
   ApiTags,
   ApiOperation,
@@ -171,9 +172,8 @@ export class UploadController {
     FileInterceptor(
       'file',
       createMulterConfig(
-        // Passa o uploadDir e maxFileSize do ConfigService
-        // Nota: isto é chamado na inicialização, não a cada request.
-        // Os valores são os defaults que coincidem com o .env.
+        // NOTA: Em decorators, `this` não está disponível (avaliados em tempo de classe).
+        // As variáveis UPLOAD_DIR e MAX_FILE_SIZE são validadas pelo ConfigModule no startup.
         process.env['UPLOAD_DIR'] || './uploads',
         Number(process.env['MAX_FILE_SIZE']) || 10485760,
       ),
@@ -225,6 +225,7 @@ export class UploadController {
     status: 200,
     description: 'Ficheiro servido com sucesso (binário)',
   })
+  @Throttle({ default: { ttl: 60_000, limit: 30 } }) // Máximo 30 acessos a ficheiros por minuto por IP
   @Get('files/:token')
   serveFile(@Param('token') token: string, @Res() res: Response): void {
     const fileData = this.uploadService.resolveToken(token);

@@ -26,12 +26,17 @@ import {
   UnauthorizedException,
   ConflictException,
   Logger,
+  BadRequestException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
+import { existsSync, mkdirSync, writeFileSync } from 'fs';
+import { join, relative } from 'path';
+import { v4 as uuidv4 } from 'uuid';
 
 import { PrismaService } from '../../database/prisma.service.js';
-import { NotificationService } from '../notifications/notification.service.js';
 import { UploadService } from '../upload/upload.service.js';
 import { LoginDto } from './dto/login.dto.js';
 import { RegisterDto } from './dto/register.dto.js';
@@ -68,8 +73,8 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
-    private readonly notificationService: NotificationService,
     private readonly uploadService: UploadService,
+    private readonly configService: ConfigService,
   ) {}
 
   /**
@@ -150,13 +155,15 @@ export class AuthService {
    * 1. Busca o usuário pelo e-mail
    * 2. Verifica se o usuário existe e está ativo
    * 3. Compara a senha fornecida com a senha hasheada
-   * 4. Gera e retorna o token JWT
+   * 4. Gera e retorna o token JWT + refresh token
    *
    * @param dto - Dados do login (email, password)
-   * @returns Token JWT e dados do usuário (sem senha)
+   * @param userAgent - User-Agent do browser (para auditoria do refresh token)
+   * @param ipAddress - IP do cliente (para auditoria do refresh token)
+   * @returns Token JWT, refresh token e dados do usuário (sem senha)
    * @throws UnauthorizedException se as credenciais forem inválidas
    */
-  async login(dto: LoginDto) {
+  async login(dto: LoginDto, userAgent?: string, ipAddress?: string) {
     // PASSO 1: Busca o usuário pelo e-mail
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
@@ -190,16 +197,21 @@ export class AuthService {
 
     const token = await this.jwtService.signAsync(payload);
 
+    // Gera o refresh token para login persistente.
+    // O refresh token é armazenado hasheado no DB e enviado como cookie httpOnly.
+    const refreshToken = await this.generateRefreshToken(
+      user.id,
+      userAgent,
+      ipAddress,
+    );
+
     // Registra a operação no log
     this.logger.log(`User logged in: ${user.email} (${user.id})`);
 
-    // Sincroniza notificação de perfil incompleto (para usuários existentes)
-    const userName = `${user.firstName} ${user.lastName}`;
-    await this.notificationService.syncProfileIncompleteNotification(user.id, userName);
-
-    // Retorna o token e os dados do usuário (sem a senha!)
+    // Retorna o token, refresh token e dados do usuário (sem a senha!)
     return {
       accessToken: token,
+      refreshToken, // Enviado ao controller para definir o cookie httpOnly
       user: {
         id: user.id,
         email: user.email,
@@ -281,6 +293,8 @@ export class AuthService {
     // Atualiza o usuário com todos os dados do onboarding em uma transação
     const result = await this.prisma.$transaction(async (tx) => {
       // 1. Atualiza dados pessoais, contato, localização, aeroporto e profissionais
+      // SEGURANÇA: O email NÃO pode ser alterado no onboarding.
+      // Apenas o ADMIN pode alterar o email de um usuário.
       const updatedUser = await tx.user.update({
         where: { id: userId },
         data: {
@@ -288,7 +302,7 @@ export class AuthService {
           lastName: dto.lastName,
           nationality: dto.nationality,
           dateOfBirth: new Date(dto.dateOfBirth),
-          email: dto.email,
+          // email: NÃO atualizado — somente ADMIN pode alterar
           phoneCountryCode: dto.phoneCountryCode,
           phone: dto.phone,
           address: dto.address,
@@ -463,7 +477,25 @@ export class AuthService {
     if (dto.hireDate !== undefined) updateData.hireDate = dto.hireDate ? new Date(dto.hireDate) : null;
     if (dto.bio !== undefined) updateData.bio = dto.bio;
     if (dto.photoUrl !== undefined) updateData.photoUrl = dto.photoUrl;
-    if (dto.signatureData !== undefined) updateData.signatureData = dto.signatureData;
+
+    // ASSINATURA COMO FICHEIRO: Se o usuário enviar uma base64 de assinatura,
+    // convertemos para ficheiro e armazenamos no diretório de uploads do usuário.
+    // O campo signatureData armazena o caminho do ficheiro (não o base64).
+    if (dto.signatureData !== undefined) {
+      if (dto.signatureData === null) {
+        // Usuário quer remover a assinatura
+        updateData.signatureData = null;
+      } else if (dto.signatureData.startsWith('data:image/')) {
+        // Base64 de imagem → salvar como ficheiro no diretório do usuário
+        updateData.signatureData = this.saveSignatureAsFile(
+          userId,
+          dto.signatureData,
+        );
+      } else {
+        // Já é um caminho de ficheiro ou string inválida
+        updateData.signatureData = dto.signatureData;
+      }
+    }
 
     // Atualiza o usuário no banco de dados
     const updatedUser = await this.prisma.user.update({
@@ -484,10 +516,6 @@ export class AuthService {
 
     // Registra a operação no log
     this.logger.log(`Profile updated for user: ${user.email} (${user.id})`);
-
-    // Sincroniza notificação de perfil incompleto
-    const userName = `${updatedUser.firstName} ${updatedUser.lastName}`;
-    await this.notificationService.syncProfileIncompleteNotification(updatedUser.id, userName);
 
     // Retorna o perfil atualizado
     return {
@@ -618,7 +646,6 @@ export class AuthService {
         isPrimary: dto.isPrimary ?? false,
       },
     });
-    await this.syncProfileNotification(userId);
     return result;
   }
 
@@ -657,7 +684,6 @@ export class AuthService {
     const result = await this.prisma.userPhoneNumber.delete({
       where: { id: phoneId },
     });
-    await this.syncProfileNotification(userId);
     return result;
   }
 
@@ -683,7 +709,6 @@ export class AuthService {
         filePath: dto.filePath ?? null,
       },
     });
-    await this.syncProfileNotification(userId);
     return result;
   }
 
@@ -740,7 +765,6 @@ export class AuthService {
     const result = await this.prisma.userCertification.delete({
       where: { id: certId },
     });
-    await this.syncProfileNotification(userId);
     return result;
   }
 
@@ -759,7 +783,6 @@ export class AuthService {
         level: dto.level,
       },
     });
-    await this.syncProfileNotification(userId);
     return result;
   }
 
@@ -798,7 +821,6 @@ export class AuthService {
     const result = await this.prisma.userLanguage.delete({
       where: { id: languageId },
     });
-    await this.syncProfileNotification(userId);
     return result;
   }
 
@@ -823,7 +845,6 @@ export class AuthService {
         filePath: dto.filePath ?? null,
       },
     });
-    await this.syncProfileNotification(userId);
     return result;
   }
 
@@ -880,7 +901,6 @@ export class AuthService {
     const result = await this.prisma.userDocument.delete({
       where: { id: documentId },
     });
-    await this.syncProfileNotification(userId);
     return result;
   }
 
@@ -903,7 +923,6 @@ export class AuthService {
         description: dto.description,
       },
     });
-    await this.syncProfileNotification(userId);
     return result;
   }
 
@@ -950,7 +969,6 @@ export class AuthService {
     const result = await this.prisma.userBankAccount.delete({
       where: { id: accountId },
     });
-    await this.syncProfileNotification(userId);
     return result;
   }
 
@@ -1073,21 +1091,198 @@ export class AuthService {
     return result;
   }
 
+  // ==========================================================================
+  // ASSINATURA COMO FICHEIRO
+  // ==========================================================================
+
   /**
-   * Helper: sincroniza a notificação de perfil incompleto.
-   * Busca o nome do usuário automaticamente.
+   * Converte uma string base64 de assinatura em um ficheiro PNG no disco.
+   *
+   * SEGURANÇA: A assinatura é salva como ficheiro no diretório do usuário
+   * em vez de ser armazenada como base64 no banco de dados.
+   * Isso evita armazenar dados grandes em campos de texto e facilita
+   * o backup e a gestão de ficheiros.
+   *
+   * @param userId - ID do usuário (determina o diretório)
+   * @param base64Data - String base64 com prefixo "data:image/...;base64,"
+   * @returns Caminho relativo do ficheiro salvo (ex: "userId/signatures/signature-uuid.png")
    */
-  private async syncProfileNotification(userId: string) {
-    try {
-      const user = await this.prisma.user.findUnique({ where: { id: userId } });
-      if (user) {
-        await this.notificationService.syncProfileIncompleteNotification(
-          userId,
-          `${user.firstName} ${user.lastName}`,
-        );
-      }
-    } catch (err) {
-      this.logger.warn(`Falha ao sincronizar notificação de perfil para ${userId}: ${err.message}`);
+  private saveSignatureAsFile(userId: string, base64Data: string): string {
+    // Valida formato: deve começar com data:image/ (PNG, JPEG, etc.)
+    const matches = base64Data.match(/^data:image\/(png|jpeg|jpg|webp);base64,(.+)$/);
+    if (!matches) {
+      throw new BadRequestException(
+        'Invalid signature format. Must be a data:image/<type>;base64,... string.',
+      );
     }
+
+    const [, extension, base64Content] = matches;
+    const buffer = Buffer.from(base64Content, 'base64');
+
+    // Limite de 500KB para evitar armazenamento excessivo
+    const MAX_SIGNATURE_SIZE = 500 * 1024;
+    if (buffer.length > MAX_SIGNATURE_SIZE) {
+      throw new BadRequestException(
+        'Signature image too large. Maximum size is 500KB.',
+      );
+    }
+
+    // Diretório de assinaturas do usuário
+    const uploadDir = this.configService.get<string>('UPLOAD_DIR') ?? './uploads';
+    const signaturesDir = join(uploadDir, userId, 'signatures');
+
+    // Cria o diretório se não existir
+    if (!existsSync(signaturesDir)) {
+      mkdirSync(signaturesDir, { recursive: true });
+    }
+
+    // Gera nome único e salva no disco
+    const fileName = `signature-${uuidv4()}.${extension}`;
+    const filePath = join(signaturesDir, fileName);
+    writeFileSync(filePath, buffer);
+
+    // Retorna o caminho relativo (sem o uploadDir)
+    const relativePath = relative(uploadDir, filePath);
+    this.logger.log(`Signature saved as file: ${relativePath} (${buffer.length} bytes)`);
+
+    return relativePath;
+  }
+
+  // ==========================================================================
+  // REFRESH TOKEN — Sistema de Login Persistente
+  // ==========================================================================
+
+  /**
+   * Gera um novo refresh token para o usuário e armazena hasheado no DB.
+   *
+   * SEGURANÇA:
+   * - O token é um UUID aleatório criptograficamente seguro
+   * - Apenas o hash (SHA-256) é armazenado no banco
+   * - O valor original é retornado para ser enviado como cookie httpOnly
+   * - Expira conforme JWT_REFRESH_EXPIRES_IN (padrão: 30 dias)
+   *
+   * @param userId - ID do usuário
+   * @param userAgent - User-Agent do browser (para auditoria)
+   * @param ipAddress - IP do cliente (para auditoria)
+   * @returns O valor original do refresh token (para o cookie)
+   */
+  private async generateRefreshToken(
+    userId: string,
+    userAgent?: string,
+    ipAddress?: string,
+  ): Promise<string> {
+    // Gera um token aleatório seguro (32 bytes = 64 chars hex)
+    const rawToken = crypto.randomBytes(32).toString('hex');
+
+    // Hashea o token para armazenar no DB (SHA-256)
+    const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+
+    // Calcula a data de expiração
+    const refreshExpiresIn = this.configService.get<string>('JWT_REFRESH_EXPIRES_IN') ?? '30d';
+    const expiresAt = new Date();
+    const days = parseInt(refreshExpiresIn.replace('d', ''), 10) || 30;
+    expiresAt.setDate(expiresAt.getDate() + days);
+
+    // Salva o token hasheado no banco
+    await this.prisma.refreshToken.create({
+      data: {
+        tokenHash,
+        userId,
+        userAgent,
+        ipAddress,
+        expiresAt,
+      },
+    });
+
+    return rawToken;
+  }
+
+  /**
+   * Renova o access token usando um refresh token válido.
+   *
+   * FLUXO:
+   * 1. Hashea o refresh token recebido
+   * 2. Busca no DB pelo hash
+   * 3. Verifica se não expirou
+   * 4. Verifica se o usuário ainda existe e está ativo
+   * 5. Gera novo access token + novo refresh token (rotação)
+   * 6. Invalida o refresh token antigo
+   *
+   * @param rawRefreshToken - O valor do refresh token (do cookie httpOnly)
+   * @param userAgent - User-Agent do browser
+   * @param ipAddress - IP do cliente
+   * @returns Novo access token + novo refresh token
+   */
+  async refreshAccessToken(
+    rawRefreshToken: string,
+    userAgent?: string,
+    ipAddress?: string,
+  ): Promise<{ accessToken: string; refreshToken: string }> {
+    // Hashea o token recebido para comparar com o hash armazenado
+    const tokenHash = crypto.createHash('sha256').update(rawRefreshToken).digest('hex');
+
+    // Busca o refresh token no banco
+    const storedToken = await this.prisma.refreshToken.findUnique({
+      where: { tokenHash },
+      include: { user: true },
+    });
+
+    // Token não encontrado ou expirado
+    if (!storedToken) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+
+    if (storedToken.expiresAt < new Date()) {
+      // Remove o token expirado do banco
+      await this.prisma.refreshToken.delete({ where: { id: storedToken.id } });
+      throw new UnauthorizedException('Refresh token expired');
+    }
+
+    // Verifica se o usuário ainda existe e está ativo
+    const user = storedToken.user;
+    if (!user || !user.isActive || user.deletedAt !== null) {
+      throw new UnauthorizedException('User account is no longer active');
+    }
+
+    // ROTAÇÃO: Deleta o refresh token antigo e cria um novo
+    await this.prisma.refreshToken.delete({ where: { id: storedToken.id } });
+
+    // Gera novo access token
+    const payload: JwtPayload = {
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+      profileComplete: user.profileComplete,
+    };
+    const accessToken = await this.jwtService.signAsync(payload);
+
+    // Gera novo refresh token
+    const refreshToken = await this.generateRefreshToken(user.id, userAgent, ipAddress);
+
+    return { accessToken, refreshToken };
+  }
+
+  /**
+   * Faz o logout do usuário, invalidando o refresh token.
+   *
+   * @param rawRefreshToken - O valor do refresh token (do cookie httpOnly)
+   * @param userId - ID do usuário (para log)
+   */
+  async logout(rawRefreshToken: string, userId: string): Promise<void> {
+    if (rawRefreshToken) {
+      const tokenHash = crypto.createHash('sha256').update(rawRefreshToken).digest('hex');
+      // Remove o refresh token do banco (invalida a sessão)
+      await this.prisma.refreshToken.deleteMany({ where: { tokenHash } });
+    }
+
+    // Remove todos os tokens expirados do usuário (limpeza)
+    await this.prisma.refreshToken.deleteMany({
+      where: {
+        userId,
+        expiresAt: { lt: new Date() },
+      },
+    });
+
+    this.logger.log(`User logged out: userId=${userId}`);
   }
 }

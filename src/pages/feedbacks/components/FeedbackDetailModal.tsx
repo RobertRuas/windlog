@@ -21,7 +21,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import {
   X,
-  AlertCircle,
   FileText,
   Terminal,
   Cpu,

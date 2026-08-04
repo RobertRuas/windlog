@@ -38,6 +38,8 @@ import {
 } from 'lucide-react';
 
 import { AppLayout } from '@/components/layout/AppLayout';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { DataTable, type DataTableColumn } from '@/components/ui/DataTable';
 import {
   getFeedbacks,
   getFeedbackStats,
@@ -147,13 +149,101 @@ export function FeedbacksPage() {
   const feedbacks = feedbacksData?.data || [];
   const meta = feedbacksData?.meta;
 
+  /**
+   * Colunas da tabela de feedbacks.
+   */
+  const feedbackColumns: DataTableColumn<Feedback>[] = [
+    {
+      header: t('fields.title'),
+      sortable: true,
+      sortKey: 'title',
+      render: (fb) => (
+        <div>
+          <p className="text-sm font-medium text-gray-900 truncate max-w-[200px]">{fb.title}</p>
+          <p className="text-xs text-gray-500 truncate max-w-[200px]">{fb.description}</p>
+        </div>
+      ),
+    },
+    {
+      header: t('fields.category'),
+      sortable: true,
+      sortKey: 'category',
+      render: (fb) => {
+        const CatIcon = CATEGORY_ICONS[fb.category];
+        return (
+          <span className="inline-flex items-center gap-1 text-xs text-gray-600 whitespace-nowrap">
+            <CatIcon size={14} />
+            {t(`categories.${fb.category}`)}
+          </span>
+        );
+      },
+    },
+    {
+      header: t('table.status'),
+      sortable: true,
+      sortKey: 'status',
+      render: (fb) => (
+        <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${STATUS_COLORS[fb.status]}`}>
+          {t(`statuses.${fb.status}`)}
+        </span>
+      ),
+    },
+    {
+      header: t('table.priority'),
+      sortable: true,
+      sortKey: 'priority',
+      render: (fb) => (
+        <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${PRIORITY_COLORS[fb.priority]}`}>
+          {t(`priorities.${fb.priority}`)}
+        </span>
+      ),
+    },
+    {
+      header: t('list.reported_by'),
+      render: (fb) => (
+        <span className="text-sm text-gray-700 whitespace-nowrap">{fb.reporter.firstName} {fb.reporter.lastName}</span>
+      ),
+    },
+    {
+      header: t('table.date'),
+      sortable: true,
+      sortKey: 'createdAt',
+      render: (fb) => (
+        <span className="text-xs text-gray-500 whitespace-nowrap">{new Date(fb.createdAt).toLocaleDateString('pt-BR')}</span>
+      ),
+    },
+    {
+      header: t('table.actions'),
+      align: 'right',
+      sticky: true,
+      minWidth: '80px',
+      render: (fb) => (
+        <div className="flex items-center justify-end gap-1">
+          <button
+            onClick={() => openDetail(fb)}
+            className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+            title={t('actions.view')}
+          >
+            <Eye size={15} />
+          </button>
+          <button
+            onClick={() => handleDelete(fb.id)}
+            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            title={t('actions.delete')}
+          >
+            <Trash2 size={15} />
+          </button>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <AppLayout>
-      {/* Título */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">{t('admin_title')}</h1>
-        <p className="text-sm text-gray-500 mt-1">{t('admin_subtitle')}</p>
-      </div>
+      <PageHeader
+        title={t('admin_title')}
+        subtitle={t('admin_subtitle')}
+      />
 
       {/* Estatísticas */}
       {stats && (
@@ -260,115 +350,24 @@ export function FeedbacksPage() {
       </div>
 
       {/* Tabela de feedbacks */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        {isLoading ? (
-          <div className="p-12 text-center text-gray-400">
-            <p>{t('status.loading', { ns: 'common' })}</p>
-          </div>
-        ) : feedbacks.length === 0 ? (
-          <div className="p-12 text-center">
-            <AlertCircle size={40} className="mx-auto text-gray-300 mb-3" />
-            <p className="text-gray-500 font-medium">{t('list.empty')}</p>
-            <p className="text-sm text-gray-400 mt-1">{t('list.empty_description')}</p>
-          </div>
-        ) : (
-          <>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-gray-200 bg-gray-50">
-                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase whitespace-nowrap">{t('fields.title')}</th>
-                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase whitespace-nowrap">{t('fields.category')}</th>
-                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase whitespace-nowrap">{t('table.status')}</th>
-                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase whitespace-nowrap">{t('table.priority')}</th>
-                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase whitespace-nowrap">{t('list.reported_by')}</th>
-                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase whitespace-nowrap">{t('table.date')}</th>
-                    <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase whitespace-nowrap">{t('table.actions')}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {feedbacks.map((fb) => {
-                    const CatIcon = CATEGORY_ICONS[fb.category];
-                    return (
-                      <tr key={fb.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-4 py-3">
-                          <p className="text-sm font-medium text-gray-900 truncate max-w-[200px]">{fb.title}</p>
-                          <p className="text-xs text-gray-500 truncate max-w-[200px]">{fb.description}</p>
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <span className="inline-flex items-center gap-1 text-xs text-gray-600">
-                            <CatIcon size={14} />
-                            {t(`categories.${fb.category}`)}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[fb.status]}`}>
-                            {t(`statuses.${fb.status}`)}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${PRIORITY_COLORS[fb.priority]}`}>
-                            {t(`priorities.${fb.priority}`)}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <p className="text-sm text-gray-700">{fb.reporter.firstName} {fb.reporter.lastName}</p>
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <p className="text-xs text-gray-500">{new Date(fb.createdAt).toLocaleDateString('pt-BR')}</p>
-                        </td>
-                        <td className="px-4 py-3 text-right whitespace-nowrap">
-                          <div className="flex items-center justify-end gap-1">
-                            <button
-                              onClick={() => openDetail(fb)}
-                              className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
-                              title={t('actions.view')}
-                            >
-                              <Eye size={16} />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(fb.id)}
-                              className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-                              title={t('actions.delete')}
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Paginação */}
-            {meta && meta.totalPages > 1 && (
-              <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200">
-                <p className="text-sm text-gray-500">
-                  {t('table.pagination_info', { total: meta.total, page: meta.page, totalPages: meta.totalPages })}
-                </p>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setFilters((prev) => ({ ...prev, page: (prev.page || 1) - 1 }))}
-                    disabled={meta.page <= 1}
-                    className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg disabled:opacity-50 hover:bg-gray-50 transition-colors"
-                  >
-                    {t('table.previous')}
-                  </button>
-                  <button
-                    onClick={() => setFilters((prev) => ({ ...prev, page: (prev.page || 1) + 1 }))}
-                    disabled={meta.page >= meta.totalPages}
-                    className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg disabled:opacity-50 hover:bg-gray-50 transition-colors"
-                  >
-                    {t('table.next')}
-                  </button>
-                </div>
-              </div>
-            )}
-          </>
-        )}
-      </div>
+      <DataTable
+        columns={feedbackColumns}
+        data={feedbacks}
+        isLoading={isLoading}
+        clientSort
+        emptyIcon={AlertCircle}
+        emptyMessage={t('list.empty')}
+        loadingMessage={t('status.loading', { ns: 'common' })}
+        pagination={meta && meta.totalPages > 1 ? {
+          page: meta.page,
+          totalPages: meta.totalPages,
+          total: meta.total,
+          hasPreviousPage: meta.page > 1,
+          hasNextPage: meta.page < meta.totalPages,
+          onPageChange: (page) => setFilters((prev) => ({ ...prev, page })),
+          paginationLabel: t('table.pagination_info', { total: meta.total, page: meta.page, totalPages: meta.totalPages }),
+        } : undefined}
+      />
 
       {/* ── Modal de Detalhes / Edição ─────────────────────────────── */}
       {selectedFeedback && (

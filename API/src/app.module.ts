@@ -30,6 +30,8 @@
 
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 
 import { EnvironmentVariables } from './config/env.validation.js';
 import { AuthModule } from './modules/auth/auth.module.js';
@@ -64,6 +66,20 @@ import { FeedbackModule } from './modules/feedback/feedback.module.js';
         return config as EnvironmentVariables;
       },
     }),
+
+    // -------------------------------------------------------------------------
+    // THROTTLER MODULE - Rate Limiting Global
+    // -------------------------------------------------------------------------
+    // Protege TODOS os endpoints contra ataques de força bruta e DoS.
+    // Limite padrão: 100 requisições por minuto por IP.
+    // Endpoints específicos (login, /files) podem ter limites mais restritivos
+    // usando o decorador @Throttle() nos controllers.
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60_000, // Janela de tempo: 60 segundos (1 minuto)
+        limit: 100, // Máximo de 100 requisições por minuto por IP
+      },
+    ]),
 
     // -------------------------------------------------------------------------
     // AUTH MODULE - Autenticação e Autorização
@@ -110,6 +126,17 @@ import { FeedbackModule } from './modules/feedback/feedback.module.js';
     // -------------------------------------------------------------------------
     // Exemplo:
     // DailyReportsModule,
+  ],
+  // -------------------------------------------------------------------------
+  // PROVIDERS GLOBAIS
+  // -------------------------------------------------------------------------
+  // ThrottlerGuard: aplica rate limiting em TODOS os endpoints automaticamente.
+  // Endpoints individuais podem usar @Throttle() para limites mais restritivos.
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
   ],
 })
 export class AppModule {}

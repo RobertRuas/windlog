@@ -23,10 +23,11 @@ import { useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Plus, Calendar } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { AppLayout } from '@/components/layout/AppLayout';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { TimesheetCreateModal } from './components/TimesheetCreateModal';
 import { TimesheetViewModal } from './components/TimesheetViewModal';
 import { TimesheetTable } from './components/TimesheetTable';
@@ -151,89 +152,81 @@ export function WeeklyTimesheetPage() {
 
   return (
     <AppLayout>
-      <div className="p-6 max-w-7xl mx-auto">
-        {/* ── Header ──────────────────────────────────────────────────── */}
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <Calendar size={24} className="text-blue-600" />
-              {t('title')}
-            </h1>
-            <p className="text-sm text-gray-500 mt-1">{t('subtitle')}</p>
-          </div>
-
-          {/* Botão Novo Timesheet */}
-          {(currentUser?.role !== 'STANDARD' || currentUser?.isTeamLeader) && (
+      <PageHeader
+        title={t('title')}
+        subtitle={t('subtitle')}
+        actions={
+          (currentUser?.role !== 'STANDARD' || currentUser?.isTeamLeader) ? (
             <button
               onClick={() => setShowCreateModal(true)}
-              className="form-button form-button-primary flex-shrink-0"
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
-              <Plus size={16} />
+              <Plus size={18} />
               {t('newTimesheet')}
             </button>
-          )}
-        </div>
+          ) : undefined
+        }
+      />
 
-        {/* ── Filtros ─────────────────────────────────────────────────── */}
-        <div className="flex items-center gap-2 mb-4">
-          <select
-            value={statusFilter}
-            onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-            className="form-select !w-auto shrink"
-          >
-            <option value="">{t('filters.allStatuses')}</option>
-            <option value="DRAFT">{t('status.DRAFT')}</option>
-            <option value="SUBMITTED">{t('status.SUBMITTED')}</option>
-            <option value="APPROVED">{t('status.APPROVED')}</option>
-          </select>
+      {/* Filtros */}
+      <div className="flex items-center gap-2 mb-4">
+        <select
+          value={statusFilter}
+          onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
+          className="form-select !w-auto shrink"
+        >
+          <option value="">{t('filters.allStatuses')}</option>
+          <option value="DRAFT">{t('status.DRAFT')}</option>
+          <option value="SUBMITTED">{t('status.SUBMITTED')}</option>
+          <option value="APPROVED">{t('status.APPROVED')}</option>
+        </select>
 
-          <select
-            value={weekFilter}
-            onChange={(e) => { setWeekFilter(e.target.value); setPage(1); }}
-            className="form-select !w-auto shrink"
-          >
-            <option value="">{t('filters.allWeeks')}</option>
-            {filterWeeks.map((w) => (
-              <option key={w} value={w}>{t('filters.weekLabel')} {w}</option>
-            ))}
-          </select>
+        <select
+          value={weekFilter}
+          onChange={(e) => { setWeekFilter(e.target.value); setPage(1); }}
+          className="form-select !w-auto shrink"
+        >
+          <option value="">{t('filters.allWeeks')}</option>
+          {filterWeeks.map((w) => (
+            <option key={w} value={w}>{t('filters.weekLabel')} {w}</option>
+          ))}
+        </select>
 
-          <select
-            value={projectFilter}
-            onChange={(e) => { setProjectFilter(e.target.value); setPage(1); }}
-            className="form-select !w-auto shrink"
-          >
-            <option value="">{t('filters.allProjects')}</option>
-            {filterProjects.map((p) => (
-              <option key={p.id} value={p.id}>{p.name}</option>
-            ))}
-          </select>
+        <select
+          value={projectFilter}
+          onChange={(e) => { setProjectFilter(e.target.value); setPage(1); }}
+          className="form-select !w-auto shrink"
+        >
+          <option value="">{t('filters.allProjects')}</option>
+          {filterProjects.map((p) => (
+            <option key={p.id} value={p.id}>{p.name}</option>
+          ))}
+        </select>
 
-          <select
-            value={authorFilter}
-            onChange={(e) => { setAuthorFilter(e.target.value); setPage(1); }}
-            className="form-select !w-auto shrink"
-          >
-            <option value="">{t('filters.allAuthors')}</option>
-            {filterAuthors.map((a) => (
-              <option key={a.id} value={a.id}>{a.name}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* ── Tabela ────────────────────────────────────────────────── */}
-        <TimesheetTable
-          timesheets={timesheets}
-          isLoading={isLoading}
-          currentUser={currentUser}
-          onView={handleView}
-          onEdit={(id) => navigate(`/timesheets/${id}`)}
-          onDelete={handleDelete}
-          meta={meta}
-          onPageChange={setPage}
-          t={t}
-        />
+        <select
+          value={authorFilter}
+          onChange={(e) => { setAuthorFilter(e.target.value); setPage(1); }}
+          className="form-select !w-auto shrink"
+        >
+          <option value="">{t('filters.allAuthors')}</option>
+          {filterAuthors.map((a) => (
+            <option key={a.id} value={a.id}>{a.name}</option>
+          ))}
+        </select>
       </div>
+
+      {/* Tabela */}
+      <TimesheetTable
+        timesheets={timesheets}
+        isLoading={isLoading}
+        currentUser={currentUser}
+        onView={handleView}
+        onEdit={(id) => navigate(`/timesheets/${id}`)}
+        onDelete={handleDelete}
+        meta={meta}
+        onPageChange={setPage}
+        t={t}
+      />
 
       {/* ── Modal de criação ────────────────────────────────────────── */}
       {showCreateModal && (

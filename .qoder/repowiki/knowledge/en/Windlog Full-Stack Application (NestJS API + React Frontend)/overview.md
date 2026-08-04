@@ -1,1 +1,0 @@
-Full-stack wind energy project management system with a NestJS REST API backed by Prisma/PostgreSQL and a React frontend using TanStack Query, React Router, and Tailwind CSS for managing users, projects, turbines, weekly timesheets, notifications, feedback, and system logs.

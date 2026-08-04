@@ -80,7 +80,7 @@ export function SignaturePad({
 
   // Estado para recorte de imagem
   const [rawImage, setRawImage] = useState<string | null>(null);
-  const [imgDims, setImgDims] = useState<{ w: number; h: number }>({ w: 0, h: 0 });
+  const [, setImgDims] = useState<{ w: number; h: number }>({ w: 0, h: 0 });
   const [cropRect, setCropRect] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);

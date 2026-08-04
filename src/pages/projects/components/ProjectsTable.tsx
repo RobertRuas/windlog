@@ -65,6 +65,8 @@ export function ProjectsTable({
   const columns: DataTableColumn<ProjectListItem>[] = [
     {
       header: t('table.name'),
+      sortable: true,
+      sortKey: 'name',
       render: (project) => (
         <span className="text-sm font-medium text-gray-900 whitespace-nowrap">
           {project.name}
@@ -73,6 +75,8 @@ export function ProjectsTable({
     },
     {
       header: t('table.client'),
+      sortable: true,
+      sortKey: 'client',
       render: (project) => (
         <span className="text-sm text-gray-600 whitespace-nowrap">
           {project.client}
@@ -91,6 +95,8 @@ export function ProjectsTable({
     {
       header: t('table.status'),
       align: 'left',
+      sortable: true,
+      sortKey: 'status',
       render: (project) => {
         const statusCfg = STATUS_CONFIG[project.status] || STATUS_CONFIG.PLANNING;
         return (
@@ -155,6 +161,7 @@ export function ProjectsTable({
       columns={columns}
       data={data?.data ?? []}
       isLoading={isLoading}
+      clientSort
       emptyMessage={t('table.empty')}
       loadingMessage={t('table.loading')}
       pagination={data && data.totalPages > 1 ? {

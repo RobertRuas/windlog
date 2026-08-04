@@ -3,11 +3,11 @@ schema_version: 1
 locale: en-US
 branch: main
 nodes_managed: true
-exported_at: "2026-08-04T18:19:27Z"
+exported_at: "2026-08-04T21:36:49Z"
 modules:
     "":
-        dir_name: Windlog Full-Stack Application (NestJS API + React Frontend)
-        title: Windlog Full-Stack Application (NestJS API + React Frontend)
+        dir_name: Windlog Full-Stack Application (NestJS Backend + React Frontend)_2
+        title: Windlog Full-Stack Application (NestJS Backend + React Frontend)
         scope: []
         source_files: []
         children: []

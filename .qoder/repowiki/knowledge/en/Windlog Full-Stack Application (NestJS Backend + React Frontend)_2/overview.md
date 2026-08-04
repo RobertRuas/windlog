@@ -1,0 +1,1 @@
+Full-stack wind turbine management system with a NestJS REST API (Prisma/PostgreSQL, JWT auth, Swagger) and a React SPA (TanStack Query, i18n, Sonner toasts) covering users, projects, timesheets, notifications, feedback and system logging.

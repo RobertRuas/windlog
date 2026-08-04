@@ -35,6 +35,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { PageHeader } from '@/components/ui/PageHeader';
 import {
   getNotifications,
   markAsRead,
@@ -147,40 +148,28 @@ export function NotificationsPage() {
   return (
     <AppLayout>
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-              <Bell size={20} className="text-blue-600" />
-            </div>
-            <div>
-              <h1 className="text-xl font-semibold text-gray-900">{t('title')}</h1>
-              {data && (
-                <p className="text-sm text-gray-500">
-                  {t('subtitle', { count: data.total })}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Ações rápidas */}
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => markAllAsReadMutation.mutate()}
-              className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
-              title={t('actions.markAllRead')}
-            >
-              <CheckCheck size={18} />
-            </button>
-            <button
-              onClick={() => deleteReadMutation.mutate()}
-              className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
-              title={t('actions.clearRead')}
-            >
-              <Trash2 size={18} />
-            </button>
-          </div>
-        </div>
+        <PageHeader
+          title={t('title')}
+          subtitle={data ? t('subtitle', { count: data.total }) : undefined}
+          actions={
+            <>
+              <button
+                onClick={() => markAllAsReadMutation.mutate()}
+                className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+                title={t('actions.markAllRead')}
+              >
+                <CheckCheck size={18} />
+              </button>
+              <button
+                onClick={() => deleteReadMutation.mutate()}
+                className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+                title={t('actions.clearRead')}
+              >
+                <Trash2 size={18} />
+              </button>
+            </>
+          }
+        />
 
         {/* Filtros */}
         <div className="flex gap-1 mb-5 p-1 bg-gray-100 rounded-xl w-fit">

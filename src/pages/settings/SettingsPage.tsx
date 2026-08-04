@@ -24,6 +24,7 @@ import { useTranslation } from 'react-i18next';
 
 // Layout
 import { AppLayout } from '@/components/layout/AppLayout';
+import { PageHeader } from '@/components/ui/PageHeader';
 
 // Componentes
 import { PageHelp } from '@/components/ui/PageHelp';
@@ -55,13 +56,10 @@ export function SettingsPage() {
 
   return (
     <AppLayout>
-      {/* Cabeçalho */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-[#f5f5f7]">{t('title')}</h1>
-        <p className="text-sm text-gray-500 dark:text-[#a1a1a6] mt-1">
-          {t('subtitle')}
-        </p>
-      </div>
+      <PageHeader
+        title={t('title')}
+        subtitle={t('subtitle')}
+      />
 
       {/* Ajuda contextual da página */}
       <PageHelp title={t('help.title')} className="mb-4">

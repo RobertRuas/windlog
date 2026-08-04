@@ -56,8 +56,10 @@ import { UploadModule } from '../upload/upload.module.js';
       useFactory: (configService: ConfigService): JwtModuleOptions => ({
         secret: configService.getOrThrow<string>('JWT_SECRET'),
         signOptions: {
+          // Access token com expiração curta (2h). A renovação acontece
+          // via refresh token (cookie httpOnly) no endpoint POST /auth/refresh.
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          expiresIn: configService.get<string>('JWT_EXPIRES_IN', '1d') as any,
+          expiresIn: configService.get<string>('JWT_EXPIRES_IN', '2h') as any,
         },
       }),
     }),

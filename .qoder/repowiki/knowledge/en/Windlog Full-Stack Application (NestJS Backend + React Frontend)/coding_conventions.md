@@ -1,0 +1,9 @@
+- Each NestJS module follows the exact triad `{name}.module.ts` + `{name}.controller.ts` + `{name}.service.ts` with all business logic in the service — controllers only map routes to service calls.
+- Backend DTOs use class-validator decorators (`@IsString`, `@IsEmail`, `@IsOptional`, …) and every optional field must be explicitly marked with `@IsOptional()` — the TypeScript `?` modifier is not sufficient.
+- Soft delete is mandatory for business entities via a `deletedAt` DateTime field; all queries must filter `deletedAt: null`, while junction tables may use hard delete.
+- Frontend pages follow `{PageName}.tsx` + `components/` + optional `hooks/` structure; services in `src/services/` encapsulate all API calls through the central `api.ts` fetch wrapper.
+- TanStack Query keys use the `['entity', filter?]` pattern for lists and `['entity', id]` for details, and mutations invalidate all related keys.
+- UI components go in `src/components/ui/` (generic) and layout components in `src/components/layout/` — never mix them.
+- Every CRUD operation shows a Sonner toast notification in Portuguese following the pattern 'X criado/atualizado/removido com sucesso'.
+- New endpoints must register their action in `LoggingInterceptor.determineAction()` so HTTP method + URL map to a `LogAction` enum value automatically.
+- Design is mobile-first using Tailwind breakpoints (`sm:`, `md:`, `lg:`) and the sidebar collapses on mobile via a hamburger menu.
