@@ -139,36 +139,24 @@ export function ProfileCompleteness({ data }: ProfileCompletenessProps) {
     }
   };
 
-  // Se 100% completo, mostra mensagem de sucesso compacta
+  // Se 100% completo, mostra mensagem discreta e compacta
   if (percentage === 100) {
     return (
       <div
         ref={containerRef}
         id="complete-profile"
-        className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl p-4 flex items-center gap-3"
+        className="bg-gray-50 border border-gray-200 rounded-xl p-3 flex items-center gap-3"
       >
-        <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
-          <Sparkles size={18} className="text-emerald-600" />
+        <div className="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center flex-shrink-0">
+          <Check size={14} className="text-emerald-500" />
         </div>
-        <div className="flex-1">
-          <p className="text-sm font-semibold text-emerald-800">
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-medium text-gray-600">
             {t('completeness.sectionsComplete')}
           </p>
-          <p className="text-xs text-emerald-600 mt-0.5">
-            {t('completeness.percentage', { value: 100 })}
+          <p className="text-[11px] text-gray-400 mt-0.5">
+            {t('completeness.basicInfoComplete')}
           </p>
-        </div>
-        <div className="w-12 h-12 relative">
-          <svg className="w-12 h-12 -rotate-90" viewBox="0 0 36 36">
-            <circle cx="18" cy="18" r="15" fill="none" stroke="#d1fae5" strokeWidth="3" />
-            <circle
-              cx="18" cy="18" r="15" fill="none" stroke="#10b981" strokeWidth="3"
-              strokeDasharray="94.25" strokeDashoffset="0" strokeLinecap="round"
-            />
-          </svg>
-          <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-emerald-700">
-            100
-          </span>
         </div>
       </div>
     );

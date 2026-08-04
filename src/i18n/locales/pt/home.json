@@ -187,7 +187,8 @@
     "title": "Progresso do Perfil",
     "subtitle": "Complete o seu perfil para aproveitar todas as funcionalidades",
     "percentage": "{{value}}% completo",
-    "sectionsComplete": "Todas as seções completas!",
+    "sectionsComplete": "Informações básicas completas!",
+    "basicInfoComplete": "Todas as informações básicas estão preenchidas",
     "complete": "Completo",
     "required": "Obrigatório",
     "showDetails": "Ver detalhes",
@@ -204,7 +205,7 @@
       "certifications": "Certificações"
     },
     "hints": {
-      "identity": "Adicione data de nascimento, nacionalidade e foto",
+      "identity": "Adicione data de nascimento e nacionalidade",
       "contact": "Adicione pelo menos um número de telefone",
       "location": "Preencha endereço, cidade, código postal e país",
       "professional": "Preencha departamento, cargo e data de contratação",
