@@ -104,11 +104,11 @@ function isFilled(value: unknown): boolean {
  * - Contato: 10 (telefone)
  * - Localização: 12 (endereço, cidade, código postal, país)
  * - Profissional: 13 (departamento, cargo, data contratação)
- * - Sobre: 5 (biografia)
+ * - Sobre: 0 (biografia - opcional, não conta para o progresso)
  * - Documentos: 25 (passaporte obrigatório + outros)
- * - Dados Bancários: 10 (pelo menos uma conta)
+ * - Dados Bancários: 0 (opcional, não conta para o progresso)
  * - Idiomas: 5 (pelo menos um idioma)
- * - Certificações: 5 (pelo menos uma certificação)
+ * - Certificações: 0 (opcional, não conta para o progresso)
  */
 function getProfileSections(): ProfileSection[] {
   return [
@@ -146,7 +146,7 @@ function getProfileSections(): ProfileSection[] {
     },
     {
       id: 'about',
-      weight: 5,
+      weight: 0,
       fields: ['bio'],
       requiredFields: [],
       isComplete: (d) => isFilled(d.bio),
@@ -168,7 +168,7 @@ function getProfileSections(): ProfileSection[] {
     },
     {
       id: 'bankAccounts',
-      weight: 10,
+      weight: 0,
       fields: ['bankAccount'],
       requiredFields: [],
       isComplete: (d) => (d.bankAccounts?.length ?? 0) > 0,
@@ -184,7 +184,7 @@ function getProfileSections(): ProfileSection[] {
     },
     {
       id: 'certifications',
-      weight: 5,
+      weight: 0,
       fields: ['certification'],
       requiredFields: [],
       isComplete: (d) => (d.certifications?.length ?? 0) > 0,
