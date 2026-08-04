@@ -10,6 +10,12 @@
     "placeholder": "Digite sua senha"
   },
   "submit": "Entrar",
+  "devSwitcher": {
+    "label": "Login rápido (Dev)",
+    "placeholder": "Selecione um usuário...",
+    "logging": "A entrar...",
+    "or": "ou entre com email e senha"
+  },
   "errors": {
     "invalid_credentials": "E-mail ou senha incorretos",
     "required_field": "Este campo é obrigatório",
