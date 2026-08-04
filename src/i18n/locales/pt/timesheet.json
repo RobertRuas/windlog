@@ -84,7 +84,9 @@
     "dailyProgress": "Progresso Diário",
     "dailyProgressExample": "",
     "addRow": "Adicionar Linha de Técnico",
-    "removeRow": "Remover Última Linha"
+    "removeRow": "Remover Última Linha",
+    "moveUp": "Mover para cima",
+    "moveDown": "Mover para baixo"
   },
   "signatures": {
     "signature": "Assinatura",

@@ -162,11 +162,13 @@ export function formStateToPayload(form: FormState): UpdateTimesheetPayload {
       progress: day.progress,
       // Persiste sharedValues no banco para que sejam recarregados ao voltar à página
       sharedValues: { ...day.shared },
-      entries: day.entries.map((e): UpdateEntryPayload => ({
+      entries: day.entries.map((e, idx): UpdateEntryPayload => ({
         id: e.id,
         userId: e.userId || undefined,
         technicianName: e.technicianName,
         role: e.role || undefined,
+        // Persiste a ordem das entries (reorder dos técnicos)
+        sortOrder: idx,
         // Aplica shared values a cada entry (todos usam as informações comuns)
         localTurbineNo: day.shared.localTurbineNo || undefined,
         turbineIdNo: day.shared.turbineIdNo || undefined,

@@ -72,6 +72,26 @@ function formatDateDisplay(dateStr: string): string {
 }
 
 /**
+ * Resolve o valor de um campo da entry.
+ * Prioriza o valor da própria entry; se vazio, usa o sharedValues do dia.
+ * Isso garante que a planilha exiba dados dinâmicos mesmo quando os valores
+ * compartilhados não foram persistidos individualmente em cada entry.
+ */
+function resolveEntryValue(
+  entry: TimesheetDay['entries'][number],
+  field: string,
+  sharedValues?: TimesheetDay['sharedValues'],
+): string {
+  const entryVal = (entry[field as keyof typeof entry] as string) || '';
+  if (entryVal) return entryVal;
+  // Fallback: usa sharedValues do dia se disponível
+  if (sharedValues) {
+    return ((sharedValues as unknown) as Record<string, string>)[field] || '';
+  }
+  return '';
+}
+
+/**
  * Componente TimesheetDaySection - Seção completa de um dia.
  *
  * Renderiza: header do dia + linhas de técnicos + data (rowspan) + progress (rowspan).
@@ -184,7 +204,7 @@ export function TimesheetDaySection({
                     onEntryChange(dayIdx, rowIdx, field, e.currentTarget.innerText.trim())
                   }
                 >
-                  {(entry[field as keyof typeof entry] as string) || ''}
+                  {resolveEntryValue(entry, field, day.sharedValues)}
                 </td>
               ))}
 

@@ -34,7 +34,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import {
   Plus, Trash2, Save, RotateCcw, ChevronDown, ChevronRight,
-  Check, User as UserIcon,
+  Check, User as UserIcon, ChevronUp,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { updateTimesheet } from '@/services/weekly-timesheet.service';
@@ -268,6 +268,24 @@ export function TimesheetFormEditor({
     setForm((prev) => {
       const days = [...prev.days];
       const entries = days[dayIdx].entries.filter((_, i) => i !== entryIdx);
+      days[dayIdx] = { ...days[dayIdx], entries };
+      return { ...prev, days };
+    });
+  }
+
+  /**
+   * Move uma entry para cima ou baixo dentro do mesmo dia.
+   * Usado para reordenar os técnicos nas linhas da planilha.
+   */
+  function handleMoveEntry(dayIdx: number, entryIdx: number, direction: 'up' | 'down') {
+    setForm((prev) => {
+      const days = [...prev.days];
+      const entries = [...days[dayIdx].entries];
+      const targetIdx = direction === 'up' ? entryIdx - 1 : entryIdx + 1;
+      // Verifica se o índice de destino é válido
+      if (targetIdx < 0 || targetIdx >= entries.length) return prev;
+      // Troca as posições
+      [entries[entryIdx], entries[targetIdx]] = [entries[targetIdx], entries[entryIdx]];
       days[dayIdx] = { ...days[dayIdx], entries };
       return { ...prev, days };
     });
@@ -584,15 +602,33 @@ export function TimesheetFormEditor({
 
                           {/* Toggle switch: removido — todos usam informações comuns */}
 
-                          {/* Botão: Remover */}
-                          <button
-                            onClick={() => handleRemoveEntry(dayIdx, entryIdx)}
-                            disabled={isSaving}
-                            className="p-1.5 text-gray-300 hover:text-red-500 transition-colors disabled:opacity-50 shrink-0"
-                            title={t('sheet.removeRow')}
-                          >
-                            <Trash2 size={14} />
-                          </button>
+                          {/* Botões: Reordenar + Remover */}
+                          <div className="flex items-center gap-0.5 shrink-0">
+                            <button
+                              onClick={() => handleMoveEntry(dayIdx, entryIdx, 'up')}
+                              disabled={isSaving || entryIdx === 0}
+                              className="p-1 text-gray-300 hover:text-gray-600 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                              title={t('sheet.moveUp')}
+                            >
+                              <ChevronUp size={14} />
+                            </button>
+                            <button
+                              onClick={() => handleMoveEntry(dayIdx, entryIdx, 'down')}
+                              disabled={isSaving || entryIdx === day.entries.length - 1}
+                              className="p-1 text-gray-300 hover:text-gray-600 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                              title={t('sheet.moveDown')}
+                            >
+                              <ChevronDown size={14} />
+                            </button>
+                            <button
+                              onClick={() => handleRemoveEntry(dayIdx, entryIdx)}
+                              disabled={isSaving}
+                              className="p-1.5 text-gray-300 hover:text-red-500 transition-colors disabled:opacity-50"
+                              title={t('sheet.removeRow')}
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ))}

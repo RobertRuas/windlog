@@ -20,7 +20,7 @@
  */
 
 import { useState, useCallback } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Plus, Trash2, Eye, Pencil, Calendar, Wrench, Clock, Plane } from 'lucide-react';
@@ -61,7 +61,6 @@ export function WeeklyTimesheetPage() {
   const [authorFilter, setAuthorFilter] = useState('');
   const [viewTimesheet, setViewTimesheet] = useState<WeeklyTimesheet | null>(null);
   const [viewLoading, setViewLoading] = useState(false);
-  const queryClient = useQueryClient();
 
   // ── Busca todos os timesheets para popular filtros ───────────────
   const { data: allResponse } = useQuery({
@@ -145,14 +144,7 @@ export function WeeklyTimesheetPage() {
       setViewTimesheet(null);
 
       try {
-        // Tenta usar dados já cacheados pelo React Query
-        const cached = queryClient.getQueryData(['timesheet', id]);
-        if (cached) {
-          setViewTimesheet(cached as WeeklyTimesheet);
-          setViewLoading(false);
-          return;
-        }
-
+        // Sempre busca dados completos da API (evita tela em branco na primeira vez)
         const res = await getTimesheetById(id);
         setViewTimesheet(res.data);
       } catch {
@@ -161,7 +153,7 @@ export function WeeklyTimesheetPage() {
         setViewLoading(false);
       }
     },
-    [queryClient, t],
+    [t],
   );
 
   /**
