@@ -15,6 +15,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { MessageSquare, Bug, Lightbulb, Palette, Zap, FileText, CheckCircle, Clock, AlertCircle, X } from 'lucide-react';
 import { getMyFeedbacks, type MyFeedback, type FeedbackStatus, type FeedbackCategory } from '@/services/feedback.service';
@@ -127,6 +128,7 @@ export function MyFeedbacksSection({ t }: MyFeedbacksSectionProps) {
  * Componente de item de feedback individual.
  */
 function FeedbackItem({ feedback, t }: { feedback: MyFeedback; t: (key: string) => string }) {
+  const { t: tFeedback } = useTranslation('feedback');
   const CategoryIcon = CATEGORY_ICONS[feedback.category];
   const isResolved = feedback.status === 'RESOLVED' || feedback.status === 'CLOSED';
 
@@ -148,7 +150,7 @@ function FeedbackItem({ feedback, t }: { feedback: MyFeedback; t: (key: string) 
             </h3>
             {/* Status badge */}
             <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[feedback.status]}`}>
-              {t(`statuses.${feedback.status}`)}
+              {tFeedback(`statuses.${feedback.status}`)}
             </span>
           </div>
 
@@ -165,7 +167,7 @@ function FeedbackItem({ feedback, t }: { feedback: MyFeedback; t: (key: string) 
 
             {/* Categoria */}
             <span className="text-xs text-gray-400">
-              {t(`categories.${feedback.category}`)}
+              {tFeedback(`categories.${feedback.category}`)}
             </span>
           </div>
 
