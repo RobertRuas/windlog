@@ -340,7 +340,7 @@ export function OnboardingPage() {
                   <select
                     value={phoneCountryCode}
                     onChange={(e) => setPhoneCountryCode(e.target.value)}
-                    className="w-24 h-[38px] px-2 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white flex-shrink-0"
+                    className="w-20 h-[38px] px-2 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white flex-shrink-0"
                     required
                   >
                     <option value="">{t('fields.phoneCountryCode.placeholder')}</option>
