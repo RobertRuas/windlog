@@ -1,15 +1,23 @@
 {
   "title": "Configurações",
   "subtitle": "Gerencie as opções do sistema",
+  "loading": "A carregar...",
   "sections": {
     "account": "Conta",
-    "administration": "Administração"
+    "administration": "Administração",
+    "my_feedbacks": "Meus Feedbacks"
   },
   "account": {
     "myProfile": {
       "title": "Meu Perfil",
       "description": "Visualizar e editar seus dados pessoais"
     }
+  },
+  "my_feedbacks": {
+    "empty": "Ainda não enviaste nenhum feedback",
+    "empty_description": "Usa o botão de feedback no canto inferior direito para reportar bugs ou sugestões",
+    "admin_response": "Resposta do administrador",
+    "resolved_at": "Resolvido em"
   },
   "admin": {
     "systemLogs": {

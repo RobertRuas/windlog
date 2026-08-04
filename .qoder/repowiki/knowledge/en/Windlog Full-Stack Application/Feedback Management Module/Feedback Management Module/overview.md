@@ -1,0 +1,1 @@
+NestJS module providing CRUD endpoints for system feedback reports (bugs, suggestions, inconsistencies) with role-based access control, soft delete, pagination, filtering, and admin statistics.

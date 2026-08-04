@@ -178,6 +178,21 @@ export interface UpdateFeedbackPayload {
 }
 
 /**
+ * Feedback resumido para visualização do próprio usuário.
+ */
+export interface MyFeedback {
+  id: string;
+  title: string;
+  description: string;
+  category: FeedbackCategory;
+  status: FeedbackStatus;
+  priority: FeedbackPriority;
+  createdAt: string;
+  adminNotes?: string | null;
+  resolvedAt?: string | null;
+}
+
+/**
  * Filtros para listagem de feedbacks.
  */
 export interface FeedbackFilters {
@@ -240,6 +255,16 @@ export async function createFeedback(
   data: CreateFeedbackPayload,
 ): Promise<Feedback> {
   const response = await api.post<ApiResponse<Feedback>>(BASE_URL, data);
+  return response.data;
+}
+
+/**
+ * Lista os feedbacks do próprio usuário autenticado.
+ *
+ * @returns Lista de feedbacks do usuário
+ */
+export async function getMyFeedbacks(): Promise<MyFeedback[]> {
+  const response = await api.get<ApiResponse<MyFeedback[]>>(`${BASE_URL}/my`);
   return response.data;
 }
 

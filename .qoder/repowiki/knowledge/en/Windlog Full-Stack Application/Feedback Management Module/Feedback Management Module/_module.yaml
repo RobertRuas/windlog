@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: feedback_module/backend_module
+title: Feedback Management Module
+scope:
+    - API/src/modules/feedback/
+source_files: []
+depends_on: []
+related_to: []

@@ -1,0 +1,9 @@
+schema_version: 1
+module_path: feedback_module/frontend_components
+title: Feedback Submission & Admin Management
+scope:
+    - src/components/feedback/
+    - src/pages/feedbacks/
+source_files: []
+depends_on: []
+related_to: []

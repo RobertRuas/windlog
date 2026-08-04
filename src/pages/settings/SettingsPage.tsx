@@ -28,6 +28,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 // Componentes
 import { AccountSection } from './components/AccountSection';
 import { AdminSection } from './components/AdminSection';
+import { MyFeedbacksSection } from './components/MyFeedbacksSection';
 
 /**
  * Verifica se o usuário atual tem role ADMIN.
@@ -63,6 +64,9 @@ export function SettingsPage() {
       {/* Secções */}
       <div className="space-y-4">
         <AccountSection t={t} />
+
+        {/* Secção: Meus Feedbacks */}
+        <MyFeedbacksSection t={t} />
 
         {/* Secção: Administração */}
         {admin && <AdminSection t={t} />}

@@ -1,0 +1,1 @@
+No build or test commands are specific to this module; it follows the project's default frontend workflow. The feedback upload endpoint expects a FormData field named `file` at `/api/v1/upload/feedbacks` and returns `{ filePath }`.

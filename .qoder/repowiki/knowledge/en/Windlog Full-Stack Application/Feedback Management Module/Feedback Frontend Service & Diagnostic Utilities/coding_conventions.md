@@ -1,0 +1,5 @@
+- Each API function is a standalone async export that delegates to the shared `api` client and returns the unwrapped `response.data`, keeping error handling and HTTP concerns centralized.
+- Request/response contracts are defined as local TypeScript `interface`s at the top of the file rather than imported DTOs, giving each service its own type boundary.
+- Utility modules expose a small set of named exports (`startConsoleCapture`/`stopConsoleCapture`/`getCapturedLogs`/`clearCapturedLogs` and `collectTechnicalContext`/`formatTechnicalContext`) while keeping internal helpers private.
+- Browser-feature access is guarded with try/catch or optional chaining (e.g. `navigator.connection || navigator.mozConnection || navigator.webkitConnection`, `screen.orientation?.type`) to tolerate missing APIs across browsers.
+- In-memory buffers are bounded (`MAX_LOGS = 50`) and data is sanitized before storage (JSON truncation to 500 chars, Error stack extraction) to prevent memory leaks and sensitive data leakage.

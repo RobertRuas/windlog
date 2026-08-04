@@ -89,6 +89,24 @@ export class FeedbackController {
   }
 
   // =========================================================================
+  // MEUS FEEDBACKS - GET /feedbacks/my (qualquer usuário)
+  // =========================================================================
+
+  /**
+   * Lista os feedbacks do próprio usuário autenticado.
+   *
+   * Qualquer usuário pode ver os feedbacks que ele mesmo reportou.
+   *
+   * @param user - Usuário autenticado
+   */
+  @Get('my')
+  @ApiOperation({ summary: 'Listar meus feedbacks (qualquer usuário)' })
+  @ApiResponse({ status: 200, description: 'Lista dos meus feedbacks' })
+  async findMyFeedbacks(@CurrentUser() user: JwtPayload) {
+    return this.feedbackService.findMyFeedbacks(user.sub);
+  }
+
+  // =========================================================================
   // ESTATÍSTICAS - GET /feedbacks/stats (ADMIN)
   // =========================================================================
 

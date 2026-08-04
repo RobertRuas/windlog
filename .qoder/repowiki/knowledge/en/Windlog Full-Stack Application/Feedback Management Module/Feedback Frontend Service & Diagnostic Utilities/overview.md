@@ -1,0 +1,1 @@
+Frontend service layer for CRUD operations on the feedback API, plus browser-side utilities that capture console logs and collect technical environment context to enrich user-submitted bug reports.

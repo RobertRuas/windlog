@@ -3,12 +3,59 @@ schema_version: 1
 locale: en-US
 branch: main
 nodes_managed: true
-exported_at: "2026-08-04T10:47:33Z"
+exported_at: "2026-08-04T11:18:04Z"
 modules:
     "":
         dir_name: Windlog Full-Stack Application (NestJS API + React Frontend)
         title: Windlog Full-Stack Application (NestJS API + React Frontend)
         scope: []
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    feedback_module:
+        dir_name: Feedback Management Module
+        title: Feedback Management Module
+        scope:
+            - API/src/modules/feedback/
+            - src/components/feedback/
+            - src/pages/feedbacks/
+            - src/services/feedback.service.ts
+            - src/utils/consoleCapture.ts
+            - src/utils/technicalContext.ts
+        source_files: []
+        children:
+            - feedback_module/backend_module
+            - feedback_module/frontend_components
+            - feedback_module/frontend_services_and_utils
+        depends_on: []
+        related_to: []
+    feedback_module/backend_module:
+        dir_name: Feedback Management Module
+        title: Feedback Management Module
+        scope:
+            - API/src/modules/feedback/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    feedback_module/frontend_components:
+        dir_name: Feedback Submission & Admin Management
+        title: Feedback Submission & Admin Management
+        scope:
+            - src/components/feedback/
+            - src/pages/feedbacks/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    feedback_module/frontend_services_and_utils:
+        dir_name: Feedback Frontend Service & Diagnostic Utilities
+        title: Feedback Frontend Service & Diagnostic Utilities
+        scope:
+            - src/services/feedback.service.ts
+            - src/utils/consoleCapture.ts
+            - src/utils/technicalContext.ts
         source_files: []
         children: []
         depends_on: []

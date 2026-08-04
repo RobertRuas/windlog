@@ -1,0 +1,10 @@
+schema_version: 1
+module_path: feedback_module/frontend_services_and_utils
+title: Feedback Frontend Service & Diagnostic Utilities
+scope:
+    - src/services/feedback.service.ts
+    - src/utils/consoleCapture.ts
+    - src/utils/technicalContext.ts
+source_files: []
+depends_on: []
+related_to: []

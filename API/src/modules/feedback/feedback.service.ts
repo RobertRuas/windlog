@@ -94,6 +94,32 @@ export class FeedbackService {
   }
 
   /**
+   * Lista os feedbacks do próprio usuário.
+   *
+   * @param userId - ID do usuário
+   * @returns Lista de feedbacks do usuário ordenados por data (mais recente primeiro)
+   */
+  async findMyFeedbacks(userId: string) {
+    const feedbacks = await this.prisma.feedback.findMany({
+      where: { reportedBy: userId, deletedAt: null },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        category: true,
+        status: true,
+        priority: true,
+        createdAt: true,
+        adminNotes: true,
+        resolvedAt: true,
+      },
+    });
+
+    return feedbacks;
+  }
+
+  /**
    * Busca um feedback pelo ID com todas as relações.
    *
    * @param id - ID do feedback
