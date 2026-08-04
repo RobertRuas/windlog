@@ -414,10 +414,14 @@ export class WeeklyTimesheetService {
     if (status) where.status = status;
     if (createdBy) where.createdBy = createdBy;
 
+    // Busca o nome completo do usuário para matching por technicianName
+    const userFullName =
+      userRole !== 'ADMIN' && userRole !== 'HR'
+        ? await this.getUserFullName(userId)
+        : '';
+
     // Para não-ADMIN/HR, filtra apenas timesheets associados ao seu nome
     if (userRole !== 'ADMIN' && userRole !== 'HR') {
-      // Busca o nome completo do usuário para matching por technicianName
-      const userFullName = await this.getUserFullName(userId);
 
       where.OR = [
         { createdBy: userId },
@@ -456,6 +460,8 @@ export class WeeklyTimesheetService {
             select: {
               entries: {
                 select: {
+                  userId: true,
+                  technicianName: true,
                   workingHrs: true,
                   standbyHrs: true,
                   travelHrs: true,
@@ -472,7 +478,7 @@ export class WeeklyTimesheetService {
     ]);
 
     // Calcula totais de horas (trabalho, standby, viagem) por timesheet
-    // e remove o array de dias da resposta para manter o payload leve
+    // Para não-ADMIN/HR, soma apenas as entradas associadas ao próprio usuário
     const data = rawData.map(({ days, ...rest }) => {
       let workingHrs = 0;
       let standbyHrs = 0;
@@ -480,9 +486,22 @@ export class WeeklyTimesheetService {
 
       for (const day of days) {
         for (const entry of day.entries) {
-          workingHrs += parseFloat(entry.workingHrs || '0') || 0;
-          standbyHrs += parseFloat(entry.standbyHrs || '0') || 0;
-          travelHrs += parseFloat(entry.travelHrs || '0') || 0;
+          // Para ADMIN/HR, soma todas as entradas
+          // Para demais, soma apenas entradas onde o usuário aparece
+          if (userRole === 'ADMIN' || userRole === 'HR') {
+            workingHrs += parseFloat(entry.workingHrs || '0') || 0;
+            standbyHrs += parseFloat(entry.standbyHrs || '0') || 0;
+            travelHrs += parseFloat(entry.travelHrs || '0') || 0;
+          } else {
+            const isOwnEntry =
+              entry.userId === userId ||
+              (userFullName && entry.technicianName === userFullName);
+            if (isOwnEntry) {
+              workingHrs += parseFloat(entry.workingHrs || '0') || 0;
+              standbyHrs += parseFloat(entry.standbyHrs || '0') || 0;
+              travelHrs += parseFloat(entry.travelHrs || '0') || 0;
+            }
+          }
         }
       }
 
