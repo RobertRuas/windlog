@@ -52,7 +52,7 @@ export function UsersFilters({
             placeholder={t('search.placeholder')}
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="form-input pl-10"
+            className="form-input !pl-10"
           />
         </div>
 
