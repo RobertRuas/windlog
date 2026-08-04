@@ -130,7 +130,7 @@ export function UserModal({
                   required
                   value={formData.firstName}
                   onChange={(e) => onFormChange({ ...formData, firstName: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="form-input w-full"
                 />
               </div>
               <div>
@@ -142,7 +142,7 @@ export function UserModal({
                   required
                   value={formData.lastName}
                   onChange={(e) => onFormChange({ ...formData, lastName: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="form-input w-full"
                 />
               </div>
             </div>
@@ -154,7 +154,7 @@ export function UserModal({
                 required
                 value={formData.email}
                 onChange={(e) => onFormChange({ ...formData, email: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="form-input w-full"
               />
             </div>
 
@@ -169,7 +169,7 @@ export function UserModal({
               <select
                 value={formData.role}
                 onChange={(e) => onFormChange({ ...formData, role: e.target.value as any })}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="form-select w-full"
               >
                 <option value="STANDARD">{t('roles.STANDARD')}</option>
                 <option value="HR">{t('roles.HR')}</option>
@@ -197,7 +197,7 @@ export function UserModal({
               <select
                 value={(formData as CreateUserPayload).position ?? ''}
                 onChange={(e) => onFormChange({ ...formData, position: e.target.value || undefined })}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="form-select w-full"
               >
                 <option value="">{t('modal.positionPlaceholder')}</option>
                 {PREDEFINED_FUNCTIONS.map((fn) => (

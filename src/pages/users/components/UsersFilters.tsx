@@ -52,7 +52,7 @@ export function UsersFilters({
             placeholder={t('search.placeholder')}
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="form-input pl-10"
           />
         </div>
 
@@ -60,7 +60,7 @@ export function UsersFilters({
         <select
           value={roleFilter}
           onChange={(e) => onRoleChange(e.target.value)}
-          className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="form-select"
         >
           <option value="">{t('filter.allRoles')}</option>
           <option value="ADMIN">{t('roles.ADMIN')}</option>

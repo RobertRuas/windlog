@@ -193,14 +193,14 @@ export function FeedbacksPage() {
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               placeholder={t('filters.search_placeholder')}
-              className="w-full pl-9 pr-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="form-input w-full pl-9"
             />
           </div>
 
           {/* Toggle filtros */}
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
+            className={`flex items-center gap-2 form-button-secondary h-[40px] ${
               showFilters ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-600 hover:bg-gray-50'
             }`}
           >
@@ -216,7 +216,7 @@ export function FeedbacksPage() {
             <select
               value={filters.status || ''}
               onChange={(e) => setFilters((prev) => ({ ...prev, status: (e.target.value || undefined) as FeedbackStatus | undefined, page: 1 }))}
-              className="px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="form-select"
             >
               <option value="">{t('filters.all_statuses')}</option>
               {(['NEW', 'TRIAGED', 'IN_PROGRESS', 'RESOLVED', 'CLOSED'] as FeedbackStatus[]).map((s) => (
@@ -228,7 +228,7 @@ export function FeedbacksPage() {
             <select
               value={filters.category || ''}
               onChange={(e) => setFilters((prev) => ({ ...prev, category: (e.target.value || undefined) as FeedbackCategory | undefined, page: 1 }))}
-              className="px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="form-select"
             >
               <option value="">{t('filters.all_categories')}</option>
               {(['BUG', 'UI_ISSUE', 'FEATURE', 'INCONSISTENCY', 'PERFORMANCE', 'OTHER'] as FeedbackCategory[]).map((c) => (
@@ -240,7 +240,7 @@ export function FeedbacksPage() {
             <select
               value={filters.priority || ''}
               onChange={(e) => setFilters((prev) => ({ ...prev, priority: (e.target.value || undefined) as FeedbackPriority | undefined, page: 1 }))}
-              className="px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="form-select"
             >
               <option value="">{t('filters.all_priorities')}</option>
               {(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] as FeedbackPriority[]).map((p) => (

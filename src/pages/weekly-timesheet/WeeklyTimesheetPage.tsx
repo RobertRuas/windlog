@@ -152,9 +152,9 @@ export function WeeklyTimesheetPage() {
   return (
     <AppLayout>
       <div className="p-6 max-w-7xl mx-auto">
-        {/* ── Header ────────────────────────────────────────────────── */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
+        {/* ── Header + Filtros ──────────────────────────────────────────── */}
+        <div className="flex items-center justify-between gap-4 mb-6">
+          <div className="flex-shrink-0">
             <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
               <Calendar size={24} className="text-blue-600" />
               {t('title')}
@@ -162,67 +162,63 @@ export function WeeklyTimesheetPage() {
             <p className="text-sm text-gray-500 mt-1">{t('subtitle')}</p>
           </div>
 
-          {/* Botão Novo Timesheet - visível apenas para Team Leaders ou roles > STANDARD */}
-          {(currentUser?.role !== 'STANDARD' || currentUser?.isTeamLeader) && (
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+          {/* Filtros — todos na mesma linha */}
+          <div className="flex items-center gap-2 flex-1 justify-end">
+            <select
+              value={statusFilter}
+              onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
+              className="form-select w-auto"
             >
-              <Plus size={16} />
-              {t('newTimesheet')}
-            </button>
-          )}
-        </div>
+              <option value="">{t('filters.allStatuses')}</option>
+              <option value="DRAFT">{t('status.DRAFT')}</option>
+              <option value="SUBMITTED">{t('status.SUBMITTED')}</option>
+              <option value="APPROVED">{t('status.APPROVED')}</option>
+            </select>
 
-        {/* ── Filtros ───────────────────────────────────────────────── */}
-        <div className="flex flex-wrap gap-3 mb-4">
-          {/* Status */}
-          <select
-            value={statusFilter}
-            onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
-          >
-            <option value="">{t('filters.allStatuses')}</option>
-            <option value="DRAFT">{t('status.DRAFT')}</option>
-            <option value="SUBMITTED">{t('status.SUBMITTED')}</option>
-            <option value="APPROVED">{t('status.APPROVED')}</option>
-          </select>
+            <select
+              value={weekFilter}
+              onChange={(e) => { setWeekFilter(e.target.value); setPage(1); }}
+              className="form-select w-auto"
+            >
+              <option value="">{t('filters.allWeeks')}</option>
+              {filterWeeks.map((w) => (
+                <option key={w} value={w}>{t('filters.weekLabel')} {w}</option>
+              ))}
+            </select>
 
-          {/* Semana */}
-          <select
-            value={weekFilter}
-            onChange={(e) => { setWeekFilter(e.target.value); setPage(1); }}
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
-          >
-            <option value="">{t('filters.allWeeks')}</option>
-            {filterWeeks.map((w) => (
-              <option key={w} value={w}>{t('filters.weekLabel')} {w}</option>
-            ))}
-          </select>
+            <select
+              value={projectFilter}
+              onChange={(e) => { setProjectFilter(e.target.value); setPage(1); }}
+              className="form-select w-auto"
+            >
+              <option value="">{t('filters.allProjects')}</option>
+              {filterProjects.map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
 
-          {/* Projeto */}
-          <select
-            value={projectFilter}
-            onChange={(e) => { setProjectFilter(e.target.value); setPage(1); }}
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
-          >
-            <option value="">{t('filters.allProjects')}</option>
-            {filterProjects.map((p) => (
-              <option key={p.id} value={p.id}>{p.name}</option>
-            ))}
-          </select>
+            <select
+              value={authorFilter}
+              onChange={(e) => { setAuthorFilter(e.target.value); setPage(1); }}
+              className="form-select w-auto"
+            >
+              <option value="">{t('filters.allAuthors')}</option>
+              {filterAuthors.map((a) => (
+                <option key={a.id} value={a.id}>{a.name}</option>
+              ))}
+            </select>
 
-          {/* Autor */}
-          <select
-            value={authorFilter}
-            onChange={(e) => { setAuthorFilter(e.target.value); setPage(1); }}
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
-          >
-            <option value="">{t('filters.allAuthors')}</option>
-            {filterAuthors.map((a) => (
-              <option key={a.id} value={a.id}>{a.name}</option>
-            ))}
-          </select>
+            {/* Botão Novo Timesheet - visível apenas para Team Leaders ou roles > STANDARD */}
+            {(currentUser?.role !== 'STANDARD' || currentUser?.isTeamLeader) && (
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="form-button form-button-primary flex-shrink-0"
+              >
+                <Plus size={16} />
+                {t('newTimesheet')}
+              </button>
+            )}
+          </div>
         </div>
 
         {/* ── Tabela ────────────────────────────────────────────────── */}

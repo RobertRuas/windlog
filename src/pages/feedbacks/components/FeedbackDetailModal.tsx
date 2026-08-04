@@ -357,7 +357,7 @@ export function FeedbackDetailModal({ feedback, onClose }: FeedbackDetailModalPr
                   <select
                     value={editStatus}
                     onChange={(e) => setEditStatus(e.target.value as FeedbackStatus)}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="form-select w-full"
                   >
                     {(['NEW', 'TRIAGED', 'IN_PROGRESS', 'RESOLVED', 'CLOSED'] as FeedbackStatus[]).map((s) => (
                       <option key={s} value={s}>{t(`statuses.${s}`)}</option>
@@ -369,7 +369,7 @@ export function FeedbackDetailModal({ feedback, onClose }: FeedbackDetailModalPr
                   <select
                     value={editPriority}
                     onChange={(e) => setEditPriority(e.target.value as FeedbackPriority)}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="form-select w-full"
                   >
                     {(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] as FeedbackPriority[]).map((p) => (
                       <option key={p} value={p}>{t(`priorities.${p}`)}</option>
@@ -386,7 +386,7 @@ export function FeedbackDetailModal({ feedback, onClose }: FeedbackDetailModalPr
                   onChange={(e) => setEditNotes(e.target.value)}
                   placeholder={t('fields.admin_notes_placeholder')}
                   rows={3}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="form-textarea w-full resize-none"
                 />
               </div>
             </div>

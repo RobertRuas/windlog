@@ -108,7 +108,7 @@ export function DatePicker({
         disabled={disabled}
         min={min}
         max={max}
-        className="w-full px-3 py-2 pl-9 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed appearance-none bg-white"
+        className="form-input pl-9 disabled:opacity-60 disabled:cursor-not-allowed appearance-none"
       />
       {/* Ícone de calendário (decorativo, posicionado à esquerda) */}
       <Calendar

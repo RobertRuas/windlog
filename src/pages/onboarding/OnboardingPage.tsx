@@ -38,6 +38,7 @@ import { UserCircle, Plane, Globe, MapPin, Phone, FileText, Briefcase, Loader2 }
 // Componentes compartilhados
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
 import { DatePicker } from '@/components/ui/DatePicker';
 import { SectionCard } from '@/components/ui/SectionCard';
 
@@ -47,11 +48,6 @@ import { PREDEFINED_LANGUAGES } from '@/constants/languages';
 
 // Hook personalizado com toda a lógica do formulário
 import { useOnboardingForm } from './hooks/useOnboardingForm';
-
-/**
- * Estilo comum para selects (mesma altura dos text fields).
- */
-const selectClassName = 'w-full h-[38px] px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white';
 
 /**
  * Componente OnboardingPage - Formulário obrigatório de onboarding.
@@ -112,22 +108,19 @@ export function OnboardingPage() {
                 placeholder={t('fields.lastName.placeholder')}
                 required
               />
+              <Select
+                label={t('fields.nationality.label')}
+                value={form.nationality}
+                onChange={(e) => form.setNationality(e.target.value)}
+                required
+              >
+                <option value="">{t('fields.nationality.placeholder')}</option>
+                {PREDEFINED_COUNTRIES.map(c => (
+                  <option key={c.code} value={c.code}>{c.name}</option>
+                ))}
+              </Select>
               <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium text-gray-700">{t('fields.nationality.label')}</label>
-                <select
-                  value={form.nationality}
-                  onChange={(e) => form.setNationality(e.target.value)}
-                  className={selectClassName}
-                  required
-                >
-                  <option value="">{t('fields.nationality.placeholder')}</option>
-                  {PREDEFINED_COUNTRIES.map(c => (
-                    <option key={c.code} value={c.code}>{c.name}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium text-gray-700">{t('fields.dateOfBirth.label')}</label>
+                <label className="form-label">{t('fields.dateOfBirth.label')}</label>
                 <DatePicker
                   value={form.dateOfBirth}
                   onChange={form.setDateOfBirth}
@@ -148,26 +141,23 @@ export function OnboardingPage() {
                 placeholder={t('fields.passportNumber.placeholder')}
                 required
               />
+              <Select
+                label={t('fields.passportIssuingCountry.label')}
+                value={form.passportIssuingCountry}
+                onChange={(e) => form.setPassportIssuingCountry(e.target.value)}
+                required
+              >
+                <option value="">{t('fields.passportIssuingCountry.placeholder')}</option>
+                {PREDEFINED_COUNTRIES.map(c => (
+                  <option key={c.code} value={c.code}>{c.name}</option>
+                ))}
+              </Select>
               <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium text-gray-700">{t('fields.passportIssuingCountry.label')}</label>
-                <select
-                  value={form.passportIssuingCountry}
-                  onChange={(e) => form.setPassportIssuingCountry(e.target.value)}
-                  className={selectClassName}
-                  required
-                >
-                  <option value="">{t('fields.passportIssuingCountry.placeholder')}</option>
-                  {PREDEFINED_COUNTRIES.map(c => (
-                    <option key={c.code} value={c.code}>{c.name}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium text-gray-700">{t('fields.passportIssueDate.label')}</label>
+                <label className="form-label">{t('fields.passportIssueDate.label')}</label>
                 <DatePicker value={form.passportIssueDate} onChange={form.setPassportIssueDate} />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium text-gray-700">{t('fields.passportExpiryDate.label')}</label>
+                <label className="form-label">{t('fields.passportExpiryDate.label')}</label>
                 <DatePicker value={form.passportExpiryDate} onChange={form.setPassportExpiryDate} />
               </div>
               <div className="sm:col-span-2">
@@ -189,13 +179,11 @@ export function OnboardingPage() {
                 placeholder={t('fields.email.placeholder')}
                 required
               />
-              <div className="flex flex-col gap-1 min-w-0">
-                <label className="text-sm font-medium text-gray-700">{t('fields.phone.label')}</label>
-                <div className="flex gap-1">
+              <div className="flex gap-1">
                   <select
                     value={form.phoneCountryCode}
                     onChange={(e) => form.setPhoneCountryCode(e.target.value)}
-                    className="w-20 h-[38px] px-2 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white flex-shrink-0"
+                    className="form-select w-20 flex-shrink-0"
                     required
                   >
                     <option value="">{t('fields.phoneCountryCode.placeholder')}</option>
@@ -208,11 +196,10 @@ export function OnboardingPage() {
                     value={form.phone}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => form.setPhone(e.target.value)}
                     placeholder={t('fields.phone.placeholder')}
-                    className="flex-1 min-w-0 h-[38px] px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="form-input flex-1 min-w-0"
                     required
                   />
                 </div>
-              </div>
             </div>
           </SectionCard>
 
@@ -242,39 +229,33 @@ export function OnboardingPage() {
                 placeholder={t('fields.postalCode.placeholder')}
                 required
               />
-              <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium text-gray-700">{t('fields.country.label')}</label>
-                <select
-                  value={form.country}
-                  onChange={(e) => form.setCountry(e.target.value)}
-                  className={selectClassName}
-                  required
-                >
-                  <option value="">{t('fields.country.placeholder')}</option>
-                  {PREDEFINED_COUNTRIES.map(c => (
-                    <option key={c.code} value={c.code}>{c.name}</option>
-                  ))}
-                </select>
-              </div>
+              <Select
+                label={t('fields.country.label')}
+                value={form.country}
+                onChange={(e) => form.setCountry(e.target.value)}
+                required
+              >
+                <option value="">{t('fields.country.placeholder')}</option>
+                {PREDEFINED_COUNTRIES.map(c => (
+                  <option key={c.code} value={c.code}>{c.name}</option>
+                ))}
+              </Select>
             </div>
           </SectionCard>
 
           {/* === IDIOMA MATERNO === */}
           <SectionCard icon={<Globe size={18} />} title={t('sections.motherTongue')}>
-            <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-gray-700">{t('fields.motherTongue.label')}</label>
-              <select
-                value={form.motherTongue}
-                onChange={(e) => form.setMotherTongue(e.target.value)}
-                className={selectClassName}
-                required
-              >
-                <option value="">{t('fields.motherTongue.placeholder')}</option>
-                {PREDEFINED_LANGUAGES.map(l => (
-                  <option key={l.code} value={l.name}>{l.name} ({l.nativeName})</option>
-                ))}
-              </select>
-            </div>
+            <Select
+              label={t('fields.motherTongue.label')}
+              value={form.motherTongue}
+              onChange={(e) => form.setMotherTongue(e.target.value)}
+              required
+            >
+              <option value="">{t('fields.motherTongue.placeholder')}</option>
+              {PREDEFINED_LANGUAGES.map(l => (
+                <option key={l.code} value={l.name}>{l.name} ({l.nativeName})</option>
+              ))}
+            </Select>
           </SectionCard>
 
           {/* === AEROPORTO PREFERIDO === */}
@@ -287,20 +268,17 @@ export function OnboardingPage() {
                 placeholder={t('fields.preferredAirportCity.placeholder')}
                 required
               />
-              <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium text-gray-700">{t('fields.preferredAirportCountry.label')}</label>
-                <select
-                  value={form.preferredAirportCountry}
-                  onChange={(e) => form.setPreferredAirportCountry(e.target.value)}
-                  className={selectClassName}
-                  required
-                >
-                  <option value="">{t('fields.preferredAirportCountry.placeholder')}</option>
-                  {PREDEFINED_COUNTRIES.map(c => (
-                    <option key={c.code} value={c.code}>{c.name}</option>
-                  ))}
-                </select>
-              </div>
+              <Select
+                label={t('fields.preferredAirportCountry.label')}
+                value={form.preferredAirportCountry}
+                onChange={(e) => form.setPreferredAirportCountry(e.target.value)}
+                required
+              >
+                <option value="">{t('fields.preferredAirportCountry.placeholder')}</option>
+                {PREDEFINED_COUNTRIES.map(c => (
+                  <option key={c.code} value={c.code}>{c.name}</option>
+                ))}
+              </Select>
             </div>
           </SectionCard>
 
@@ -314,28 +292,25 @@ export function OnboardingPage() {
                 placeholder={t('fields.windaId.placeholder')}
                 required
               />
-              <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium text-gray-700">{t('fields.irataLevel.label')}</label>
-                <select
-                  value={form.irataLevel}
-                  onChange={(e) => {
-                    form.setIrataLevel(e.target.value);
-                    if (e.target.value === 'NOT_APPLICABLE') {
-                      form.setIrataNumber('NOT_APPLICABLE');
-                    } else if (form.irataNumber === 'NOT_APPLICABLE') {
-                      form.setIrataNumber('');
-                    }
-                  }}
-                  className={selectClassName}
-                  required
-                >
-                  <option value="">{t('fields.irataLevel.placeholder')}</option>
-                  <option value="L1">{t('irataOptions.L1')}</option>
-                  <option value="L2">{t('irataOptions.L2')}</option>
-                  <option value="L3">{t('irataOptions.L3')}</option>
-                  <option value="NOT_APPLICABLE">{t('irataOptions.NOT_APPLICABLE')}</option>
-                </select>
-              </div>
+              <Select
+                label={t('fields.irataLevel.label')}
+                value={form.irataLevel}
+                onChange={(e) => {
+                  form.setIrataLevel(e.target.value);
+                  if (e.target.value === 'NOT_APPLICABLE') {
+                    form.setIrataNumber('NOT_APPLICABLE');
+                  } else if (form.irataNumber === 'NOT_APPLICABLE') {
+                    form.setIrataNumber('');
+                  }
+                }}
+                required
+              >
+                <option value="">{t('fields.irataLevel.placeholder')}</option>
+                <option value="L1">{t('irataOptions.L1')}</option>
+                <option value="L2">{t('irataOptions.L2')}</option>
+                <option value="L3">{t('irataOptions.L3')}</option>
+                <option value="NOT_APPLICABLE">{t('irataOptions.NOT_APPLICABLE')}</option>
+              </Select>
               <Input
                 label={t('fields.irataNumber.label')}
                 value={form.irataNumber === 'NOT_APPLICABLE' ? t('irataNumberOptions.notApplicable') : form.irataNumber}
