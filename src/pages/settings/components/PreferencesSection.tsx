@@ -15,7 +15,7 @@
  */
 
 import { useSettings } from '@/contexts/SettingsContext';
-import { Sun, Moon, Monitor, Minus, Plus, Languages } from 'lucide-react';
+import { Sun, Moon, Monitor, Languages } from 'lucide-react';
 import type { Theme } from '@/services/settings.service';
 
 /**
@@ -98,43 +98,29 @@ export function PreferencesSection({ t }: PreferencesSectionProps) {
 
         {/* Escala */}
         <div className="px-5 py-4">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex-1">
-              <div className="flex items-center justify-between mb-2">
-                <div>
-                  <p className="text-sm font-medium text-gray-800">{t('preferences.scale')}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{t('preferences.scale_desc')}</p>
-                </div>
-                <span className="text-sm font-semibold text-gray-700 tabular-nums min-w-[3ch] text-right">
-                  {settings.scale}%
-                </span>
-              </div>
-              {/* Slider */}
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => updateSettings({ scale: Math.max(60, settings.scale - 5) })}
-                  disabled={settings.scale <= 60}
-                  className="w-7 h-7 flex items-center justify-center rounded-md border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                >
-                  <Minus size={12} />
-                </button>
-                <input
-                  type="range"
-                  min={60}
-                  max={110}
-                  step={5}
-                  value={settings.scale}
-                  onChange={(e) => updateSettings({ scale: Number(e.target.value) })}
-                  className="flex-1 h-1.5 rounded-full appearance-none bg-gray-200 accent-blue-600 cursor-pointer"
-                />
-                <button
-                  onClick={() => updateSettings({ scale: Math.min(110, settings.scale + 5) })}
-                  disabled={settings.scale >= 110}
-                  className="w-7 h-7 flex items-center justify-center rounded-md border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                >
-                  <Plus size={12} />
-                </button>
-              </div>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-800">{t('preferences.scale')}</p>
+              <p className="text-xs text-gray-500 mt-0.5">{t('preferences.scale_desc')}</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => updateSettings({ scale: Math.max(60, settings.scale - 5) })}
+                disabled={settings.scale <= 60}
+                className="w-6 h-6 flex items-center justify-center rounded-md border border-gray-200 text-gray-400 hover:text-gray-600 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-xs"
+              >
+                −
+              </button>
+              <span className="text-xs font-medium text-gray-600 tabular-nums min-w-[2.5ch] text-center">
+                {settings.scale}%
+              </span>
+              <button
+                onClick={() => updateSettings({ scale: Math.min(110, settings.scale + 5) })}
+                disabled={settings.scale >= 110}
+                className="w-6 h-6 flex items-center justify-center rounded-md border border-gray-200 text-gray-400 hover:text-gray-600 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-xs"
+              >
+                +
+              </button>
             </div>
           </div>
         </div>

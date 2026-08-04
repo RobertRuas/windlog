@@ -18,6 +18,7 @@
  */
 
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react';
+import { toast } from 'sonner';
 import { getSettings, updateSettings as updateSettingsApi, type UserSettings, type Theme } from '@/services/settings.service';
 
 /**
@@ -129,6 +130,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
   /**
    * Atualiza preferências localmente + envia para a API.
+   * Mostra feedback toast ao salvar com sucesso.
    */
   const updateSettings = useCallback(async (payload: Partial<UserSettings>) => {
     // Atualiza imediatamente (otimista)
@@ -137,9 +139,11 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     try {
       const updated = await updateSettingsApi(payload);
       setSettings(updated);
+      toast.success('Preferências atualizadas com sucesso');
     } catch {
       // Reverte em caso de erro
       setSettings(loadCachedSettings());
+      toast.error('Erro ao guardar preferências');
     }
   }, []);
 
