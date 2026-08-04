@@ -198,9 +198,12 @@ export function TimesheetFormEditor({
       // Abre apenas o dia clicado, fecha todos os outros (accordion: só 1 aberto)
       return new Set(form.days.map((_, i) => i).filter((i) => i !== dayIdx));
     });
-    // Scroll suave até o título do acordeão aberto
+    // Scroll suave até o título do acordeão aberto (com offset para ficar visível abaixo do header fixo)
     setTimeout(() => {
-      dayHeaderRefs.current[dayIdx]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const el = dayHeaderRefs.current[dayIdx];
+      if (!el) return;
+      const top = el.getBoundingClientRect().top + window.scrollY - 120; // 120px de margem (header + sidebar)
+      window.scrollTo({ top, behavior: 'smooth' });
     }, 50);
   }
 
