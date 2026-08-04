@@ -137,6 +137,16 @@ export interface FeedbackStats {
 // FUNÇÕES DA API
 // =========================================================================
 
+/**
+ * Interface para resposta padrão da API (envelope).
+ */
+interface ApiResponse<T> {
+  data: T;
+  message: string;
+  statusCode: number;
+  timestamp: string;
+}
+
 const BASE_URL = '/api/v1/feedbacks';
 
 /**
@@ -149,7 +159,8 @@ const BASE_URL = '/api/v1/feedbacks';
 export async function createFeedback(
   data: CreateFeedbackPayload,
 ): Promise<Feedback> {
-  return api.post(BASE_URL, data);
+  const response = await api.post<ApiResponse<Feedback>>(BASE_URL, data);
+  return response.data;
 }
 
 /**
@@ -173,7 +184,8 @@ export async function getFeedbacks(
   const queryString = searchParams.toString();
   const url = `${BASE_URL}${queryString ? `?${queryString}` : ''}`;
 
-  return api.get(url);
+  const response = await api.get<ApiResponse<PaginatedResponse<Feedback>>>(url);
+  return response.data;
 }
 
 /**
@@ -184,7 +196,8 @@ export async function getFeedbacks(
  * @returns Feedback completo
  */
 export async function getFeedbackById(id: string): Promise<Feedback> {
-  return api.get(`${BASE_URL}/${id}`);
+  const response = await api.get<ApiResponse<Feedback>>(`${BASE_URL}/${id}`);
+  return response.data;
 }
 
 /**
@@ -199,7 +212,8 @@ export async function updateFeedback(
   id: string,
   data: UpdateFeedbackPayload,
 ): Promise<Feedback> {
-  return api.put(`${BASE_URL}/${id}`, data);
+  const response = await api.put<ApiResponse<Feedback>>(`${BASE_URL}/${id}`, data);
+  return response.data;
 }
 
 /**
@@ -211,7 +225,8 @@ export async function updateFeedback(
 export async function deleteFeedback(
   id: string,
 ): Promise<{ message: string }> {
-  return api.delete(`${BASE_URL}/${id}`);
+  const response = await api.delete<ApiResponse<{ message: string }>>(`${BASE_URL}/${id}`);
+  return response.data;
 }
 
 /**
@@ -221,5 +236,6 @@ export async function deleteFeedback(
  * @returns Estatísticas (contagens por status, categoria, prioridade)
  */
 export async function getFeedbackStats(): Promise<FeedbackStats> {
-  return api.get(`${BASE_URL}/stats`);
+  const response = await api.get<ApiResponse<FeedbackStats>>(`${BASE_URL}/stats`);
+  return response.data;
 }
