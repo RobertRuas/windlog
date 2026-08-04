@@ -1,18 +1,18 @@
 /**
  * ============================================================================
- * FEEDBACK MODAL - Modal de Submissão de Feedback (Versão Melhorada)
+ * FEEDBACK MODAL - Modal de Submissão de Feedback
  * ============================================================================
  *
  * O QUE É ESTE ARQUIVO?
  * ---------------------
  * Modal para o usuário reportar feedback (bugs, sugestões, etc.).
- * Inclui captura REAL de screenshot usando html2canvas e captura de erros
- * do console do navegador para debugging.
+ * Permite anexar uma imagem (screenshot) do dispositivo e captura
+ * automaticamente erros do console e contexto técnico.
  *
  * FUNCIONALIDADES:
  * ----------------
  * - Formulário simples: título + descrição + categoria
- * - Captura REAL de screenshot (viewport ou página inteira) via html2canvas
+ * - Upload de imagem/screenshot do dispositivo
  * - Captura automática de erros/warnings do console
  * - Coleta de contexto técnico completo (browser, OS, conexão, performance)
  * - Upload do screenshot para o servidor
@@ -20,21 +20,20 @@
  * ============================================================================
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import html2canvas from 'html2canvas';
 import {
   X,
   MessageSquare,
-  Camera,
-  Monitor,
+  Upload,
   Trash2,
   Send,
   Loader2,
   Terminal,
   Info,
+  Image as ImageIcon,
 } from 'lucide-react';
 
 import { createFeedback, type FeedbackCategory } from '@/services/feedback.service';
@@ -72,6 +71,11 @@ const CATEGORIES: { value: FeedbackCategory; icon: string }[] = [
 ];
 
 /**
+ * Tamanho máximo do ficheiro: 5MB
+ */
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
+
+/**
  * Componente FeedbackModal - Modal de submissão de feedback.
  */
 export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
@@ -82,9 +86,10 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState<FeedbackCategory>('BUG');
 
-  // Estado do screenshot
-  const [screenshotDataUrl, setScreenshotDataUrl] = useState<string | null>(null);
-  const [isCapturing, setIsCapturing] = useState(false);
+  // Estado do screenshot (upload)
+  const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
+  const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   // Estado dos logs do console
   const [consoleLogs, setConsoleLogs] = useState<CapturedLog[]>([]);
@@ -94,7 +99,10 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
   const [technicalContext, setTechnicalContext] = useState<TechnicalContext | null>(null);
 
   // Estado de erro
-  const [errors, setErrors] = useState<{ title?: string; description?: string }>({});
+  const [errors, setErrors] = useState<{ title?: string; description?: string; file?: string }>({});
+
+  // Ref para o input file
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   /**
    * Inicia captura do console quando o modal abre.
@@ -120,7 +128,8 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
     setTitle('');
     setDescription('');
     setCategory('BUG');
-    setScreenshotDataUrl(null);
+    setScreenshotFile(null);
+    setScreenshotPreview(null);
     setConsoleLogs([]);
     setShowConsoleLogs(false);
     setErrors({});
@@ -129,82 +138,52 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
   }
 
   /**
-   * Captura screenshot REAL da viewport usando html2canvas.
+   * Handler para seleção de ficheiro.
    */
-  async function captureVisibleScreen() {
-    setIsCapturing(true);
-    try {
-      // Fecha o modal temporariamente para capturar a página
-      const modal = document.querySelector('[data-feedback-modal]');
-      if (modal) (modal as HTMLElement).style.display = 'none';
+  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-      // Aguarda um tick para o DOM atualizar
-      await new Promise((r) => setTimeout(r, 100));
-
-      // Captura o documento inteiro
-      const canvas = await html2canvas(document.body, {
-        useCORS: true,
-        allowTaint: true,
-        scale: 1,
-        logging: false,
-        backgroundColor: '#ffffff',
-      });
-
-      // Restaura o modal
-      if (modal) (modal as HTMLElement).style.display = '';
-
-      const dataUrl = canvas.toDataURL('image/png');
-      setScreenshotDataUrl(dataUrl);
-    } catch (err) {
-      console.error('Erro ao capturar screenshot:', err);
-      toast.error('Não foi possível capturar a tela');
-    } finally {
-      setIsCapturing(false);
+    // Valida tipo
+    if (!file.type.startsWith('image/')) {
+      setErrors({ ...errors, file: 'Please select an image file (PNG, JPG, etc.)' });
+      return;
     }
+
+    // Valida tamanho
+    if (file.size > MAX_FILE_SIZE) {
+      setErrors({ ...errors, file: 'File size must be less than 5MB' });
+      return;
+    }
+
+    setErrors({ ...errors, file: undefined });
+    setScreenshotFile(file);
+
+    // Cria preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setScreenshotPreview(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
   }
 
   /**
-   * Captura screenshot da página inteira (scroll completo).
+   * Remove o screenshot selecionado.
    */
-  async function captureFullPage() {
-    setIsCapturing(true);
-    try {
-      const modal = document.querySelector('[data-feedback-modal]');
-      if (modal) (modal as HTMLElement).style.display = 'none';
-
-      await new Promise((r) => setTimeout(r, 100));
-
-      const canvas = await html2canvas(document.body, {
-        useCORS: true,
-        allowTaint: true,
-        scale: 1,
-        logging: false,
-        backgroundColor: '#ffffff',
-        height: document.documentElement.scrollHeight,
-        windowHeight: document.documentElement.scrollHeight,
-      });
-
-      if (modal) (modal as HTMLElement).style.display = '';
-
-      const dataUrl = canvas.toDataURL('image/png');
-      setScreenshotDataUrl(dataUrl);
-    } catch (err) {
-      console.error('Erro ao capturar screenshot:', err);
-      toast.error('Não foi possível capturar a tela');
-    } finally {
-      setIsCapturing(false);
+  function handleRemoveFile() {
+    setScreenshotFile(null);
+    setScreenshotPreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   }
 
   /**
    * Upload do screenshot para o servidor.
    */
-  async function uploadScreenshot(dataUrl: string): Promise<string> {
-    const res = await fetch(dataUrl);
-    const blob = await res.blob();
-
+  async function uploadScreenshot(file: File): Promise<string> {
     const formData = new FormData();
-    formData.append('file', blob, `screenshot-${Date.now()}.png`);
+    formData.append('file', file, `screenshot-${Date.now()}.png`);
 
     const result = await api.post<{ filePath: string }>(
       '/api/v1/upload/feedbacks',
@@ -258,6 +237,7 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
     }
 
     setErrors({});
+    setIsUploading(true);
 
     // Para a captura do console e pega os logs
     stopConsoleCapture();
@@ -266,13 +246,15 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
 
     // Upload do screenshot se existir
     let finalScreenshotPath: string | undefined;
-    if (screenshotDataUrl) {
+    if (screenshotFile) {
       try {
-        finalScreenshotPath = await uploadScreenshot(screenshotDataUrl);
+        finalScreenshotPath = await uploadScreenshot(screenshotFile);
       } catch {
         console.warn('Screenshot upload failed, continuing without it');
       }
     }
+
+    setIsUploading(false);
 
     // Cria o feedback com contexto técnico completo
     createMutation.mutate({
@@ -299,10 +281,7 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
       />
 
       {/* Modal */}
-      <div
-        className="fixed inset-0 z-50 flex items-center justify-center p-4"
-        data-feedback-modal
-      >
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div
           className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col"
           onClick={(e) => e.stopPropagation()}
@@ -395,57 +374,71 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
               )}
             </div>
 
-            {/* Screenshot */}
+            {/* Upload de Screenshot */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 {t('fields.screenshot')}
               </label>
-              <p className="text-xs text-gray-500 mb-3">{t('fields.screenshot_optional')}</p>
+              <p className="text-xs text-gray-500 mb-3">
+                Take a screenshot (Print Screen) and paste or upload the image here.
+              </p>
 
-              {screenshotDataUrl ? (
+              {screenshotPreview ? (
                 <div className="relative rounded-lg border border-gray-200 overflow-hidden">
                   <img
-                    src={screenshotDataUrl}
-                    alt={t('screenshot.preview')}
+                    src={screenshotPreview}
+                    alt="Screenshot preview"
                     className="w-full h-40 object-cover"
                   />
                   <button
                     type="button"
-                    onClick={() => setScreenshotDataUrl(null)}
+                    onClick={handleRemoveFile}
                     className="absolute top-2 right-2 w-7 h-7 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
                   >
                     <Trash2 size={14} />
                   </button>
+                  <div className="absolute bottom-0 left-0 right-0 bg-black/50 px-3 py-1.5">
+                    <p className="text-xs text-white truncate">
+                      {screenshotFile?.name} ({((screenshotFile?.size || 0) / 1024).toFixed(1)} KB)
+                    </p>
+                  </div>
                 </div>
               ) : (
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={captureVisibleScreen}
-                    disabled={isCapturing}
-                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50"
-                  >
-                    <Monitor size={16} />
-                    {t('screenshot.capture_visible')}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={captureFullPage}
-                    disabled={isCapturing}
-                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50"
-                  >
-                    <Camera size={16} />
-                    {t('screenshot.capture_full')}
-                  </button>
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const file = e.dataTransfer.files[0];
+                    if (file && file.type.startsWith('image/')) {
+                      setScreenshotFile(file);
+                      const reader = new FileReader();
+                      reader.onload = (ev) => setScreenshotPreview(ev.target?.result as string);
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                  className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition-colors"
+                >
+                  <ImageIcon size={32} className="mx-auto text-gray-400 mb-2" />
+                  <p className="text-sm text-gray-600 font-medium">
+                    Click to upload or drag and drop
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    PNG, JPG up to 5MB
+                  </p>
                 </div>
               )}
 
-              {isCapturing && (
-                <p className="mt-2 text-xs text-blue-500 flex items-center gap-1">
-                  <Loader2 size={12} className="animate-spin" />
-                  {t('screenshot.capturing')}
-                </p>
-              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+
+              {errors.file && <p className="mt-1 text-xs text-red-500">{errors.file}</p>}
             </div>
 
             {/* Console Logs (se houver) */}
@@ -512,13 +505,13 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
             </button>
             <button
               onClick={handleSubmit}
-              disabled={createMutation.isPending}
+              disabled={createMutation.isPending || isUploading}
               className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
             >
-              {createMutation.isPending ? (
+              {(createMutation.isPending || isUploading) ? (
                 <>
                   <Loader2 size={16} className="animate-spin" />
-                  {t('actions.submitting')}
+                  {isUploading ? 'Uploading...' : t('actions.submitting')}
                 </>
               ) : (
                 <>
