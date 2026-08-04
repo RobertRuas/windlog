@@ -31,6 +31,7 @@ import { PrismaService } from '../../database/prisma.service.js';
 import { CreateTimesheetDto } from './dto/create-timesheet.dto.js';
 import { UpdateTimesheetDto } from './dto/update-timesheet.dto.js';
 import { TimesheetFilterDto } from './dto/timesheet-filter.dto.js';
+import { canPerformTeamLeaderAction } from '../../common/utils/index.js';
 
 /**
  * Nomes dos dias da semana em inglês.
@@ -106,22 +107,25 @@ export class WeeklyTimesheetService {
    *
    * REGRAS:
    * - ADMIN e HR: sempre podem
-   * - Team Leader: apenas se for membro do projeto com role "Team Leader"
+   * - Usuário com isTeamLeader === true: também podem
+   * - Team Leader do projeto: apenas se for membro do projeto com role "Team Leader"
    *
    * @param projectId - ID do projeto
    * @param userId - ID do usuário
    * @param userRole - Role do usuário no sistema (ADMIN, HR, STANDARD)
+   * @param isTeamLeader - Flag de Team Leader do usuário
    * @returns true se tem permissão
    */
   private async canManageTimesheet(
     projectId: string,
     userId: string,
     userRole: string,
+    isTeamLeader: boolean,
   ): Promise<boolean> {
-    // ADMIN e HR sempre podem
-    if (userRole === 'ADMIN' || userRole === 'HR') return true;
+    // Usa o helper: ADMIN, HR ou isTeamLeader === true podem
+    if (canPerformTeamLeaderAction(userRole, isTeamLeader)) return true;
 
-    // Verifica se é Team Leader no projeto
+    // Verifica se é Team Leader no projeto (legado)
     const member = await this.prisma.projectMember.findFirst({
       where: { projectId, userId },
     });
@@ -134,21 +138,23 @@ export class WeeklyTimesheetService {
    *
    * REGRAS:
    * - ADMIN e HR: sempre podem
+   * - Usuário com isTeamLeader === true: também podem
    * - Criador do timesheet: pode editar seus próprios timesheets
-   * - Team Leader: NÃO pode editar timesheets de outros
    *
    * @param createdBy - ID do usuário que criou o timesheet
    * @param userId - ID do usuário que está tentando editar
    * @param userRole - Role do usuário
+   * @param isTeamLeader - Flag de Team Leader do usuário
    * @returns true se pode editar
    */
   private canEditTimesheet(
     createdBy: string,
     userId: string,
     userRole: string,
+    isTeamLeader: boolean,
   ): boolean {
-    // ADMIN e HR sempre podem
-    if (userRole === 'ADMIN' || userRole === 'HR') return true;
+    // ADMIN, HR ou isTeamLeader === true sempre podem
+    if (canPerformTeamLeaderAction(userRole, isTeamLeader)) return true;
     // Apenas o criador pode editar
     return createdBy === userId;
   }
@@ -245,11 +251,19 @@ export class WeeklyTimesheetService {
       throw new NotFoundException('Project not found');
     }
 
+    // PASSO 1.5: Busca o flag isTeamLeader do usuário
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { isTeamLeader: true },
+    });
+    const isTeamLeader = user?.isTeamLeader ?? false;
+
     // PASSO 2: Verifica permissão
     const canManage = await this.canManageTimesheet(
       dto.projectId,
       userId,
       userRole,
+      isTeamLeader,
     );
 
     if (!canManage) {
@@ -609,8 +623,15 @@ export class WeeklyTimesheetService {
       throw new NotFoundException('Timesheet not found');
     }
 
-    // PASSO 2: Verifica permissão (apenas o criador ou ADMIN/HR podem editar)
-    const canEdit = this.canEditTimesheet(timesheet.createdBy, userId, userRole);
+    // Busca o flag isTeamLeader do usuário
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { isTeamLeader: true },
+    });
+    const isTeamLeader = user?.isTeamLeader ?? false;
+
+    // PASSO 2: Verifica permissão (apenas o criador ou ADMIN/HR/TeamLeader podem editar)
+    const canEdit = this.canEditTimesheet(timesheet.createdBy, userId, userRole, isTeamLeader);
 
     if (!canEdit) {
       throw new ForbiddenException(
@@ -813,8 +834,15 @@ export class WeeklyTimesheetService {
       throw new NotFoundException('Timesheet not found');
     }
 
-    // Apenas o criador ou ADMIN/HR podem submeter
-    const canEdit = this.canEditTimesheet(timesheet.createdBy, userId, userRole);
+    // Busca o flag isTeamLeader do usuário
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { isTeamLeader: true },
+    });
+    const isTeamLeader = user?.isTeamLeader ?? false;
+
+    // Apenas o criador ou ADMIN/HR/TeamLeader podem submeter
+    const canEdit = this.canEditTimesheet(timesheet.createdBy, userId, userRole, isTeamLeader);
 
     if (!canEdit) {
       throw new ForbiddenException(
@@ -854,8 +882,15 @@ export class WeeklyTimesheetService {
       throw new NotFoundException('Timesheet not found');
     }
 
-    // Apenas o criador ou ADMIN/HR podem excluir
-    const canEdit = this.canEditTimesheet(timesheet.createdBy, userId, userRole);
+    // Busca o flag isTeamLeader do usuário
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { isTeamLeader: true },
+    });
+    const isTeamLeader = user?.isTeamLeader ?? false;
+
+    // Apenas o criador ou ADMIN/HR/TeamLeader podem excluir
+    const canEdit = this.canEditTimesheet(timesheet.createdBy, userId, userRole, isTeamLeader);
 
     if (!canEdit) {
       throw new ForbiddenException(

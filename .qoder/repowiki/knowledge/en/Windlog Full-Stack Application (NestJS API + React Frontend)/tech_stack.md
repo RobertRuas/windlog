@@ -1,1 +1,0 @@
-Backend: NestJS with Passport/JWT authentication, class-validator DTOs, Prisma v7 with `@prisma/adapter-pg` against PostgreSQL, Swagger/OpenAPI docs. Frontend: React + TypeScript, Vite, React Router v6, TanStack Query (React Query), Sonner for toast notifications, Tailwind CSS for responsive mobile-first styling, i18next for Portuguese localization.

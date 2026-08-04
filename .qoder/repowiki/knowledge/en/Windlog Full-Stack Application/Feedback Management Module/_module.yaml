@@ -1,13 +1,8 @@
 schema_version: 1
-module_path: feedback_module
+module_path: api_feedback_module
 title: Feedback Management Module
 scope:
     - API/src/modules/feedback/
-    - src/components/feedback/
-    - src/pages/feedbacks/
-    - src/services/feedback.service.ts
-    - src/utils/consoleCapture.ts
-    - src/utils/technicalContext.ts
 source_files: []
 depends_on: []
 related_to: []

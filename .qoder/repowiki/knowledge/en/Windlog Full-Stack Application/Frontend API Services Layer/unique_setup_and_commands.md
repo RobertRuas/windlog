@@ -1,0 +1,1 @@
+No build or setup commands are specific to this module; services are consumed by React components/pages that import them directly. The only runtime requirement is a running NestJS backend exposing `/api/v1/*` endpoints, since all URLs are hardcoded relative paths.

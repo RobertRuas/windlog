@@ -55,3 +55,26 @@ export function buildPaginationMeta(
     totalPages: Math.ceil(total / limit),
   };
 }
+
+/**
+ * Verifica se um usuário pode realizar ações de Team Leader.
+ *
+ * Regra: Usuários com role diferente de STANDARD (ADMIN, HR) SEMPRE podem.
+ *        Usuários com isTeamLeader === true TAMBÉM podem.
+ *        Usuários STANDARD + isTeamLeader === false NÃO podem.
+ *
+ * @param role - Role do usuário (ADMIN, HR, STANDARD)
+ * @param isTeamLeader - Flag de Team Leader do usuário
+ * @returns true se o usuário pode realizar ações de Team Leader
+ *
+ * @example
+ * canPerformTeamLeaderAction('STANDARD', true)  // true
+ * canPerformTeamLeaderAction('ADMIN', false)    // true
+ * canPerformTeamLeaderAction('STANDARD', false) // false
+ */
+export function canPerformTeamLeaderAction(
+  role: string,
+  isTeamLeader: boolean,
+): boolean {
+  return role !== 'STANDARD' || isTeamLeader;
+}

@@ -17,16 +17,24 @@
 - [api-response.dto.ts](file://API/src/common/dto/api-response.dto.ts)
 </cite>
 
+## Update Summary
+**Changes Made**
+- Added new 'My Feedbacks' functionality with GET /feedbacks/my endpoint
+- Implemented findMyFeedbacks service method for authenticated user feedback retrieval
+- Enhanced feedback management capabilities for authenticated users
+- Updated controller and service to support user-specific feedback operations
+
 ## Table of Contents
 1. [Introduction](#introduction)
 2. [Project Structure](#project-structure)
 3. [Core Components](#core-components)
 4. [Architecture Overview](#architecture-overview)
 5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+6. [New My Feedbacks Feature](#new-my-feedbacks-feature)
+7. [Dependency Analysis](#dependency-analysis)
+8. [Performance Considerations](#performance-considerations)
+9. [Troubleshooting Guide](#troubleshooting-guide)
+10. [Conclusion](#conclusion)
 
 ## Introduction
 This document describes the backend implementation of the Feedback module within the Windlog monorepo. The module provides REST endpoints to create, update, list, and manage feedback records with filtering and pagination support. It integrates with authentication (JWT Bearer), role-based access control (RBAC), logging, and Prisma ORM for data persistence.
@@ -37,6 +45,7 @@ Key characteristics:
 - Standardized API responses and error handling
 - Soft delete and UUID primary keys across entities
 - UTC timestamps and Euro currency conventions
+- **New**: User-specific feedback retrieval with 'My Feedbacks' functionality
 
 ## Project Structure
 The Feedback module is organized under API/src/modules/feedback with a clear separation of concerns:
@@ -155,7 +164,7 @@ Controller-->>Client : "Standard success response"
 ## Detailed Component Analysis
 
 ### FeedbackController
-- Endpoints: Create, Update, List (with filters/pagination), Get by ID, Delete (soft delete).
+- Endpoints: Create, Update, List (with filters/pagination), Get by ID, Delete (soft delete), **and My Feedbacks**.
 - Validation: Uses DTOs for request bodies and query parameters.
 - Authorization: Enforced via @Roles() and RolesGuard.
 - Response format: Standardized success/error structures.
@@ -164,6 +173,7 @@ Key behaviors:
 - Maps HTTP methods to service methods.
 - Applies class-validator decorators from DTOs.
 - Integrates with global interceptors for logging and transformation.
+- **Updated**: Now includes GET /feedbacks/my endpoint for authenticated user feedback retrieval.
 
 **Section sources**
 - [feedback.controller.ts](file://API/src/modules/feedback/feedback.controller.ts)
@@ -171,11 +181,12 @@ Key behaviors:
 - [api-response.dto.ts](file://API/src/common/dto/api-response.dto.ts)
 
 ### FeedbackService
-- Operations: Create, Update, FindMany (filters), FindOne, Delete (soft delete).
+- Operations: Create, Update, FindMany (filters), FindOne, Delete (soft delete), **and findMyFeedbacks**.
 - Filtering: Supports fields like status, date ranges, user/project context if applicable.
 - Pagination: Offset or cursor-based pagination via DTO parameters.
 - Transactions: Used when multiple writes are required.
 - Error handling: Throws domain-specific exceptions mapped to standard error responses.
+- **Updated**: New findMyFeedbacks method for retrieving authenticated user's feedback.
 
 Data flow:
 - Receives validated DTOs from controller.
@@ -225,6 +236,7 @@ class FeedbackController {
 +findAll(query)
 +findOne(id)
 +delete(id)
++myFeedbacks()
 }
 class FeedbackService {
 +create(dto)
@@ -232,6 +244,7 @@ class FeedbackService {
 +findAll(filters)
 +findOne(id)
 +delete(id)
++findMyFeedbacks(userId)
 }
 class CreateFeedbackDto {
 +title
@@ -321,6 +334,67 @@ ReturnError --> End
 - [feedback.service.ts](file://API/src/modules/feedback/feedback.service.ts)
 - [feedback-filter.dto.ts](file://API/src/modules/feedback/dto/feedback-filter.dto.ts)
 
+## New My Feedbacks Feature
+
+### Overview
+The 'My Feedbacks' functionality allows authenticated users to retrieve their own feedback records through a dedicated endpoint. This enhancement provides personalized feedback management capabilities while maintaining security through authentication.
+
+### API Endpoint
+- **Method**: GET
+- **Path**: /feedbacks/my
+- **Authentication**: Required (JWT Bearer token)
+- **Authorization**: Any authenticated user can access their own feedback
+
+### Implementation Details
+The feature consists of two main components:
+
+1. **Controller Method**: `getMyFeedbacks()` - Handles the HTTP request and delegates to the service layer
+2. **Service Method**: `findMyFeedbacks(userId)` - Retrieves feedback records associated with the authenticated user
+
+### Security Model
+- User identity is extracted from JWT token via @CurrentUser() decorator
+- Automatic filtering ensures users can only access their own feedback
+- No additional authorization checks needed beyond basic authentication
+
+```mermaid
+sequenceDiagram
+participant Client as "Authenticated Client"
+participant Controller as "FeedbackController"
+participant Guard as "RolesGuard"
+participant Interceptor as "LoggingInterceptor"
+participant Service as "FeedbackService"
+participant Prisma as "Prisma Client"
+participant DB as "Database"
+Client->>Controller : "GET /feedbacks/my"
+Controller->>Guard : "Validate authentication"
+Guard-->>Controller : "Authorized"
+Controller->>Interceptor : "Log request"
+Interceptor-->>Controller : "Proceed"
+Controller->>Service : "findMyFeedbacks(currentUserId)"
+Service->>Prisma : "feedback.findMany({ where : { userId : currentUserId } })"
+Prisma->>DB : "SELECT * FROM feedback WHERE userId = ?"
+DB-->>Prisma : "User's feedback records"
+Prisma-->>Service : "Array of feedback entities"
+Service-->>Controller : "Filtered feedback array"
+Controller-->>Client : "User's feedback records"
+```
+
+**Diagram sources**
+- [feedback.controller.ts](file://API/src/modules/feedback/feedback.controller.ts)
+- [feedback.service.ts](file://API/src/modules/feedback/feedback.service.ts)
+- [roles.guard.ts](file://API/src/common/guards/roles.guard.ts)
+- [logging.interceptor.ts](file://API/src/common/interceptors/logging.interceptor.ts)
+
+### Benefits
+- **Personalization**: Users can view and manage their own feedback history
+- **Security**: Built-in user isolation prevents unauthorized access to other users' data
+- **Simplicity**: Clean API design with automatic user context extraction
+- **Consistency**: Follows existing module patterns and conventions
+
+**Section sources**
+- [feedback.controller.ts](file://API/src/modules/feedback/feedback.controller.ts)
+- [feedback.service.ts](file://API/src/modules/feedback/feedback.service.ts)
+
 ## Dependency Analysis
 - Controller depends on Service and DTOs for validation.
 - Service depends on Prisma Client and database schema.
@@ -358,6 +432,7 @@ Module --> Service
 - Avoid N+1 queries by using include/select appropriately.
 - Cache read-heavy endpoints if appropriate (e.g., Redis) with invalidation strategies.
 - Ensure pagination limits are bounded to prevent large payloads.
+- **New**: For 'My Feedbacks' endpoint, consider adding database index on userId column for optimal query performance.
 
 [No sources needed since this section provides general guidance]
 
@@ -368,6 +443,7 @@ Common issues and resolutions:
 - Validation errors: Inspect DTO constraints and request payloads.
 - Database errors: Review Prisma logs and migration status.
 - Logging gaps: Ensure LoggingInterceptor is active and SystemLogService is configured.
+- **New**: My Feedbacks access issues: Verify user is properly authenticated and that feedback records have correct userId associations.
 
 **Section sources**
 - [auth.controller.ts](file://API/src/modules/auth/auth.controller.ts)
@@ -375,6 +451,8 @@ Common issues and resolutions:
 - [logging.interceptor.ts](file://API/src/common/interceptors/logging.interceptor.ts)
 
 ## Conclusion
-The Feedback module delivers a robust, secure, and maintainable backend feature set aligned with Windlog’s architectural standards. It leverages NestJS best practices, Prisma for data access, and centralized guards/interceptors for cross-cutting concerns. Adhering to standardized responses, RBAC, and comprehensive logging ensures reliability and observability.
+The Feedback module delivers a robust, secure, and maintainable backend feature set aligned with Windlog's architectural standards. It leverages NestJS best practices, Prisma for data access, and centralized guards/interceptors for cross-cutting concerns. Adhering to standardized responses, RBAC, and comprehensive logging ensures reliability and observability.
+
+**Updated**: The addition of the 'My Feedbacks' functionality enhances user experience by providing personalized feedback management capabilities while maintaining security through proper authentication and authorization mechanisms.
 
 [No sources needed since this section summarizes without analyzing specific files]

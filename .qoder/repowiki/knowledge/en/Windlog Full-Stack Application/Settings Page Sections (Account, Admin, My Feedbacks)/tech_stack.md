@@ -1,0 +1,1 @@
+React + TypeScript, Tailwind CSS for styling, lucide-react for icons, react-router-dom for navigation, @tanstack/react-query for data fetching, and react-i18next for translations (via the injected `t` prop).

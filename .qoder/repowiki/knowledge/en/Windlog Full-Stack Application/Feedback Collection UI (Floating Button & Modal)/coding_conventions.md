@@ -1,0 +1,5 @@
+- All user-facing strings are localized via `useTranslation('feedback')` with keys under namespaces like `button`, `modal_title`, `fields.*`, `actions.*`, and `toast.*`.
+- Form validation errors are stored in a typed `errors` object keyed by field name and cleared per-field on input change rather than using a form library.
+- Toast notifications use Sonner with i18n keys (`toast.create_success`, `toast.create_error`) following the project's mandatory Portuguese message pattern.
+- TanStack Query keys follow the `['entity', filter?]` convention (e.g., `['recent-system-logs']`) and mutations invalidate related keys on success.
+- UI state is kept as simple React `useState` primitives (string, boolean, File | null) without custom hooks, and component props are passed explicitly rather than via context.

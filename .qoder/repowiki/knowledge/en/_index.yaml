@@ -3,12 +3,22 @@ schema_version: 1
 locale: en-US
 branch: main
 nodes_managed: true
-exported_at: "2026-08-04T11:18:04Z"
+exported_at: "2026-08-04T12:04:48Z"
 modules:
     "":
-        dir_name: Windlog Full-Stack Application (NestJS API + React Frontend)
-        title: Windlog Full-Stack Application (NestJS API + React Frontend)
+        dir_name: Windlog Full-Stack Application_2
+        title: Windlog Full-Stack Application
         scope: []
+        source_files: []
+        children:
+            - feedback_module
+        depends_on: []
+        related_to: []
+    api_feedback_module:
+        dir_name: Feedback Management Module
+        title: Feedback Management Module
+        scope:
+            - API/src/modules/feedback/
         source_files: []
         children: []
         depends_on: []
@@ -38,7 +48,9 @@ modules:
         source_files: []
         children: []
         depends_on: []
-        related_to: []
+        related_to:
+            - path: feedback_module/frontend_components
+            - path: feedback_module/frontend_services_and_utils
     feedback_module/frontend_components:
         dir_name: Feedback Submission & Admin Management
         title: Feedback Submission & Admin Management
@@ -48,7 +60,8 @@ modules:
         source_files: []
         children: []
         depends_on: []
-        related_to: []
+        related_to:
+            - path: feedback_module/backend_module
     feedback_module/frontend_services_and_utils:
         dir_name: Feedback Frontend Service & Diagnostic Utilities
         title: Feedback Frontend Service & Diagnostic Utilities
@@ -56,6 +69,43 @@ modules:
             - src/services/feedback.service.ts
             - src/utils/consoleCapture.ts
             - src/utils/technicalContext.ts
+        source_files: []
+        children: []
+        depends_on: []
+        related_to:
+            - path: feedback_module/backend_module
+    src_components_feedback:
+        dir_name: Feedback Collection UI (Floating Button & Modal)
+        title: Feedback Collection UI (Floating Button & Modal)
+        scope:
+            - src/components/feedback/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    src_i18n_locales_pt:
+        dir_name: Portuguese (pt) i18n Locale Files
+        title: Portuguese (pt) i18n Locale Files
+        scope:
+            - src/i18n/locales/pt/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    src_pages_settings_components:
+        dir_name: Settings Page Sections (Account, Admin, My Feedbacks)
+        title: Settings Page Sections (Account, Admin, My Feedbacks)
+        scope:
+            - src/pages/settings/components/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    src_services:
+        dir_name: Frontend API Services Layer
+        title: Frontend API Services Layer
+        scope:
+            - src/services/
         source_files: []
         children: []
         depends_on: []

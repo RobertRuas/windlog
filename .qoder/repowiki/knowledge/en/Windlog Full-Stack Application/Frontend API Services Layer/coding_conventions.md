@@ -1,0 +1,6 @@
+- Each service file exports plain async functions (not class methods) and co-locates the TypeScript interfaces describing request/response shapes within the same file.
+- All HTTP responses are typed against a local `ApiResponse<T>` interface with `data`, `message`, `statusCode`, and `timestamp` fields, and callers always unwrap `response.data`.
+- CRUD operations follow a consistent naming pattern: `get*` / `create*` / `update*` / `delete*` (or `remove*`) with IDs passed as path parameters, e.g. `/api/v1/{entity}/${id}`.
+- List endpoints accept an optional filters object whose truthy fields are appended to a `URLSearchParams` query string before calling `api.get`.
+- Multipart/form-data uploads use `new FormData()` plus `{ isFormData: true }` in the `api.post` options so Content-Type is left to the browser.
+- Authentication state is read/written exclusively via `localStorage.getItem('accessToken')` and `localStorage.setItem('accessToken', ...)`, never via props or context.

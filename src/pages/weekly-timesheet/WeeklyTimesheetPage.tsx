@@ -197,14 +197,16 @@ export function WeeklyTimesheetPage() {
             <p className="text-sm text-gray-500 mt-1">{t('subtitle')}</p>
           </div>
 
-          {/* Botão Novo Timesheet */}
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-          >
-            <Plus size={16} />
-            {t('newTimesheet')}
-          </button>
+          {/* Botão Novo Timesheet - visível apenas para Team Leaders ou roles > STANDARD */}
+          {(currentUser?.role !== 'STANDARD' || currentUser?.isTeamLeader) && (
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+            >
+              <Plus size={16} />
+              {t('newTimesheet')}
+            </button>
+          )}
         </div>
 
         {/* ── Filtros ───────────────────────────────────────────────── */}
@@ -349,8 +351,8 @@ export function WeeklyTimesheetPage() {
                         >
                           <Eye size={16} />
                         </button>
-                        {/* Editar (modo edição) — apenas para criador ou ADMIN/HR */}
-                        {(currentUser?.role === 'ADMIN' || currentUser?.role === 'HR' || ts.createdBy === currentUser?.id) && (
+                        {/* Editar (modo edição) — apenas para criador ou ADMIN/HR/TeamLeader */}
+                        {(currentUser?.role !== 'STANDARD' || currentUser?.isTeamLeader || ts.createdBy === currentUser?.id) && (
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -362,8 +364,8 @@ export function WeeklyTimesheetPage() {
                             <Pencil size={16} />
                           </button>
                         )}
-                        {/* Excluir (com confirmação) — apenas para criador ou ADMIN/HR */}
-                        {(currentUser?.role === 'ADMIN' || currentUser?.role === 'HR' || ts.createdBy === currentUser?.id) && (
+                        {/* Excluir (com confirmação) — apenas para criador ou ADMIN/HR/TeamLeader */}
+                        {(currentUser?.role !== 'STANDARD' || currentUser?.isTeamLeader || ts.createdBy === currentUser?.id) && (
                           <button
                             onClick={(e) => handleDelete(ts.id, e)}
                             className="p-1.5 text-gray-400 hover:text-red-600 transition-colors"

@@ -171,6 +171,7 @@ export function UsersPage() {
       firstName: '',
       lastName: '',
       role: 'STANDARD',
+      isTeamLeader: false,
     });
     setIsModalOpen(true);
   }
@@ -186,6 +187,7 @@ export function UsersPage() {
       lastName: user.lastName,
       email: user.email,
       role: user.role as 'ADMIN' | 'HR' | 'STANDARD',
+      isTeamLeader: user.isTeamLeader ?? false,
     });
     setIsModalOpen(true);
   }
@@ -202,6 +204,7 @@ export function UsersPage() {
       firstName: '',
       lastName: '',
       role: 'STANDARD',
+      isTeamLeader: false,
     });
   }
 

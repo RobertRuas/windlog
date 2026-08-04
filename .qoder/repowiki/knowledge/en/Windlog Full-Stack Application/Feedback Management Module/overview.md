@@ -1,1 +1,1 @@
-End-to-end feedback reporting system that lets users submit bug reports and suggestions via a floating UI, while admins manage, triage, and soft-delete them through a dedicated admin page backed by a NestJS CRUD API.
+NestJS module providing CRUD endpoints for system feedback reports (bugs, suggestions, inconsistencies) with role-based access control, soft delete, and Prisma-backed persistence.

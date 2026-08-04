@@ -1,0 +1,1 @@
+User-facing feedback collection interface composed of a fixed floating button and a modal form that gathers bug reports, suggestions, and screenshots with automatic technical context and system log capture.

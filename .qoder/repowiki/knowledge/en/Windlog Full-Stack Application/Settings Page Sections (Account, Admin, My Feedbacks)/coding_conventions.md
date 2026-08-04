@@ -1,0 +1,5 @@
+- Each section component is a single-file module exporting one named function component whose props consist solely of a `t: (key: string) => string` translation function.
+- UI layout follows a consistent card pattern: a white rounded container with `bg-white rounded-xl border border-gray-200 overflow-hidden`, a bordered header row with icon + title, and a `divide-y divide-gray-100` list body.
+- Navigation actions use `react-router-dom`'s `useNavigate()` hook with direct `navigate('/path')` calls rather than `<Link>` components.
+- All user-facing strings go through the `t()` translation function with dot-notation keys (e.g. `sections.account`, `admin.systemLogs.title`).
+- Data-driven components use TanStack Query with array-style query keys following the `['entity', filter?]` convention and import types directly from the service layer.

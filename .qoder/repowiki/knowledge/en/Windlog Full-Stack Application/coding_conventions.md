@@ -1,8 +1,9 @@
-- Backend modules use exactly `{name}.module.ts + {name}.controller.ts + {name}.service.ts + dto/{name}.dto.ts`; controllers contain only HTTP glue, business logic lives in services.
-- DTOs are validated with class-validator decorators (`@IsString`, `@IsEmail`, `@IsOptional`, …); every optional field must carry `@IsOptional()` regardless of TypeScript `?`.
-- Frontend pages follow `{PageName}.tsx` plus a `components/` and optional `hooks/` folder; services in `src/services/` encapsulate axios calls and TanStack Query mutations.
-- TanStack Query keys use `['entity', filter?]` for lists and `['entity', id]` for details; mutations invalidate all related keys.
-- UI components go in `src/components/ui/` (generic) and layout components in `src/components/layout/` (structural); never mix them.
+- Each backend feature follows the exact shape `{name}.module.ts + {name}.controller.ts + {name}.service.ts + dto/{name}.dto.ts`; controllers contain no business logic — it belongs in the service.
+- Backend DTOs use class-validator decorators (`@IsString`, `@IsEmail`, `@IsOptional`, …); every optional field must be annotated with `@IsOptional()` because TypeScript's `?` is not sufficient.
+- Frontend pages follow `{PageName}.tsx + components/ + hooks/`; services live in `src/services/` and encapsulate API calls via the shared `api.ts` client.
+- TanStack Query keys use the pattern `['entity', filter?]` for lists and `['entity', id]` for details; mutations invalidate all related keys.
+- UI components go in `src/components/ui/` (generic primitives) and layout components in `src/components/layout/` (structural); they are never mixed.
 - All CRUD operations surface toast notifications via Sonner with Portuguese messages following the pattern 'X criado/atualizado/removido com sucesso'.
-- Soft delete is mandatory for business entities (User, Project, Turbine, File) with `deletedAt: null` filtering; junction tables may hard-delete.
-- LoggingInterceptor maps URL + HTTP method to `LogAction`; new endpoints must register their action in `determineAction()`.
+- Prisma is the sole authoritative type source; enums in code mirror `schema.prisma` enums and the database is never accessed outside Services.
+- Soft delete is mandatory for business entities (User, Project, Turbine, File) with `deletedAt: null` filtering on every query; junction tables may use hard delete.
+- New endpoints must register their `LogAction` in `LoggingInterceptor.determineAction()` so HTTP requests are automatically persisted to SystemLog.

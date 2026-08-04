@@ -1,1 +1,1 @@
-NestJS + Prisma + class-validator on the backend; React + Vite + TanStack Query + React Router + Sonner + Tailwind CSS on the frontend; JWT-based authentication shared between NestJS strategies and frontend localStorage tokens.
+NestJS + Prisma + Swagger for the backend; React + Vite + TanStack Query + React Router + Sonner + Tailwind CSS for the frontend; JWT bearer authentication shared via `CORS_ORIGIN` and `JWT_SECRET` environment variables.

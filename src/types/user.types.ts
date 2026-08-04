@@ -82,6 +82,8 @@ export interface User {
   preferredAirportCity?: string | null;
   /** País do aeroporto preferido */
   preferredAirportCountry?: string | null;
+  /** Indica se o usuário é Team Leader */
+  isTeamLeader?: boolean;
   /** Idiomas que o usuário fala */
   languages?: UserLanguage[];
   /** Certificações profissionais do usuário */

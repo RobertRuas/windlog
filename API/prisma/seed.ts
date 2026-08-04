@@ -90,6 +90,19 @@ const seedUsers = [
     position: 'Wind Turbine Technician',
     nationality: 'PT',
   },
+  {
+    email: 'teamleader@windlog.com',
+    password: '123456',
+    firstName: 'Team',
+    lastName: 'Leader',
+    role: Role.STANDARD,
+    isTeamLeader: true,
+    phone: '945678901',
+    phoneCountryCode: '+351',
+    department: 'Operations',
+    position: 'Team Leader (L3)',
+    nationality: 'PT',
+  },
 ];
 
 /**
@@ -122,6 +135,7 @@ async function main() {
         firstName: userData.firstName,
         lastName: userData.lastName,
         role: userData.role,
+        isTeamLeader: userData.isTeamLeader ?? false,
         phone: userData.phone,
         phoneCountryCode: userData.phoneCountryCode,
         department: userData.department,
@@ -135,13 +149,15 @@ async function main() {
 
   console.log('\n🎉 Seed concluído com sucesso!');
   console.log('\n📋 Usuários disponíveis:');
-  console.log('   ┌─────────────────────────────────────────────┐');
-  console.log('   │ Email                  │ Senha │ Role       │');
-  console.log('   ├─────────────────────────────────────────────┤');
-  console.log('   │ admin@windlog.com      │ 123456 │ ADMIN      │');
-  console.log('   │ rh@windlog.com         │ 123456 │ HR         │');
-  console.log('   │ default@windlog.com    │ 123456 │ STANDARD   │');
-  console.log('   └─────────────────────────────────────────────┘');
+  console.log('   ┌──────────────────────────────────────────────────────┐');
+  console.log('   │ Email                  │ Senha │ Role     │ TL      │');
+  console.log('   ├──────────────────────────────────────────────────────┤');
+  console.log('   │ admin@windlog.com      │ 123456 │ ADMIN    │ -       │');
+  console.log('   │ rh@windlog.com         │ 123456 │ HR       │ -       │');
+  console.log('   │ default@windlog.com    │ 123456 │ STANDARD │ -       │');
+  console.log('   │ teamleader@windlog.com │ 123456 │ STANDARD │ ✓       │');
+  console.log('   └──────────────────────────────────────────────────────┘');
+  console.log('\n   TL = Team Leader (isTeamLeader: true)');
 }
 
 // Executa o seed e trata erros

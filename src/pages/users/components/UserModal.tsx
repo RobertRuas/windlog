@@ -177,6 +177,20 @@ export function UserModal({
               </select>
             </div>
 
+            {/* Team Leader toggle */}
+            <div className="flex items-center gap-3">
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={(formData as CreateUserPayload).isTeamLeader ?? false}
+                  onChange={(e) => onFormChange({ ...formData, isTeamLeader: e.target.checked })}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+              <span className="text-sm font-medium text-gray-700">{t('modal.isTeamLeader')}</span>
+            </div>
+
             {/* Cargo/Função restritiva - usa PREDEFINED_FUNCTIONS */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">{t('modal.position')}</label>

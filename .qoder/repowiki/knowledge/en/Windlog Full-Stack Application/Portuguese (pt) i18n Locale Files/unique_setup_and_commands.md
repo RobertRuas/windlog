@@ -1,0 +1,1 @@
+No build or setup commands required — files are plain JSON consumed directly by the frontend i18n loader. New translations are added by editing existing files or creating new ones following the same per-domain naming convention (`featureName.json`).

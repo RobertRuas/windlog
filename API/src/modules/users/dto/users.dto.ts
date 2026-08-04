@@ -92,6 +92,11 @@ export class CreateUserDto {
   @IsOptional()
   @IsIn(ALLOWED_POSITIONS, { message: `Position must be one of: ${ALLOWED_POSITIONS.join(', ')}` })
   position?: string;
+
+  @ApiPropertyOptional({ description: 'Indica se o usuário é Team Leader', example: false })
+  @IsOptional()
+  @IsBoolean()
+  isTeamLeader?: boolean;
 }
 
 /**
@@ -154,6 +159,11 @@ export class UpdateUserDto {
   @IsOptional()
   @IsIn(ALLOWED_POSITIONS, { message: `Position must be one of: ${ALLOWED_POSITIONS.join(', ')}` })
   position?: string;
+
+  @ApiPropertyOptional({ description: 'Indica se o usuário é Team Leader' })
+  @IsOptional()
+  @IsBoolean()
+  isTeamLeader?: boolean;
 }
 
 /**

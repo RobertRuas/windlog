@@ -1,6 +1,6 @@
-- Backend follows the strict pattern: {name}.module.ts + {name}.controller.ts + {name}.service.ts + dto/{name}.dto.ts, with all business logic in the service and never in the controller.
-- DTO fields use class-validator decorators (@IsString, @IsEmail, @IsOptional, etc.); every optional field must declare @IsOptional() — TypeScript's ? is not sufficient.
-- Frontend pages follow {PageName}.tsx + components/ + hooks/ structure, with API calls encapsulated in src/services/ and TanStack Query keys using ['entity', filter?] or ['entity', id] patterns.
-- Toast notifications via Sonner are mandatory for all CRUD operations with Portuguese messages following the 'X criado/atualizado/removido com sucesso' pattern.
-- Soft delete is used for business entities; queries always filter deletedAt: null, and enum types mirror schema.prisma definitions rather than being redefined locally.
-- New endpoints register their LogAction in the LoggingInterceptor's determineAction() method so URL + HTTP method are automatically mapped to structured log actions.
+- Controllers are thin HTTP adapters that delegate all logic to the corresponding Service — no business rules are implemented inside controllers.
+- DTOs use `class-validator` decorators (`@IsString`, `@IsOptional`, `@IsEnum`, etc.) and every optional field must explicitly declare `@IsOptional()` rather than relying on TypeScript's `?`.
+- All database queries filter out soft-deleted records by including `deletedAt: null` in the `where` clause, enforcing soft delete across the entity.
+- Admin-only endpoints are consistently protected by stacking `@UseGuards(RolesGuard)` and `@Roles(Role.ADMIN)` decorators above the route handler.
+- Service methods log operations using a `Logger` instance keyed by the class name, and throw `NotFoundException` when entities are not found.
+- Swagger documentation is added per endpoint with `@ApiOperation`, `@ApiResponse`, and `@ApiProperty`/`@ApiPropertyOptional` decorators describing inputs and outputs.

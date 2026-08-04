@@ -28,7 +28,8 @@
     "STANDARD": "Padrão",
     "adminShort": "Admin",
     "hrShort": "RH",
-    "standardShort": "Padrão"
+    "standardShort": "Padrão",
+    "teamLeaderShort": "TL"
   },
   "actions": {
     "edit": "Editar",
@@ -44,6 +45,7 @@
     "lastName": "Sobrenome",
     "email": "Email",
     "role": "Role",
+    "isTeamLeader": "Team Leader",
     "position": "Cargo/Função",
     "positionPlaceholder": "Selecione um cargo...",
     "cancel": "Cancelar",

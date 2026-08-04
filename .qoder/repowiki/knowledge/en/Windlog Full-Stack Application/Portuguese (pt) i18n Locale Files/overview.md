@@ -1,0 +1,1 @@
+Portuguese (Brazil/Portugal) translation resource files for the Windlog application, organized per feature domain as flat JSON key-value maps consumed by the frontend i18n system.

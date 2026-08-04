@@ -1,1 +1,1 @@
-No module-specific build command — the NestJS module is imported into the application root module alongside other modules, and the frontend service is consumed directly by components/pages without additional setup.
+No special build or setup commands — standard NestJS module consumed by the application bootstrap. Endpoints require JWT tokens; creation is open to any authenticated user, while listing, updating, and deletion are restricted to `Role.ADMIN` via `RolesGuard`.

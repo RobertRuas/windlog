@@ -1,1 +1,1 @@
-NestJS with Prisma on the backend; React + TanStack Query on the frontend using axios via a shared `api` client; Tailwind CSS for responsive UI; Sonner for toast notifications; class-validator for DTO validation.
+NestJS with `@nestjs/swagger` for OpenAPI docs, `class-validator` + `@IsOptional()`/`@IsEnum()`/`@IsString()` for DTO validation, Prisma ORM for database access, and JWT-based authentication via `@nestjs/passport`.

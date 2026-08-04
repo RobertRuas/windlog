@@ -1,0 +1,6 @@
+The module is split into three cooperating layers wired together by the shared `/api/v1/feedbacks` REST contract:
+- Backend (`API/src/modules/feedback/`) is a standard NestJS module exporting `FeedbackModule`, which registers `FeedbackController`, `FeedbackService`, and `PrismaService`; DTOs in `dto/` validate all incoming payloads with class-validator decorators.
+- Frontend service layer (`src/services/feedback.service.ts`) defines TypeScript interfaces mirroring the backend DTOs and performs all HTTP calls through a shared `api` client against `BASE_URL = '/api/v1/feedbacks'`.
+- UI layer (`src/components/feedback/` + `src/pages/feedbacks/`) renders a floating `FeedbackButton`/`FeedbackModal` for user submissions and an admin `FeedbacksPage` for CRUD operations, consuming the service layer.
+- Diagnostic enrichment flows from `src/utils/consoleCapture.ts` (captures browser console logs) and `src/utils/technicalContext.ts` (collects browser/system/screen/connection/performance metadata), both attached to each submitted feedback so admins can reproduce issues.
+- Role-based access is enforced on the backend; only ADMIN endpoints expose list/update/delete/stats, while any authenticated user can create.

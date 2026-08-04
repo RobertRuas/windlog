@@ -1,0 +1,1 @@
+Frontend TypeScript services that encapsulate all HTTP calls to the NestJS backend via a shared fetch-based api client, covering authentication, users, projects, notifications, uploads, feedback, system logs, and weekly timesheets.

@@ -82,9 +82,9 @@ export function WeeklyTimesheetDetailPage() {
   // Extrai o timesheet da resposta da API
   const timesheet = response?.data;
 
-  // Verifica se o usuário atual pode editar (criador ou ADMIN/HR)
+  // Verifica se o usuário atual pode editar (criador ou ADMIN/HR/TeamLeader)
   const canEdit = timesheet && currentUser
-    ? currentUser.role === 'ADMIN' || currentUser.role === 'HR' || timesheet.createdBy === currentUser.id
+    ? currentUser.role !== 'STANDARD' || currentUser.isTeamLeader || timesheet.createdBy === currentUser.id
     : false;
 
   /**

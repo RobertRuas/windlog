@@ -1,1 +1,1 @@
-Full-stack project management and timesheet application pairing a NestJS backend (Prisma + JWT) with a React/Vite frontend, wired through TanStack Query services that mirror each backend module's REST API.
+Full-stack wind farm management system pairing a NestJS backend (API/) with a React/Vite frontend (src/), sharing domain modules across both sides via consistent service-to-controller contracts and Prisma-driven types.

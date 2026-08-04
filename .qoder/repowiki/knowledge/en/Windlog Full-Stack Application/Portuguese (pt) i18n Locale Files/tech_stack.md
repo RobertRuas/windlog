@@ -1,0 +1,1 @@
+Plain JSON translation files consumed by a frontend i18n library (likely react-i18next or similar), using nested dot-notation keys and template placeholders via `{{variable}}` syntax (e.g. `Página {{page}} de {{totalPages}}`).

@@ -65,6 +65,8 @@ export interface UserListItem {
   department?: string;
   /** Cargo (opcional) */
   position?: string;
+  /** Indica se o usuário é Team Leader */
+  isTeamLeader?: boolean;
   /** Data de criação */
   createdAt: string;
 }
@@ -112,6 +114,8 @@ export interface CreateUserPayload {
   department?: string;
   /** Cargo (opcional) */
   position?: string;
+  /** Indica se o usuário é Team Leader (opcional) */
+  isTeamLeader?: boolean;
 }
 
 /**
@@ -150,6 +154,8 @@ export interface UpdateUserPayload {
   taxIdNumber?: string;
   idCardNumber?: string;
   socialSecurityNumber?: string;
+  /** Indica se o usuário é Team Leader */
+  isTeamLeader?: boolean;
 }
 
 /**

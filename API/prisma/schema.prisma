@@ -197,6 +197,8 @@ model User {
   mustChangePassword Boolean @default(false)
   /// Indica se o usuário completou o onboarding obrigatório (dados essenciais preenchidos)
   profileComplete Boolean @default(false)
+  /// Indica se o usuário é Team Leader (independente do nível técnico ou role)
+  isTeamLeader Boolean @default(false)
 
   // Dados profissionais específicos
   /// WINDA ID (ex: "RR092285BR")
