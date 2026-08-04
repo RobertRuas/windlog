@@ -132,12 +132,18 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
     const formData = new FormData();
     formData.append('file', file, `feedback-${Date.now()}.png`);
 
-    const result = await api.post<{ filePath: string }>(
+    const response = await api.post<{
+      data: { filePath: string };
+      message: string;
+      statusCode: number;
+      timestamp: string;
+    }>(
       '/api/v1/upload/feedbacks',
       formData,
       { isFormData: true },
     );
-    return result.filePath;
+    // Extrair o filePath do envelope de resposta do backend
+    return response.data.filePath;
   }
 
   const createMutation = useMutation({
