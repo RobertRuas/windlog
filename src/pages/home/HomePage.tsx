@@ -145,10 +145,10 @@ export function HomePage() {
       <div className="max-w-2xl mx-auto">
         {/* ── Cabeçalho ── */}
         <div className="mb-6">
-          <h1 className="text-lg font-semibold text-gray-900">
+          <h1 className="text-lg font-semibold text-gray-900 dark:text-[#f5f5f7]">
             {t('title')}, {profile?.firstName}
           </h1>
-          <p className="text-xs text-gray-400 mt-0.5">
+          <p className="text-xs text-gray-400 dark:text-[#636366] mt-0.5">
             {t('homeSubtitle')}
           </p>
         </div>
@@ -158,24 +158,24 @@ export function HomePage() {
           {/* Timesheet — Horas do mês */}
           <button
             onClick={() => navigate('/timesheets')}
-            className="bg-white rounded-lg border border-gray-100 p-3 text-left hover:border-gray-200 transition-colors group"
+            className="bg-white dark:bg-[#1c1c1e] rounded-lg border border-gray-100 dark:border-[#38383a] p-3 text-left hover:border-gray-200 dark:hover:border-[#48484a] transition-colors group"
           >
             <div className="flex items-center gap-1.5 mb-2">
-              <Clock size={13} className="text-gray-400" />
-              <span className="text-[11px] font-medium text-gray-400 uppercase tracking-wide">
+              <Clock size={13} className="text-gray-400 dark:text-[#636366]" />
+              <span className="text-[11px] font-medium text-gray-400 dark:text-[#636366] uppercase tracking-wide">
                 {t('dashboard.timesheets.title')}
               </span>
             </div>
             {hasAnyHours ? (
               <div className="space-y-0.5">
                 <div className="flex items-baseline justify-between">
-                  <span className="text-lg font-semibold text-gray-900 tabular-nums">
+                  <span className="text-lg font-semibold text-gray-900 dark:text-[#f5f5f7] tabular-nums">
                     {monthlyHours.total}
-                    <span className="text-xs font-normal text-gray-400 ml-0.5">h</span>
+                    <span className="text-xs font-normal text-gray-400 dark:text-[#636366] ml-0.5">h</span>
                   </span>
                   <ChevronRight size={14} className="text-gray-300 group-hover:text-gray-400 transition-colors" />
                 </div>
-                <div className="flex gap-3 text-[10px] text-gray-400">
+                <div className="flex gap-3 text-[10px] text-gray-400 dark:text-[#636366]">
                   <span>{t('dashboard.timesheets.working')} {monthlyHours.working}h</span>
                   <span>{t('dashboard.timesheets.standby')} {monthlyHours.standby}h</span>
                   <span>{t('dashboard.timesheets.travel')} {monthlyHours.travel}h</span>
@@ -183,7 +183,7 @@ export function HomePage() {
               </div>
             ) : (
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-300 italic">{t('dashboard.timesheets.noData')}</span>
+                <span className="text-xs text-gray-300 dark:text-[#48484a] italic">{t('dashboard.timesheets.noData')}</span>
                 <ChevronRight size={14} className="text-gray-300 group-hover:text-gray-400 transition-colors" />
               </div>
             )}
@@ -192,20 +192,20 @@ export function HomePage() {
           {/* Projetos */}
           <button
             onClick={() => navigate('/projects')}
-            className="bg-white rounded-lg border border-gray-100 p-3 text-left hover:border-gray-200 transition-colors group"
+            className="bg-white dark:bg-[#1c1c1e] rounded-lg border border-gray-100 dark:border-[#38383a] p-3 text-left hover:border-gray-200 dark:hover:border-[#48484a] transition-colors group"
           >
             <div className="flex items-center gap-1.5 mb-2">
-              <FolderOpen size={13} className="text-gray-400" />
-              <span className="text-[11px] font-medium text-gray-400 uppercase tracking-wide">
+              <FolderOpen size={13} className="text-gray-400 dark:text-[#636366]" />
+              <span className="text-[11px] font-medium text-gray-400 dark:text-[#636366] uppercase tracking-wide">
                 {t('dashboard.projects.title')}
               </span>
             </div>
             {projectStats.total > 0 ? (
               <div>
                 <div className="flex items-baseline justify-between">
-                  <span className="text-lg font-semibold text-gray-900 tabular-nums">
+                  <span className="text-lg font-semibold text-gray-900 dark:text-[#f5f5f7] tabular-nums">
                     {projectStats.active}
-                    <span className="text-xs font-normal text-gray-400 ml-0.5">
+                    <span className="text-xs font-normal text-gray-400 dark:text-[#636366] ml-0.5">
                       /{projectStats.total} {t('dashboard.projects.active').toLowerCase()}
                     </span>
                   </span>
@@ -214,7 +214,7 @@ export function HomePage() {
               </div>
             ) : (
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-300 italic">{t('dashboard.projects.noData')}</span>
+                <span className="text-xs text-gray-300 dark:text-[#48484a] italic">{t('dashboard.projects.noData')}</span>
                 <ChevronRight size={14} className="text-gray-300 group-hover:text-gray-400 transition-colors" />
               </div>
             )}
@@ -222,13 +222,13 @@ export function HomePage() {
         </div>
 
         {/* ── Dica informativa ── */}
-        <div className="bg-gray-50/80 rounded-lg px-3 py-2.5 mb-4 flex items-start gap-2">
+        <div className="bg-gray-50/80 dark:bg-[#1c1c1e] rounded-lg px-3 py-2.5 mb-4 flex items-start gap-2">
           <Lightbulb size={13} className="text-amber-400 mt-0.5 flex-shrink-0" />
           <div className="min-w-0">
-            <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wide mb-0.5">
+            <p className="text-[10px] font-medium text-gray-400 dark:text-[#636366] uppercase tracking-wide mb-0.5">
               {t('dashboard.tips.title')}
             </p>
-            <p className="text-xs text-gray-500 leading-relaxed transition-opacity duration-500">
+            <p className="text-xs text-gray-500 dark:text-[#a1a1a6] leading-relaxed transition-opacity duration-500">
               {tips[tipIndex]}
             </p>
           </div>

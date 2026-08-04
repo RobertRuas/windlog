@@ -131,11 +131,11 @@ export function Sidebar({ userName }: SidebarProps) {
       /* Container interno do menu - ocupa toda a altura */
       <div className="flex flex-col h-full">
         {/* ── Logo ─────────────────────────────────────────────── */}
-        <div className="flex items-center gap-2.5 px-5 py-5 border-b border-gray-200">
+        <div className="flex items-center gap-2.5 px-5 py-5 border-b border-gray-200 dark:border-[#38383a]">
           <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
             <Wind className="text-white" size={18} />
           </div>
-          <span className="text-base font-semibold text-gray-900">
+          <span className="text-base font-semibold text-gray-900 dark:text-[#f5f5f7]">
             {t('app_name')}
           </span>
         </div>
@@ -152,12 +152,12 @@ export function Sidebar({ userName }: SidebarProps) {
                   w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium
                   transition-colors duration-150
                   ${active
-                    ? 'bg-blue-50 text-blue-700'
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                    ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
+                    : 'text-gray-600 dark:text-[#a1a1a6] hover:bg-gray-100 dark:hover:bg-[#2c2c2e] hover:text-gray-900 dark:hover:text-[#f5f5f7]'
                   }
                 `.trim()}
               >
-                <Icon size={18} className={active ? 'text-blue-600' : 'text-gray-400'} />
+                <Icon size={18} className={active ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-[#636366]'} />
                 {t(labelKey)}
               </button>
             );
@@ -165,19 +165,19 @@ export function Sidebar({ userName }: SidebarProps) {
         </nav>
 
         {/* ── Rodapé: usuário + logout ─────────────────────────── */}
-        <div className="border-t border-gray-200 px-3 py-4 space-y-2">
+        <div className="border-t border-gray-200 dark:border-[#38383a] px-3 py-4 space-y-2">
           {/* Nome do usuário (se disponível) */}
           {userName && (
-            <div className="px-3 py-1.5 text-xs text-gray-500 truncate" title={userName}>
+            <div className="px-3 py-1.5 text-xs text-gray-500 dark:text-[#636366] truncate" title={userName}>
               {userName}
             </div>
           )}
           {/* Botão de logout */}
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-red-50 hover:text-red-600 transition-colors duration-150"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 dark:text-[#a1a1a6] hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors duration-150"
           >
-            <LogOut size={18} className="text-gray-400" />
+            <LogOut size={18} className="text-gray-400 dark:text-[#636366]" />
             {t('buttons.logout')}
           </button>
         </div>
@@ -190,7 +190,7 @@ export function Sidebar({ userName }: SidebarProps) {
       {/* ── Botão Hamburger (apenas mobile) ─────────────────────── */}
       <button
         onClick={() => setMobileOpen(true)}
-        className="md:hidden fixed top-4 left-4 z-40 w-10 h-10 bg-white rounded-lg shadow-md flex items-center justify-center text-gray-600 hover:text-gray-900 transition-colors"
+        className="md:hidden fixed top-4 left-4 z-40 w-10 h-10 bg-white dark:bg-[#1c1c1e] rounded-lg shadow-md flex items-center justify-center text-gray-600 dark:text-[#a1a1a6] hover:text-gray-900 dark:hover:text-[#f5f5f7] transition-colors"
         aria-label={t('ariaLabels.openMenu')}
       >
         <Menu size={20} />
@@ -207,7 +207,7 @@ export function Sidebar({ userName }: SidebarProps) {
       {/* ── Drawer mobile (desliza da esquerda) ─────────────────── */}
       <aside
         className={`
-          md:hidden fixed top-0 left-0 z-50 h-full w-60 bg-white shadow-xl
+          md:hidden fixed top-0 left-0 z-50 h-full w-60 bg-white dark:bg-[#1c1c1e] shadow-xl
           transition-transform duration-200 ease-out
           ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}
         `}
@@ -224,7 +224,7 @@ export function Sidebar({ userName }: SidebarProps) {
       </aside>
 
       {/* ── Sidebar fixo desktop ────────────────────────────────── */}
-      <aside className="hidden md:flex md:flex-col md:fixed md:top-0 md:left-0 md:bottom-0 md:w-60 bg-white border-r border-gray-200 z-30">
+      <aside className="hidden md:flex md:flex-col md:fixed md:top-0 md:left-0 md:bottom-0 md:w-60 bg-white dark:bg-[#1c1c1e] border-r border-gray-200 dark:border-[#38383a] z-30">
         <MenuContent />
       </aside>
     </>

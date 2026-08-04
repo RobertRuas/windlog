@@ -29,6 +29,9 @@
 /* Importa todas as funcionalidades do Tailwind CSS */
 @import "tailwindcss";
 
+/* Dark mode baseado em classe (.dark no <html>), não prefers-color-scheme */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* ==========================================================================
    Fonte San Francisco (SF) via Inter (open-source)
    ==========================================================================
@@ -129,6 +132,141 @@ html.dark {
 html.dark body {
   background-color: var(--color-background);
   color: var(--color-text);
+}
+
+/* ==========================================================================
+   Dark Mode — Overrides globais para classes Tailwind comuns
+   ==========================================================================
+   Aplica dark mode a todos os componentes sem necessidade de editar cada um.
+   ========================================================================== */
+
+/* Cartões e containers com fundo branco */
+html.dark .bg-white {
+  background-color: #1c1c1e;
+}
+
+/* Fundo cinza claro (páginas, seções neutras) */
+html.dark .bg-gray-50 {
+  background-color: #000000;
+}
+
+html.dark .bg-gray-100 {
+  background-color: #2c2c2e;
+}
+
+/* Cores de texto */
+html.dark .text-gray-900 {
+  color: #f5f5f7;
+}
+
+html.dark .text-gray-800 {
+  color: #f5f5f7;
+}
+
+html.dark .text-gray-700 {
+  color: #e5e5e7;
+}
+
+html.dark .text-gray-600 {
+  color: #a1a1a6;
+}
+
+html.dark .text-gray-500 {
+  color: #a1a1a6;
+}
+
+html.dark .text-gray-400 {
+  color: #636366;
+}
+
+html.dark .text-gray-300 {
+  color: #48484a;
+}
+
+/* Bordas */
+html.dark .border-gray-100 {
+  border-color: #38383a;
+}
+
+html.dark .border-gray-200 {
+  border-color: #38383a;
+}
+
+html.dark .border-gray-300 {
+  border-color: #48484a;
+}
+
+/* Dividers */
+html.dark .divide-gray-100 > :not(:last-child) {
+  border-color: #38383a;
+}
+
+html.dark .divide-gray-200 > :not(:last-child) {
+  border-color: #38383a;
+}
+
+/* Hover states */
+html.dark .hover\:bg-gray-50:hover {
+  background-color: #2c2c2e;
+}
+
+html.dark .hover\:bg-gray-100:hover {
+  background-color: #3a3a3c;
+}
+
+html.dark .hover\:text-gray-900:hover {
+  color: #f5f5f7;
+}
+
+html.dark .hover\:text-gray-700:hover {
+  color: #f5f5f7;
+}
+
+/* Blue accents (links, botões primários, ícones) */
+html.dark .bg-blue-50 {
+  background-color: rgba(41, 151, 255, 0.12);
+}
+
+html.dark .bg-blue-600 {
+  background-color: #2997ff;
+}
+
+html.dark .text-blue-600 {
+  color: #2997ff;
+}
+
+html.dark .text-blue-700 {
+  color: #64b5f6;
+}
+
+html.dark .border-blue-200 {
+  border-color: rgba(41, 151, 255, 0.25);
+}
+
+/* Inputs e selects com classes Tailwind inline */
+html.dark input[class*="bg-white"],
+html.dark select[class*="bg-white"],
+html.dark textarea[class*="bg-white"] {
+  background-color: #2c2c2e;
+}
+
+html.dark input[class*="bg-gray-50"],
+html.dark select[class*="bg-gray-50"],
+html.dark textarea[class*="bg-gray-50"] {
+  background-color: #2c2c2e;
+}
+
+/* Badges e pills com fundo cinza */
+html.dark .bg-gray-200 {
+  background-color: #3a3a3c;
+}
+
+/* Shadow em dark mode fica mais subtil */
+html.dark .shadow-sm,
+html.dark .shadow-md,
+html.dark .shadow-lg,
+html.dark .shadow-xl {
+  --tw-shadow-color: rgba(0, 0, 0, 0.4);
 }
 
 /* Ajustes de formulário para dark mode */

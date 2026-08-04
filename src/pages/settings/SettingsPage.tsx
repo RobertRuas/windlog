@@ -57,8 +57,8 @@ export function SettingsPage() {
     <AppLayout>
       {/* Cabeçalho */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">{t('title')}</h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-[#f5f5f7]">{t('title')}</h1>
+        <p className="text-sm text-gray-500 dark:text-[#a1a1a6] mt-1">
           {t('subtitle')}
         </p>
       </div>
@@ -97,8 +97,8 @@ export function SettingsPage() {
 
         {/* Mensagem para não-admin */}
         {!admin && (
-          <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
-            <p className="text-sm text-gray-500">
+          <div className="bg-white dark:bg-[#1c1c1e] rounded-xl border border-gray-200 dark:border-[#38383a] p-8 text-center">
+            <p className="text-sm text-gray-500 dark:text-[#a1a1a6]">
               {t('admin.noAccess')}
             </p>
           </div>

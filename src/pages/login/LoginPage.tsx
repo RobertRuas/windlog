@@ -84,8 +84,8 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <div className="max-w-sm w-full bg-white rounded-xl shadow-sm p-8">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-[#000000] p-4">
+      <div className="max-w-sm w-full bg-white dark:bg-[#1c1c1e] rounded-xl shadow-sm p-8">
         {/* Cabeçalho do card */}
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
@@ -93,10 +93,10 @@ export function LoginPage() {
               <Wind className="text-white" size={24} />
             </div>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-[#f5f5f7]">
             {t('title')}
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-gray-500 dark:text-[#a1a1a6] mt-1">
             {t('subtitle')}
           </p>
         </div>
@@ -113,7 +113,7 @@ export function LoginPage() {
             </span>
           </div>
           <select
-            className="w-full h-[38px] px-3 py-2 rounded-lg border border-amber-200 text-sm bg-amber-50 text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400"
+            className="w-full h-[38px] px-3 py-2 rounded-lg border border-amber-200 dark:border-amber-800 text-sm bg-amber-50 dark:bg-amber-900/20 text-gray-700 dark:text-[#f5f5f7] focus:outline-none focus:ring-2 focus:ring-amber-400"
             defaultValue=""
             onChange={(e) => handleDevLogin(e.target.value)}
             disabled={devLoading}
@@ -135,7 +135,7 @@ export function LoginPage() {
             <div className="w-full border-t border-gray-200" />
           </div>
           <div className="relative flex justify-center text-xs">
-            <span className="bg-white px-3 text-gray-400">{t('devSwitcher.or')}</span>
+            <span className="bg-white dark:bg-[#1c1c1e] px-3 text-gray-400 dark:text-[#636366]">{t('devSwitcher.or')}</span>
           </div>
         </div>
 

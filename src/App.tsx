@@ -34,7 +34,7 @@ import { Toaster } from 'sonner';
 import '@/i18n';
 
 // Contexto global de preferências (tema, escala, idioma)
-import { SettingsProvider } from '@/contexts/SettingsContext';
+import { SettingsProvider, useSettings } from '@/contexts/SettingsContext';
 
 // Páginas da aplicação
 import { LoginPage } from '@/pages/login/LoginPage';
@@ -230,6 +230,22 @@ function AdminOrHRRoute({ children }: { children: React.ReactNode }) {
 }
 
 /**
+ * Componente interno que renderiza o Toaster com o tema correto.
+ * Deve estar dentro do SettingsProvider para acessar o tema atual.
+ */
+function ThemedToaster() {
+  const { settings } = useSettings();
+  return (
+    <Toaster
+      position="top-right"
+      richColors
+      closeButton
+      theme={settings.theme === 'auto' ? 'system' : settings.theme}
+    />
+  );
+}
+
+/**
  * Componente App - raiz da aplicação.
  *
  * Envolve toda a aplicação com os providers necessários
@@ -240,10 +256,10 @@ export default function App() {
     /* QueryClientProvider - disponibiliza o TanStack Query para todos os componentes.
      * Qualquer componente pode usar useQuery() para buscar dados da API. */
     <QueryClientProvider client={queryClient}>
-      {/* Toaster - exibe notificações toast (sucesso, erro, etc.) */}
-      <Toaster position="top-right" richColors closeButton />
       {/* SettingsProvider - gere preferências globais (tema, escala, idioma) */}
       <SettingsProvider>
+      {/* Toaster - exibe notificações toast com tema sincronizado */}
+      <ThemedToaster />
       {/* BrowserRouter - disponibiliza o sistema de rotas.
        * Permite usar useNavigate(), <Link>, <Routes>, etc. */}
       <BrowserRouter>
