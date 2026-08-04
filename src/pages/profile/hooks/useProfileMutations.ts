@@ -40,6 +40,9 @@ import {
   addBankAccount,
   updateBankAccount,
   removeBankAccount,
+  addPpe,
+  updatePpe,
+  removePpe,
   updateSignature,
   removeSignature,
   type PhoneNumber,
@@ -47,6 +50,7 @@ import {
   type Language,
   type UserDocument,
   type BankAccount,
+  type Ppe,
 } from '@/services/auth.service';
 
 /**
@@ -154,6 +158,25 @@ export function useProfileMutations() {
     },
   });
 
+  /**
+   * Mutation para gerenciar EPIs (Equipamentos de Proteção Individual).
+   * Suporta adicionar, atualizar e remover EPIs.
+   */
+  const ppeMutation = useMutation({
+    mutationFn: async ({ action, id, data }: { action: 'add' | 'update' | 'remove'; id?: string; data?: Omit<Ppe, 'id'> | Partial<Ppe> }) => {
+      if (action === 'add') return addPpe(data as Omit<Ppe, 'id'>);
+      if (action === 'update') return updatePpe(id!, data as Partial<Ppe>);
+      return removePpe(id!);
+    },
+    onSuccess: () => {
+      toast.success(t('feedback.success'));
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+    },
+    onError: () => {
+      toast.error(t('feedback.error'));
+    },
+  });
+
   const signatureMutation = useMutation({
     mutationFn: async ({ action, data }: { action: 'save' | 'remove'; data?: string }) => {
       if (action === 'save') return updateSignature(data!);
@@ -174,6 +197,7 @@ export function useProfileMutations() {
     langMutation,
     docMutation,
     bankMutation,
+    ppeMutation,
     signatureMutation,
   };
 }

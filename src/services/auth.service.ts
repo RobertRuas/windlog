@@ -319,6 +319,56 @@ export async function removeBankAccount(id: string): Promise<void> {
 }
 
 // ============================================================================
+// PPE (EPIs) - Gerenciamento de Equipamentos de Proteção Individual
+// ============================================================================
+
+/**
+ * Interface para EPI (Equipamento de Proteção Individual).
+ * Representa um equipamento de segurança associado ao usuário.
+ */
+export interface Ppe {
+  id: string;
+  /** Nome/descrição do EPI (ex: "Arnês de segurança") */
+  name: string;
+  /** Categoria: COMPANY_PROVIDED (empresa) ou PERSONAL (pessoal) */
+  category: string;
+  /** Tipo do EPI (HARNESS, HELMET, ROPE, etc.) */
+  type: string;
+  /** Marca do fabricante (ex: "Petzl", "Beal") */
+  brand?: string;
+  /** Modelo do equipamento (ex: "AVAO BOD") */
+  model?: string;
+  /** Número de série do equipamento */
+  serialNumber?: string;
+  /** Data de aquisição/compra */
+  purchaseDate?: string;
+  /** Data da última inspeção realizada */
+  lastInspectionDate?: string;
+  /** Data da próxima inspeção obrigatória */
+  nextInspectionDate?: string;
+  /** Condição atual: NEW, GOOD, FAIR, NEEDS_REPLACEMENT, EXPIRED, RETIRED */
+  condition: string;
+  /** Observações/notas sobre o equipamento */
+  notes?: string;
+  /** Caminho do ficheiro anexado (certificado, foto) */
+  filePath?: string | null;
+}
+
+export async function addPpe(data: Omit<Ppe, 'id'>): Promise<Ppe> {
+  const response = await api.post<ApiResponse<Ppe>>('/api/v1/auth/ppes', data);
+  return response.data;
+}
+
+export async function updatePpe(id: string, data: Partial<Ppe>): Promise<Ppe> {
+  const response = await api.put<ApiResponse<Ppe>>(`/api/v1/auth/ppes/${id}`, data);
+  return response.data;
+}
+
+export async function removePpe(id: string): Promise<void> {
+  await api.delete(`/api/v1/auth/ppes/${id}`);
+}
+
+// ============================================================================
 // SIGNATURE - Gerenciamento da Assinatura
 // ============================================================================
 

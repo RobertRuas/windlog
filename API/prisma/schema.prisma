@@ -229,6 +229,7 @@ model User {
   weeklyTimesheets WeeklyTimesheet[]
   timesheetEntries WeeklyTimesheetEntry[]
   feedbacks        Feedback[]
+  ppes             UserPpe[]
 }
 // ---------------------------------------------------------------------------
 // MODEL: USER DOCUMENT (Documentos Pessoais do Usuário)
@@ -1228,4 +1229,118 @@ model WeeklyTimesheetEntry {
   // Índices para performance
   @@index([dayId])
   @@index([userId])
+}
+
+// ---------------------------------------------------------------------------
+// ENUM: PPE CATEGORY (Categoria do EPI)
+// ---------------------------------------------------------------------------
+// Classifica a origem do Equipamento de Proteção Individual.
+// - COMPANY_PROVIDED: fornecido pela empresa (obrigatório para trabalho)
+// - PERSONAL: equipamento pessoal do trabalhador
+// ---------------------------------------------------------------------------
+enum PpeCategory {
+  COMPANY_PROVIDED  // Fornecido pela empresa
+  PERSONAL          // Pessoal do trabalhador
+}
+
+// ---------------------------------------------------------------------------
+// ENUM: PPE TYPE (Tipo de EPI)
+// ---------------------------------------------------------------------------
+// Classifica o tipo de equipamento de proteção individual usado em
+// trabalhos de energia eólica e acesso por cordas.
+// ---------------------------------------------------------------------------
+enum PpeType {
+  HARNESS           // Arnês de segurança
+  HELMET            // Capacete
+  ROPE              // Corda (trabalho em altura / acesso por cordas)
+  FALL_ARREST       // Dispositivo anticaída
+  GLOVES            // Luvas de proteção
+  FOOTWEAR          // Calçado de segurança
+  EYE_PROTECTION    // Proteção ocular
+  RESPIRATORY       // Proteção respiratória
+  ANCHOR_CONNECTOR  // Anchor e conectores (mosquetões, talabartes)
+  FIRST_AID         // Kit de primeiros socorros
+  OTHER             // Outro EPI
+}
+
+// ---------------------------------------------------------------------------
+// ENUM: PPE CONDITION (Condição do EPI)
+// ---------------------------------------------------------------------------
+// Indica o estado de conservação/validade do equipamento.
+// ---------------------------------------------------------------------------
+enum PpeCondition {
+  NEW                // Novo (sem uso)
+  GOOD               // Bom estado (apto para uso)
+  FAIR               // Estado razoável (monitorar)
+  NEEDS_REPLACEMENT  // Precisa ser substituído
+  EXPIRED            // Expirado (validade vencida)
+  RETIRED            // Aposentado (fora de circulação)
+}
+
+// ---------------------------------------------------------------------------
+// MODEL: USER PPE (EPIs do Usuário)
+// ---------------------------------------------------------------------------
+// Registra todos os Equipamentos de Proteção Individual (EPIs) associados
+// ao usuário. Inclui equipamentos fornecidos pela empresa e EPIs pessoais.
+//
+// CONTEXT:
+// --------
+// Trabalhadores de energia eólica na Europa utilizam diversos EPIs
+// certificados (normas EN) que requerem inspeções periódicas.
+// Cada equipamento tem número de série, marca, datas de inspeção
+// e condição para garantir conformidade com as normas de segurança.
+//
+// EXEMPLOS:
+// ---------
+// - Arnês Petzl AVAO BOD com serial PZ-2024-001, inspeção anual
+// - Capacete Petzl VERTEX com serial VTX-5523, validade 5 anos
+// - Corda Beal ANTIPODES 10.5mm com serial BPL-88712
+// ---------------------------------------------------------------------------
+model UserPpe {
+  id        String   @id @default(uuid())
+
+  // Identificação do equipamento
+  /// Nome/descrição do EPI (ex: "Arnês de segurança", "Capacete de proteção")
+  name        String
+  /// Categoria do EPI (enum PpeCategory: COMPANY_PROVIDED ou PERSONAL)
+  category    PpeCategory @default(COMPANY_PROVIDED)
+  /// Tipo do EPI (enum PpeType: HARNESS, HELMET, ROPE, etc.)
+  type        PpeType
+  /// Marca do fabricante (ex: "Petzl", "Beal", "Camp", "Kong", "Singing Rock")
+  brand       String?
+  /// Modelo do equipamento (ex: "AVAO BOD", "VERTEX BEST", "ANTIPODES 10.5")
+  model       String?
+  /// Número de série / ID único do equipamento (ex: "PZ-2024-001")
+  serialNumber String?
+
+  // Datas de aquisição e inspeção
+  /// Data de aquisição/compra do equipamento
+  purchaseDate DateTime?
+  /// Data da última inspeção realizada
+  lastInspectionDate DateTime?
+  /// Data da próxima inspeção obrigatória (usada para alertas de vencimento)
+  nextInspectionDate DateTime?
+
+  // Estado do equipamento
+  /// Condição atual do EPI (enum PpeCondition: NEW, GOOD, FAIR, etc.)
+  condition   PpeCondition @default(GOOD)
+  /// Observações/notas sobre o equipamento (ex: "Inspeção feita em Jan/2025")
+  notes       String?
+
+  // Anexo (certificado de inspeção, foto do equipamento, etc.)
+  /// Caminho do ficheiro anexado (relativo a uploads/{userId}/ppes/)
+  filePath    String?
+
+  // Relação com o usuário
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Timestamps
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Índices para performance
+  @@index([userId])
+  @@index([nextInspectionDate])
+  @@index([condition])
 }

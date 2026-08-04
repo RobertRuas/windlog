@@ -94,6 +94,8 @@ export interface User {
   documents?: UserDocument[];
   /** Contas bancárias do usuário */
   bankAccounts?: UserBankAccount[];
+  /** EPIs (Equipamentos de Proteção Individual) do usuário */
+  ppes?: UserPpe[];
 }
 
 /**
@@ -208,4 +210,36 @@ export interface UserBankAccount {
   isPrimary: boolean;
   /** Descrição opcional */
   description?: string | null;
+}
+
+/**
+ * Interface UserPpe - EPI (Equipamento de Proteção Individual) do usuário.
+ */
+export interface UserPpe {
+  /** ID único do EPI */
+  id: string;
+  /** Nome/descrição do EPI */
+  name: string;
+  /** Categoria: COMPANY_PROVIDED ou PERSONAL */
+  category: string;
+  /** Tipo do EPI (HARNESS, HELMET, ROPE, etc.) */
+  type: string;
+  /** Marca do fabricante */
+  brand?: string | null;
+  /** Modelo do equipamento */
+  model?: string | null;
+  /** Número de série */
+  serialNumber?: string | null;
+  /** Data de aquisição (formato ISO) */
+  purchaseDate?: string | null;
+  /** Data da última inspeção (formato ISO) */
+  lastInspectionDate?: string | null;
+  /** Data da próxima inspeção (formato ISO) */
+  nextInspectionDate?: string | null;
+  /** Condição atual (NEW, GOOD, FAIR, NEEDS_REPLACEMENT, EXPIRED, RETIRED) */
+  condition: string;
+  /** Observações/notas */
+  notes?: string | null;
+  /** Caminho do ficheiro anexado */
+  filePath?: string | null;
 }

@@ -72,6 +72,7 @@ import { CreateCertificationDto, UpdateCertificationDto } from './dto/user-certi
 import { CreateLanguageDto, UpdateLanguageDto } from './dto/user-language.dto.js';
 import { CreateDocumentDto, UpdateDocumentDto } from './dto/user-document.dto.js';
 import { CreateBankAccountDto, UpdateBankAccountDto } from './dto/user-bank-account.dto.js';
+import { CreatePpeDto, UpdatePpeDto } from './dto/user-ppe.dto.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
 import type { JwtPayload } from './strategies/jwt.strategy.js';
 import {
@@ -506,5 +507,60 @@ export class AuthController {
   @ApiBearerAuth()
   removeBankAccount(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
     return this.authService.removeBankAccount(user.sub, id);
+  }
+
+  // ==========================================================================
+  // PPE (EPIs) ENDPOINTS - Equipamentos de Proteção Individual
+  // ==========================================================================
+
+  /**
+   * POST /api/v1/auth/ppes
+   *
+   * Adiciona um novo EPI ao usuário autenticado.
+   * Endpoint PROTEGIDO (requer token JWT válido).
+   */
+  @Post('ppes')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Add new PPE (EPI) to current user' })
+  @ApiResponse({ status: 201, description: 'EPI adicionado com sucesso' })
+  addPpe(@CurrentUser() user: JwtPayload, @Body() dto: CreatePpeDto) {
+    return this.authService.addPpe(user.sub, dto);
+  }
+
+  /**
+   * PUT /api/v1/auth/ppes/:id
+   *
+   * Atualiza um EPI existente do usuário autenticado.
+   * Endpoint PROTEGIDO (requer token JWT válido).
+   */
+  @Put('ppes/:id')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update PPE (EPI) of current user' })
+  @ApiResponse({ status: 200, description: 'EPI atualizado com sucesso' })
+  @ApiResponse({ status: 401, description: 'EPI não encontrado ou não pertence ao usuário' })
+  updatePpe(
+    @CurrentUser() user: JwtPayload,
+    @Param('id') id: string,
+    @Body() dto: UpdatePpeDto,
+  ) {
+    return this.authService.updatePpe(user.sub, id, dto);
+  }
+
+  /**
+   * DELETE /api/v1/auth/ppes/:id
+   *
+   * Remove um EPI do usuário autenticado.
+   * Endpoint PROTEGIDO (requer token JWT válido).
+   */
+  @Delete('ppes/:id')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Remove PPE (EPI) of current user' })
+  @ApiResponse({ status: 200, description: 'EPI removido com sucesso' })
+  @ApiResponse({ status: 401, description: 'EPI não encontrado ou não pertence ao usuário' })
+  removePpe(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
+    return this.authService.removePpe(user.sub, id);
   }
 }

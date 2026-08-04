@@ -40,6 +40,7 @@ import { CreateCertificationDto, UpdateCertificationDto } from './dto/user-certi
 import { CreateLanguageDto, UpdateLanguageDto } from './dto/user-language.dto.js';
 import { CreateDocumentDto, UpdateDocumentDto } from './dto/user-document.dto.js';
 import { CreateBankAccountDto, UpdateBankAccountDto } from './dto/user-bank-account.dto.js';
+import { CreatePpeDto, UpdatePpeDto } from './dto/user-ppe.dto.js';
 import { OnboardingDto } from './dto/onboarding.dto.js';
 import { JwtPayload } from './strategies/jwt.strategy.js';
 import { Role } from '../../common/decorators/roles.decorator.js';
@@ -365,6 +366,9 @@ export class AuthService {
           orderBy: { expiryDate: 'asc' },
         },
         bankAccounts: true,
+        ppes: {
+          orderBy: { nextInspectionDate: 'asc' },
+        },
       },
     });
 
@@ -407,6 +411,7 @@ export class AuthService {
       languages: user.languages,
       documents: user.documents,
       bankAccounts: user.bankAccounts,
+      ppes: user.ppes,
     };
   }
 
@@ -881,6 +886,117 @@ export class AuthService {
       where: { id: accountId },
     });
     await this.syncProfileNotification(userId);
+    return result;
+  }
+
+  // ==========================================================================
+  // PPE (EPIs) - Gerenciamento de Equipamentos de Proteção Individual
+  // ==========================================================================
+
+  /**
+   * Adiciona um novo EPI ao usuário.
+   *
+   * PASSO A PASSO:
+   * 1. Cria o EPI com os dados fornecidos (nome, tipo, marca, serial, etc.)
+   * 2. O EPI é associado ao usuário via userId
+   * 3. Retorna o EPI criado
+   *
+   * @param userId - ID do usuário
+   * @param dto - Dados do EPI (CreatePpeDto)
+   * @returns EPI criado
+   */
+  async addPpe(userId: string, dto: CreatePpeDto) {
+    const result = await this.prisma.userPpe.create({
+      data: {
+        userId,
+        name: dto.name,
+        category: dto.category ?? 'COMPANY_PROVIDED',
+        type: dto.type,
+        brand: dto.brand,
+        model: dto.model,
+        serialNumber: dto.serialNumber,
+        purchaseDate: dto.purchaseDate ? new Date(dto.purchaseDate) : null,
+        lastInspectionDate: dto.lastInspectionDate ? new Date(dto.lastInspectionDate) : null,
+        nextInspectionDate: dto.nextInspectionDate ? new Date(dto.nextInspectionDate) : null,
+        condition: dto.condition ?? 'GOOD',
+        notes: dto.notes,
+        // Ficheiro anexado (certificado de inspeção, foto, etc.)
+        filePath: dto.filePath ?? null,
+      },
+    });
+    this.logger.log(`PPE added for user ${userId}: ${dto.name} (${result.id})`);
+    return result;
+  }
+
+  /**
+   * Atualiza um EPI existente.
+   *
+   * PASSO A PASSO:
+   * 1. Verifica se o EPI pertence ao usuário (ownership)
+   * 2. Atualiza apenas os campos fornecidos (atualização parcial)
+   * 3. Retorna o EPI atualizado
+   *
+   * @param userId - ID do usuário (para verificar ownership)
+   * @param ppeId - ID do EPI a atualizar
+   * @param dto - Dados para atualização (UpdatePpeDto)
+   * @returns EPI atualizado
+   */
+  async updatePpe(userId: string, ppeId: string, dto: UpdatePpeDto) {
+    // Verifica se o EPI pertence ao usuário
+    const ppe = await this.prisma.userPpe.findFirst({
+      where: { id: ppeId, userId },
+    });
+
+    if (!ppe) {
+      throw new UnauthorizedException('PPE not found');
+    }
+
+    // Monta os dados de atualização (apenas campos fornecidos)
+    const updateData: Record<string, unknown> = {};
+    if (dto.name !== undefined) updateData.name = dto.name;
+    if (dto.category !== undefined) updateData.category = dto.category;
+    if (dto.type !== undefined) updateData.type = dto.type;
+    if (dto.brand !== undefined) updateData.brand = dto.brand;
+    if (dto.model !== undefined) updateData.model = dto.model;
+    if (dto.serialNumber !== undefined) updateData.serialNumber = dto.serialNumber;
+    if (dto.purchaseDate !== undefined) updateData.purchaseDate = dto.purchaseDate ? new Date(dto.purchaseDate) : null;
+    if (dto.lastInspectionDate !== undefined) updateData.lastInspectionDate = dto.lastInspectionDate ? new Date(dto.lastInspectionDate) : null;
+    if (dto.nextInspectionDate !== undefined) updateData.nextInspectionDate = dto.nextInspectionDate ? new Date(dto.nextInspectionDate) : null;
+    if (dto.condition !== undefined) updateData.condition = dto.condition;
+    if (dto.notes !== undefined) updateData.notes = dto.notes;
+    // filePath: string define/substitui o anexo; null remove o anexo
+    if (dto.filePath !== undefined) updateData.filePath = dto.filePath || null;
+
+    return this.prisma.userPpe.update({
+      where: { id: ppeId },
+      data: updateData,
+    });
+  }
+
+  /**
+   * Remove um EPI do usuário.
+   *
+   * PASSO A PASSO:
+   * 1. Verifica se o EPI pertence ao usuário (ownership)
+   * 2. Remove o EPI fisicamente (não usa soft delete, pois é sub-recurso do perfil)
+   *
+   * @param userId - ID do usuário (para verificar ownership)
+   * @param ppeId - ID do EPI a remover
+   */
+  async removePpe(userId: string, ppeId: string) {
+    // Verifica se o EPI pertence ao usuário
+    const ppe = await this.prisma.userPpe.findFirst({
+      where: { id: ppeId, userId },
+    });
+
+    if (!ppe) {
+      throw new UnauthorizedException('PPE not found');
+    }
+
+    const result = await this.prisma.userPpe.delete({
+      where: { id: ppeId },
+    });
+    this.logger.log(`PPE removed for user ${userId}: ${ppeId}`);
     return result;
   }
 

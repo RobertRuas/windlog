@@ -253,5 +253,51 @@
   "signatureSection": {
     "title": "Assinatura",
     "description": "Configure sua assinatura pessoal para assinar documentos"
+  },
+  "ppes": {
+    "title": "EPIs (Equipamentos de Proteção Individual)",
+    "add": "Adicionar EPI",
+    "empty": "Nenhum EPI cadastrado",
+    "name": "Nome do EPI",
+    "namePlaceholder": "Ex: Arnês de segurança, Capacete...",
+    "category": "Categoria",
+    "type": "Tipo de Equipamento",
+    "brand": "Marca",
+    "model": "Modelo",
+    "serialNumber": "Número de Série",
+    "purchaseDate": "Data de Aquisição",
+    "lastInspectionDate": "Última Inspeção",
+    "nextInspectionDate": "Próxima Inspeção",
+    "condition": "Condição",
+    "notes": "Observações",
+    "notesPlaceholder": "Ex: Inspeção visual antes de cada uso...",
+    "inspectionOverdue": "Inspeção vencida — agendar nova inspeção urgente",
+    "inspectionExpiring": "Inspeção a vencer nos próximos 30 dias",
+    "confirmDelete": "Tem certeza que deseja remover este EPI?",
+    "categories": {
+      "company_provided": "Fornecido pela Empresa",
+      "personal": "Pessoal"
+    },
+    "types": {
+      "harness": "Arnês",
+      "helmet": "Capacete",
+      "rope": "Corda",
+      "fall_arrest": "Dispositivo Anticaída",
+      "gloves": "Luvas de Proteção",
+      "footwear": "Calçado de Segurança",
+      "eye_protection": "Proteção Ocular",
+      "respiratory": "Proteção Respiratória",
+      "anchor_connector": "Anchor e Conectores",
+      "first_aid": "Kit Primeiros Socorros",
+      "other": "Outro EPI"
+    },
+    "conditions": {
+      "new": "Novo",
+      "good": "Bom Estado",
+      "fair": "Razoável",
+      "needs_replacement": "Precisa Substituir",
+      "expired": "Expirado",
+      "retired": "Aposentado"
+    }
   }
 }

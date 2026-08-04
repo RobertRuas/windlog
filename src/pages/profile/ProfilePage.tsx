@@ -28,7 +28,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { Phone, Award, Globe, User, Mail, MapPin, Briefcase, FileText, CreditCard, Landmark, Pen } from 'lucide-react';
+import { Phone, Award, Globe, User, Mail, MapPin, Briefcase, FileText, CreditCard, Landmark, Pen, Shield } from 'lucide-react';
 
 // Layout
 import { AppLayout } from '@/components/layout/AppLayout';
@@ -40,6 +40,7 @@ import { CertificationSection } from '@/pages/home/components/CertificationSecti
 import { LanguageSection } from '@/pages/home/components/LanguageSection';
 import { DocumentSection } from '@/pages/home/components/DocumentSection';
 import { BankAccountSection } from '@/pages/home/components/BankAccountSection';
+import { PpeSection } from '@/pages/home/components/PpeSection';
 import { AvatarUpload } from '@/pages/home/components/AvatarUpload';
 import { Accordion } from '@/components/ui/Accordion';
 import { SignaturePad } from '@/components/ui/SignaturePad';
@@ -61,6 +62,7 @@ import {
   type Language,
   type UserDocument,
   type BankAccount,
+  type Ppe,
 } from '@/services/auth.service';
 
 // Constantes
@@ -102,6 +104,7 @@ export function ProfilePage() {
     langMutation,
     docMutation,
     bankMutation,
+    ppeMutation,
     signatureMutation,
   } = useProfileMutations();
 
@@ -246,6 +249,16 @@ export function ProfilePage() {
   }
   async function handleRemoveBankAccount(id: string) {
     await bankMutation.mutateAsync({ action: 'remove', id });
+  }
+
+  async function handleAddPpe(data: Omit<Ppe, 'id'>) {
+    await ppeMutation.mutateAsync({ action: 'add', data });
+  }
+  async function handleUpdatePpe(id: string, data: Partial<Ppe>) {
+    await ppeMutation.mutateAsync({ action: 'update', id, data });
+  }
+  async function handleRemovePpe(id: string) {
+    await ppeMutation.mutateAsync({ action: 'remove', id });
   }
 
   if (isLoading) {
@@ -395,7 +408,23 @@ export function ProfilePage() {
             </Accordion>
           </div>
 
-          {/* 7. Assinatura */}
+          {/* 7. EPIs (Equipamentos de Proteção Individual) */}
+          <div id="section-ppes">
+            <Accordion
+              title={t('ppes.title')}
+              icon={<Shield className="w-5 h-5 text-orange-600" />}
+              defaultOpen={false}
+            >
+              <PpeSection
+                ppes={(data?.ppes || []) as unknown as Ppe[]}
+                onAdd={handleAddPpe}
+                onUpdate={handleUpdatePpe}
+                onRemove={handleRemovePpe}
+              />
+            </Accordion>
+          </div>
+
+          {/* 8. Assinatura */}
           <div id="section-signature">
             <Accordion
               title={t('signatureSection.title')}
