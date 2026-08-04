@@ -25,9 +25,11 @@
 import {
   Controller,
   Get,
+  Patch,
   Delete,
   Param,
   Query,
+  Body,
   UseGuards,
   HttpCode,
   HttpStatus,
@@ -70,6 +72,40 @@ export class SystemLogController {
   @ApiResponse({ status: 403, description: 'Não autorizado (apenas ADMIN)' })
   findAll(@Query() filter: LogFilterDto) {
     return this.systemLogService.findAll(filter);
+  }
+
+  /**
+   * GET /api/v1/system-logs/capture
+   * Retorna o status atual da captura de logs.
+   */
+  @Get('capture')
+  @ApiOperation({
+    summary: 'Status da captura de logs',
+    description: 'Retorna se a captura de logs está ativa ou pausada. Quando pausada, apenas erros continuam sendo registrados.',
+  })
+  @ApiResponse({ status: 200, description: 'Status retornado com sucesso' })
+  @ApiResponse({ status: 401, description: 'Não autenticado' })
+  @ApiResponse({ status: 403, description: 'Não autorizado (apenas ADMIN)' })
+  getCaptureStatus() {
+    return this.systemLogService.getCaptureStatus();
+  }
+
+  /**
+   * PATCH /api/v1/system-logs/capture
+   * Ativa ou desativa a captura de logs.
+   * Quando desativada, apenas logs de erro (ERROR/CRITICAL) continuam sendo registrados.
+   */
+  @Patch('capture')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Ativar/pausar captura de logs',
+    description: 'Ativa ou desativa a captura de logs. Quando pausada, apenas logs de erro continuam sendo registrados.',
+  })
+  @ApiResponse({ status: 200, description: 'Status atualizado com sucesso' })
+  @ApiResponse({ status: 401, description: 'Não autenticado' })
+  @ApiResponse({ status: 403, description: 'Não autorizado (apenas ADMIN)' })
+  setCaptureStatus(@Body('enabled') enabled: boolean) {
+    return this.systemLogService.setCaptureStatus(enabled);
   }
 
   /**

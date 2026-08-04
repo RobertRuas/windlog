@@ -156,3 +156,26 @@ export async function cleanupLogs(days: number = 90): Promise<number> {
   const response = await api.delete<ApiResponse<number>>(`/api/v1/system-logs/cleanup?days=${days}`);
   return response.data;
 }
+
+/**
+ * Retorna o status atual da captura de logs.
+ * Quando desativada, apenas logs de erro continuam sendo registrados.
+ *
+ * @returns Promise com { enabled: boolean }
+ */
+export async function getCaptureStatus(): Promise<{ enabled: boolean }> {
+  const response = await api.get<ApiResponse<{ enabled: boolean }>>('/api/v1/system-logs/capture');
+  return response.data;
+}
+
+/**
+ * Ativa ou desativa a captura de logs.
+ * Quando desativada, apenas logs de erro (ERROR/CRITICAL) continuam sendo registrados.
+ *
+ * @param enabled - true para ativar, false para pausar
+ * @returns Promise com o novo status { enabled: boolean }
+ */
+export async function setCaptureStatus(enabled: boolean): Promise<{ enabled: boolean }> {
+  const response = await api.patch<ApiResponse<{ enabled: boolean }>>('/api/v1/system-logs/capture', { enabled });
+  return response.data;
+}

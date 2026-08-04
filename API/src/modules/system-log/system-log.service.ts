@@ -34,17 +34,51 @@ import { CreateLogDto, LogFilterDto, LogAction, LogSeverity } from './dto/system
 export class SystemLogService {
   private readonly logger = new Logger(SystemLogService.name);
 
+  // Flag em memória que controla se a captura de logs está ativa.
+  // Quando false, apenas logs de erro (ERROR/CRITICAL) continuam sendo salvos.
+  private captureEnabled: boolean = true;
+
   constructor(private readonly prisma: PrismaService) {}
+
+  /**
+   * Retorna o status atual da captura de logs.
+   */
+  getCaptureStatus() {
+    return { enabled: this.captureEnabled };
+  }
+
+  /**
+   * Ativa ou desativa a captura de logs.
+   * Quando desativada, apenas logs de erro (ERROR/CRITICAL) continuam sendo registrados.
+   *
+   * @param enabled - true para ativar, false para desativar
+   * @returns Status atualizado da captura
+   */
+  setCaptureStatus(enabled: boolean) {
+    this.captureEnabled = enabled;
+    this.logger.log(`Captura de logs ${enabled ? 'ATIVADA' : 'DESATIVADA'} (apenas erros continuam sendo registrados)`);
+    return { enabled: this.captureEnabled };
+  }
 
   /**
    * Cria um novo log no sistema.
    * Método assíncrono para não bloquear a resposta ao cliente.
    *
+   * IMPORTANTE: Se a captura estiver desativada, apenas logs de
+   * severidade ERROR ou CRITICAL serão persistidos.
+   *
    * @param data - Dados do log (CreateLogDto)
-   * @returns Promise com o log criado
+   * @returns Promise com o log criado ou null se ignorado
    */
   async create(data: CreateLogDto) {
     try {
+      // Se a captura está desativada, ignora tudo exceto erros
+      const severity = data.severity || LogSeverity.INFO;
+      if (!this.captureEnabled && severity !== LogSeverity.ERROR && severity !== LogSeverity.CRITICAL) {
+        this.logger.debug(`Log ignorado (captura desativada): ${data.action} - ${data.message}`);
+        return null;
+      }
+
       const log = await this.prisma.systemLog.create({
         data: {
           action: data.action,

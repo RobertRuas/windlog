@@ -1,6 +1,14 @@
 {
   "title": "Logs do Sistema",
   "subtitle": "Monitoramento e auditoria em tempo real",
+  "capture": {
+    "label": "Captura de logs",
+    "enabled": "Ativada",
+    "disabled": "Pausada",
+    "toastEnabled": "Captura de logs ativada. Todos os eventos voltaram a ser registrados normalmente.",
+    "toastDisabled": "Captura de logs pausada. Apenas erros continuar\u00e3o sendo registrados.",
+    "toastError": "Erro ao alterar status da captura"
+  },
   "stats": {
     "total": "Total",
     "errors": "Erros",
