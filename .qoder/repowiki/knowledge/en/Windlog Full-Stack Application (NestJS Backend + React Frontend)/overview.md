@@ -1,1 +1,0 @@
-Full-stack wind turbine management system built with NestJS backend and React frontend, featuring JWT authentication, Prisma ORM, role-based access control, and weekly timesheet management for multinational teams.

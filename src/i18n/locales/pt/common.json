@@ -8,7 +8,8 @@
     "projects": "Projetos",
     "timesheets": "Timesheets",
     "logs": "Logs",
-    "notifications": "Notificações"
+    "notifications": "Notificações",
+    "feedbacks": "Feedbacks"
   },
   "notifications": {
     "title": "Notificações",

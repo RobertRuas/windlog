@@ -39,6 +39,7 @@ import { ProjectsModule } from './modules/projects/projects.module.js';
 import { UploadModule } from './modules/upload/upload.module.js';
 import { NotificationsModule } from './modules/notifications/notification.module.js';
 import { WeeklyTimesheetModule } from './modules/weekly-timesheet/weekly-timesheet.module.js';
+import { FeedbackModule } from './modules/feedback/feedback.module.js';
 
 @Module({
   imports: [
@@ -98,6 +99,11 @@ import { WeeklyTimesheetModule } from './modules/weekly-timesheet/weekly-timeshe
     // WEEKLY TIMESHEET MODULE - Gestão de Timesheets Semanais
     // -------------------------------------------------------------------------
     WeeklyTimesheetModule,
+
+    // -------------------------------------------------------------------------
+    // FEEDBACK MODULE - Gestão de Feedbacks do Sistema
+    // -------------------------------------------------------------------------
+    FeedbackModule,
 
     // -------------------------------------------------------------------------
     // PRÓXIMOS MÓDULOS SERÃO ADICIONADOS AQUI

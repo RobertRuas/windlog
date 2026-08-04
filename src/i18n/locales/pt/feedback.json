@@ -1,0 +1,109 @@
+{
+  "title": "Feedback",
+  "subtitle": "Reporte bugs, sugestões ou inconsistências do sistema",
+  "admin_title": "Gestão de Feedbacks",
+  "admin_subtitle": "Gerir todos os feedbacks reportados pelos usuários",
+
+  "button": "Enviar Feedback",
+  "modal_title": "Reportar Feedback",
+  "modal_description": "Ajude-nos a melhorar o sistema. Descreva o problema ou sugestão que encontrou.",
+
+  "fields": {
+    "title": "Título",
+    "title_placeholder": "Resumo curto do problema (ex: Botão não funciona)",
+    "title_required": "O título é obrigatório",
+    "description": "Descrição",
+    "description_placeholder": "Descreva em detalhe o que aconteceu. Se for um bug, inclua os passos para reproduzir.",
+    "description_required": "A descrição é obrigatória",
+    "category": "Categoria",
+    "screenshot": "Screenshot",
+    "screenshot_hint": "Capture uma parte da página ou a página inteira para ilustrar o problema",
+    "screenshot_optional": "Opcional — ajuda a entender melhor o problema",
+    "page_url": "Página atual",
+    "admin_notes": "Notas do Administrador",
+    "admin_notes_placeholder": "Adicione notas sobre a análise, resolução ou motivo de fechamento..."
+  },
+
+  "categories": {
+    "BUG": "Bug / Erro",
+    "UI_ISSUE": "Problema Visual",
+    "FEATURE": "Sugestão",
+    "INCONSISTENCY": "Inconsistência",
+    "PERFORMANCE": "Performance",
+    "OTHER": "Outro"
+  },
+
+  "priorities": {
+    "LOW": "Baixa",
+    "MEDIUM": "Média",
+    "HIGH": "Alta",
+    "CRITICAL": "Crítica"
+  },
+
+  "statuses": {
+    "NEW": "Novo",
+    "TRIAGED": "Triado",
+    "IN_PROGRESS": "Em Resolução",
+    "RESOLVED": "Resolvido",
+    "CLOSED": "Fechado"
+  },
+
+  "screenshot": {
+    "capture_visible": "Capturar visível",
+    "capture_full": "Capturar página inteira",
+    "capture_area": "Selecionar área",
+    "remove": "Remover screenshot",
+    "preview": "Pré-visualização",
+    "capturing": "A capturar...",
+    "no_capture": "Nenhuma captura"
+  },
+
+  "actions": {
+    "submit": "Enviar Feedback",
+    "submitting": "A enviar...",
+    "submitted": "Feedback enviado com sucesso!",
+    "error": "Erro ao enviar feedback",
+    "update": "Atualizar",
+    "delete": "Eliminar",
+    "view": "Ver detalhes",
+    "change_status": "Mudar status",
+    "change_priority": "Mudar prioridade"
+  },
+
+  "list": {
+    "empty": "Nenhum feedback encontrado",
+    "empty_description": "Os feedbacks reportados pelos usuários aparecerão aqui",
+    "reported_by": "Reportado por",
+    "reported_at": "Reportado em",
+    "resolved_by": "Resolvido por",
+    "resolved_at": "Resolvido em",
+    "page_context": "Página",
+    "browser_info": "Browser",
+    "screen_info": "Ecrã",
+    "no_screenshot": "Sem screenshot"
+  },
+
+  "stats": {
+    "total": "Total",
+    "new": "Novos",
+    "by_status": "Por Status",
+    "by_category": "Por Categoria",
+    "by_priority": "Por Prioridade"
+  },
+
+  "filters": {
+    "all_statuses": "Todos os status",
+    "all_categories": "Todas as categorias",
+    "all_priorities": "Todas as prioridades",
+    "search_placeholder": "Pesquisar no título ou descrição..."
+  },
+
+  "toast": {
+    "create_success": "Feedback enviado com sucesso! Obrigado pela sua ajuda.",
+    "create_error": "Erro ao enviar feedback. Tente novamente.",
+    "update_success": "Feedback atualizado com sucesso!",
+    "update_error": "Erro ao atualizar feedback.",
+    "delete_success": "Feedback eliminado com sucesso!",
+    "delete_error": "Erro ao eliminar feedback."
+  }
+}

@@ -25,6 +25,7 @@
  */
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { Phone, Award, Globe, User, Mail, MapPin, Briefcase, FileText, CreditCard, Landmark, Pen } from 'lucide-react';
@@ -75,6 +76,21 @@ export function ProfilePage() {
     queryKey: ['profile'],
     queryFn: getProfile,
   });
+
+  // Normaliza o número de telefone para remover o código do país,
+  // pois o campo phone deve conter apenas o número local.
+  const normalizedData = useMemo(() => {
+    if (!data) return data;
+    const normalized = { ...data };
+    if (normalized.phone && normalized.phoneCountryCode) {
+      const codeDigits = normalized.phoneCountryCode.replace(/\D/g, '');
+      const phoneDigits = normalized.phone.replace(/\D/g, '');
+      if (phoneDigits.startsWith(codeDigits) && phoneDigits.length > codeDigits.length) {
+        normalized.phone = phoneDigits.slice(codeDigits.length);
+      }
+    }
+    return normalized;
+  }, [data]);
 
   const {
     profileMutation,
@@ -278,7 +294,7 @@ export function ProfilePage() {
               description={t('sections.personal.description')}
               fields={profileFields}
               groups={profileGroups}
-              data={data as unknown as Record<string, string | null | undefined>}
+              data={normalizedData as unknown as Record<string, string | null | undefined>}
               onSave={handleSave}
               isLoading={profileMutation.isPending}
             />

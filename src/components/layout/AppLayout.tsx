@@ -25,6 +25,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Sidebar } from './Sidebar';
 import { getProfile } from '@/services/auth.service';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
+import { FeedbackButton } from '@/components/feedback/FeedbackButton';
 import type { ProfileResponse } from '@/types/user.types';
 
 /**
@@ -84,6 +85,9 @@ export function AppLayout({ children }: AppLayoutProps) {
           {children}
         </div>
       </main>
+
+      {/* Botão flutuante de feedback (visível em todas as páginas) */}
+      <FeedbackButton />
     </div>
   );
 }

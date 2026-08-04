@@ -43,6 +43,7 @@ export const VALID_CATEGORIES = [
   'documents',
   'certifications',
   'projects',
+  'feedbacks',
   'other',
 ] as const;
 
@@ -81,6 +82,11 @@ export const ALLOWED_MIME_TYPES: Record<string, string[]> = {
     'application/vnd.openxmlformats-officedocument.presentationml.presentation',
     'image/jpeg',
     'image/png',
+  ],
+  feedbacks: [
+    'image/jpeg',
+    'image/png',
+    'image/webp',
   ],
   other: [
     'application/pdf',

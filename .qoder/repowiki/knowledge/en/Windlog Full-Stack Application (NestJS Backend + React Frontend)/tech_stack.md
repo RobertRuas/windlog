@@ -1,1 +1,0 @@
-Backend: NestJS with Passport-JWT authentication, Prisma ORM against PostgreSQL, class-validator for DTOs, Swagger/OpenAPI for documentation, Helmet for security headers, compression middleware. Frontend: React with Vite, React Router v6, TanStack Query (React Query) for state/cache management, Sonner for toasts, Tailwind CSS for styling, i18next for Portuguese localization.

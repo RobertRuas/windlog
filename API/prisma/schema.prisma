@@ -226,6 +226,7 @@ model User {
   notifications   Notification[]
   weeklyTimesheets WeeklyTimesheet[]
   timesheetEntries WeeklyTimesheetEntry[]
+  feedbacks        Feedback[]
 }
 // ---------------------------------------------------------------------------
 // MODEL: USER DOCUMENT (Documentos Pessoais do Usuário)
@@ -683,6 +684,12 @@ enum LogAction {
   TIMESHEET_SUBMIT
   TIMESHEET_APPROVE
   
+  // Feedback
+  FEEDBACK_CREATE
+  FEEDBACK_UPDATE
+  FEEDBACK_DELETE
+  FEEDBACK_STATUS_CHANGE
+  
   // Sistema
   SYSTEM_ERROR
   API_ERROR
@@ -900,6 +907,116 @@ enum TimesheetStatus {
   DRAFT       // Rascunho (sendo editado)
   SUBMITTED   // Enviado/submetido
   APPROVED    // Aprovado
+}
+
+// ---------------------------------------------------------------------------
+// ENUM: FEEDBACK CATEGORY (Categoria do Feedback)
+// ---------------------------------------------------------------------------
+// Classifica o tipo de feedback reportado pelo usuário.
+// ---------------------------------------------------------------------------
+enum FeedbackCategory {
+  BUG          // Erro/bug no sistema
+  UI_ISSUE     // Problema visual/interface
+  FEATURE      // Sugestão de nova funcionalidade
+  INCONSISTENCY // Inconsistência de dados
+  PERFORMANCE  // Problema de performance
+  OTHER        // Outro
+}
+
+// ---------------------------------------------------------------------------
+// ENUM: FEEDBACK PRIORITY (Prioridade do Feedback)
+// ---------------------------------------------------------------------------
+// Define a urgência/prioridade do feedback.
+// ---------------------------------------------------------------------------
+enum FeedbackPriority {
+  LOW       // Baixa (sugestões, melhorias)
+  MEDIUM    // Média (bugs não críticos)
+  HIGH      // Alta (bugs que afetam funcionalidade)
+  CRITICAL  // Crítica (sistema inutilizável)
+}
+
+// ---------------------------------------------------------------------------
+// ENUM: FEEDBACK STATUS (Status do Feedback)
+// ---------------------------------------------------------------------------
+// Define o ciclo de vida do feedback reportado.
+// ---------------------------------------------------------------------------
+enum FeedbackStatus {
+  NEW         // Novo (acabou de ser reportado)
+  TRIAGED     // Triado (administrador já analisou)
+  IN_PROGRESS // Em resolução
+  RESOLVED    // Resolvido
+  CLOSED      // Fechado (não aplicável ou duplicado)
+}
+
+// ---------------------------------------------------------------------------
+// MODEL: FEEDBACK (Reporte de Feedback do Sistema)
+// ---------------------------------------------------------------------------
+// Representa um feedback/report enviado por qualquer usuário do sistema.
+// Usado para reportar bugs, inconsistências, sugestões de melhorias, etc.
+//
+// FLUXO:
+// ------
+// 1. Qualquer usuário reporta um feedback (com descrição + screenshot opcional)
+// 2. O feedback entra com status NEW
+// 3. Apenas ADMIN vê e gerencia todos os feedbacks
+// 4. ADMIN pode mudar status, prioridade e adicionar notas internas
+// ---------------------------------------------------------------------------
+model Feedback {
+  id        String   @id @default(uuid())
+
+  // Dados do feedback
+  /// Título/resumo do feedback (ex: "Botão de salvar não funciona")
+  title     String
+  /// Descrição detalhada do problema/sugestão
+  description String
+  /// Categoria do feedback (enum FeedbackCategory)
+  category  FeedbackCategory @default(OTHER)
+  /// Prioridade do feedback (enum FeedbackPriority)
+  priority  FeedbackPriority @default(MEDIUM)
+  /// Status atual do feedback (enum FeedbackStatus)
+  status    FeedbackStatus @default(NEW)
+
+  // Contexto técnico (capturado automaticamente no momento do report)
+  /// URL da página onde o feedback foi criado
+  pageUrl   String?
+  /// User-Agent do browser (para identificar browser/OS)
+  userAgent String?
+  /// Resolução do ecrã (ex: "1920x1080")
+  screenResolution String?
+
+  // Screenshot
+  /// Caminho relativo do screenshot (relativo a uploads/{userId}/feedbacks/)
+  screenshotPath String?
+
+  // Notas internas do administrador (para resolução)
+  /// Notas/resolução adicionadas pelo ADMIN
+  adminNotes String?
+
+  // Quem reportou o feedback
+  /// ID do usuário que reportou
+  reportedBy String
+  /// Referência ao usuário que reportou
+  reporter   User     @relation(fields: [reportedBy], references: [id])
+
+  // Quem resolveu (ADMIN que mudou status para RESOLVED/CLOSED)
+  /// ID do administrador que resolveu/fechou
+  resolvedBy String?
+  /// Data/hora da resolução
+  resolvedAt DateTime?
+
+  // Timestamps (datas em UTC)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  /// Soft delete (data de exclusão, null = ativo)
+  deletedAt  DateTime?
+
+  // Índices para performance nas consultas
+  @@index([reportedBy])
+  @@index([status])
+  @@index([category])
+  @@index([priority])
+  @@index([createdAt])
+  @@index([status, createdAt])
 }
 
 // ---------------------------------------------------------------------------

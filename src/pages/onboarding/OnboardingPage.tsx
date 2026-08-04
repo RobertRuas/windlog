@@ -123,7 +123,19 @@ export function OnboardingPage() {
         // Pré-preenche contato
         if (profile.email) setEmail(profile.email);
         if (profile.phoneCountryCode) setPhoneCountryCode(profile.phoneCountryCode);
-        if (profile.phone) setPhone(profile.phone);
+        if (profile.phone) {
+          // Remove o código do país do número, pois o campo phone deve
+          // conter apenas o número local (o código fica no select separado).
+          let phoneNumber = profile.phone;
+          if (profile.phoneCountryCode) {
+            const codeDigits = profile.phoneCountryCode.replace(/\D/g, '');
+            const phoneDigits = phoneNumber.replace(/\D/g, '');
+            if (phoneDigits.startsWith(codeDigits) && phoneDigits.length > codeDigits.length) {
+              phoneNumber = phoneDigits.slice(codeDigits.length);
+            }
+          }
+          setPhone(phoneNumber);
+        }
 
         // Pré-preenche localização
         if (profile.address) setAddress(profile.address);

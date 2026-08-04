@@ -1,0 +1,1 @@
+Full-stack wind turbine management platform with a NestJS REST API backed by Prisma/PostgreSQL and a React frontend using TanStack Query, React Router, and Sonner for notifications.
