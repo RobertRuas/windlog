@@ -15,6 +15,8 @@
  * - Email deve ser único no sistema
  * - Senhas são criptografadas com bcrypt
  * - Logs de auditoria para todas as ações importantes
+ * - Ficheiros associados (avatar, documentos, EPIs, etc.) são
+ *   automaticamente removidos do disco ao desativar o usuário
  * ============================================================================
  */
 
@@ -28,6 +30,7 @@ import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 
 import { PrismaService } from '../../database/prisma.service.js';
+import { UploadService } from '../upload/upload.service.js';
 import { CreateUserDto, UpdateUserDto, UserFilterDto } from './dto/users.dto.js';
 import { NotificationService } from '../notifications/notification.service.js';
 
@@ -48,6 +51,7 @@ export class UsersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notificationService: NotificationService,
+    private readonly uploadService: UploadService,
   ) {}
 
   /**
@@ -283,14 +287,23 @@ export class UsersService {
    * @throws NotFoundException se o usuário não existir
    */
   async remove(id: string) {
-    // Verifica se o usuário existe
+    // Verifica se o usuário existe (inclui ficheiros associados para limpeza)
     const user = await this.prisma.user.findFirst({
       where: { id, deletedAt: null },
+      include: {
+        documents: { select: { filePath: true } },
+        certifications: { select: { filePath: true } },
+        ppes: { select: { filePath: true } },
+        feedbacks: { select: { screenshotPath: true } },
+      },
     });
 
     if (!user) {
       throw new NotFoundException('User not found');
     }
+
+    // Limpa todos os ficheiros associados ao usuário do disco
+    this.cleanupUserFiles(user);
 
     // Soft delete: marca deletedAt e desativa
     const deletedUser = await this.prisma.user.update({
@@ -305,6 +318,39 @@ export class UsersService {
     this.logger.log(`User deleted: ${deletedUser.email} (${deletedUser.id})`);
 
     return this.sanitizeUser(deletedUser);
+  }
+
+  /**
+   * Limpa todos os ficheiros associados a um usuário do disco.
+   * Inclui: avatar, documentos, certificações, EPIs e screenshots de feedback.
+   */
+  private cleanupUserFiles(user: any): void {
+    // Avatar do usuário
+    if (user.photoUrl) {
+      this.uploadService.cleanupFile(user.photoUrl);
+    }
+
+    // Documentos pessoais anexados
+    for (const doc of user.documents) {
+      this.uploadService.cleanupFile(doc.filePath);
+    }
+
+    // Certificações com ficheiro anexado
+    for (const cert of user.certifications) {
+      this.uploadService.cleanupFile(cert.filePath);
+    }
+
+    // EPIs com ficheiro anexado (certificados de inspeção, fotos)
+    for (const ppe of user.ppes) {
+      this.uploadService.cleanupFile(ppe.filePath);
+    }
+
+    // Screenshots de feedbacks reportados pelo usuário
+    for (const feedback of user.feedbacks) {
+      this.uploadService.cleanupFile(feedback.screenshotPath);
+    }
+
+    this.logger.log(`Cleanup: all files removed for user ${user.email} (${user.id})`);
   }
 
   /**

@@ -1,1 +1,0 @@
-Backend bootstrap runs through `API/src/main.ts` which sets global prefix `/api/v1`, enables Swagger at `/api/docs`, and starts the HTTP server. Frontend entry point is `src/main.tsx` wrapping `App.tsx` with providers. Both sides read configuration from `.env` validated against `EnvironmentVariables` (backend) and local storage keys (`accessToken`) for auth state.

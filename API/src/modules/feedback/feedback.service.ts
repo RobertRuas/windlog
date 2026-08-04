@@ -25,6 +25,7 @@ import {
 } from '@nestjs/common';
 
 import { PrismaService } from '../../database/prisma.service.js';
+import { UploadService } from '../upload/upload.service.js';
 import { CreateFeedbackDto } from './dto/create-feedback.dto.js';
 import { UpdateFeedbackDto } from './dto/update-feedback.dto.js';
 import { FeedbackFilterDto } from './dto/feedback-filter.dto.js';
@@ -37,7 +38,10 @@ export class FeedbackService {
   // Logger para registrar operações
   private readonly logger = new Logger(FeedbackService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly uploadService: UploadService,
+  ) {}
 
   // =========================================================================
   // CRUD - Operações principais
@@ -280,6 +284,7 @@ export class FeedbackService {
 
   /**
    * Remove um feedback (soft delete - apenas ADMIN).
+   * O screenshot associado é removido automaticamente do disco.
    *
    * @param id - ID do feedback
    */
@@ -291,6 +296,9 @@ export class FeedbackService {
     if (!feedback) {
       throw new NotFoundException('Feedback not found');
     }
+
+    // Limpa o screenshot do disco (se existir)
+    this.uploadService.cleanupFile(feedback.screenshotPath);
 
     // Soft delete: marca a data de exclusão
     await this.prisma.feedback.update({

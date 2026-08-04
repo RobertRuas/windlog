@@ -1,1 +1,0 @@
-NestJS module providing CRUD endpoints for system feedback reports (bugs, suggestions, inconsistencies) with role-based access control, soft delete, and Prisma-backed persistence.

@@ -32,6 +32,7 @@ import * as bcrypt from 'bcrypt';
 
 import { PrismaService } from '../../database/prisma.service.js';
 import { NotificationService } from '../notifications/notification.service.js';
+import { UploadService } from '../upload/upload.service.js';
 import { LoginDto } from './dto/login.dto.js';
 import { RegisterDto } from './dto/register.dto.js';
 import { UpdateProfileDto } from './dto/update-profile.dto.js';
@@ -67,6 +68,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly notificationService: NotificationService,
+    private readonly uploadService: UploadService,
   ) {}
 
   /**
@@ -539,6 +541,11 @@ export class AuthService {
       throw new UnauthorizedException('User not found');
     }
 
+    // Limpa o avatar antigo do disco antes de substituir
+    if (user.photoUrl && user.photoUrl !== filePath) {
+      this.uploadService.cleanupFile(user.photoUrl);
+    }
+
     const updatedUser = await this.prisma.user.update({
       where: { id: userId },
       data: { photoUrl: filePath },
@@ -656,7 +663,10 @@ export class AuthService {
     if (dto.certNumber !== undefined) updateData.certNumber = dto.certNumber;
     if (dto.issueDate !== undefined) updateData.issueDate = new Date(dto.issueDate);
     if (dto.expiryDate !== undefined) updateData.expiryDate = dto.expiryDate ? new Date(dto.expiryDate) : null;
-    // filePath: string define/substitui o anexo; null remove o anexo
+    // Se filePath mudou, limpa o ficheiro antigo do disco
+    if (dto.filePath !== undefined && dto.filePath !== cert.filePath) {
+      this.uploadService.cleanupFile(cert.filePath);
+    }
     if (dto.filePath !== undefined) updateData.filePath = dto.filePath || null;
 
     return this.prisma.userCertification.update({
@@ -667,6 +677,7 @@ export class AuthService {
 
   /**
    * Remove uma certificação.
+   * O ficheiro anexado é removido automaticamente do disco.
    */
   async removeCertification(userId: string, certId: string) {
     // Verifica se a certificação pertence ao usuário
@@ -677,6 +688,9 @@ export class AuthService {
     if (!cert) {
       throw new UnauthorizedException('Certification not found');
     }
+
+    // Limpa o ficheiro anexado do disco (se existir)
+    this.uploadService.cleanupFile(cert.filePath);
 
     const result = await this.prisma.userCertification.delete({
       where: { id: certId },
@@ -789,7 +803,10 @@ export class AuthService {
     if (dto.issueDate !== undefined) updateData.issueDate = dto.issueDate ? new Date(dto.issueDate) : null;
     if (dto.expiryDate !== undefined) updateData.expiryDate = dto.expiryDate ? new Date(dto.expiryDate) : null;
     if (dto.description !== undefined) updateData.description = dto.description;
-    // filePath: string define/substitui o anexo; null remove o anexo
+    // Se filePath mudou, limpa o ficheiro antigo do disco
+    if (dto.filePath !== undefined && dto.filePath !== doc.filePath) {
+      this.uploadService.cleanupFile(doc.filePath);
+    }
     if (dto.filePath !== undefined) updateData.filePath = dto.filePath || null;
 
     return this.prisma.userDocument.update({
@@ -800,7 +817,7 @@ export class AuthService {
 
   /**
    * Remove um documento pessoal.
-   * Os ficheiros anexados são removidos automaticamente (onDelete: Cascade).
+   * O ficheiro anexado é removido automaticamente do disco.
    */
   async removeDocument(userId: string, documentId: string) {
     // Verifica se o documento pertence ao usuário
@@ -811,6 +828,9 @@ export class AuthService {
     if (!doc) {
       throw new UnauthorizedException('Document not found');
     }
+
+    // Limpa o ficheiro anexado do disco (se existir)
+    this.uploadService.cleanupFile(doc.filePath);
 
     const result = await this.prisma.userDocument.delete({
       where: { id: documentId },
@@ -964,7 +984,10 @@ export class AuthService {
     if (dto.nextInspectionDate !== undefined) updateData.nextInspectionDate = dto.nextInspectionDate ? new Date(dto.nextInspectionDate) : null;
     if (dto.condition !== undefined) updateData.condition = dto.condition;
     if (dto.notes !== undefined) updateData.notes = dto.notes;
-    // filePath: string define/substitui o anexo; null remove o anexo
+    // Se filePath mudou, limpa o ficheiro antigo do disco
+    if (dto.filePath !== undefined && dto.filePath !== ppe.filePath) {
+      this.uploadService.cleanupFile(ppe.filePath);
+    }
     if (dto.filePath !== undefined) updateData.filePath = dto.filePath || null;
 
     return this.prisma.userPpe.update({
@@ -975,10 +998,12 @@ export class AuthService {
 
   /**
    * Remove um EPI do usuário.
+   * O ficheiro anexado é removido automaticamente do disco.
    *
    * PASSO A PASSO:
    * 1. Verifica se o EPI pertence ao usuário (ownership)
-   * 2. Remove o EPI fisicamente (não usa soft delete, pois é sub-recurso do perfil)
+   * 2. Limpa o ficheiro do disco (se existir)
+   * 3. Remove o EPI fisicamente (não usa soft delete, pois é sub-recurso do perfil)
    *
    * @param userId - ID do usuário (para verificar ownership)
    * @param ppeId - ID do EPI a remover
@@ -992,6 +1017,9 @@ export class AuthService {
     if (!ppe) {
       throw new UnauthorizedException('PPE not found');
     }
+
+    // Limpa o ficheiro anexado do disco (se existir)
+    this.uploadService.cleanupFile(ppe.filePath);
 
     const result = await this.prisma.userPpe.delete({
       where: { id: ppeId },

@@ -1,1 +1,0 @@
-Native browser `fetch` (no axios), JWT stored in `localStorage` under the key `accessToken`, URLSearchParams for query string construction, FormData with `{ isFormData: true }` option for multipart uploads, and Tailwind CSS classes referenced indirectly through the project's responsive conventions.

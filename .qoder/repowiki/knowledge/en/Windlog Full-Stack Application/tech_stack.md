@@ -1,1 +1,0 @@
-NestJS + Prisma + Swagger for the backend; React + Vite + TanStack Query + React Router + Sonner + Tailwind CSS for the frontend; JWT bearer authentication shared via `CORS_ORIGIN` and `JWT_SECRET` environment variables.

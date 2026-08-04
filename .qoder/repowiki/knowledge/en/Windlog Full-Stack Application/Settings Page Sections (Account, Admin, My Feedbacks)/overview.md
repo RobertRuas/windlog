@@ -1,1 +1,0 @@
-React components that render the three sections of the Settings page: Account navigation to profile, Administration shortcuts for admin-only logs, and a read-only list of the user's submitted feedbacks with status badges and an expandable modal.

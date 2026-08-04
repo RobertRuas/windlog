@@ -1,6 +1,0 @@
-- Controllers are thin HTTP adapters that delegate all logic to the corresponding Service — no business rules are implemented inside controllers.
-- DTOs use `class-validator` decorators (`@IsString`, `@IsOptional`, `@IsEnum`, etc.) and every optional field must explicitly declare `@IsOptional()` rather than relying on TypeScript's `?`.
-- All database queries filter out soft-deleted records by including `deletedAt: null` in the `where` clause, enforcing soft delete across the entity.
-- Admin-only endpoints are consistently protected by stacking `@UseGuards(RolesGuard)` and `@Roles(Role.ADMIN)` decorators above the route handler.
-- Service methods log operations using a `Logger` instance keyed by the class name, and throw `NotFoundException` when entities are not found.
-- Swagger documentation is added per endpoint with `@ApiOperation`, `@ApiResponse`, and `@ApiProperty`/`@ApiPropertyOptional` decorators describing inputs and outputs.

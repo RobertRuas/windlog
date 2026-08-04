@@ -448,6 +448,29 @@ export class UploadService implements OnModuleDestroy {
   }
 
   /**
+   * Remove um ficheiro do disco a partir do caminho relativo (sem verificação de ownership).
+   * Usado para limpeza automática quando registos DB são apagados/atualizados
+   * (ex: avatar antigo, documento removido, feedback eliminado).
+   *
+   * @param filePath - Caminho relativo do ficheiro (ex: "userId/avatars/uuid.jpg")
+   */
+  cleanupFile(filePath: string | null | undefined): void {
+    if (!filePath) return;
+
+    const normalizedPath = normalize(filePath);
+    const absolutePath = resolve(this.uploadDir, normalizedPath);
+
+    // Segurança: previne path traversal (mesmo em limpeza interna)
+    if (!absolutePath.startsWith(this.uploadDir + '/')) {
+      this.logger.warn(`Cleanup blocked: path traversal attempt: ${filePath}`);
+      return;
+    }
+
+    this.safeDelete(absolutePath);
+    this.logger.log(`Cleanup: file removed: ${normalizedPath}`);
+  }
+
+  /**
    * Mapeia extensão de ficheiro para MIME type.
    * Fallback para 'application/octet-stream' se desconhecido.
    */

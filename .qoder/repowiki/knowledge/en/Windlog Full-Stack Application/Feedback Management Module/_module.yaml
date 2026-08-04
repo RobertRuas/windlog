@@ -1,9 +1,0 @@
-schema_version: 1
-module_path: api_feedback_module
-title: Feedback Management Module
-scope:
-    - API/src/modules/feedback/
-source_files: []
-depends_on: []
-related_to:
-    - path: src_services

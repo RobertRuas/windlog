@@ -20,11 +20,13 @@ import { Module } from '@nestjs/common';
 import { FeedbackController } from './feedback.controller.js';
 import { FeedbackService } from './feedback.service.js';
 import { PrismaService } from '../../database/prisma.service.js';
+import { UploadModule } from '../upload/upload.module.js';
 
 /**
  * Módulo FeedbackModule - Gerencia operações CRUD de feedbacks.
  */
 @Module({
+  imports: [UploadModule],
   controllers: [FeedbackController],
   providers: [FeedbackService, PrismaService],
   exports: [FeedbackService],

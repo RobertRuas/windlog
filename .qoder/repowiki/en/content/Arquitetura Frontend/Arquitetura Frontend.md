@@ -21,6 +21,10 @@
 - [Button.tsx](file://src/components/ui/Button.tsx)
 - [DataTable.tsx](file://src/components/ui/DataTable.tsx)
 - [Input.tsx](file://src/components/ui/Input.tsx)
+- [SectionCard.tsx](file://src/components/ui/SectionCard.tsx)
+- [TechnicianSelect.tsx](file://src/pages/weekly-timesheet/components/TechnicianSelect.tsx)
+- [timesheet-form.helpers.ts](file://src/pages/weekly-timesheet/helpers/timesheet-form.helpers.ts)
+- [timesheet-form.types.ts](file://src/pages/weekly-timesheet/types/timesheet-form.types.ts)
 - [HomePage.tsx](file://src/pages/home/HomePage.tsx)
 - [LoginPage.tsx](file://src/pages/login/LoginPage.tsx)
 - [LogsPage.tsx](file://src/pages/logs/LogsPage.tsx)
@@ -33,10 +37,10 @@
 
 ## Update Summary
 **Changes Made**
-- Added new AttachmentField component section documenting standardized file upload handling
-- Updated Shared Components section to include the new AttachmentField component
-- Enhanced Profile Management section to document integration with DocumentSection and CertificationSection
-- Updated component architecture diagrams to reflect the new attachment handling capabilities
+- Added new SectionCard component section documenting standardized card layout patterns
+- Updated Weekly Timesheet Components section to reflect major refactoring of TimesheetFormEditor.tsx
+- Enhanced Component Architecture section to document the new modular patterns established during refactoring
+- Updated architectural diagrams to reflect the improved separation of concerns in timesheet components
 
 ## Table of Contents
 1. Page Organization
@@ -139,6 +143,9 @@ The UI components follow a consistent API design pattern:
 - `SecureImage.tsx` - Image component with JWT authentication
 - `SecureFileLink.tsx` - File download link with temporary token generation
 
+**Layout Components:**
+- `SectionCard.tsx` - Standardized card container for organizing content sections with consistent styling and spacing
+
 ### Attachment Management Components
 
 **AttachmentField.tsx** - Standardized file upload component:
@@ -194,11 +201,19 @@ class AttachmentField {
 +onError : Function
 +render() ReactElement
 }
+class SectionCard {
++title : string
++description : string
++children : ReactNode
++actions : ReactNode[]
++render() ReactElement
+}
 AppLayout --> Sidebar : contains
 AppLayout --> children : renders
 Button --> Input : uses similar patterns
 DataTable --> Button : uses for actions
 AttachmentField --> UploadService : integrates with
+SectionCard --> Button : contains action buttons
 ```
 
 **Diagram sources**
@@ -207,6 +222,7 @@ AttachmentField --> UploadService : integrates with
 - [Button.tsx](file://src/components/ui/Button.tsx)
 - [DataTable.tsx](file://src/components/ui/DataTable.tsx)
 - [AttachmentField.tsx](file://src/pages/home/components/AttachmentField.tsx)
+- [SectionCard.tsx](file://src/components/ui/SectionCard.tsx)
 
 **Section sources**
 - [AppLayout.tsx](file://src/components/layout/AppLayout.tsx)
@@ -218,6 +234,80 @@ AttachmentField --> UploadService : integrates with
 - [SecureFileLink.tsx](file://src/components/ui/SecureFileLink.tsx)
 - [SecureImage.tsx](file://src/components/ui/SecureImage.tsx)
 - [AttachmentField.tsx](file://src/pages/home/components/AttachmentField.tsx)
+- [SectionCard.tsx](file://src/components/ui/SectionCard.tsx)
+
+## Weekly Timesheet Components Refactoring
+
+The weekly timesheet module has undergone significant refactoring to improve code organization and maintainability through the extraction of complex components into focused, reusable parts.
+
+### Modular Component Architecture
+
+**TimesheetFormEditor.tsx** - Now serves as a coordinator component that orchestrates the following extracted components:
+
+**TechnicianSelect.tsx** - Specialized technician selection component:
+- Dedicated dropdown for technician assignment
+- Search and filtering capabilities
+- Integration with user management system
+- Validation for technician availability
+
+**Helper Functions Module** - Centralized utility functions:
+- `timesheet-form.helpers.ts` - Contains form validation, data transformation, and calculation utilities
+- Reusable logic for time calculations and formatting
+- Common validation rules for timesheet entries
+
+**Type Definitions Module** - Centralized TypeScript definitions:
+- `timesheet-form.types.ts` - Defines all interfaces and types used across timesheet components
+- Ensures type safety throughout the timesheet module
+- Facilitates better code completion and error detection
+
+### Architectural Benefits
+
+This refactoring establishes several key architectural patterns:
+
+**Separation of Concerns:**
+- Each component has a single, well-defined responsibility
+- Helper functions encapsulate business logic
+- Type definitions provide clear contracts between components
+
+**Reusability:**
+- TechnicianSelect can be reused across different forms
+- Helper functions are available to other timesheet-related components
+- Type definitions ensure consistency across the module
+
+**Maintainability:**
+- Smaller, focused components are easier to test and debug
+- Changes to business logic are isolated in helper functions
+- Type definitions prevent runtime errors through compile-time checking
+
+```mermaid
+graph TD
+TimesheetFormEditor[TimesheetFormEditor.tsx] --> TechnicianSelect[TechnicianSelect.tsx]
+TimesheetFormEditor --> Helpers[timesheet-form.helpers.ts]
+TimesheetFormEditor --> Types[timesheet-form.types.ts]
+TechnicianSelect --> Helpers
+TechnicianSelect --> Types
+Helpers --> Types
+subgraph "Component Layer"
+TimesheetFormEditor
+TechnicianSelect
+end
+subgraph "Logic Layer"
+Helpers
+end
+subgraph "Type Layer"
+Types
+end
+```
+
+**Diagram sources**
+- [TechnicianSelect.tsx](file://src/pages/weekly-timesheet/components/TechnicianSelect.tsx)
+- [timesheet-form.helpers.ts](file://src/pages/weekly-timesheet/helpers/timesheet-form.helpers.ts)
+- [timesheet-form.types.ts](file://src/pages/weekly-timesheet/types/timesheet-form.types.ts)
+
+**Section sources**
+- [TechnicianSelect.tsx](file://src/pages/weekly-timesheet/components/TechnicianSelect.tsx)
+- [timesheet-form.helpers.ts](file://src/pages/weekly-timesheet/helpers/timesheet-form.helpers.ts)
+- [timesheet-form.types.ts](file://src/pages/weekly-timesheet/types/timesheet-form.types.ts)
 
 ## Profile Management Enhancement
 

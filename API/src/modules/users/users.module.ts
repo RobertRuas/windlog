@@ -26,6 +26,7 @@ import { Module } from '@nestjs/common';
 import { UsersController } from './users.controller.js';
 import { UsersService } from './users.service.js';
 import { PrismaService } from '../../database/prisma.service.js';
+import { UploadModule } from '../upload/upload.module.js';
 
 /**
  * Módulo UsersModule - Gerencia operações CRUD de usuários.
@@ -34,6 +35,8 @@ import { PrismaService } from '../../database/prisma.service.js';
  * de gestão de usuários em toda a aplicação.
  */
 @Module({
+  imports: [UploadModule],
+
   // Controllers deste módulo
   controllers: [UsersController],
 

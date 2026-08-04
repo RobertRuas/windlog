@@ -1,1 +1,0 @@
-No special build or setup commands — standard NestJS module consumed by the application bootstrap. Endpoints require JWT tokens; creation is open to any authenticated user, while listing, updating, and deletion are restricted to `Role.ADMIN` via `RolesGuard`.

@@ -1,1 +1,0 @@
-Full-stack wind farm management system pairing a NestJS backend (API/) with a React/Vite frontend (src/), sharing domain modules across both sides via consistent service-to-controller contracts and Prisma-driven types.

@@ -1,1 +1,0 @@
-React functional components with hooks, Tailwind CSS for styling, Lucide icons, react-i18next for internationalization, TanStack Query for data fetching/mutations, Sonner for toast notifications, and direct axios calls via the shared `@/services/api` client.

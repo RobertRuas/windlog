@@ -1,6 +1,0 @@
-- Each feature domain gets its own JSON file named after the feature (e.g. `projects.json`, `login.json`, `notifications.json`) with top-level keys matching UI sections like `title`, `subtitle`, `table`, `modal`, `errors`, `toast`.
-- Shared reusable strings (navigation, buttons, status messages, error messages, aria-labels) are centralized in `common.json` and referenced by domain files rather than duplicated.
-- Dynamic values use double-brace template placeholders `{{variable}}` for interpolation (e.g. pagination, confirmation dialogs, counts).
-- Enum-like UI labels (project statuses, turbine statuses, roles, feedback categories/priorities) are defined as nested key objects mapping backend enum values to localized display strings.
-- Toast notification messages follow a consistent CRUD pattern with paired `Success`/`Error` keys per action (create, update, delete, add member, upload file, etc.).
-- Timesheet export strings are intentionally English-only and must NOT be translated (international document exception).

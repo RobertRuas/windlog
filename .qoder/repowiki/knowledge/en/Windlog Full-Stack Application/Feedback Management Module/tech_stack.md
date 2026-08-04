@@ -1,1 +1,0 @@
-NestJS with `@nestjs/swagger` for OpenAPI docs, `class-validator` + `@IsOptional()`/`@IsEnum()`/`@IsString()` for DTO validation, Prisma ORM for database access, and JWT-based authentication via `@nestjs/passport`.

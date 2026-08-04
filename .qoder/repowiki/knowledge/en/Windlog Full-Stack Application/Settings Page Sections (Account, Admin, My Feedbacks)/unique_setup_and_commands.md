@@ -1,1 +1,0 @@
-No build or setup commands required; these are plain React components consumed by the Settings page parent component which supplies the `t` translation function.

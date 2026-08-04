@@ -6,7 +6,7 @@
  * O QUE É ESTE ARQUIVO?
  * ---------------------
  * Cria dados iniciais no banco de dados para desenvolvimento e testes.
- * Este seed cria 3 usuários com diferentes níveis de acesso (roles).
+ * Este seed cria apenas o usuário administrador do sistema.
  *
  * COMO USAR?
  * ----------
@@ -15,11 +15,9 @@
  * OU manualmente:
  * npx tsx prisma/seed.ts
  *
- * USUÁRIOS CRIADOS:
- * -----------------
- * 1. admin / 123456    → Role: ADMIN
- * 2. rh / 123456       → Role: HR (Recursos Humanos)
- * 3. default / 123456  → Role: STANDARD (Padrão)
+ * USUÁRIO CRIADO:
+ * ----------------
+ * 1. admin / 123456 → Role: ADMIN
  *
  * IMPORTANTE:
  * -----------
@@ -50,97 +48,52 @@ const prisma = new PrismaClient({ adapter });
 const SALT_ROUNDS = 10;
 
 /**
- * Dados dos usuários a serem criados.
- * Cada usuário tem: email, senha (texto puro), nome, sobrenome e role.
+ * Dados do usuário administrador a ser criado.
  */
-const seedUsers = [
-  {
-    email: 'admin@windlog.com',
-    password: '123456',
-    firstName: 'Admin',
-    lastName: 'User',
-    role: Role.ADMIN,
-    phone: '912345678',
-    phoneCountryCode: '+351',
-    department: 'IT',
-    position: 'System Administrator',
-    nationality: 'PT',
-  },
-  {
-    email: 'rh@windlog.com',
-    password: '123456',
-    firstName: 'Recursos',
-    lastName: 'Humanos',
-    role: Role.HR,
-    phone: '923456789',
-    phoneCountryCode: '+351',
-    department: 'Human Resources',
-    position: 'HR Manager',
-    nationality: 'PT',
-  },
-  {
-    email: 'default@windlog.com',
-    password: '123456',
-    firstName: 'Default',
-    lastName: 'User',
-    role: Role.STANDARD,
-    phone: '934567890',
-    phoneCountryCode: '+351',
-    department: 'Operations',
-    position: 'Wind Turbine Technician',
-    nationality: 'PT',
-  },
-  {
-    email: 'teamleader@windlog.com',
-    password: '123456',
-    firstName: 'Team',
-    lastName: 'Leader',
-    role: Role.STANDARD,
-    isTeamLeader: true,
-    phone: '945678901',
-    phoneCountryCode: '+351',
-    department: 'Operations',
-    position: 'Team Leader (L3)',
-    nationality: 'PT',
-  },
-];
+const adminUser = {
+  email: 'admin@windlog.com',
+  password: '123456',
+  firstName: 'Admin',
+  lastName: 'User',
+  role: Role.ADMIN,
+  phone: '912345678',
+  phoneCountryCode: '+351',
+  department: 'IT',
+  position: 'System Administrator',
+  nationality: 'PT',
+};
 
 /**
  * Função principal do seed.
- * Cria os usuários no banco de dados se ainda não existirem.
+ * Cria o usuário administrador no banco de dados se ainda não existir.
  */
 async function main() {
   console.log('🌱 Iniciando seed do banco de dados...');
 
-  // Itera sobre cada usuário e cria se não existir
-  for (const userData of seedUsers) {
-    // Verifica se o usuário já existe pelo email
-    const existingUser = await prisma.user.findUnique({
-      where: { email: userData.email },
-    });
+  // Verifica se o usuário administrador já existe
+  const existingUser = await prisma.user.findUnique({
+    where: { email: adminUser.email },
+  });
 
-    if (existingUser) {
-      console.log(`⏭️  Usuário já existe: ${userData.email} - pulando`);
-      continue;
-    }
-
+  if (existingUser) {
+    console.log(`⏭️  Usuário já existe: ${adminUser.email} - pulando`);
+  } else {
     // Criptografa a senha antes de salvar
-    const hashedPassword = await bcrypt.hash(userData.password, SALT_ROUNDS);
+    const hashedPassword = await bcrypt.hash(adminUser.password, SALT_ROUNDS);
 
-    // Cria o usuário no banco de dados
+    // Cria o usuário administrador no banco de dados
     const user = await prisma.user.create({
       data: {
-        email: userData.email,
+        email: adminUser.email,
         password: hashedPassword,
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        role: userData.role,
-        isTeamLeader: userData.isTeamLeader ?? false,
-        phone: userData.phone,
-        phoneCountryCode: userData.phoneCountryCode,
-        department: userData.department,
-        position: userData.position,
-        nationality: userData.nationality,
+        firstName: adminUser.firstName,
+        lastName: adminUser.lastName,
+        role: adminUser.role,
+        phone: adminUser.phone,
+        phoneCountryCode: adminUser.phoneCountryCode,
+        department: adminUser.department,
+        position: adminUser.position,
+        nationality: adminUser.nationality,
       },
     });
 
@@ -148,16 +101,12 @@ async function main() {
   }
 
   console.log('\n🎉 Seed concluído com sucesso!');
-  console.log('\n📋 Usuários disponíveis:');
-  console.log('   ┌──────────────────────────────────────────────────────┐');
-  console.log('   │ Email                  │ Senha │ Role     │ TL      │');
-  console.log('   ├──────────────────────────────────────────────────────┤');
-  console.log('   │ admin@windlog.com      │ 123456 │ ADMIN    │ -       │');
-  console.log('   │ rh@windlog.com         │ 123456 │ HR       │ -       │');
-  console.log('   │ default@windlog.com    │ 123456 │ STANDARD │ -       │');
-  console.log('   │ teamleader@windlog.com │ 123456 │ STANDARD │ ✓       │');
-  console.log('   └──────────────────────────────────────────────────────┘');
-  console.log('\n   TL = Team Leader (isTeamLeader: true)');
+  console.log('\n📋 Usuário disponível:');
+  console.log('   ┌─────────────────────────────────────────────┐');
+  console.log('   │ Email               │ Senha  │ Role         │');
+  console.log('   ├─────────────────────────────────────────────┤');
+  console.log('   │ admin@windlog.com   │ 123456 │ ADMIN        │');
+  console.log('   └─────────────────────────────────────────────┘');
 }
 
 // Executa o seed e trata erros

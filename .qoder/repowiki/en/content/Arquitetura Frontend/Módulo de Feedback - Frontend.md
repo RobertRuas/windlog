@@ -5,6 +5,7 @@
 - [FeedbackButton.tsx](file://src/components/feedback/FeedbackButton.tsx)
 - [FeedbackModal.tsx](file://src/components/feedback/FeedbackModal.tsx)
 - [FeedbacksPage.tsx](file://src/pages/feedbacks/FeedbacksPage.tsx)
+- [FeedbackDetailModal.tsx](file://src/pages/feedbacks/components/FeedbackDetailModal.tsx)
 - [MyFeedbacksSection.tsx](file://src/pages/settings/components/MyFeedbacksSection.tsx)
 - [SettingsPage.tsx](file://src/pages/settings/SettingsPage.tsx)
 - [feedback.service.ts](file://src/services/feedback.service.ts)
@@ -15,11 +16,10 @@
 
 ## Update Summary
 **Changes Made**
-- Added MyFeedbacksSection component integration in settings page
-- Enhanced feedback modal with screenshot viewer functionality
-- Improved table formatting and user interface elements
-- Corrected translation namespace usage for proper i18n support
-- Updated component architecture to support new settings integration
+- Extracted feedback detail modal functionality from FeedbacksPage.tsx into dedicated FeedbackDetailModal.tsx component
+- Streamlined FeedbacksPage.tsx from 750 lines to 382 lines by separating concerns
+- Enhanced modular architecture following established patterns for reusable components
+- Improved code maintainability and separation of concerns
 
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -34,12 +34,13 @@
 10. [Conclusion](#conclusion)
 
 ## Introduction
-This document describes the frontend implementation of the Feedback module in Windlog, a web-based management system for wind energy technicians. The feedback feature allows users to submit and manage feedback entries through a React UI that communicates with a NestJS backend via REST API. The frontend uses TanStack Query for data fetching and caching, i18n for internationalization, and Tailwind CSS for styling. Recent updates have enhanced the module with improved settings integration, screenshot viewing capabilities, and better internationalization support.
+This document describes the frontend implementation of the Feedback module in Windlog, a web-based management system for wind energy technicians. The feedback feature allows users to submit and manage feedback entries through a React UI that communicates with a NestJS backend via REST API. The frontend uses TanStack Query for data fetching and caching, i18n for internationalization, and Tailwind CSS for styling. Recent updates have enhanced the module with improved settings integration, screenshot viewing capabilities, better internationalization support, and a more modular architecture through component extraction.
 
 ## Project Structure
 The feedback-related frontend code is organized into four main areas:
 - UI components: reusable elements for user interactions (button and modal)
 - Page components: dedicated pages for listing and managing feedback
+- Modal components: specialized modals for specific functionalities (detail view)
 - Settings integration: MyFeedbacksSection component for settings page integration
 - Service layer: HTTP client abstraction for API calls
 
@@ -49,6 +50,7 @@ subgraph "Feedback UI"
 FB_Button["FeedbackButton.tsx"]
 FB_Modal["FeedbackModal.tsx"]
 FB_Page["FeedbacksPage.tsx"]
+FB_Detail["FeedbackDetailModal.tsx"]
 MF_Sections["MyFeedbacksSection.tsx"]
 end
 subgraph "Settings Integration"
@@ -65,12 +67,15 @@ I18N_Index["index.ts"]
 end
 FB_Button --> FB_Modal
 FB_Page --> FB_Service
+FB_Page --> FB_Detail
 FB_Modal --> FB_Service
+FB_Detail --> FB_Service
 MF_Sections --> FB_Service
 FB_Service --> API_Client
 FB_Button --> FB_Locales
 FB_Modal --> FB_Locales
 FB_Page --> FB_Locales
+FB_Detail --> FB_Locales
 MF_Sections --> FB_Locales
 FB_Locales --> I18N_Index
 ```
@@ -79,6 +84,7 @@ FB_Locales --> I18N_Index
 - [FeedbackButton.tsx](file://src/components/feedback/FeedbackButton.tsx)
 - [FeedbackModal.tsx](file://src/components/feedback/FeedbackModal.tsx)
 - [FeedbacksPage.tsx](file://src/pages/feedbacks/FeedbacksPage.tsx)
+- [FeedbackDetailModal.tsx](file://src/pages/feedbacks/components/FeedbackDetailModal.tsx)
 - [MyFeedbacksSection.tsx](file://src/pages/settings/components/MyFeedbacksSection.tsx)
 - [SettingsPage.tsx](file://src/pages/settings/SettingsPage.tsx)
 - [feedback.service.ts](file://src/services/feedback.service.ts)
@@ -90,6 +96,7 @@ FB_Locales --> I18N_Index
 - [FeedbackButton.tsx](file://src/components/feedback/FeedbackButton.tsx)
 - [FeedbackModal.tsx](file://src/components/feedback/FeedbackModal.tsx)
 - [FeedbacksPage.tsx](file://src/pages/feedbacks/FeedbacksPage.tsx)
+- [FeedbackDetailModal.tsx](file://src/pages/feedbacks/components/FeedbackDetailModal.tsx)
 - [MyFeedbacksSection.tsx](file://src/pages/settings/components/MyFeedbacksSection.tsx)
 - [SettingsPage.tsx](file://src/pages/settings/SettingsPage.tsx)
 - [feedback.service.ts](file://src/services/feedback.service.ts)
@@ -100,8 +107,9 @@ FB_Locales --> I18N_Index
 ## Core Components
 - FeedbackButton: A small trigger component that opens the feedback modal. It should be accessible from key areas of the application where quick feedback submission is desired.
 - FeedbackModal: A modal form that collects feedback details, validates input, and submits it to the backend via the service layer. It handles loading states, success, and error messages. **Enhanced** with screenshot viewer functionality for better visual feedback submission.
-- FeedbacksPage: The dedicated page that lists existing feedback entries, supports filtering/searching, and provides actions such as viewing details or deleting entries. **Improved** table formatting and user experience.
-- MyFeedbacksSection: **New** component integrated into the settings page that displays user's personal feedback entries with quick access to create new feedback.
+- FeedbacksPage: The dedicated page that lists existing feedback entries, supports filtering/searching, and provides actions such as viewing details or deleting entries. **Improved** table formatting and user experience. **Updated** to use extracted FeedbackDetailModal component.
+- FeedbackDetailModal: **New** dedicated component for displaying detailed feedback information, extracted from FeedbacksPage to improve modularity and reusability.
+- MyFeedbacksSection: Component integrated into the settings page that displays user's personal feedback entries with quick access to create new feedback.
 
 Key responsibilities:
 - User interaction handling (open/close modal, form submission)
@@ -110,26 +118,30 @@ Key responsibilities:
 - Error handling and user feedback
 - Screenshot capture and viewing capabilities
 - Settings page integration for personalized feedback management
+- **New**: Separated detail view functionality into dedicated component for better code organization
 
 **Section sources**
 - [FeedbackButton.tsx](file://src/components/feedback/FeedbackButton.tsx)
 - [FeedbackModal.tsx](file://src/components/feedback/FeedbackModal.tsx)
 - [FeedbacksPage.tsx](file://src/pages/feedbacks/FeedbacksPage.tsx)
+- [FeedbackDetailModal.tsx](file://src/pages/feedbacks/components/FeedbackDetailModal.tsx)
 - [MyFeedbacksSection.tsx](file://src/pages/settings/components/MyFeedbacksSection.tsx)
 
 ## Architecture Overview
-The frontend architecture follows a layered approach with enhanced settings integration:
+The frontend architecture follows a layered approach with enhanced modularity through component extraction:
 - UI Layer: React components handle presentation and user interactions
 - Service Layer: Encapsulates API calls and request/response transformations
 - Data Layer: TanStack Query manages caching, background updates, and mutations
 - i18n Layer: Centralized translations for all user-facing text with proper namespace usage
 - Settings Integration: Dedicated section component for seamless settings page embedding
+- **New**: Modular component architecture with separated concerns for better maintainability
 
 ```mermaid
 sequenceDiagram
 participant U as "User"
 participant B as "FeedbackButton.tsx"
 participant M as "FeedbackModal.tsx"
+participant D as "FeedbackDetailModal.tsx"
 participant MS as "MyFeedbacksSection.tsx"
 participant S as "feedback.service.ts"
 participant A as "api.ts"
@@ -140,20 +152,26 @@ U->>MS : View Personal Feedbacks
 MS->>S : getFeedbacks(filters)
 U->>M : Fill Form and Submit
 M->>S : createFeedback(data)
+U->>D : View Feedback Details
+D->>S : getFeedback(id)
 S->>A : POST /feedbacks
+S->>A : GET /feedbacks/{id}
 A->>BE : HTTP Request
 BE-->>A : Response {data, message, statusCode}
 A-->>S : Normalized Response
 S-->>M : Success/Error
+S-->>D : Success/Error
 S-->>MS : Success/Error
 M-->>U : Show success/error state
+D-->>U : Display detailed feedback
 MS-->>U : Display updated feedback list
-Note over M,S : Invalidate related queries on success
+Note over M,S,D : Invalidate related queries on success
 ```
 
 **Diagram sources**
 - [FeedbackButton.tsx](file://src/components/feedback/FeedbackButton.tsx)
 - [FeedbackModal.tsx](file://src/components/feedback/FeedbackModal.tsx)
+- [FeedbackDetailModal.tsx](file://src/pages/feedbacks/components/FeedbackDetailModal.tsx)
 - [MyFeedbacksSection.tsx](file://src/pages/settings/components/MyFeedbacksSection.tsx)
 - [feedback.service.ts](file://src/services/feedback.service.ts)
 - [api.ts](file://src/services/api.ts)
@@ -229,16 +247,39 @@ State management:
 - Enhanced table formatting with better responsive design
 - Improved loading states and error handling
 - Better mobile responsiveness
+- **Updated**: Streamlined from 750 to 382 lines by extracting detail modal functionality
 
 **Section sources**
 - [FeedbacksPage.tsx](file://src/pages/feedbacks/FeedbacksPage.tsx)
 - [feedback.service.ts](file://src/services/feedback.service.ts)
 
+### FeedbackDetailModal
+Purpose:
+- **New** dedicated component for displaying detailed feedback information
+- Extracted from FeedbacksPage to improve modularity and code organization
+- Handles display of individual feedback entries with comprehensive information
+
+Features:
+- Displays complete feedback details including metadata, attachments, and timestamps
+- Provides navigation back to the main feedback list
+- Integrates with the same service layer and i18n configuration
+- Maintains consistent styling and behavior with other modals
+
+Benefits:
+- Reduces complexity in FeedbacksPage component
+- Improves code maintainability and testability
+- Enables reuse of detail view functionality across the application
+- Follows established architectural patterns for component separation
+
+**Section sources**
+- [FeedbackDetailModal.tsx](file://src/pages/feedbacks/components/FeedbackDetailModal.tsx)
+- [feedback.service.ts](file://src/services/feedback.service.ts)
+
 ### MyFeedbacksSection
 Purpose:
-- **New** component that integrates feedback functionality directly into the settings page
-- Displays user's personal feedback entries with quick access to create new feedback
+- Component integrated into the settings page that displays user's personal feedback entries
 - Provides contextual feedback management within user settings context
+- Offers quick access to create new feedback from settings
 
 Features:
 - Fetches user-specific feedback entries
@@ -277,6 +318,7 @@ Error handling:
 - Enhanced error handling for screenshot uploads
 - Improved response normalization for better type safety
 - Better integration with settings page data requirements
+- **New**: Optimized for use with extracted FeedbackDetailModal component
 
 **Section sources**
 - [feedback.service.ts](file://src/services/feedback.service.ts)
@@ -284,21 +326,21 @@ Error handling:
 
 ## New Features and Enhancements
 
-### MyFeedbacksSection Integration
-The new MyFeedbacksSection component provides seamless integration of feedback functionality within the settings page, allowing users to view and manage their personal feedback entries without navigating away from their settings.
+### FeedbackDetailModal Extraction
+The most significant enhancement is the extraction of feedback detail modal functionality from FeedbacksPage.tsx into a dedicated FeedbackDetailModal.tsx component. This architectural improvement reduces the FeedbacksPage from 750 lines to 382 lines, significantly improving code maintainability and following established patterns for component separation.
 
 ```mermaid
 graph LR
-SP["SettingsPage.tsx"] --> MF["MyFeedbacksSection.tsx"]
-MF --> FS["feedback.service.ts"]
-MF --> IL["i18n locales"]
+FP["FeedbacksPage.tsx"] --> FDM["FeedbackDetailModal.tsx"]
+FDM --> FS["feedback.service.ts"]
+FDM --> IL["i18n locales"]
 FS --> API["api.ts"]
 API --> BE["Backend API"]
 ```
 
 **Diagram sources**
-- [SettingsPage.tsx](file://src/pages/settings/SettingsPage.tsx)
-- [MyFeedbacksSection.tsx](file://src/pages/settings/components/MyFeedbacksSection.tsx)
+- [FeedbacksPage.tsx](file://src/pages/feedbacks/FeedbacksPage.tsx)
+- [FeedbackDetailModal.tsx](file://src/pages/feedbacks/components/FeedbackDetailModal.tsx)
 - [feedback.service.ts](file://src/services/feedback.service.ts)
 - [api.ts](file://src/services/api.ts)
 
@@ -312,13 +354,13 @@ The FeedbacksPage now features improved table formatting with better responsive 
 Translation namespace usage has been corrected to ensure proper internationalization support across all feedback-related components.
 
 **Section sources**
-- [MyFeedbacksSection.tsx](file://src/pages/settings/components/MyFeedbacksSection.tsx)
-- [FeedbackModal.tsx](file://src/components/feedback/FeedbackModal.tsx)
+- [FeedbackDetailModal.tsx](file://src/pages/feedbacks/components/FeedbackDetailModal.tsx)
 - [FeedbacksPage.tsx](file://src/pages/feedbacks/FeedbacksPage.tsx)
+- [FeedbackModal.tsx](file://src/components/feedback/FeedbackModal.tsx)
 - [feedback.json](file://src/i18n/locales/pt/feedback.json)
 
 ## Dependency Analysis
-The feedback module maintains clear separation of concerns with minimal coupling between components, enhanced by the new settings integration:
+The feedback module maintains clear separation of concerns with minimal coupling between components, enhanced by the new modular architecture:
 
 ```mermaid
 graph LR
@@ -327,6 +369,9 @@ FB_Modal["FeedbackModal.tsx"] --> FB_Service["feedback.service.ts"]
 FB_Modal --> FB_Locales
 FB_Page["FeedbacksPage.tsx"] --> FB_Service
 FB_Page --> FB_Locales
+FB_Page --> FB_Detail["FeedbackDetailModal.tsx"]
+FB_Detail --> FB_Service
+FB_Detail --> FB_Locales
 MF_Sections["MyFeedbacksSection.tsx"] --> FB_Service
 MF_Sections --> FB_Locales
 FB_Service --> API_Client["api.ts"]
@@ -337,6 +382,7 @@ API_Client --> Backend["REST API"]
 - [FeedbackButton.tsx](file://src/components/feedback/FeedbackButton.tsx)
 - [FeedbackModal.tsx](file://src/components/feedback/FeedbackModal.tsx)
 - [FeedbacksPage.tsx](file://src/pages/feedbacks/FeedbacksPage.tsx)
+- [FeedbackDetailModal.tsx](file://src/pages/feedbacks/components/FeedbackDetailModal.tsx)
 - [MyFeedbacksSection.tsx](file://src/pages/settings/components/MyFeedbacksSection.tsx)
 - [feedback.service.ts](file://src/services/feedback.service.ts)
 - [api.ts](file://src/services/api.ts)
@@ -346,6 +392,7 @@ API_Client --> Backend["REST API"]
 - [FeedbackButton.tsx](file://src/components/feedback/FeedbackButton.tsx)
 - [FeedbackModal.tsx](file://src/components/feedback/FeedbackModal.tsx)
 - [FeedbacksPage.tsx](file://src/pages/feedbacks/FeedbacksPage.tsx)
+- [FeedbackDetailModal.tsx](file://src/pages/feedbacks/components/FeedbackDetailModal.tsx)
 - [MyFeedbacksSection.tsx](file://src/pages/settings/components/MyFeedbacksSection.tsx)
 - [feedback.service.ts](file://src/services/feedback.service.ts)
 - [api.ts](file://src/services/api.ts)
@@ -361,6 +408,7 @@ API_Client --> Backend["REST API"]
 - Monitor bundle size impact of additional dependencies
 - **New**: Efficient screenshot handling with lazy loading for previews
 - **New**: Optimized settings page integration to minimize re-renders
+- **New**: Improved component modularity reduces bundle size and improves loading performance
 
 [No sources needed since this section provides general guidance]
 
@@ -403,13 +451,19 @@ Settings integration problems:
 - Verify data synchronization between settings and feedback sections
 - Check for proper cleanup of event listeners and subscriptions
 
+Component extraction issues:
+- **New**: Verify proper prop passing between FeedbacksPage and FeedbackDetailModal
+- **New**: Check for proper state management after component extraction
+- **New**: Ensure all necessary dependencies are properly imported in the new component
+
 **Section sources**
 - [feedback.service.ts](file://src/services/feedback.service.ts)
 - [api.ts](file://src/services/api.ts)
 - [feedback.json](file://src/i18n/locales/pt/feedback.json)
 - [MyFeedbacksSection.tsx](file://src/pages/settings/components/MyFeedbacksSection.tsx)
+- [FeedbackDetailModal.tsx](file://src/pages/feedbacks/components/FeedbackDetailModal.tsx)
 
 ## Conclusion
-The Feedback module frontend provides a clean, accessible, and maintainable interface for submitting and managing feedback. The modular architecture with clear separation between UI, services, and data layers ensures scalability and ease of maintenance. Recent enhancements including the new MyFeedbacksSection component, improved screenshot viewing capabilities, better table formatting, and corrected i18n namespace usage have significantly improved the user experience and developer workflow. Following the established patterns and guidelines will help maintain consistency across the application while providing a smooth user experience.
+The Feedback module frontend provides a clean, accessible, and maintainable interface for submitting and managing feedback. The modular architecture with clear separation between UI, services, and data layers ensures scalability and ease of maintenance. Recent enhancements including the extraction of FeedbackDetailModal component, improved screenshot viewing capabilities, better table formatting, corrected i18n namespace usage, and enhanced settings integration have significantly improved both the user experience and developer workflow. The architectural improvements through component extraction demonstrate adherence to best practices for React application development, making the codebase more maintainable and scalable for future enhancements. Following the established patterns and guidelines will help maintain consistency across the application while providing a smooth user experience.
 
 [No sources needed since this section summarizes without analyzing specific files]

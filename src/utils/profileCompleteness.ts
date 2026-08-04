@@ -125,8 +125,8 @@ function getProfileSections(): ProfileSection[] {
       weight: 10,
       fields: ['phone'],
       requiredFields: [],
-      isComplete: (d) => (d.phoneNumbers?.length ?? 0) > 0,
-      filledCount: (d) => (d.phoneNumbers?.length ?? 0) > 0 ? 1 : 0,
+      isComplete: (d) => (d.phoneNumbers?.length ?? 0) > 0 || isFilled(d.phone),
+      filledCount: (d) => ((d.phoneNumbers?.length ?? 0) > 0 || isFilled(d.phone)) ? 1 : 0,
     },
     {
       id: 'location',

@@ -1,1 +1,0 @@
-The floating button must be rendered inside `AppLayout` so it appears on every authenticated page. Feedback categories are defined as a local `CATEGORIES` array mapping enum values to Lucide icons and labels. Screenshot uploads require an image MIME type and a 5MB size limit enforced client-side before calling `/api/v1/upload/feedbacks`.
