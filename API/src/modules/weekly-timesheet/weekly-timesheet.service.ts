@@ -130,6 +130,30 @@ export class WeeklyTimesheetService {
   }
 
   /**
+   * Verifica se o usuário pode editar/submeter/excluir um timesheet.
+   *
+   * REGRAS:
+   * - ADMIN e HR: sempre podem
+   * - Criador do timesheet: pode editar seus próprios timesheets
+   * - Team Leader: NÃO pode editar timesheets de outros
+   *
+   * @param createdBy - ID do usuário que criou o timesheet
+   * @param userId - ID do usuário que está tentando editar
+   * @param userRole - Role do usuário
+   * @returns true se pode editar
+   */
+  private canEditTimesheet(
+    createdBy: string,
+    userId: string,
+    userRole: string,
+  ): boolean {
+    // ADMIN e HR sempre podem
+    if (userRole === 'ADMIN' || userRole === 'HR') return true;
+    // Apenas o criador pode editar
+    return createdBy === userId;
+  }
+
+  /**
    * Busca o nome completo do usuário no banco.
    * Usado para matching por technicianName em entradas antigas (sem userId).
    */
@@ -566,16 +590,12 @@ export class WeeklyTimesheetService {
       throw new NotFoundException('Timesheet not found');
     }
 
-    // PASSO 2: Verifica permissão
-    const canManage = await this.canManageTimesheet(
-      timesheet.projectId,
-      userId,
-      userRole,
-    );
+    // PASSO 2: Verifica permissão (apenas o criador ou ADMIN/HR podem editar)
+    const canEdit = this.canEditTimesheet(timesheet.createdBy, userId, userRole);
 
-    if (!canManage) {
+    if (!canEdit) {
       throw new ForbiddenException(
-        'You do not have permission to edit this timesheet',
+        'Only the creator of this timesheet can edit it',
       );
     }
 
@@ -774,15 +794,12 @@ export class WeeklyTimesheetService {
       throw new NotFoundException('Timesheet not found');
     }
 
-    const canManage = await this.canManageTimesheet(
-      timesheet.projectId,
-      userId,
-      userRole,
-    );
+    // Apenas o criador ou ADMIN/HR podem submeter
+    const canEdit = this.canEditTimesheet(timesheet.createdBy, userId, userRole);
 
-    if (!canManage) {
+    if (!canEdit) {
       throw new ForbiddenException(
-        'You do not have permission to submit this timesheet',
+        'Only the creator of this timesheet can submit it',
       );
     }
 
@@ -818,15 +835,12 @@ export class WeeklyTimesheetService {
       throw new NotFoundException('Timesheet not found');
     }
 
-    const canManage = await this.canManageTimesheet(
-      timesheet.projectId,
-      userId,
-      userRole,
-    );
+    // Apenas o criador ou ADMIN/HR podem excluir
+    const canEdit = this.canEditTimesheet(timesheet.createdBy, userId, userRole);
 
-    if (!canManage) {
+    if (!canEdit) {
       throw new ForbiddenException(
-        'You do not have permission to delete this timesheet',
+        'Only the creator of this timesheet can delete it',
       );
     }
 
