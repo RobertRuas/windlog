@@ -50,6 +50,8 @@
     "hireDate": "Data de Contratação",
     "bio": "Biografia",
     "role": "Acesso",
+    "isTeamLeader": "Team Leader",
+    "yesTeamLeader": "Sim",
     "photoUrl": "URL da Foto",
     "avatar": "Foto de Perfil",
     "avatarUpload": "Enviar Foto",

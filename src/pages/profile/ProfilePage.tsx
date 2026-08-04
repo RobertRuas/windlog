@@ -180,6 +180,15 @@ export function ProfilePage() {
         return t(`roles.${d.role}`);
       },
     },
+    {
+      key: 'isTeamLeader',
+      label: t('profile.isTeamLeader'),
+      category: 'professional',
+      virtual: true,
+      formatDisplay: (d) => {
+        return d.isTeamLeader ? t('profile.yesTeamLeader') : null;
+      },
+    },
     // Sobre
     { key: 'bio', label: t('profile.bio'), type: 'textarea', span: 2, category: 'about' },
   ];
