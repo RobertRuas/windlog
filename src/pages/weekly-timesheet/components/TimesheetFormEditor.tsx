@@ -186,10 +186,14 @@ export function TimesheetFormEditor({
 
   function toggleDay(dayIdx: number) {
     setCollapsedDays((prev) => {
-      const next = new Set(prev);
-      if (next.has(dayIdx)) next.delete(dayIdx);
-      else next.add(dayIdx);
-      return next;
+      // Se o dia já está aberto (não está no set), fecha ele
+      if (!prev.has(dayIdx)) {
+        const next = new Set(prev);
+        next.add(dayIdx);
+        return next;
+      }
+      // Abre apenas o dia clicado, fecha todos os outros (accordion: só 1 aberto)
+      return new Set(form.days.map((_, i) => i).filter((i) => i !== dayIdx));
     });
   }
 
