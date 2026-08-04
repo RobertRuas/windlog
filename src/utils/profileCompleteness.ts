@@ -100,7 +100,7 @@ function isFilled(value: unknown): boolean {
  * Define todas as seções verificáveis do perfil com seus pesos.
  *
  * PESOS (total = 75):
- * - Identidade: 15 (nome, sobrenome, data nascimento, nacionalidade, foto)
+ * - Identidade: 15 (nome, sobrenome, data nascimento, nacionalidade)
  * - Contato: 10 (telefone)
  * - Localização: 12 (endereço, cidade, código postal, país)
  * - Profissional: 13 (departamento, cargo, data contratação)
@@ -115,10 +115,10 @@ function getProfileSections(): ProfileSection[] {
     {
       id: 'identity',
       weight: 15,
-      fields: ['firstName', 'lastName', 'dateOfBirth', 'nationality', 'photoUrl'],
+      fields: ['firstName', 'lastName', 'dateOfBirth', 'nationality'],
       requiredFields: [],
-      isComplete: (d) => [d.firstName, d.lastName, d.dateOfBirth, d.nationality, d.photoUrl].every(isFilled),
-      filledCount: (d) => [d.firstName, d.lastName, d.dateOfBirth, d.nationality, d.photoUrl].filter(isFilled).length,
+      isComplete: (d) => [d.firstName, d.lastName, d.dateOfBirth, d.nationality].every(isFilled),
+      filledCount: (d) => [d.firstName, d.lastName, d.dateOfBirth, d.nationality].filter(isFilled).length,
     },
     {
       id: 'contact',
