@@ -169,6 +169,12 @@ export function OnboardingPage() {
       return;
     }
 
+    // Validação: data de expiração não pode ser anterior à data de emissão
+    if (new Date(expiryDateIso) < new Date(issueDateIso)) {
+      setError(t('errors.expiryBeforeIssue'));
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -201,8 +207,10 @@ export function OnboardingPage() {
 
       toast.success(t('success'));
       navigate('/');
-    } catch {
-      setError(t('errors.generic'));
+    } catch (err) {
+      // Mostra a mensagem de erro real da API
+      const errorMessage = err instanceof Error ? err.message : t('errors.generic');
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }

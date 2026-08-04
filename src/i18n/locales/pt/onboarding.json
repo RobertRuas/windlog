@@ -114,6 +114,7 @@
   "errors": {
     "requiredField": "Por favor, preencha todos os campos obrigatórios.",
     "minAge18": "O usuário deve ter pelo menos 18 anos de idade.",
+    "expiryBeforeIssue": "A data de validade do passaporte não pode ser anterior à data de emissão.",
     "generic": "Ocorreu um erro ao salvar. Tente novamente."
   }
 }
