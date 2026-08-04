@@ -463,7 +463,16 @@ export function OnboardingPage() {
                 <label className="text-sm font-medium text-gray-700">{t('fields.irataLevel.label')}</label>
                 <select
                   value={irataLevel}
-                  onChange={(e) => setIrataLevel(e.target.value)}
+                  onChange={(e) => {
+                    setIrataLevel(e.target.value);
+                    // Se "Não se aplica", preenche automaticamente o número
+                    if (e.target.value === 'NOT_APPLICABLE') {
+                      setIrataNumber('NOT_APPLICABLE');
+                    } else if (irataNumber === 'NOT_APPLICABLE') {
+                      // Se mudou para outro nível, limpa o valor auto-preenchido
+                      setIrataNumber('');
+                    }
+                  }}
                   className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 >
@@ -476,9 +485,10 @@ export function OnboardingPage() {
               </div>
               <Input
                 label={t('fields.irataNumber.label')}
-                value={irataNumber}
+                value={irataNumber === 'NOT_APPLICABLE' ? t('irataNumberOptions.notApplicable') : irataNumber}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setIrataNumber(e.target.value)}
                 placeholder={t('fields.irataNumber.placeholder')}
+                disabled={irataLevel === 'NOT_APPLICABLE'}
                 required
               />
             </div>
