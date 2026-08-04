@@ -70,6 +70,18 @@ export interface User {
   signatureData?: string | null;
   /** Data de criação da conta (formato ISO) */
   createdAt?: string;
+  /** Indica se o usuário completou o onboarding obrigatório */
+  profileComplete?: boolean;
+  /** WINDA ID (ex: "RR092285BR") */
+  windaId?: string | null;
+  /** Nível IRATA (L1, L2, L3, NOT_APPLICABLE) */
+  irataLevel?: string | null;
+  /** Número IRATA */
+  irataNumber?: string | null;
+  /** Cidade do aeroporto preferido */
+  preferredAirportCity?: string | null;
+  /** País do aeroporto preferido */
+  preferredAirportCountry?: string | null;
   /** Idiomas que o usuário fala */
   languages?: UserLanguage[];
   /** Certificações profissionais do usuário */
@@ -108,6 +120,8 @@ export interface LoginResponse {
   user: User;
   /** Indica se o usuário precisa trocar a senha temporária */
   mustChangePassword: boolean;
+  /** Indica se o usuário já completou o onboarding obrigatório */
+  profileComplete: boolean;
 }
 
 /**

@@ -40,6 +40,7 @@ import { CreateCertificationDto, UpdateCertificationDto } from './dto/user-certi
 import { CreateLanguageDto, UpdateLanguageDto } from './dto/user-language.dto.js';
 import { CreateDocumentDto, UpdateDocumentDto } from './dto/user-document.dto.js';
 import { CreateBankAccountDto, UpdateBankAccountDto } from './dto/user-bank-account.dto.js';
+import { OnboardingDto } from './dto/onboarding.dto.js';
 import { JwtPayload } from './strategies/jwt.strategy.js';
 import { Role } from '../../common/decorators/roles.decorator.js';
 
@@ -120,6 +121,7 @@ export class AuthService {
       sub: user.id,
       email: user.email,
       role: user.role,
+      profileComplete: user.profileComplete,
     };
 
     const token = await this.jwtService.signAsync(payload);
@@ -179,6 +181,7 @@ export class AuthService {
       sub: user.id,
       email: user.email,
       role: user.role,
+      profileComplete: user.profileComplete,
     };
 
     const token = await this.jwtService.signAsync(payload);
@@ -201,6 +204,7 @@ export class AuthService {
         role: user.role,
       },
       mustChangePassword: user.mustChangePassword,
+      profileComplete: user.profileComplete,
     };
   }
 
@@ -244,6 +248,85 @@ export class AuthService {
 
     const { password, ...userWithoutPassword } = updatedUser;
     return userWithoutPassword;
+  }
+
+  /**
+   * Submete o onboarding obrigatório do usuário.
+   * Preenche todos os dados essenciais e marca o perfil como completo.
+   *
+   * PASSO A PASSO:
+   * 1. Busca o usuário pelo ID
+   * 2. Atualiza dados pessoais, contato, localização, aeroporto, profissionais
+   * 3. Cria o documento de passaporte
+   * 4. Cria os idiomas
+   * 5. Marca profileComplete = true
+   *
+   * @param userId - ID do usuário (extraído do JWT)
+   * @param dto - Dados do onboarding (todos obrigatórios)
+   * @returns Perfil completo atualizado
+   */
+  async submitOnboarding(userId: string, dto: OnboardingDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    // Atualiza o usuário com todos os dados do onboarding em uma transação
+    const result = await this.prisma.$transaction(async (tx) => {
+      // 1. Atualiza dados pessoais, contato, localização, aeroporto e profissionais
+      const updatedUser = await tx.user.update({
+        where: { id: userId },
+        data: {
+          firstName: dto.firstName,
+          lastName: dto.lastName,
+          nationality: dto.nationality,
+          dateOfBirth: new Date(dto.dateOfBirth),
+          email: dto.email,
+          phone: dto.phone,
+          address: dto.address,
+          preferredAirportCity: dto.preferredAirportCity,
+          preferredAirportCountry: dto.preferredAirportCountry,
+          windaId: dto.windaId,
+          irataLevel: dto.irataLevel,
+          irataNumber: dto.irataNumber,
+          profileComplete: true,
+        },
+      });
+
+      // 2. Cria o documento de passaporte
+      await tx.userDocument.create({
+        data: {
+          userId,
+          type: 'PASSPORT',
+          documentNumber: dto.passportNumber,
+          issuingCountry: dto.passportIssuingCountry,
+          issueDate: new Date(dto.passportIssueDate),
+          expiryDate: new Date(dto.passportExpiryDate),
+          filePath: dto.passportFilePath ?? null,
+        },
+      });
+
+      // 3. Cria os idiomas (um por um)
+      for (const lang of dto.languages) {
+        await tx.userLanguage.create({
+          data: {
+            userId,
+            language: lang.language,
+            level: lang.level as any,
+          },
+        });
+      }
+
+      return updatedUser;
+    });
+
+    this.logger.log(`Onboarding completed for user: ${user.email} (${user.id})`);
+
+    // Retorna o perfil completo
+    return this.getProfile(userId);
   }
 
   /**
@@ -296,6 +379,12 @@ export class AuthService {
       photoUrl: user.photoUrl,
       signatureData: user.signatureData,
       role: user.role,
+      profileComplete: user.profileComplete,
+      windaId: user.windaId,
+      irataLevel: user.irataLevel,
+      irataNumber: user.irataNumber,
+      preferredAirportCity: user.preferredAirportCity,
+      preferredAirportCountry: user.preferredAirportCountry,
       createdAt: user.createdAt,
       phoneNumbers: user.phoneNumbers,
       certifications: user.certifications,
@@ -393,6 +482,12 @@ export class AuthService {
       bio: updatedUser.bio,
       photoUrl: updatedUser.photoUrl,
       role: updatedUser.role,
+      profileComplete: updatedUser.profileComplete,
+      windaId: updatedUser.windaId,
+      irataLevel: updatedUser.irataLevel,
+      irataNumber: updatedUser.irataNumber,
+      preferredAirportCity: updatedUser.preferredAirportCity,
+      preferredAirportCountry: updatedUser.preferredAirportCountry,
       createdAt: updatedUser.createdAt,
       phoneNumbers: updatedUser.phoneNumbers,
       certifications: updatedUser.certifications,

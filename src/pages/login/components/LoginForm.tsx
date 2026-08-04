@@ -79,6 +79,9 @@ export function LoginForm() {
       // Se o usuário precisa trocar a senha temporária, redireciona para a página de troca
       if (response.mustChangePassword) {
         navigate('/change-password');
+      } else if (!response.profileComplete) {
+        // Se o perfil não está completo, redireciona para o onboarding
+        navigate('/onboarding');
       } else {
         // Login bem-sucedido: redireciona para a página inicial
         navigate('/');

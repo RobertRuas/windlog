@@ -65,6 +65,7 @@ import { AuthService } from './auth.service.js';
 import { LoginDto } from './dto/login.dto.js';
 import { RegisterDto } from './dto/register.dto.js';
 import { ChangeTempPasswordDto } from './dto/change-temp-password.dto.js';
+import { OnboardingDto } from './dto/onboarding.dto.js';
 import { UpdateProfileDto } from './dto/update-profile.dto.js';
 import { CreatePhoneDto, UpdatePhoneDto } from './dto/user-phone.dto.js';
 import { CreateCertificationDto, UpdateCertificationDto } from './dto/user-certification.dto.js';
@@ -167,8 +168,8 @@ export class AuthController {
   })
   @HttpCode(HttpStatus.OK)
   @Post('login')
-  login(@Body() dto: LoginDto): Promise<{ accessToken: string; user: AuthResponseDataDto['user']; mustChangePassword: boolean }> {
-    return this.authService.login(dto) as Promise<{ accessToken: string; user: AuthResponseDataDto['user']; mustChangePassword: boolean }>;
+  login(@Body() dto: LoginDto): Promise<{ accessToken: string; user: AuthResponseDataDto['user']; mustChangePassword: boolean; profileComplete: boolean }> {
+    return this.authService.login(dto) as Promise<{ accessToken: string; user: AuthResponseDataDto['user']; mustChangePassword: boolean; profileComplete: boolean }>;
   }
 
   /**
@@ -200,6 +201,42 @@ export class AuthController {
     @Body() dto: ChangeTempPasswordDto,
   ) {
     return this.authService.changeTemporaryPassword(user.sub, dto.newPassword);
+  }
+
+  /**
+   * POST /api/v1/auth/onboarding
+   *
+   * Submete o onboarding obrigatório do usuário.
+   * Preenche todos os dados essenciais e marca o perfil como completo.
+   * Endpoint PROTEGIDO (requer token JWT válido).
+   */
+  @ApiOperation({
+    summary: 'Submit mandatory onboarding',
+    description:
+      'Submete todos os dados obrigatórios do onboarding (dados pessoais, passaporte, contato, localização, idiomas, aeroporto preferido, WINDA ID, IRATA). Marca o perfil como completo. Requer token JWT válido.',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Onboarding completado com sucesso',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Dados inválidos ou faltando campos obrigatórios',
+    type: ErrorResponseDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Token inválido ou usuário não encontrado',
+    type: ErrorResponseDto,
+  })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Post('onboarding')
+  submitOnboarding(
+    @CurrentUser() user: JwtPayload,
+    @Body() dto: OnboardingDto,
+  ) {
+    return this.authService.submitOnboarding(user.sub, dto);
   }
 
   /**

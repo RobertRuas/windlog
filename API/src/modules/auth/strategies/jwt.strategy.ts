@@ -46,6 +46,8 @@ export interface JwtPayload {
   email: string;
   /** Papel (role) do usuário */
   role: string;
+  /** Indica se o usuário completou o onboarding obrigatório */
+  profileComplete: boolean;
 }
 
 /**
@@ -94,6 +96,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       sub: payload.sub,
       email: payload.email,
       role: payload.role,
+      profileComplete: payload.profileComplete,
     };
   }
 }

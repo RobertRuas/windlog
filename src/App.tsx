@@ -43,6 +43,7 @@ import { UsersPage } from '@/pages/users/UsersPage';
 import { ProjectsPage } from '@/pages/projects/ProjectsPage';
 import { ProjectDetailPage } from '@/pages/projects/detail/ProjectDetailPage';
 import { ChangeTempPasswordPage } from '@/pages/change-password/ChangeTempPasswordPage';
+import { OnboardingPage } from '@/pages/onboarding/OnboardingPage';
 import { NotificationsPage } from '@/pages/notifications/NotificationsPage';
 import { NotificationDetailPage } from '@/pages/notifications/NotificationDetailPage';
 import { WeeklyTimesheetPage } from '@/pages/weekly-timesheet/WeeklyTimesheetPage';
@@ -70,11 +71,38 @@ const queryClient = new QueryClient({
 });
 
 /**
+ * Componente AuthOnlyRoute - Rota que requer apenas autenticação.
+ *
+ * Verifica apenas se o usuário está autenticado (token válido).
+ * NÃO verifica se o perfil está completo (usado para a página de onboarding).
+ *
+ * @param children - componente a ser exibido se autenticado
+ */
+function AuthOnlyRoute({ children }: { children: React.ReactNode }) {
+  const authenticated = isAuthenticated();
+  const expired = isTokenExpired();
+
+  if (authenticated && expired) {
+    localStorage.removeItem('accessToken');
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!authenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <>{children}</>;
+}
+
+/**
  * Componente ProtectedRoute - Rota protegida.
  *
  * Verifica se o usuário está autenticado antes de exibir a página.
  * Se não estiver autenticado OU o token estiver expirado, redireciona para /login.
  * Se o token estiver expirado, remove o token automaticamente (logout).
+ *
+ * També verifica se o perfil está completo (onboarding realizado).
+ * Se não estiver completo, redireciona para /onboarding.
  *
  * @param children - componente a ser exibido se autenticado
  */
@@ -94,6 +122,20 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   // Se não autenticado, redireciona para /login
   if (!authenticated) {
     return <Navigate to="/login" replace />;
+  }
+
+  // Verifica se o perfil está completo (onboarding realizado)
+  try {
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      // Se profileComplete é false, redireciona para onboarding
+      if (payload.profileComplete === false) {
+        return <Navigate to="/onboarding" replace />;
+      }
+    }
+  } catch {
+    // Se houver erro na verificação, permite o acesso
   }
 
   // Se autenticado e token válido, exibe o conteúdo da rota
@@ -210,6 +252,16 @@ export default function App() {
               <ProtectedRoute>
                 <ChangeTempPasswordPage />
               </ProtectedRoute>
+            }
+          />
+
+          {/* Rota protegida - onboarding obrigatório (requer apenas autenticação) */}
+          <Route
+            path="/onboarding"
+            element={
+              <AuthOnlyRoute>
+                <OnboardingPage />
+              </AuthOnlyRoute>
             }
           />
 

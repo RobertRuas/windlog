@@ -1,0 +1,115 @@
+{
+  "title": "Complete o seu Perfil",
+  "subtitle": "Preencha os dados obrigatórios para acessar o sistema",
+  "info": "Estes dados são obrigatórios para todos os colaboradores. Preencha todas as secções para continuar.",
+  "sections": {
+    "personal": "Dados Pessoais",
+    "passport": "Passaporte",
+    "contact": "Contato",
+    "location": "Localização",
+    "languages": "Idiomas",
+    "airport": "Aeroporto Preferido",
+    "professional": "Dados Profissionais"
+  },
+  "fields": {
+    "firstName": {
+      "label": "Nome",
+      "placeholder": "Digite o seu nome"
+    },
+    "lastName": {
+      "label": "Sobrenome",
+      "placeholder": "Digite o seu sobrenome"
+    },
+    "nationality": {
+      "label": "Nacionalidade",
+      "placeholder": "Selecione a nacionalidade"
+    },
+    "dateOfBirth": {
+      "label": "Data de Nascimento",
+      "placeholder": "Selecione a data"
+    },
+    "passportNumber": {
+      "label": "Número do Passaporte",
+      "placeholder": "Ex: AB123456"
+    },
+    "passportIssuingCountry": {
+      "label": "País de Emissão",
+      "placeholder": "Selecione o país"
+    },
+    "passportIssueDate": {
+      "label": "Data de Emissão",
+      "placeholder": "Selecione a data"
+    },
+    "passportExpiryDate": {
+      "label": "Validade",
+      "placeholder": "Selecione a data"
+    },
+    "passportFile": {
+      "label": "Foto ou PDF do Passaporte",
+      "hint": "Pode anexar posteriormente"
+    },
+    "email": {
+      "label": "E-mail",
+      "placeholder": "seu@email.com"
+    },
+    "phone": {
+      "label": "Telefone",
+      "placeholder": "+351 912 345 678"
+    },
+    "address": {
+      "label": "Endereço",
+      "placeholder": "Digite o seu endereço completo"
+    },
+    "preferredAirportCity": {
+      "label": "Cidade",
+      "placeholder": "Ex: Lisboa"
+    },
+    "preferredAirportCountry": {
+      "label": "País",
+      "placeholder": "Selecione o país"
+    },
+    "windaId": {
+      "label": "WINDA ID",
+      "placeholder": "Ex: RR092285BR"
+    },
+    "irataLevel": {
+      "label": "IRATA Nível",
+      "placeholder": "Selecione o nível"
+    },
+    "irataNumber": {
+      "label": "IRATA Nº",
+      "placeholder": "Ex: 134109 ou Não se aplica"
+    }
+  },
+  "languageEntry": {
+    "title": "Idioma {{index}}",
+    "addLanguage": "Adicionar Idioma",
+    "removeLanguage": "Remover",
+    "language": {
+      "label": "Idioma",
+      "placeholder": "Selecione o idioma"
+    },
+    "level": {
+      "label": "Nível",
+      "placeholder": "Selecione o nível"
+    }
+  },
+  "irataOptions": {
+    "L1": "Nível 1",
+    "L2": "Nível 2",
+    "L3": "Nível 3",
+    "NOT_APPLICABLE": "Não se aplica"
+  },
+  "irataNumberOptions": {
+    "notApplicable": "Não se aplica"
+  },
+  "submit": "Completar e Acessar o Sistema",
+  "submitting": "A guardar...",
+  "success": "Perfil completado com sucesso! Bem-vindo ao Windlog.",
+  "errors": {
+    "generic": "Erro ao completar o perfil. Verifique os dados e tente novamente.",
+    "requiredField": "Este campo é obrigatório",
+    "invalidEmail": "Digite um e-mail válido",
+    "minLanguages": "Adicione pelo menos um idioma"
+  }
+}

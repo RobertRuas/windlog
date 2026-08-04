@@ -211,6 +211,42 @@ export async function changeTempPassword(newPassword: string): Promise<void> {
   await api.post<ApiResponse<unknown>>('/api/v1/auth/change-temp-password', { newPassword });
 }
 
+/**
+ * Dados enviados para o onboarding obrigatório.
+ */
+export interface OnboardingPayload {
+  firstName: string;
+  lastName: string;
+  nationality: string;
+  dateOfBirth: string;
+  passportNumber: string;
+  passportIssuingCountry: string;
+  passportIssueDate: string;
+  passportExpiryDate: string;
+  email: string;
+  phone: string;
+  address: string;
+  languages: { language: string; level: string }[];
+  preferredAirportCity: string;
+  preferredAirportCountry: string;
+  windaId: string;
+  irataLevel: string;
+  irataNumber: string;
+  passportFilePath?: string;
+}
+
+/**
+ * Submete o onboarding obrigatório do usuário.
+ * Preenche todos os dados essenciais e marca o perfil como completo.
+ *
+ * @param data - Dados do onboarding
+ * @returns Perfil completo atualizado
+ */
+export async function submitOnboarding(data: OnboardingPayload): Promise<ProfileResponse> {
+  const response = await api.post<ApiResponse<ProfileResponse>>('/api/v1/auth/onboarding', data);
+  return response.data;
+}
+
 // ============================================================================
 // DOCUMENTS - Gerenciamento de Documentos Pessoais
 // ============================================================================

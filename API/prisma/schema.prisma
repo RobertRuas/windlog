@@ -195,6 +195,20 @@ model User {
   isActive  Boolean  @default(true)
   /// Indica se o usuário precisa trocar a senha no próximo login (ex: senha temporária)
   mustChangePassword Boolean @default(false)
+  /// Indica se o usuário completou o onboarding obrigatório (dados essenciais preenchidos)
+  profileComplete Boolean @default(false)
+
+  // Dados profissionais específicos
+  /// WINDA ID (ex: "RR092285BR")
+  windaId           String?
+  /// Nível IRATA (L1, L2, L3, NOT_APPLICABLE)
+  irataLevel        String?
+  /// Número IRATA (ex: "134109" ou "NOT_APPLICABLE")
+  irataNumber       String?
+  /// Cidade do aeroporto preferido
+  preferredAirportCity    String?
+  /// País do aeroporto preferido (código ISO 3166-1 alpha-2)
+  preferredAirportCountry String?
 
   // Timestamps (datas em UTC)
   createdAt  DateTime @default(now())

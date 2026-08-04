@@ -31,7 +31,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 
 // Serviço de autenticação
-import { changeTempPassword, logout } from '@/services/auth.service';
+import { changeTempPassword } from '@/services/auth.service';
 
 /**
  * Componente ChangeTempPasswordPage - Tela de troca de senha temporária.
@@ -77,11 +77,9 @@ export function ChangeTempPasswordPage() {
       // Mostra mensagem de sucesso
       toast.success(t('changeTempPassword.success'));
 
-      // Faz logout para o usuário fazer login com a nova senha
-      logout();
-
-      // Redireciona para a página de login
-      navigate('/login');
+      // Redireciona para o onboarding (o usuário já está autenticado)
+      // O onboarding irá verificar se o perfil precisa ser completado
+      navigate('/onboarding');
     } catch {
       setError(t('changeTempPassword.errors.generic'));
     } finally {
