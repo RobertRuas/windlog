@@ -116,7 +116,7 @@ export function ProjectFilesTab({
     for (const file of Array.from(selectedFiles)) {
       // Validação básica de tamanho (10 MB)
       if (file.size > 10 * 1024 * 1024) {
-        toast.error(`"${file.name}" excede o limite de 10 MB`);
+        toast.error(t('files.exceedsLimit', { name: file.name }));
         continue;
       }
       onUploadFile(file);
@@ -148,7 +148,7 @@ export function ProjectFilesTab({
 
     for (const file of Array.from(droppedFiles)) {
       if (file.size > 10 * 1024 * 1024) {
-        toast.error(`"${file.name}" excede o limite de 10 MB`);
+        toast.error(t('files.exceedsLimit', { name: file.name }));
         continue;
       }
       onUploadFile(file);
@@ -251,7 +251,7 @@ export function ProjectFilesTab({
           className={`mx-auto mb-3 ${isDragOver ? 'text-blue-500' : 'text-gray-400'}`}
         />
         <p className="text-sm text-gray-600 mb-1">
-          {isUploading ? 'A enviar...' : t('files.dropzone')}
+          {isUploading ? t('files.uploading') : t('files.dropzone')}
         </p>
         <p className="text-xs text-gray-400">
           {t('files.dropzoneHint')}

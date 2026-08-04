@@ -23,6 +23,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Bell,
   Check,
@@ -42,12 +43,12 @@ import {
   deleteRead,
   type Notification,
 } from '@/services/notification.service';
-import { getNotificationIcon, getTypeLabel, getPriorityBorder } from '@/utils/notificationHelpers';
+import { getNotificationIcon, getTypeLabel, getPriorityBorder } from '@/utils/notification.helpers';
 
 /**
  * Formata data relativa (ex: "há 2 horas").
  */
-function formatRelativeDate(dateString: string): string {
+function formatRelativeDate(dateString: string, t: (key: string, opts?: Record<string, unknown>) => string): string {
   const date = new Date(dateString);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
@@ -55,10 +56,10 @@ function formatRelativeDate(dateString: string): string {
   const diffHrs = Math.floor(diffMs / 3600000);
   const diffDays = Math.floor(diffMs / 86400000);
 
-  if (diffMin < 1) return 'Agora mesmo';
-  if (diffMin < 60) return `há ${diffMin} min`;
-  if (diffHrs < 24) return `há ${diffHrs}h`;
-  if (diffDays < 7) return `há ${diffDays}d`;
+  if (diffMin < 1) return t('relativeDate.now');
+  if (diffMin < 60) return t('relativeDate.minutesAgo', { count: diffMin });
+  if (diffHrs < 24) return t('relativeDate.hoursAgo', { count: diffHrs });
+  if (diffDays < 7) return t('relativeDate.daysAgo', { count: diffDays });
   return date.toLocaleDateString('pt-PT');
 }
 
@@ -70,6 +71,7 @@ type FilterType = 'all' | 'unread' | 'read';
 export function NotificationsPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { t } = useTranslation('notifications');
   const [filter, setFilter] = useState<FilterType>('all');
 
   /**
@@ -152,10 +154,10 @@ export function NotificationsPage() {
               <Bell size={20} className="text-blue-600" />
             </div>
             <div>
-              <h1 className="text-xl font-semibold text-gray-900">Notificações</h1>
+              <h1 className="text-xl font-semibold text-gray-900">{t('title')}</h1>
               {data && (
                 <p className="text-sm text-gray-500">
-                  {data.total} {data.total === 1 ? 'notificação' : 'notificações'}
+                  {t('subtitle', { count: data.total })}
                 </p>
               )}
             </div>
@@ -166,14 +168,14 @@ export function NotificationsPage() {
             <button
               onClick={() => markAllAsReadMutation.mutate()}
               className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
-              title="Marcar todas como lidas"
+              title={t('actions.markAllRead')}
             >
               <CheckCheck size={18} />
             </button>
             <button
               onClick={() => deleteReadMutation.mutate()}
               className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
-              title="Limpar lidas"
+              title={t('actions.clearRead')}
             >
               <Trash2 size={18} />
             </button>
@@ -190,7 +192,7 @@ export function NotificationsPage() {
                 : 'text-gray-500 hover:text-gray-700'
             }`}
           >
-            Todas
+            {t('filters.all')}
           </button>
           <button
             onClick={() => setFilter('unread')}
@@ -201,7 +203,7 @@ export function NotificationsPage() {
             }`}
           >
             <Mail size={14} />
-            Não lidas
+            {t('filters.unread')}
           </button>
           <button
             onClick={() => setFilter('read')}
@@ -212,7 +214,7 @@ export function NotificationsPage() {
             }`}
           >
             <MailOpen size={14} />
-            Lidas
+            {t('filters.read')}
           </button>
         </div>
 
@@ -220,12 +222,12 @@ export function NotificationsPage() {
         {isLoading ? (
           <div className="text-center py-16">
             <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-            <p className="text-gray-500 text-sm">A carregar notificações...</p>
+            <p className="text-gray-500 text-sm">{t('loading')}</p>
           </div>
         ) : isError ? (
           <div className="text-center py-16">
             <AlertCircle size={48} className="text-red-400 mx-auto mb-3" />
-            <p className="text-gray-500">Erro ao carregar notificações</p>
+            <p className="text-gray-500">{t('loadError')}</p>
           </div>
         ) : notifications.length === 0 ? (
           <div className="text-center py-16">
@@ -234,13 +236,13 @@ export function NotificationsPage() {
             </div>
             <p className="text-gray-500 font-medium">
               {filter === 'all'
-                ? 'Nenhuma notificação'
+                ? t('empty.all')
                 : filter === 'unread'
-                ? 'Nenhuma notificação não lida'
-                : 'Nenhuma notificação lida'}
+                ? t('empty.unread')
+                : t('empty.read')}
             </p>
             <p className="text-gray-400 text-sm mt-1">
-              {filter === 'all' && 'Quando tiver notificações, elas aparecerão aqui'}
+              {filter === 'all' && t('empty.hint')}
             </p>
           </div>
         ) : (
@@ -276,7 +278,7 @@ export function NotificationsPage() {
                     <div className="flex items-center gap-2 mt-1">
                       <span className="text-xs text-gray-400">{getTypeLabel(notification.type)}</span>
                       <span className="text-xs text-gray-300">•</span>
-                      <span className="text-xs text-gray-400">{formatRelativeDate(notification.createdAt)}</span>
+                      <span className="text-xs text-gray-400">{formatRelativeDate(notification.createdAt, t)}</span>
                     </div>
                   </div>
 
@@ -289,7 +291,7 @@ export function NotificationsPage() {
                           markAsReadMutation.mutate(notification.id);
                         }}
                         className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-blue-500 transition-colors"
-                        title="Marcar como lida"
+                        title={t('actions.markAsRead')}
                       >
                         <Check size={14} />
                       </button>
@@ -300,7 +302,7 @@ export function NotificationsPage() {
                         deleteNotificationMutation.mutate(notification.id);
                       }}
                       className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-red-500 transition-colors"
-                      title="Apagar"
+                      title={t('actions.delete')}
                     >
                       <Trash2 size={14} />
                     </button>

@@ -149,5 +149,9 @@
     "error": "Erro ao processar timesheet",
     "deleteConfirm": "Tem certeza que deseja excluir este timesheet?",
     "deleteSuccess": "Timesheet excluído com sucesso!"
+  },
+  "notFound": "Timesheet não encontrado",
+  "formEditor": {
+    "clear": "Limpar"
   }
 }

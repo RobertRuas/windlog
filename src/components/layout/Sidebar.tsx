@@ -191,7 +191,7 @@ export function Sidebar({ userName }: SidebarProps) {
       <button
         onClick={() => setMobileOpen(true)}
         className="md:hidden fixed top-4 left-4 z-40 w-10 h-10 bg-white rounded-lg shadow-md flex items-center justify-center text-gray-600 hover:text-gray-900 transition-colors"
-        aria-label="Abrir menu"
+        aria-label={t('ariaLabels.openMenu')}
       >
         <Menu size={20} />
       </button>
@@ -216,7 +216,7 @@ export function Sidebar({ userName }: SidebarProps) {
         <button
           onClick={closeMobile}
           className="absolute top-4 right-3 w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-700 transition-colors"
-          aria-label="Fechar menu"
+          aria-label={t('ariaLabels.closeMenu')}
         >
           <X size={18} />
         </button>

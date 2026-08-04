@@ -1,0 +1,76 @@
+{
+  "title": "Notificações",
+  "subtitle_one": "{{count}} notificação",
+  "subtitle_other": "{{count}} notificações",
+  "loading": "A carregar notificações...",
+  "loadError": "Erro ao carregar notificações",
+  "notFound": "Notificação não encontrada",
+  "backToList": "Voltar para notificações",
+  "detailTitle": "Detalhes da Notificação",
+  "loadingDetail": "A carregar...",
+
+  "filters": {
+    "all": "Todas",
+    "unread": "Não lidas",
+    "read": "Lidas"
+  },
+
+  "empty": {
+    "all": "Nenhuma notificação",
+    "unread": "Nenhuma notificação não lida",
+    "read": "Nenhuma notificação lida",
+    "hint": "Quando tiver notificações, elas aparecerão aqui"
+  },
+
+  "actions": {
+    "markAllRead": "Marcar todas como lidas",
+    "clearRead": "Limpar lidas",
+    "markAsRead": "Marcar como lida",
+    "delete": "Apagar",
+    "back": "Voltar",
+    "goToProfile": "Ir para Perfil",
+    "viewDetails": "Ver Detalhes"
+  },
+
+  "status": {
+    "read": "Lida",
+    "unread": "Não lida"
+  },
+
+  "types": {
+    "ACTION_REQUIRED": "Ação Obrigatória",
+    "DOCUMENT_EXPIRING": "Documento a Expirar",
+    "CERTIFICATION_EXPIRING": "Certificação a Expirar",
+    "PASSWORD_EXPIRING": "Senha a Expirar",
+    "RECOMMENDED_ACTION": "Ação Recomendada",
+    "PROFILE_INCOMPLETE": "Perfil Incompleto",
+    "INFO": "Informação",
+    "PROJECT_UPDATE": "Atualização de Projeto",
+    "SYSTEM_UPDATE": "Atualização do Sistema",
+    "SUCCESS": "Sucesso",
+    "WARNING": "Aviso",
+    "ERROR": "Erro"
+  },
+
+  "typeDefault": "Notificação",
+
+  "priority": {
+    "URGENT": "Urgente",
+    "HIGH": "Alta",
+    "MEDIUM": "Média",
+    "LOW": "Baixa"
+  },
+
+  "relativeDate": {
+    "now": "Agora mesmo",
+    "minutesAgo": "há {{count}} min",
+    "hoursAgo": "há {{count}}h",
+    "daysAgo": "há {{count}}d"
+  },
+
+  "ariaLabels": {
+    "notifications": "Notificações",
+    "openMenu": "Abrir menu",
+    "closeMenu": "Fechar menu"
+  }
+}

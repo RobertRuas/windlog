@@ -109,7 +109,7 @@ export function AvatarUpload({ currentPhotoUrl, onSuccess, compact = false }: Av
         }
       }, 100);
     } catch {
-      toast.error('Não foi possível acessar a câmera. Verifique as permissões.');
+      toast.error(t('profile.cameraError'));
     }
   };
 

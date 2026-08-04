@@ -53,13 +53,13 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024;
 /**
  * Categorias com ícones minimalistas.
  */
-const CATEGORIES: { value: FeedbackCategory; icon: typeof Bug; label: string }[] = [
-  { value: 'BUG', icon: Bug, label: 'Bug' },
-  { value: 'UI_ISSUE', icon: Palette, label: 'Visual' },
-  { value: 'FEATURE', icon: Lightbulb, label: 'Ideia' },
-  { value: 'INCONSISTENCY', icon: AlertTriangle, label: 'Erro' },
-  { value: 'PERFORMANCE', icon: Zap, label: 'Lento' },
-  { value: 'OTHER', icon: FileText, label: 'Outro' },
+const CATEGORIES: { value: FeedbackCategory; icon: typeof Bug; labelKey: string }[] = [
+  { value: 'BUG', icon: Bug, labelKey: 'modal_categories.bug' },
+  { value: 'UI_ISSUE', icon: Palette, labelKey: 'modal_categories.visual' },
+  { value: 'FEATURE', icon: Lightbulb, labelKey: 'modal_categories.idea' },
+  { value: 'INCONSISTENCY', icon: AlertTriangle, labelKey: 'modal_categories.error' },
+  { value: 'PERFORMANCE', icon: Zap, labelKey: 'modal_categories.slow' },
+  { value: 'OTHER', icon: FileText, labelKey: 'modal_categories.other' },
 ];
 
 export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
@@ -263,7 +263,7 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
                     `.trim()}
                   >
                     <Icon size={12} />
-                    <span>{cat.label}</span>
+                    <span>{t(cat.labelKey)}</span>
                   </button>
                 );
               })}

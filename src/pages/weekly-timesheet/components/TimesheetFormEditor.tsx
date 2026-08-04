@@ -29,418 +29,32 @@
  * ============================================================================
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { createPortal } from 'react-dom';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import {
   Plus, Trash2, Save, RotateCcw, ChevronDown, ChevronRight,
-  X, User as UserIcon, Check,
+  Check, User as UserIcon,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import type {
-  WeeklyTimesheet,
-  UpdateTimesheetPayload,
-  UpdateDayPayload,
-  UpdateEntryPayload,
-} from '@/services/weekly-timesheet.service';
 import { updateTimesheet } from '@/services/weekly-timesheet.service';
 import { getProfile } from '@/services/auth.service';
 import { getProjectMembers, getProjectTurbines, type ProjectMember } from '@/services/project.service';
 import { DatePicker } from '@/components/ui/DatePicker';
-
-// =========================================================================
-// TYPES
-// =========================================================================
-
-interface TimesheetFormEditorProps {
-  timesheet: WeeklyTimesheet;
-  onSave: (payload: UpdateTimesheetPayload) => void;
-  isSaving: boolean;
-}
-
-/**
- * Campos compartilhados entre técnicos de um mesmo dia.
- */
-const SHARED_FIELDS = [
-  'localTurbineNo', 'turbineIdNo', 'towerNo', 'bladeNo',
-  'standbyHrs', 'workingHrs', 'travelHrs', 'downtimeHrs', 'standbyReason',
-] as const;
-
-type SharedFieldKey = (typeof SHARED_FIELDS)[number];
-
-interface FormState {
-  jobNumber: string;
-  week: string;
-  teamNo: string;
-  jobScope: string;
-  client: string;
-  siteName: string;
-  technicianName: string;
-  technicianSignature: string;
-  technicianDate: string;
-  clientName: string;
-  clientSignature: string;
-  clientDate: string;
-  days: FormDay[];
-}
-
-interface FormDay {
-  id: string;
-  date: string;
-  dayName: string;
-  progress: string;
-  shared: Record<SharedFieldKey, string>;
-  entries: FormEntry[];
-}
-
-interface FormEntry {
-  id?: string;
-  technicianName: string;
-  role: string;
-  /** ID do usuário vinculado (para controle de acesso de visualização) */
-  userId?: string | null;
-  /** Se é o entry do usuário atual (bloqueado para remoção) */
-  isCurrentUser?: boolean;
-}
-
-interface SystemUser {
-  id: string;
-  firstName: string;
-  lastName: string;
-  fullName: string;
-  position: string;
-}
-
-// =========================================================================
-// HELPERS
-// =========================================================================
-
-function formatDateBR(dateStr: string | null | undefined): string {
-  if (!dateStr) return '';
-  const pureDate = dateStr.split('T')[0];
-  const parts = pureDate.split('-');
-  if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
-  return dateStr;
-}
-
-function formatDateISO(dateStr: string): string {
-  const parts = dateStr.split('/');
-  if (parts.length === 3) return `${parts[2]}-${parts[1]}-${parts[0]}`;
-  return dateStr;
-}
-
-/**
- * Verifica se um dia está "preenchido" (tem progress + pelo menos 1 entry com nome).
- */
-function isDayFilled(day: FormDay): boolean {
-  const hasProgress = day.progress.trim().length > 0;
-  // Considera apenas técnicos que não são o usuário atual
-  const hasNamedEntry = day.entries.some(
-    (e) => e.technicianName.trim().length > 0 && !e.isCurrentUser,
-  );
-  return hasProgress && hasNamedEntry;
-}
-
-function detectSharedValues(
-  entries: { [key: string]: any }[],
-): Record<SharedFieldKey, string> {
-  // NÃO MAIS USADO — sharedValues agora vem da API (persistidos no banco)
-  // Mantido apenas como fallback para timesheets antigos sem sharedValues
-  const result: Record<string, string> = {};
-  for (const field of SHARED_FIELDS) {
-    const values = entries.map((e) => e[field] || '');
-    const allSame = values.length > 0 && values.every((v) => v === values[0]);
-    result[field] = allSame ? values[0] : '';
-  }
-  return result as Record<SharedFieldKey, string>;
-}
-
-function timesheetToFormState(ts: WeeklyTimesheet): FormState {
-  return {
-    jobNumber: ts.jobNumber || '',
-    week: ts.week || '',
-    teamNo: ts.teamNo || '',
-    jobScope: ts.jobScope || '',
-    client: ts.client || '',
-    siteName: ts.siteName || '',
-    technicianName: ts.technicianName || '',
-    technicianSignature: ts.technicianSignature || '',
-    technicianDate: formatDateBR(ts.technicianDate),
-    clientName: ts.clientName || '',
-    clientSignature: ts.clientSignature || '',
-    clientDate: formatDateBR(ts.clientDate),
-    days: ts.days.map((day) => {
-      // Usa sharedValues da API se disponível, senão detecta dos entries (fallback)
-      const shared: Record<SharedFieldKey, string> = day.sharedValues
-        ? {
-            localTurbineNo: day.sharedValues.localTurbineNo || '',
-            turbineIdNo: day.sharedValues.turbineIdNo || '',
-            towerNo: day.sharedValues.towerNo || '',
-            bladeNo: day.sharedValues.bladeNo || '',
-            standbyHrs: day.sharedValues.standbyHrs || '',
-            workingHrs: day.sharedValues.workingHrs || '',
-            travelHrs: day.sharedValues.travelHrs || '',
-            downtimeHrs: day.sharedValues.downtimeHrs || '',
-            standbyReason: day.sharedValues.standbyReason || '',
-          }
-        : detectSharedValues(day.entries);
-      return {
-        id: day.id,
-        date: formatDateBR(day.date),
-        dayName: day.dayName,
-        progress: day.progress || '',
-        shared,
-        entries: day.entries.map((e) => ({
-          id: e.id,
-          technicianName: e.technicianName || '',
-          role: e.role || '',
-          userId: e.userId || null,
-        })),
-      };
-    }),
-  };
-}
-
-function formStateToPayload(form: FormState): UpdateTimesheetPayload {
-  return {
-    jobNumber: form.jobNumber || undefined,
-    week: form.week || undefined,
-    teamNo: form.teamNo || undefined,
-    jobScope: form.jobScope || undefined,
-    client: form.client || undefined,
-    siteName: form.siteName || undefined,
-    technicianName: form.technicianName || undefined,
-    technicianSignature: form.technicianSignature !== undefined ? (form.technicianSignature || '') : undefined,
-    technicianDate: form.technicianDate ? formatDateISO(form.technicianDate) : undefined,
-    clientName: form.clientName || undefined,
-    clientSignature: form.clientSignature !== undefined ? (form.clientSignature || '') : undefined,
-    clientDate: form.clientDate ? formatDateISO(form.clientDate) : undefined,
-    days: form.days.map((day): UpdateDayPayload => ({
-      id: day.id,
-      dayName: day.dayName,
-      progress: day.progress,
-      // Persiste sharedValues no banco para que sejam recarregados ao voltar à página
-      sharedValues: { ...day.shared },
-      entries: day.entries.map((e): UpdateEntryPayload => ({
-        id: e.id,
-        userId: e.userId || undefined,
-        technicianName: e.technicianName,
-        role: e.role || undefined,
-        // Aplica shared values a cada entry (todos usam as informações comuns)
-        localTurbineNo: day.shared.localTurbineNo || undefined,
-        turbineIdNo: day.shared.turbineIdNo || undefined,
-        towerNo: day.shared.towerNo || undefined,
-        bladeNo: day.shared.bladeNo || undefined,
-        standbyHrs: day.shared.standbyHrs || undefined,
-        workingHrs: day.shared.workingHrs || undefined,
-        travelHrs: day.shared.travelHrs || undefined,
-        downtimeHrs: day.shared.downtimeHrs || undefined,
-        standbyReason: day.shared.standbyReason || undefined,
-      })),
-    })),
-  };
-}
-
-function createEmptyEntry(): FormEntry {
-  return {
-    technicianName: '',
-    role: '',
-  };
-}
-
-function emptyShared(): Record<SharedFieldKey, string> {
-  return {
-    localTurbineNo: '', turbineIdNo: '', towerNo: '', bladeNo: '',
-    standbyHrs: '', workingHrs: '', travelHrs: '', downtimeHrs: '',
-    standbyReason: '',
-  };
-}
-
-// =========================================================================
-// DROPDOWN SELECT COMPONENT (restritivo — apenas membros do projeto)
-// =========================================================================
-
-interface TechnicianSelectProps {
-  value: string;
-  onChange: (value: string) => void;
-  onSelectUser: (user: SystemUser) => void;
-  users: SystemUser[];
-  /** Nomes já em uso neste dia (para evitar duplicidade) */
-  excludeNames?: string[];
-  disabled?: boolean;
-  placeholder?: string;
-}
-
-/**
- * Dropdown com pesquisa para selecionar técnico.
- * Restritivo: o usuário DEVE selecionar da lista.
- * - Clique abre dropdown com todos os membros (filtrável por nome)
- * - Se digitar algo que não corresponde a nenhum membro, reverte ao último valor válido
- * - Ao fechar sem seleção válida, limpa se não havia valor anterior
- */
-function TechnicianSelect({
-  value,
-  onChange,
-  onSelectUser,
-  users,
-  excludeNames = [],
-  disabled,
-  placeholder,
-}: TechnicianSelectProps) {
-  const { t } = useTranslation('timesheet');
-  const [isOpen, setIsOpen] = useState(false);
-  const [query, setQuery] = useState(value);
-  const wrapperRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0, width: 0 });
-  const lastValidValue = useRef(value);
-
-  // Sincroniza valor externo → display
-  useEffect(() => {
-    setQuery(value);
-    if (value) lastValidValue.current = value;
-  }, [value]);
-
-  // Calcula a posição do dropdown sempre que abre
-  useEffect(() => {
-    if (isOpen && inputRef.current) {
-      const rect = inputRef.current.getBoundingClientRect();
-      setDropdownPos({ top: rect.bottom + 4, left: rect.left, width: rect.width });
-    }
-  }, [isOpen]);
-
-  // Fecha dropdown ao clicar fora (input OU dropdown são considerados "dentro")
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      const target = e.target as Node;
-      const isInsideWrapper = wrapperRef.current?.contains(target);
-      const isInsideDropdown = dropdownRef.current?.contains(target);
-      if (!isInsideWrapper && !isInsideDropdown) {
-        setIsOpen(false);
-        const matchedUser = users.find((u) => u.fullName === query);
-        if (!matchedUser) {
-          setQuery(lastValidValue.current);
-        }
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [query, users]);
-
-  // Filtra: exclui técnicos já adicionados neste dia (exceto o valor atual)
-  const availableUsers = users.filter(
-    (u) => !excludeNames.includes(u.fullName) || u.fullName === value,
-  );
-
-  const filtered = query.trim().length > 0
-    ? availableUsers.filter((u) => u.fullName.toLowerCase().includes(query.toLowerCase()))
-    : availableUsers;
-
-  function handleSelect(user: SystemUser) {
-    setQuery(user.fullName);
-    lastValidValue.current = user.fullName;
-    onChange(user.fullName);
-    onSelectUser(user);
-    setIsOpen(false);
-  }
-
-  function handleClear() {
-    setQuery('');
-    lastValidValue.current = '';
-    onChange('');
-  }
-
-  /**
-   * Dropdown renderizado via portal (fora do container overflow-hidden do accordion).
-   */
-  const dropdown = isOpen
-    ? createPortal(
-        <div
-          ref={dropdownRef}
-          className="fixed z-[9999] bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden max-h-48 overflow-y-auto"
-          style={{ top: dropdownPos.top, left: dropdownPos.left, width: dropdownPos.width }}
-        >
-          {filtered.length > 0 ? (
-            filtered.map((user) => (
-              <button
-                key={user.id}
-                type="button"
-                onClick={() => handleSelect(user)}
-                className={`w-full text-left px-3 py-2 text-sm hover:bg-blue-50 flex items-center gap-2 transition-colors ${
-                  value === user.fullName ? 'bg-blue-50' : ''
-                }`}
-              >
-                <UserIcon size={14} className="text-gray-400 shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <span className="font-medium text-gray-900">{user.fullName}</span>
-                  {user.position && (
-                    <span className="ml-2 text-xs text-gray-500">{user.position}</span>
-                  )}
-                </div>
-              </button>
-            ))
-          ) : (
-            <div className="p-3 text-center text-xs text-gray-400">
-              {t('form.noMemberFound')}
-            </div>
-          )}
-        </div>,
-        document.body,
-      )
-    : null;
-
-  return (
-    <div ref={wrapperRef} className="relative">
-      <div className="relative">
-        <input
-          ref={inputRef}
-          type="text"
-          value={query}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            setIsOpen(true);
-            if (e.target.value.trim() === '') {
-              lastValidValue.current = '';
-              onChange('');
-            }
-          }}
-          onFocus={() => setIsOpen(true)}
-          onKeyDown={(e) => {
-            if (e.key === 'Escape') {
-              setQuery(lastValidValue.current);
-              setIsOpen(false);
-            }
-          }}
-          disabled={disabled}
-          placeholder={placeholder}
-          autoComplete="off"
-          className="w-full px-2 py-1.5 pr-12 border border-gray-200 rounded text-sm font-medium focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-60"
-        />
-        <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
-          {query && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleClear();
-              }}
-              className="p-0.5 text-gray-400 hover:text-gray-600 transition-colors"
-              title="Limpar"
-            >
-              <X size={12} />
-            </button>
-          )}
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="text-gray-400">
-            <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </div>
-      </div>
-      {dropdown}
-    </div>
-  );
-}
+import { TechnicianSelect } from './TechnicianSelect';
+import type {
+  TimesheetFormEditorProps,
+  FormState,
+  FormEntry,
+  SystemUser,
+  SharedFieldKey,
+} from '../types/timesheet-form.types';
+import {
+  isDayFilled,
+  timesheetToFormState,
+  formStateToPayload,
+  createEmptyEntry,
+} from '../helpers/timesheet-form.helpers';
 
 // =========================================================================
 // COMPONENT
@@ -579,7 +193,7 @@ export function TimesheetFormEditor({
     });
   }
 
-  // ── Handlers ──────────────────────────────────────────────────────
+  // ── Manipuladores ─────────────────────────────────────────────────
 
   function handleMetaChange(field: keyof FormState, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -675,10 +289,6 @@ export function TimesheetFormEditor({
     }
   }
 
-  function toggleCustomize() {
-    // Removido — personalização por técnico foi descontinuada
-    // Todos os técnicos de um dia usam as informações comuns
-  }
 
   // ── Save / Cancel ─────────────────────────────────────────────────
 
@@ -692,7 +302,7 @@ export function TimesheetFormEditor({
     toast.info(t('form.changesReverted'));
   }
 
-  // ── Styles ─────────────────────────────────────────────────────────
+  // ── Estilos ─────────────────────────────────────────────────────────
   const inputClass =
     'w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60';
   const smallInput =

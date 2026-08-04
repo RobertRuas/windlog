@@ -52,7 +52,7 @@ import { ProfileWizard } from '@/pages/home/components/ProfileWizard';
 // Utilitários
 import { shouldShowWizard } from '@/utils/profileCompleteness';
 
-// Hooks
+// Hook personalizado
 import { useProfileMutations } from './hooks/useProfileMutations';
 
 // Serviços

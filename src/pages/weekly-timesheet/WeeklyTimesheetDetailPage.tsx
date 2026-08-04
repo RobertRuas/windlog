@@ -118,7 +118,7 @@ export function WeeklyTimesheetDetailPage() {
     return (
       <AppLayout>
         <div className="flex flex-col items-center justify-center min-h-[60vh]">
-          <p className="text-gray-500 mb-4">Timesheet não encontrado</p>
+          <p className="text-gray-500 mb-4">{t('notFound')}</p>
           <button
             onClick={() => navigate('/timesheets')}
             className="text-blue-600 hover:text-blue-800 flex items-center gap-1"

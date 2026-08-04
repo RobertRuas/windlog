@@ -46,7 +46,7 @@ import { ProjectMembersTab } from './components/ProjectMembersTab';
 import { ProjectFilesTab } from './components/ProjectFilesTab';
 import { ProjectEditModal } from './components/ProjectEditModal';
 
-// Hooks
+// Hook personalizado
 import { useProjectMutations } from './hooks/useProjectMutations';
 
 /**

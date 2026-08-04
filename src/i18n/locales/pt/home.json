@@ -58,7 +58,8 @@
     "avatar": "Foto de Perfil",
     "avatarUpload": "Enviar Foto",
     "avatarCamera": "Usar Câmera",
-    "avatarHint": "Foto 3x4 (JPEG, PNG ou WebP, máx. 3 MB)"
+    "avatarHint": "Foto 3x4 (JPEG, PNG ou WebP, máx. 3 MB)",
+    "cameraError": "Não foi possível acessar a câmera. Verifique as permissões."
   },
   "phones": {
     "title": "Contato",

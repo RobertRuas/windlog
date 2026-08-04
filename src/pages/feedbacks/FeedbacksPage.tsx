@@ -23,13 +23,11 @@ import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import {
-  MessageSquare,
   Search,
   Filter,
   ChevronDown,
   Trash2,
   Eye,
-  X,
   AlertCircle,
   Bug,
   Lightbulb,
@@ -37,29 +35,20 @@ import {
   Zap,
   AlertTriangle,
   FileText,
-  Terminal,
-  Cpu,
-  Globe,
-  Wifi,
-  Monitor,
 } from 'lucide-react';
 
 import { AppLayout } from '@/components/layout/AppLayout';
 import {
   getFeedbacks,
   getFeedbackStats,
-  updateFeedback,
   deleteFeedback,
   type Feedback,
   type FeedbackFilters,
   type FeedbackStatus,
   type FeedbackPriority,
   type FeedbackCategory,
-  type TechnicalContext,
-  type ConsoleLog,
 } from '@/services/feedback.service';
-import type { SystemLog } from '@/services/system-log.service';
-import { useFileUrl } from '@/hooks/useFileUrl';
+import { FeedbackDetailModal } from './components/FeedbackDetailModal';
 
 /**
  * Cores para cada status.
@@ -95,55 +84,6 @@ const CATEGORY_ICONS: Record<FeedbackCategory, typeof Bug> = {
 };
 
 /**
- * Componente para visualizar o screenshot anexado ao feedback.
- */
-function ScreenshotViewer({ screenshotPath }: { screenshotPath: string }) {
-  const { url, isLoading } = useFileUrl(screenshotPath);
-  const { t } = useTranslation('feedback');
-
-  if (isLoading) {
-    return (
-      <div className="border border-gray-200 rounded-lg p-4 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-6 w-6 border-2 border-blue-600 border-t-transparent" />
-      </div>
-    );
-  }
-
-  if (!url) {
-    return (
-      <div className="border border-gray-200 rounded-lg p-4 text-center text-sm text-gray-500">
-        {t('fields.screenshot_unavailable')}
-      </div>
-    );
-  }
-
-  return (
-    <div className="border border-gray-200 rounded-lg overflow-hidden">
-      <div className="bg-gray-50 px-4 py-2 border-b border-gray-200 flex items-center justify-between">
-        <span className="text-xs font-medium text-gray-600">{t('fields.screenshot')}</span>
-        <a
-          href={url}
-          download
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1"
-        >
-          <FileText size={12} />
-          {t('buttons.download', { ns: 'common' })}
-        </a>
-      </div>
-      <div className="p-2 bg-gray-100">
-        <img
-          src={url}
-          alt="Screenshot"
-          className="max-w-full max-h-64 mx-auto rounded"
-        />
-      </div>
-    </div>
-  );
-}
-
-/**
  * Componente FeedbacksPage - Página de gestão de feedbacks (ADMIN).
  */
 export function FeedbacksPage() {
@@ -158,11 +98,6 @@ export function FeedbacksPage() {
   // Estado do modal de detalhes
   const [selectedFeedback, setSelectedFeedback] = useState<Feedback | null>(null);
 
-  // Estado do modal de edição
-  const [editStatus, setEditStatus] = useState<FeedbackStatus>('NEW');
-  const [editPriority, setEditPriority] = useState<FeedbackPriority>('MEDIUM');
-  const [editNotes, setEditNotes] = useState('');
-
   // Query: lista de feedbacks
   const { data: feedbacksData, isLoading } = useQuery({
     queryKey: ['feedbacks', filters],
@@ -175,21 +110,6 @@ export function FeedbacksPage() {
     queryKey: ['feedback-stats'],
     queryFn: getFeedbackStats,
     refetchInterval: 60000,
-  });
-
-  // Mutation: atualizar feedback
-  const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: { status?: FeedbackStatus; priority?: FeedbackPriority; adminNotes?: string } }) =>
-      updateFeedback(id, data),
-    onSuccess: () => {
-      toast.success(t('toast.update_success'));
-      queryClient.invalidateQueries({ queryKey: ['feedbacks'] });
-      queryClient.invalidateQueries({ queryKey: ['feedback-stats'] });
-      setSelectedFeedback(null);
-    },
-    onError: () => {
-      toast.error(t('toast.update_error'));
-    },
   });
 
   // Mutation: eliminar feedback
@@ -216,25 +136,10 @@ export function FeedbacksPage() {
 
   function openDetail(feedback: Feedback) {
     setSelectedFeedback(feedback);
-    setEditStatus(feedback.status);
-    setEditPriority(feedback.priority);
-    setEditNotes(feedback.adminNotes || '');
-  }
-
-  function handleSaveEdit() {
-    if (!selectedFeedback) return;
-    updateMutation.mutate({
-      id: selectedFeedback.id,
-      data: {
-        status: editStatus,
-        priority: editPriority,
-        adminNotes: editNotes || undefined,
-      },
-    });
   }
 
   function handleDelete(id: string) {
-    if (window.confirm('Tem certeza que deseja eliminar este feedback?')) {
+    if (window.confirm(t('toast.confirm_delete'))) {
       deleteMutation.mutate(id);
     }
   }
@@ -348,7 +253,7 @@ export function FeedbacksPage() {
               onClick={handleClearFilters}
               className="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors"
             >
-              Limpar
+              {t('table.clear')}
             </button>
           </div>
         )}
@@ -374,11 +279,11 @@ export function FeedbacksPage() {
                   <tr className="border-b border-gray-200 bg-gray-50">
                     <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase whitespace-nowrap">{t('fields.title')}</th>
                     <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase whitespace-nowrap">{t('fields.category')}</th>
-                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Status</th>
-                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Prioridade</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase whitespace-nowrap">{t('table.status')}</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase whitespace-nowrap">{t('table.priority')}</th>
                     <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase whitespace-nowrap">{t('list.reported_by')}</th>
-                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Data</th>
-                    <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Ações</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase whitespace-nowrap">{t('table.date')}</th>
+                    <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase whitespace-nowrap">{t('table.actions')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -441,7 +346,7 @@ export function FeedbacksPage() {
             {meta && meta.totalPages > 1 && (
               <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200">
                 <p className="text-sm text-gray-500">
-                  {meta.total} feedbacks · Página {meta.page} de {meta.totalPages}
+                  {t('table.pagination_info', { total: meta.total, page: meta.page, totalPages: meta.totalPages })}
                 </p>
                 <div className="flex gap-2">
                   <button
@@ -449,14 +354,14 @@ export function FeedbacksPage() {
                     disabled={meta.page <= 1}
                     className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg disabled:opacity-50 hover:bg-gray-50 transition-colors"
                   >
-                    Anterior
+                    {t('table.previous')}
                   </button>
                   <button
                     onClick={() => setFilters((prev) => ({ ...prev, page: (prev.page || 1) + 1 }))}
                     disabled={meta.page >= meta.totalPages}
                     className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg disabled:opacity-50 hover:bg-gray-50 transition-colors"
                   >
-                    Próxima
+                    {t('table.next')}
                   </button>
                 </div>
               </div>
@@ -467,282 +372,10 @@ export function FeedbacksPage() {
 
       {/* ── Modal de Detalhes / Edição ─────────────────────────────── */}
       {selectedFeedback && (
-        <>
-          <div className="fixed inset-0 z-50 bg-black/50" onClick={() => setSelectedFeedback(null)} />
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div
-              className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Header */}
-              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-900">{t('actions.view')}</h2>
-                <button
-                  onClick={() => setSelectedFeedback(null)}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              {/* Body */}
-              <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
-                {/* Info do feedback */}
-                <div>
-                  <h3 className="text-base font-semibold text-gray-900">{selectedFeedback.title}</h3>
-                  <p className="text-sm text-gray-600 mt-2 whitespace-pre-wrap">{selectedFeedback.description}</p>
-                </div>
-
-                {/* Screenshot */}
-                {selectedFeedback.screenshotPath && (
-                  <ScreenshotViewer screenshotPath={selectedFeedback.screenshotPath} />
-                )}
-
-                {/* Metadata */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-xs text-gray-500">{t('fields.category')}</p>
-                    <p className="text-sm font-medium text-gray-700">{t(`categories.${selectedFeedback.category}`)}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500">{t('list.reported_by')}</p>
-                    <p className="text-sm font-medium text-gray-700">
-                      {selectedFeedback.reporter.firstName} {selectedFeedback.reporter.lastName}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500">{t('list.page_context')}</p>
-                    <p className="text-sm text-gray-700 truncate">{selectedFeedback.pageUrl || '—'}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500">{t('list.reported_at')}</p>
-                    <p className="text-sm text-gray-700">{new Date(selectedFeedback.createdAt).toLocaleString('pt-BR')}</p>
-                  </div>
-                  {selectedFeedback.screenResolution && (
-                    <div>
-                      <p className="text-xs text-gray-500">{t('list.screen_info')}</p>
-                      <p className="text-sm text-gray-700">{selectedFeedback.screenResolution}</p>
-                    </div>
-                  )}
-                </div>
-
-                {/* ── Informações Técnicas Detalhadas ─────────────────────────── */}
-                {selectedFeedback.technicalContext && (
-                  <div className="border-t border-gray-200 pt-5">
-                    <h4 className="text-sm font-semibold text-gray-900 flex items-center gap-2 mb-3">
-                      <Cpu size={14} />
-                      Technical Details
-                    </h4>
-                    <div className="bg-gray-50 rounded-lg p-4 space-y-3">
-                      {/* Browser e OS */}
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <p className="text-xs text-gray-500 flex items-center gap-1">
-                            <Globe size={10} /> Browser
-                          </p>
-                          <p className="text-sm text-gray-700">
-                            {selectedFeedback.technicalContext.browser.name} {selectedFeedback.technicalContext.browser.version}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-gray-500">OS</p>
-                          <p className="text-sm text-gray-700">
-                            {selectedFeedback.technicalContext.system.os}
-                            {selectedFeedback.technicalContext.system.memory && ` · ${selectedFeedback.technicalContext.system.memory}GB RAM`}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-gray-500">Language</p>
-                          <p className="text-sm text-gray-700">{selectedFeedback.technicalContext.browser.language}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-gray-500">CPU Cores</p>
-                          <p className="text-sm text-gray-700">{selectedFeedback.technicalContext.system.cores}</p>
-                        </div>
-                      </div>
-
-                      {/* Tela e Viewport */}
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <p className="text-xs text-gray-500 flex items-center gap-1">
-                            <Monitor size={10} /> Screen
-                          </p>
-                          <p className="text-sm text-gray-700">
-                            {selectedFeedback.technicalContext.screen.width}x{selectedFeedback.technicalContext.screen.height}
-                            {' '}({selectedFeedback.technicalContext.screen.colorDepth}bit)
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-gray-500">Viewport</p>
-                          <p className="text-sm text-gray-700">
-                            {selectedFeedback.technicalContext.viewport.width}x{selectedFeedback.technicalContext.viewport.height}
-                            {' '}@ {selectedFeedback.technicalContext.screen.pixelRatio}x
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Conexão */}
-                      {selectedFeedback.technicalContext.connection.effectiveType && (
-                        <div>
-                          <p className="text-xs text-gray-500 flex items-center gap-1">
-                            <Wifi size={10} /> Connection
-                          </p>
-                          <p className="text-sm text-gray-700">
-                            {selectedFeedback.technicalContext.connection.effectiveType.toUpperCase()}
-                            {selectedFeedback.technicalContext.connection.downlink && ` · ${selectedFeedback.technicalContext.connection.downlink} Mbps`}
-                            {selectedFeedback.technicalContext.connection.rtt && ` · ${selectedFeedback.technicalContext.connection.rtt}ms RTT`}
-                          </p>
-                        </div>
-                      )}
-
-                      {/* Performance */}
-                      {selectedFeedback.technicalContext.performance.memoryUsed && (
-                        <div>
-                          <p className="text-xs text-gray-500">Memory Usage</p>
-                          <p className="text-sm text-gray-700">
-                            {selectedFeedback.technicalContext.performance.memoryUsed}MB / {selectedFeedback.technicalContext.performance.memoryLimit}MB
-                          </p>
-                        </div>
-                      )}
-
-                      {/* Features */}
-                      <div>
-                        <p className="text-xs text-gray-500 mb-1">Browser Features</p>
-                        <div className="flex flex-wrap gap-2">
-                          {Object.entries(selectedFeedback.technicalContext.features).map(([key, value]) => (
-                            <span
-                              key={key}
-                              className={`text-xs px-2 py-0.5 rounded ${value ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}
-                            >
-                              {key}: {value ? '✓' : '✗'}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* ── Console Logs ────────────────────────────────────────────── */}
-                {selectedFeedback.consoleLogs && selectedFeedback.consoleLogs.length > 0 && (
-                  <div className="border-t border-gray-200 pt-5">
-                    <h4 className="text-sm font-semibold text-gray-900 flex items-center gap-2 mb-3">
-                      <Terminal size={14} />
-                      Console Logs ({selectedFeedback.consoleLogs.length})
-                    </h4>
-                    <div className="bg-gray-900 rounded-lg p-3 max-h-48 overflow-y-auto">
-                      {selectedFeedback.consoleLogs.map((log: ConsoleLog, i: number) => (
-                        <div key={i} className="text-xs font-mono mb-1">
-                          <span className="text-gray-500">
-                            {new Date(log.timestamp).toLocaleTimeString()}
-                          </span>{' '}
-                          <span className={
-                            log.level === 'error' ? 'text-red-400' :
-                            log.level === 'warn' ? 'text-yellow-400' :
-                            log.level === 'info' ? 'text-blue-400' : 'text-gray-400'
-                          }>
-                            [{log.level.toUpperCase()}]
-                          </span>{' '}
-                          <span className="text-gray-300">{log.message}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* ── Recent System Logs ──────────────────────────────────────────── */}
-                {selectedFeedback.recentSystemLogs && selectedFeedback.recentSystemLogs.length > 0 && (
-                  <div className="border-t border-gray-200 pt-5">
-                    <h4 className="text-sm font-semibold text-gray-900 flex items-center gap-2 mb-3">
-                      <FileText size={14} />
-                      Recent System Errors ({selectedFeedback.recentSystemLogs.length})
-                    </h4>
-                    <div className="bg-gray-900 rounded-lg p-3 max-h-48 overflow-y-auto">
-                      {selectedFeedback.recentSystemLogs.map((log: SystemLog, i: number) => (
-                        <div key={i} className="text-xs font-mono mb-2">
-                          <div className="flex items-center gap-2 mb-0.5">
-                            <span className="text-gray-500">
-                              {new Date(log.createdAt).toLocaleString('pt-BR')}
-                            </span>
-                            <span className="text-red-400">[{log.severity}]</span>
-                            {log.entity && (
-                              <span className="text-blue-400 text-[10px]">{log.entity}</span>
-                            )}
-                          </div>
-                          <div className="text-gray-300 ml-2">{log.message}</div>
-                          {log.details && (
-                            <div className="text-gray-500 ml-2 mt-0.5 whitespace-pre-wrap text-[10px]">
-                              {JSON.stringify(log.details, null, 2)}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Edição: Status e Prioridade */}
-                <div className="border-t border-gray-200 pt-5 space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('actions.change_status')}</label>
-                      <select
-                        value={editStatus}
-                        onChange={(e) => setEditStatus(e.target.value as FeedbackStatus)}
-                        className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      >
-                        {(['NEW', 'TRIAGED', 'IN_PROGRESS', 'RESOLVED', 'CLOSED'] as FeedbackStatus[]).map((s) => (
-                          <option key={s} value={s}>{t(`statuses.${s}`)}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('actions.change_priority')}</label>
-                      <select
-                        value={editPriority}
-                        onChange={(e) => setEditPriority(e.target.value as FeedbackPriority)}
-                        className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      >
-                        {(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] as FeedbackPriority[]).map((p) => (
-                          <option key={p} value={p}>{t(`priorities.${p}`)}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* Notas do admin */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('fields.admin_notes')}</label>
-                    <textarea
-                      value={editNotes}
-                      onChange={(e) => setEditNotes(e.target.value)}
-                      placeholder={t('fields.admin_notes_placeholder')}
-                      rows={3}
-                      className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Footer */}
-              <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200">
-                <button
-                  onClick={() => setSelectedFeedback(null)}
-                  className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors"
-                >
-                  {t('buttons.cancel', { ns: 'common' })}
-                </button>
-                <button
-                  onClick={handleSaveEdit}
-                  disabled={updateMutation.isPending}
-                  className="px-5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
-                >
-                  {updateMutation.isPending ? t('actions.submitting') : t('actions.update')}
-                </button>
-              </div>
-            </div>
-          </div>
-        </>
+        <FeedbackDetailModal
+          feedback={selectedFeedback}
+          onClose={() => setSelectedFeedback(null)}
+        />
       )}
     </AppLayout>
   );

@@ -20,6 +20,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { Bell } from 'lucide-react';
 import { getUnreadCount } from '@/services/notification.service';
 
@@ -28,6 +29,7 @@ import { getUnreadCount } from '@/services/notification.service';
  */
 export function NotificationBell() {
   const navigate = useNavigate();
+  const { t } = useTranslation('notifications');
 
   /**
    * Busca contagem de notificações não lidas.
@@ -64,7 +66,7 @@ export function NotificationBell() {
     <button
       onClick={handleClick}
       className="relative p-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors duration-150"
-      aria-label="Notificações"
+      aria-label={t('ariaLabels.notifications')}
     >
       <Bell size={20} />
       {/* Badge com contagem de não lidas */}

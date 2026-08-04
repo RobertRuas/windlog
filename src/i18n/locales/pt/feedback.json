@@ -116,6 +116,42 @@
     "update_success": "Feedback atualizado com sucesso!",
     "update_error": "Erro ao atualizar feedback.",
     "delete_success": "Feedback eliminado com sucesso!",
-    "delete_error": "Erro ao eliminar feedback."
+    "delete_error": "Erro ao eliminar feedback.",
+    "confirm_delete": "Tem certeza que deseja eliminar este feedback?"
+  },
+
+  "table": {
+    "status": "Status",
+    "priority": "Prioridade",
+    "date": "Data",
+    "actions": "Ações",
+    "clear": "Limpar",
+    "pagination_info": "{{total}} feedbacks · Página {{page}} de {{totalPages}}",
+    "previous": "Anterior",
+    "next": "Próxima"
+  },
+
+  "detail": {
+    "technical_title": "Detalhes Técnicos",
+    "browser": "Browser",
+    "os": "OS",
+    "language": "Language",
+    "cpu_cores": "CPU Cores",
+    "screen": "Screen",
+    "viewport": "Viewport",
+    "connection": "Connection",
+    "memory_usage": "Memory Usage",
+    "browser_features": "Browser Features",
+    "console_logs": "Console Logs",
+    "recent_errors": "Recent System Errors"
+  },
+
+  "modal_categories": {
+    "bug": "Bug",
+    "visual": "Visual",
+    "idea": "Ideia",
+    "error": "Erro",
+    "slow": "Lento",
+    "other": "Outro"
   }
 }

@@ -21,6 +21,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ArrowLeft,
   AlertCircle,
@@ -36,7 +37,7 @@ import {
   markAsRead,
   deleteNotification,
 } from '@/services/notification.service';
-import { getNotificationIcon, getTypeLabel, getPriorityInfo } from '@/utils/notificationHelpers';
+import { getNotificationIcon, getTypeLabel, getPriorityInfo } from '@/utils/notification.helpers';
 
 /**
  * Formata data completa (ex: "30 de julho de 2026, 14:30").
@@ -59,6 +60,7 @@ export function NotificationDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { t } = useTranslation('notifications');
 
   /**
    * Busca a notificação por ID.
@@ -128,7 +130,7 @@ export function NotificationDetailPage() {
     return (
       <AppLayout>
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="text-center py-12 text-gray-500">A carregar...</div>
+          <div className="text-center py-12 text-gray-500">{t('loadingDetail')}</div>
         </div>
       </AppLayout>
     );
@@ -140,12 +142,12 @@ export function NotificationDetailPage() {
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="text-center py-12">
             <AlertCircle size={48} className="text-red-400 mx-auto mb-3" />
-            <p className="text-gray-500">Notificação não encontrada</p>
+            <p className="text-gray-500">{t('notFound')}</p>
             <button
               onClick={() => navigate('/notifications')}
               className="mt-4 text-blue-600 hover:text-blue-700 font-medium"
             >
-              Voltar para notificações
+              {t('backToList')}
             </button>
           </div>
         </div>
@@ -167,7 +169,7 @@ export function NotificationDetailPage() {
           >
             <ArrowLeft size={20} />
           </button>
-          <h1 className="text-xl font-semibold text-gray-900">Detalhes da Notificação</h1>
+          <h1 className="text-xl font-semibold text-gray-900">{t('detailTitle')}</h1>
         </div>
 
         {/* Card da notificação */}
@@ -228,7 +230,7 @@ export function NotificationDetailPage() {
                     ? 'bg-gray-100 text-gray-600 border border-gray-200' 
                     : 'bg-blue-100 text-blue-700 border border-blue-200'
                 }`}>
-                  {notification.isRead ? 'Lida' : 'Não lida'}
+                  {notification.isRead ? t('status.read') : t('status.unread')}
                 </span>
               </div>
             </div>
@@ -240,7 +242,7 @@ export function NotificationDetailPage() {
               onClick={() => navigate('/notifications')}
               className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors"
             >
-              Voltar
+              {t('actions.back')}
             </button>
 
             <div className="flex items-center gap-2">
@@ -250,7 +252,7 @@ export function NotificationDetailPage() {
                 className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
               >
                 <Trash2 size={16} />
-                <span>Apagar</span>
+                <span>{t('actions.delete')}</span>
               </button>
 
               {/* Botão para navegar para entidade relacionada */}
@@ -260,7 +262,7 @@ export function NotificationDetailPage() {
                   className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
                 >
                   <ExternalLink size={16} />
-                  {notification.entity === 'User' ? 'Ir para Perfil' : 'Ver Detalhes'}
+                  {notification.entity === 'User' ? t('actions.goToProfile') : t('actions.viewDetails')}
                 </button>
               )}
             </div>
