@@ -2,6 +2,17 @@
   "title": "Configurações",
   "subtitle": "Gerencie as opções do sistema",
   "loading": "A carregar...",
+  "help": {
+    "title": "Ajuda — Configurações",
+    "overview_title": "Para que serve esta página",
+    "overview_text": "A página de Configurações centraliza as opções da tua conta e funcionalidades administrativas. A partir daqui podes aceder ao teu perfil, consultar os teus feedbacks e, se fores administrador, aceder aos logs do sistema.",
+    "sections_title": "Secções disponíveis",
+    "step_account": "Conta — acede ao teu perfil para visualizar e editar os teus dados pessoais (nome, email, foto, etc.)",
+    "step_feedbacks": "Meus Feedbacks — consulta o estado dos bugs, sugestões ou melhorias que já enviaste",
+    "step_admin": "Administração (apenas ADMIN) — acede aos logs do sistema para consultar todas as ações registadas",
+    "tip_title": "Dica",
+    "tip_text": "Usa o botão de feedback no canto inferior direito da aplicação para enviar sugestões ou reportar problemas a qualquer momento."
+  },
   "sections": {
     "account": "Conta",
     "administration": "Administração",

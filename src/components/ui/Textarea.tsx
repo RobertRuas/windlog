@@ -1,18 +1,17 @@
 /**
  * ============================================================================
- * INPUT COMPONENT - Campo de input reutilizável
+ * TEXTAREA COMPONENT - Campo de texto multilinha reutilizável
  * ============================================================================
  *
  * O QUE É ESTE ARQUIVO?
  * ---------------------
- * Componente de input compartilhado para formulários.
- * Usa o FormField para label/erro e a classe .form-input do CSS global
- * para garantir altura, borda e foco padronizados.
+ * Componente de textarea compartilhado para formulários.
+ * Usa o FormField para label/erro e a classe .form-textarea do CSS global
+ * para garantir consistência visual com Input e Select.
  *
  * COMO USAR?
  * ----------
- * <Input label="E-mail" type="email" value={email} onChange={...} />
- * <Input label="Senha" type="password" error="Senha é obrigatória" />
+ * <Textarea label="Observações" value={text} onChange={...} />
  *
  * PROPS:
  * ------
@@ -20,19 +19,19 @@
  * - error: mensagem de erro (opcional)
  * - hint: texto de ajuda (opcional)
  * - required: exibe asterisco no label
- * - ...rest: todas as props nativas do elemento <input>
+ * - ...rest: todas as props nativas do elemento <textarea>
  * ============================================================================
  */
 
-import type { InputHTMLAttributes } from 'react';
+import type { TextareaHTMLAttributes } from 'react';
 import { FormField } from './FormField';
 
 /**
- * Props do componente Input.
- * Herda todas as props nativas do elemento <input> do HTML.
+ * Props do componente Textarea.
+ * Herda todas as props nativas do elemento <textarea> do HTML.
  */
-interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
-  /** Texto exibido acima do campo de input */
+interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
+  /** Texto exibido acima do campo */
   label: string;
   /** Mensagem de erro exibida abaixo do campo (quando houver) */
   error?: string;
@@ -43,13 +42,13 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 /**
- * Componente Input - Campo de formulário reutilizável.
+ * Componente Textarea - Campo multilinha reutilizável.
  *
- * Usa a classe .form-input do CSS global para altura (40px),
- * borda, foco e transições padronizadas. O FormField cuida
- * do label e da mensagem de erro.
+ * Usa a classe .form-textarea do CSS global para borda, foco
+ * e resize. A largura é 100% para preencher o container,
+ * alinhando com Input e Select.
  */
-export function Input({
+export function Textarea({
   label,
   error,
   hint,
@@ -57,12 +56,12 @@ export function Input({
   className = '',
   id,
   ...rest
-}: InputProps) {
+}: TextareaProps) {
   return (
     <FormField label={label} error={error} hint={hint} required={required}>
-      <input
+      <textarea
         id={id}
-        className={`form-input ${error ? 'error' : ''} ${className}`}
+        className={`form-textarea ${error ? 'error' : ''} ${className}`}
         {...rest}
       />
     </FormField>

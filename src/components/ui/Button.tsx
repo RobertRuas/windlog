@@ -6,21 +6,24 @@
  * O QUE É ESTE ARQUIVO?
  * ---------------------
  * Componente de botão compartilhado que pode ser usado em qualquer lugar
- * da aplicação. Mantém consistência visual e facilita manutenção.
+ * da aplicação. Usa as classes .form-button do CSS global para garantir
+ * altura (40px) e consistência com os demais elementos de formulário.
  *
  * COMO USAR?
  * ----------
- * <Button onClick={handleClick}>Clique aqui</Button>
+ * <Button onClick={handleClick}>Salvar</Button>
  * <Button variant="secondary" disabled>Desabilitado</Button>
+ * <Button variant="danger">Eliminar</Button>
  *
  * PROPS:
  * ------
  * - children: conteúdo do botão (texto, ícone, etc.)
- * - variant: estilo visual ('primary' | 'secondary')
- * - type: tipo do botão HTML ('button' | 'submit' | 'reset')
+ * - variant: estilo visual ('primary' | 'secondary' | 'danger')
+ * - size: tamanho ('sm' | 'md')
+ * - type: tipo HTML ('button' | 'submit' | 'reset')
  * - disabled: desabilita o botão
- * - onClick: função executada ao clicar
- * - className: classes CSS adicionais (Tailwind)
+ * - loading: exibe spinner e desabilita
+ * - fullWidth: ocupa 100% da largura
  * - ...rest: outras props HTML padrão de <button>
  * ============================================================================
  */
@@ -28,23 +31,27 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 
 /**
- * Define as propriedades aceitas pelo componente Button.
+ * Props do componente Button.
  * Herda todas as props nativas do elemento <button> do HTML.
  */
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   /** Conteúdo exibido dentro do botão (texto, ícones, etc.) */
   children: ReactNode;
-  /** Estilo visual do botão: 'primary' (azul) ou 'secondary' (cinza) */
-  variant?: 'primary' | 'secondary';
-  /** Tamanho do botão: 'sm' (compacto) ou 'md' (padrão) */
+  /** Estilo visual do botão */
+  variant?: 'primary' | 'secondary' | 'danger';
+  /** Tamanho do botão: 'sm' (compacto) ou 'md' (padrão 40px) */
   size?: 'sm' | 'md';
+  /** Se true, exibe spinner de carregamento */
+  loading?: boolean;
+  /** Se true, ocupa 100% da largura do container */
+  fullWidth?: boolean;
 }
 
 /**
  * Componente Button - Botão reutilizável com variantes de estilo.
  *
- * O botão usa Tailwind CSS para estilização e aceita todas as props
- * nativas do HTML <button>, como disabled, type, onClick, etc.
+ * A altura é sempre 40px (padrão) para alinhar com Input e Select.
+ * O border-radius segue o token --form-radius do design system.
  */
 export function Button({
   children,
@@ -52,44 +59,49 @@ export function Button({
   size = 'md',
   type = 'button',
   disabled,
+  loading,
+  fullWidth,
   className = '',
   ...rest
 }: ButtonProps) {
   /**
    * Mapeia a variante para classes CSS do Tailwind.
-   * Cada variante tem estilos diferentes para os estados normal, hover e disabled.
+   * A base é a classe .form-button do CSS global (altura, padding, fonte).
    */
   const variantClasses = {
-    primary:
-      'bg-blue-600 text-white hover:bg-blue-700 disabled:bg-blue-300',
-    secondary:
-      'bg-gray-200 text-gray-800 hover:bg-gray-300 disabled:bg-gray-100',
+    primary: 'form-button form-button-primary',
+    secondary: 'form-button form-button-secondary',
+    danger: 'form-button form-button-danger',
   };
 
   /**
-   * Mapeia o tamanho para classes CSS do Tailwind.
+   * Tamanhos — 'md' usa a altura padrão 40px do .form-button,
+   * 'sm' é uma versão mais compacta.
    */
   const sizeClasses = {
-    sm: 'px-3 py-1.5 text-xs',
-    md: 'px-4 py-2 text-sm',
+    sm: 'h-[32px] px-3 text-xs',
+    md: '',
   };
 
   return (
     <button
       type={type}
-      disabled={disabled}
+      disabled={disabled || loading}
       className={`
-        rounded-lg font-medium
-        transition-colors duration-200
-        disabled:cursor-not-allowed
-        inline-flex items-center justify-center
-        whitespace-nowrap
         ${variantClasses[variant]}
         ${sizeClasses[size]}
+        ${fullWidth ? 'w-full' : ''}
         ${className}
       `.trim()}
       {...rest}
     >
+      {/* Spinner de loading */}
+      {loading && (
+        <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+        </svg>
+      )}
       {children}
     </button>
   );

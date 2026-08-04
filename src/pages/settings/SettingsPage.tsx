@@ -26,6 +26,7 @@ import { useTranslation } from 'react-i18next';
 import { AppLayout } from '@/components/layout/AppLayout';
 
 // Componentes
+import { PageHelp } from '@/components/ui/PageHelp';
 import { AccountSection } from './components/AccountSection';
 import { AdminSection } from './components/AdminSection';
 import { MyFeedbacksSection } from './components/MyFeedbacksSection';
@@ -60,6 +61,23 @@ export function SettingsPage() {
           {t('subtitle')}
         </p>
       </div>
+
+      {/* Ajuda contextual da página */}
+      <PageHelp title={t('help.title')} className="mb-4">
+        <PageHelp.Section title={t('help.overview_title')}>
+          <p>{t('help.overview_text')}</p>
+        </PageHelp.Section>
+
+        <PageHelp.Section title={t('help.sections_title')}>
+          <PageHelp.Step>{t('help.step_account')}</PageHelp.Step>
+          <PageHelp.Step>{t('help.step_feedbacks')}</PageHelp.Step>
+          <PageHelp.Step>{t('help.step_admin')}</PageHelp.Step>
+        </PageHelp.Section>
+
+        <PageHelp.Section title={t('help.tip_title')}>
+          <p>{t('help.tip_text')}</p>
+        </PageHelp.Section>
+      </PageHelp>
 
       {/* Secções */}
       <div className="space-y-4">
