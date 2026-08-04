@@ -193,15 +193,15 @@ export function FeedbacksPage() {
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               placeholder={t('filters.search_placeholder')}
-              className="form-input w-full pl-9"
+              className="form-input w-full !pl-9"
             />
           </div>
 
           {/* Toggle filtros */}
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`flex items-center gap-2 form-button-secondary h-[40px] ${
-              showFilters ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+            className={`flex items-center gap-2 form-button-secondary !h-[40px] ${
+              showFilters ? '!border-blue-500 !bg-blue-50 !text-blue-700 dark:!bg-blue-900/20 dark:!text-blue-400' : '!border-gray-200 !text-gray-600 hover:!bg-gray-50 dark:!border-[#38383a] dark:!text-[#a1a1a6] dark:hover:!bg-[#2c2c2e]'
             }`}
           >
             <Filter size={16} />
