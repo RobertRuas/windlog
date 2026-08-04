@@ -1,1 +1,0 @@
-NestJS with `@nestjs/passport` for JWT auth, `class-validator` + `@nestjs/swagger` for DTO validation and API docs, Prisma ORM for database access, and a custom `CurrentUser` decorator injecting `JwtPayload` from `auth/strategies/jwt.strategy.js`.

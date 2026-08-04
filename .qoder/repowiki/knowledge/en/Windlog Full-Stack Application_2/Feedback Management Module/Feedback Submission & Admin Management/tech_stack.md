@@ -1,1 +1,0 @@
-React + TypeScript, Tailwind CSS for styling, Lucide icons, react-i18next for translations, @tanstack/react-query for data fetching/mutations, Sonner for toast notifications, and a shared `@/services/api` axios wrapper configured with `{ isFormData: true }` for multipart uploads.

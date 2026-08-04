@@ -1,8 +1,0 @@
-- Backend modules use exactly `{name}.module.ts + {name}.controller.ts + {name}.service.ts + dto/{name}.dto.ts`; controllers contain only HTTP glue, business logic lives in services.
-- DTOs are validated with class-validator decorators (`@IsString`, `@IsEmail`, `@IsOptional`, …); every optional field must carry `@IsOptional()` regardless of TypeScript `?`.
-- Frontend pages follow `{PageName}.tsx` plus a `components/` and optional `hooks/` folder; services in `src/services/` encapsulate axios calls and TanStack Query mutations.
-- TanStack Query keys use `['entity', filter?]` for lists and `['entity', id]` for details; mutations invalidate all related keys.
-- UI components go in `src/components/ui/` (generic) and layout components in `src/components/layout/` (structural); never mix them.
-- All CRUD operations surface toast notifications via Sonner with Portuguese messages following the pattern 'X criado/atualizado/removido com sucesso'.
-- Soft delete is mandatory for business entities (User, Project, Turbine, File) with `deletedAt: null` filtering; junction tables may hard-delete.
-- LoggingInterceptor maps URL + HTTP method to `LogAction`; new endpoints must register their action in `determineAction()`.

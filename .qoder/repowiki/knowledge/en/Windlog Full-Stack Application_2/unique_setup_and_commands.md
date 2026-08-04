@@ -1,1 +1,0 @@
-New features must be scaffolded as a NestJS module under `API/src/modules/<name>/` with the four-file pattern (module, controller, service, DTOs), then mirrored by a `src/pages/<name>/` page, `src/services/<name>.service.ts`, and corresponding TanStack Query keys — no logic belongs in controllers or directly in pages.

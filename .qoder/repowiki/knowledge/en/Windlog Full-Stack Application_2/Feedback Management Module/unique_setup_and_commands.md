@@ -1,1 +1,0 @@
-No module-specific build command — the NestJS module is imported into the application root module alongside other modules, and the frontend service is consumed directly by components/pages without additional setup.

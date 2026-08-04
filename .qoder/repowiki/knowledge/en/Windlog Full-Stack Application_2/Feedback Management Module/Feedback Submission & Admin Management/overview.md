@@ -1,1 +1,0 @@
-User-facing floating feedback button and modal for submitting bug reports, suggestions, and screenshots, plus an admin page to list, filter, update status/priority, and soft-delete all feedbacks.

@@ -1,1 +1,0 @@
-TypeScript-only utilities built on browser APIs (`navigator`, `window`, `document`, `performance`, `window.onerror`, `unhandledrejection`). HTTP calls go through a shared `api` client (axios wrapper) from `./api`. No external libraries are used inside these files.

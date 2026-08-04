@@ -1,1 +1,0 @@
-No special build or setup commands — standard NestJS module consumed by the application bootstrap. Requires the shared `PrismaService` from `../../database/prisma.service.js` to be registered in the app module.

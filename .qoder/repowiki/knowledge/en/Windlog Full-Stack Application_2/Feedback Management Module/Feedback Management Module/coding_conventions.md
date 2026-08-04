@@ -1,6 +1,0 @@
-- Each module follows the exact structure: `{name}.module.ts` + `{name}.controller.ts` + `{name}.service.ts` + `dto/{name}.dto.ts`, with zero business logic in controllers.
-- DTOs use `class-validator` decorators (`@IsString`, `@IsOptional`, `@IsEnum`, etc.) and every optional field must explicitly include `@IsOptional()` — TypeScript's `?` alone is not sufficient.
-- Soft delete is enforced by always filtering `deletedAt: null` in Prisma queries across find, update, and count operations.
-- Admin-only endpoints are protected by stacking `@UseGuards(RolesGuard)` and `@Roles(Role.ADMIN)` decorators on each route.
-- Service methods log operations using a `Logger` instance initialized with the class name, and throw `NotFoundException` when entities are missing.
-- Prisma relations are included selectively via `include` with explicit `select` projections to return only needed fields.

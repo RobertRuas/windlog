@@ -5,4 +5,6 @@ scope:
     - src/i18n/locales/pt/
 source_files: []
 depends_on: []
-related_to: []
+related_to:
+    - path: src_components_feedback
+    - path: src_pages_settings_components

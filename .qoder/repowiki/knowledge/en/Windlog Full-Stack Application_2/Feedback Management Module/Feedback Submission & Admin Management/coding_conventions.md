@@ -1,6 +1,0 @@
-- TanStack Query keys follow the pattern `['entity', filter?]` for lists (e.g. `['feedbacks', filters]`) and `['entity', id]` for details, with mutations invalidating all related keys via `queryClient.invalidateQueries`.
-- All user-facing strings are localized through `useTranslation('feedback')` with dot-notation keys like `t('fields.title_required')`, `t('toast.create_success')`, and `t('statuses.RESOLVED')`.
-- Every mutation uses `useMutation` with both `onSuccess` and `onError` handlers that call `toast.success(...)` and `toast.error(...)` respectively, keeping UX feedback consistent across create/update/delete.
-- Component props are defined as explicit TypeScript interfaces (e.g. `FeedbackModalProps`) rather than inline type annotations, and component functions are exported as named exports.
-- Status, priority, and category enums are rendered through lookup maps (`STATUS_COLORS`, `PRIORITY_COLORS`, `CATEGORY_ICONS`) keyed by the enum value to derive display colors and icons.
-- Form validation is performed locally before mutation submission, populating an `errors` object keyed by field name and clearing individual errors on input change.

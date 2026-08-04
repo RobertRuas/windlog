@@ -5,4 +5,7 @@ scope:
     - src/services/
 source_files: []
 depends_on: []
-related_to: []
+related_to:
+    - path: api_feedback_module
+    - path: src_components_feedback
+    - path: src_pages_settings_components

@@ -158,6 +158,7 @@ export class UsersService {
           phone: true,
           department: true,
           position: true,
+          isTeamLeader: true,
           createdAt: true,
         },
       }),
@@ -250,6 +251,7 @@ export class UsersService {
     if (dto.nationality !== undefined) updateData.nationality = dto.nationality;
     if (dto.department !== undefined) updateData.department = dto.department;
     if (dto.position !== undefined) updateData.position = dto.position;
+    if (dto.isTeamLeader !== undefined) updateData.isTeamLeader = dto.isTeamLeader;
 
     // PASSO 4: Se senha mudou, criptografa
     if (dto.password) {

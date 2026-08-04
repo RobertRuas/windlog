@@ -1,1 +1,0 @@
-Full-stack project management and timesheet application pairing a NestJS backend (Prisma + JWT) with a React/Vite frontend, wired through TanStack Query services that mirror each backend module's REST API.

@@ -1,1 +1,0 @@
-NestJS with Prisma on the backend; React + TanStack Query on the frontend using axios via a shared `api` client; Tailwind CSS for responsive UI; Sonner for toast notifications; class-validator for DTO validation.
