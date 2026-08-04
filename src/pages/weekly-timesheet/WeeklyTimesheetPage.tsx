@@ -163,11 +163,11 @@ export function WeeklyTimesheetPage() {
           </div>
 
           {/* Filtros — todos na mesma linha */}
-          <div className="flex items-center gap-2 flex-1 justify-end">
+          <div className="flex items-center gap-2 flex-1 justify-end flex-nowrap">
             <select
               value={statusFilter}
               onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-              className="form-select w-auto"
+              className="form-select !w-auto min-w-0 shrink"
             >
               <option value="">{t('filters.allStatuses')}</option>
               <option value="DRAFT">{t('status.DRAFT')}</option>
@@ -178,7 +178,7 @@ export function WeeklyTimesheetPage() {
             <select
               value={weekFilter}
               onChange={(e) => { setWeekFilter(e.target.value); setPage(1); }}
-              className="form-select w-auto"
+              className="form-select !w-auto min-w-0 shrink"
             >
               <option value="">{t('filters.allWeeks')}</option>
               {filterWeeks.map((w) => (
@@ -189,7 +189,7 @@ export function WeeklyTimesheetPage() {
             <select
               value={projectFilter}
               onChange={(e) => { setProjectFilter(e.target.value); setPage(1); }}
-              className="form-select w-auto"
+              className="form-select !w-auto min-w-0 shrink"
             >
               <option value="">{t('filters.allProjects')}</option>
               {filterProjects.map((p) => (
@@ -200,7 +200,7 @@ export function WeeklyTimesheetPage() {
             <select
               value={authorFilter}
               onChange={(e) => { setAuthorFilter(e.target.value); setPage(1); }}
-              className="form-select w-auto"
+              className="form-select !w-auto min-w-0 shrink"
             >
               <option value="">{t('filters.allAuthors')}</option>
               {filterAuthors.map((a) => (
