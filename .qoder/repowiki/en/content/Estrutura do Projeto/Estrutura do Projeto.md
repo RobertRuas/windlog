@@ -1,4 +1,4 @@
-# Estrutura do Projeto
+# Project Structure
 
 <cite>
 **Referenced Files in This Document**
@@ -17,19 +17,27 @@
 - [src/services/auth.service.ts](file://src/services/auth.service.ts)
 - [src/pages/home/HomePage.tsx](file://src/pages/home/HomePage.tsx)
 - [src/components/layout/AppLayout.tsx](file://src/components/layout/AppLayout.tsx)
+- [src/utils/profileCompleteness.ts](file://src/utils/profileCompleteness.ts)
+- [src/pages/home/components/ProfileCompleteness.tsx](file://src/pages/home/components/ProfileCompleteness.tsx)
 </cite>
 
+## Update Summary
+**Changes Made**
+- Updated Profile Completeness UI section to reflect visual redesign from gradient gauge to simple gray card with check icon
+- Enhanced documentation for profile completeness functionality with new UI implementation details
+- Added specific references to the updated ProfileCompleteness component and utility functions
+
 ## Table of Contents
-1. [Estrutura do Backend (API/)](#estrutura-do-backend-api)
-2. [Estrutura do Frontend (src/)](#estrutura-do-frontend-src)
-3. [Arquivos de Configuração](#arquivos-de-configuração)
-4. [Responsabilidade por Diretório](#responsabilidade-por-diretório)
+1. [Backend Structure (API/)](#backend-structure-api)
+2. [Frontend Structure (src/)](#frontend-structure-src)
+3. [Configuration Files](#configuration-files)
+4. [Directory Responsibilities](#directory-responsibilities)
 
-## Estrutura do Backend (API/)
+## Backend Structure (API/)
 
-O backend do Windlog é construído com NestJS, seguindo uma arquitetura modular baseada em features. A estrutura organiza o código por funcionalidades, facilitando a manutenção e escalabilidade.
+The Windlog backend is built with NestJS, following a modular architecture based on features. The structure organizes code by functionality, facilitating maintenance and scalability.
 
-### Arquitetura Principal
+### Main Architecture
 
 ```mermaid
 graph TB
@@ -84,63 +92,63 @@ appModule --> config
 - [API/src/main.ts:1-50](file://API/src/main.ts#L1-L50)
 - [API/src/app.module.ts:1-100](file://API/src/app.module.ts#L1-L100)
 
-### Módulos Principais
+### Core Modules
 
-#### Módulo de Autenticação (auth/)
-Responsável pela gestão de autenticação e autorização do sistema:
-- **DTOs**: Validação de dados para login, registro, atualização de perfil
-- **Strategies**: Implementação de JWT Strategy para autenticação stateless
-- **Types**: Definições de tipos TypeScript para usuários e tokens
-- **Controller**: Endpoints REST para autenticação
-- **Service**: Lógica de negócio para autenticação e autorização
-- **Module**: Configuração do módulo e dependências
+#### Authentication Module (auth/)
+Responsible for system authentication and authorization management:
+- **DTOs**: Data validation for login, registration, profile updates
+- **Strategies**: JWT Strategy implementation for stateless authentication
+- **Types**: TypeScript definitions for users and tokens
+- **Controller**: REST endpoints for authentication
+- **Service**: Business logic for authentication and authorization
+- **Module**: Module configuration and dependencies
 
-#### Módulo de Projetos (projects/)
-Gerencia projetos eólicos e suas relações:
-- **DTOs**: Validação de dados de projetos
-- **Controller**: CRUD completo de projetos
-- **Service**: Lógica de negócios complexa para projetos
-- **Module**: Configuração específica do módulo
+#### Projects Module (projects/)
+Manages wind projects and their relationships:
+- **DTOs**: Project data validation
+- **Controller**: Complete CRUD operations for projects
+- **Service**: Complex business logic for projects
+- **Module**: Specific module configuration
 
-#### Módulo de Usuários (users/)
-Administração de usuários do sistema:
-- **DTOs**: Validação de dados de usuários
-- **Controller**: Operações CRUD de usuários
-- **Service**: Lógica de negócio para gestão de usuários
-- **Module**: Configuração do módulo de usuários
+#### Users Module (users/)
+System user administration:
+- **DTOs**: User data validation
+- **Controller**: User CRUD operations
+- **Service**: User management business logic
+- **Module**: Users module configuration
 
-#### Módulo de Notificações (notifications/)
-Sistema de notificações do usuário:
-- **DTOs**: Estrutura de notificações
-- **Controller**: Gerenciamento de notificações
-- **Service**: Lógica de envio e gerenciamento
-- **Module**: Configuração do módulo
+#### Notifications Module (notifications/)
+User notification system:
+- **DTOs**: Notification structure
+- **Controller**: Notification management
+- **Service**: Sending and management logic
+- **Module**: Module configuration
 
-#### Módulo de Logs do Sistema (system-log/)
-Registro e auditoria de ações do sistema:
-- **DTOs**: Estrutura de logs
-- **Controller**: Consulta e filtragem de logs
-- **Service**: Persistência e processamento de logs
-- **Module**: Configuração do módulo
+#### System Log Module (system-log/)
+System action logging and auditing:
+- **DTOs**: Log structure
+- **Controller**: Log querying and filtering
+- **Service**: Log persistence and processing
+- **Module**: Module configuration
 
-#### Módulo de Upload (upload/)
-Upload e gerenciamento de arquivos:
-- **DTOs**: Validação de uploads
-- **Multer Config**: Configuração de upload seguro
-- **Controller**: Endpoints de upload
-- **Service**: Processamento e validação de arquivos
-- **Module**: Configuração do módulo
+#### Upload Module (upload/)
+File upload and management:
+- **DTOs**: Upload validation
+- **Multer Config**: Secure upload configuration
+- **Controller**: Upload endpoints
+- **Service**: File processing and validation
+- **Module**: Module configuration
 
 **Section sources**
 - [API/src/modules/auth/auth.controller.ts:1-100](file://API/src/modules/auth/auth.controller.ts#L1-L100)
 - [API/src/modules/projects/projects.controller.ts:1-150](file://API/src/modules/projects/projects.controller.ts#L1-L150)
 - [API/src/modules/users/users.controller.ts:1-120](file://API/src/modules/users/users.controller.ts#L1-L120)
 
-## Estrutura do Frontend (src/)
+## Frontend Structure (src/)
 
-O frontend é construído com React + Vite, seguindo uma arquitetura orientada a componentes e páginas. Utiliza TanStack Query para gerenciamento de estado assíncrono e Tailwind CSS para estilização.
+The frontend is built with React + Vite, following a component-based and page-oriented architecture. It uses TanStack Query for asynchronous state management and Tailwind CSS for styling.
 
-### Arquitetura do Frontend
+### Frontend Architecture
 
 ```mermaid
 graph TB
@@ -207,105 +215,113 @@ appTSX --> utils
 - [src/main.tsx:1-50](file://src/main.tsx#L1-L50)
 - [src/App.tsx:1-100](file://src/App.tsx#L1-L100)
 
-### Páginas Principais
+### Main Pages
 
-#### Página Inicial (home/)
-Dashboard principal do sistema com visão geral do usuário:
-- **Components**: Componentes específicos do dashboard
-  - AvatarUpload: Upload de avatar do usuário
-  - ProfileCard: Cartão de resumo do perfil
-  - SummaryCards: Cards de resumo estatístico
-  - ProfileWizard: Wizard de configuração de perfil
-  - Seções específicas: BankAccount, Certification, Document, Language, Phone
-- **HomePage**: Componente principal que orquestra todas as seções
+#### Home Page (home/)
+Main system dashboard with user overview:
+- **Components**: Dashboard-specific components
+  - AvatarUpload: User avatar upload
+  - ProfileCard: Profile summary card
+  - SummaryCards: Statistical summary cards
+  - ProfileWizard: Profile setup wizard
+  - Specific sections: BankAccount, Certification, Document, Language, Phone
+- **HomePage**: Main component orchestrating all sections
 
-#### Página de Login (login/)
-Autenticação de usuários:
-- **LoginForm**: Formulário de login com validação
-- **LoginPage**: Container principal da página de login
+#### Login Page (login/)
+User authentication:
+- **LoginForm**: Login form with validation
+- **LoginPage**: Main login page container
 
-#### Gestão de Projetos (projects/)
-CRUD completo de projetos eólicos:
-- **Components**: Filtros, tabela e modais de projeto
-- **Detail**: Página detalhada com abas (Info, Members, Turbines, Files)
-- **ProjectsPage**: Listagem principal de projetos
+#### Project Management (projects/)
+Complete CRUD for wind projects:
+- **Components**: Filters, table and project modals
+- **Detail**: Detailed page with tabs (Info, Members, Turbines, Files)
+- **ProjectsPage**: Main project listing
 
-#### Gestão de Usuários (users/)
-Administração de usuários do sistema:
-- **Components**: Filtros, tabela e modais de usuário
-- **UsersPage**: Interface administrativa completa
+#### User Management (users/)
+System user administration:
+- **Components**: Filters, table and user modals
+- **UsersPage**: Complete administrative interface
 
-#### Configurações (settings/)
-Configurações da conta e administração:
-- **AccountSection**: Configurações da conta pessoal
-- **AdminSection**: Ferramentas administrativas
-- **SettingsPage**: Container principal das configurações
+#### Settings (settings/)
+Account and administration settings:
+- **AccountSection**: Personal account settings
+- **AdminSection**: Administrative tools
+- **SettingsPage**: Main settings container
 
-#### Logs do Sistema (logs/)
-Visualização e análise de logs:
-- **Components**: Filtros, tabela, estatísticas e linhas de log
-- **LogsPage**: Dashboard de logs do sistema
+#### System Logs (logs/)
+Log viewing and analysis:
+- **Components**: Filters, table, statistics and log rows
+- **LogsPage**: System logs dashboard
 
-#### Notificações (notifications/)
-Sistema de notificações:
-- **NotificationDetailPage**: Visualização detalhada de notificação
-- **NotificationsPage**: Lista de notificações do usuário
+#### Notifications (notifications/)
+Notification system:
+- **NotificationDetailPage**: Detailed notification viewing
+- **NotificationsPage**: User notification list
 
-#### Perfil do Usuário (profile/)
-Gestão avançada do perfil:
-- **hooks**: Hooks personalizados para mutações de perfil
-- **ProfilePage**: Interface completa de gestão de perfil
+#### User Profile (profile/)
+Advanced profile management:
+- **hooks**: Custom hooks for profile mutations
+- **ProfilePage**: Complete profile management interface
+
+### Profile Completeness Feature
+
+**Updated** The profile completeness feature has been redesigned with a cleaner user interface. The previous gradient gauge visualization has been replaced with a simple gray card design featuring a check icon, providing a more streamlined user experience while maintaining the same functionality.
+
+The profile completeness calculation is handled by dedicated utility functions that determine the completion status of various profile sections including personal information, documents, certifications, bank accounts, and safety equipment.
 
 **Section sources**
 - [src/pages/home/HomePage.tsx:1-200](file://src/pages/home/HomePage.tsx#L1-L200)
 - [src/pages/login/LoginPage.tsx:1-100](file://src/pages/login/LoginPage.tsx#L1-L100)
 - [src/pages/projects/ProjectsPage.tsx:1-150](file://src/pages/projects/ProjectsPage.tsx#L1-L150)
+- [src/utils/profileCompleteness.ts:1-100](file://src/utils/profileCompleteness.ts#L1-L100)
+- [src/pages/home/components/ProfileCompleteness.tsx:1-150](file://src/pages/home/components/ProfileCompleteness.tsx#L1-L150)
 
-## Arquivos de Configuração
+## Configuration Files
 
-### Configuração do Backend
+### Backend Configuration
 
 #### Prisma Schema (API/prisma/schema.prisma)
-Define o modelo de dados do banco de dados:
-- Modelos principais: User, Project, Notification, SystemLog
-- Relacionamentos entre entidades
-- Campos comuns: UUID como ID, soft delete (deletedAt), timestamps UTC
-- Configuração do provider PostgreSQL
+Defines the database data model:
+- Main models: User, Project, Notification, SystemLog
+- Entity relationships
+- Common fields: UUID as ID, soft delete (deletedAt), UTC timestamps
+- PostgreSQL provider configuration
 
-#### Validação de Ambiente (API/src/config/env.validation.ts)
-Validação de variáveis de ambiente usando Joi:
-- Variáveis obrigatórias para conexão com banco
-- Configuração de JWT e segurança
-- Validação de portas e URLs
+#### Environment Validation (API/src/config/env.validation.ts)
+Environment variable validation using Joi:
+- Required variables for database connection
+- JWT and security configuration
+- Port and URL validation
 
-#### Serviço Prisma (API/src/database/prisma.service.ts)
-Serviço singleton para acesso ao banco de dados:
-- Conexão gerenciada com Prisma Client
-- Ciclo de vida da aplicação
-- Tratamento de erros de conexão
+#### Prisma Service (API/src/database/prisma.service.ts)
+Singleton service for database access:
+- Managed Prisma Client connection
+- Application lifecycle
+- Connection error handling
 
-### Configuração do Frontend
+### Frontend Configuration
 
 #### Entry Point (src/main.tsx)
-Inicialização da aplicação React:
-- Configuração do Provider do TanStack Query
-- Configuração do i18n
-- Renderização do componente App
-- Configuração de estilos globais
+React application initialization:
+- TanStack Query Provider configuration
+- i18n configuration
+- App component rendering
+- Global styles configuration
 
-#### Aplicação Principal (src/App.tsx)
-Componente raiz da aplicação:
-- Roteamento principal
-- Layout global
-- Providers necessários
-- Proteção de rotas
+#### Main Application (src/App.tsx)
+Application root component:
+- Main routing
+- Global layout
+- Required providers
+- Route protection
 
-#### Serviço de API (src/services/api.ts)
-Cliente HTTP centralizado:
-- Configuração do Axios
-- Interceptors para autenticação
-- Tratamento de erros global
-- Headers padrão
+#### API Service (src/services/api.ts)
+Centralized HTTP client:
+- Axios configuration
+- Authentication interceptors
+- Global error handling
+- Default headers
 
 **Section sources**
 - [API/prisma/schema.prisma:1-200](file://API/prisma/schema.prisma#L1-L200)
@@ -315,78 +331,78 @@ Cliente HTTP centralizado:
 - [src/App.tsx:1-150](file://src/App.tsx#L1-L150)
 - [src/services/api.ts:1-120](file://src/services/api.ts#L1-L120)
 
-## Responsabilidade por Diretório
+## Directory Responsibilities
 
 ### Backend (API/)
 
 #### API/src/common/
-Camadas transversais reutilizáveis:
-- **decorators/**: Decoradores personalizados (@Roles(), @CurrentUser())
-- **dto/**: DTOs compartilhados (ApiResponse, Pagination, SwaggerResponse)
-- **filters/**: Filtros de exceções HTTP
-- **guards/**: Guards de autorização (RolesGuard)
-- **interceptors/**: Interceptores (LoggingInterceptor, TransformInterceptor)
-- **pipes/**: Pipes de validação
-- **utils/**: Funções utilitárias compartilhadas
+Reusable cross-cutting layers:
+- **decorators/**: Custom decorators (@Roles(), @CurrentUser())
+- **dto/**: Shared DTOs (ApiResponse, Pagination, SwaggerResponse)
+- **filters/**: HTTP exception filters
+- **guards/**: Authorization guards (RolesGuard)
+- **interceptors/**: Interceptors (LoggingInterceptor, TransformInterceptor)
+- **pipes/**: Validation pipes
+- **utils/**: Shared utility functions
 
 #### API/src/modules/
-Módulos de negócio organizados por feature:
-- Cada módulo contém: controller, service, module, dto/, strategies/, types/
-- Separação clara de responsabilidades
-- Dependências injetadas via NestJS DI
+Business modules organized by feature:
+- Each module contains: controller, service, module, dto/, strategies/, types/
+- Clear separation of responsibilities
+- Dependencies injected via NestJS DI
 
 #### API/src/config/
-Configurações da aplicação:
-- **env.validation.ts**: Validação de variáveis de ambiente
+Application configuration:
+- **env.validation.ts**: Environment variable validation
 
 #### API/src/database/
-Acesso ao banco de dados:
-- **prisma.service.ts**: Serviço Prisma singleton
+Database access:
+- **prisma.service.ts**: Singleton Prisma service
 
 ### Frontend (src/)
 
 #### src/components/
-Componentes reutilizáveis:
-- **layout/**: Layouts da aplicação (AppLayout, Sidebar)
-- **ui/**: Componentes UI básicos (Button, Input, DataTable, etc.)
-- **notifications/**: Componentes de notificação
+Reusable components:
+- **layout/**: Application layouts (AppLayout, Sidebar)
+- **ui/**: Basic UI components (Button, Input, DataTable, etc.)
+- **notifications/**: Notification components
 
 #### src/pages/
-Páginas completas da aplicação:
-- Organização por feature (home, login, projects, users, etc.)
-- Cada página pode ter seus próprios components e hooks
-- Separados por responsabilidade de negócio
+Complete application pages:
+- Feature-based organization (home, login, projects, users, etc.)
+- Each page can have its own components and hooks
+- Separated by business responsibility
 
 #### src/services/
-Serviços de comunicação com API:
-- **api.ts**: Cliente HTTP centralizado
-- Serviços específicos por domínio (auth, project, user, etc.)
-- Encapsulamento de chamadas API
+API communication services:
+- **api.ts**: Centralized HTTP client
+- Domain-specific services (auth, project, user, etc.)
+- API call encapsulation
 
 #### src/utils/
-Funções utilitárias:
-- **jwt.ts**: Manipulação de tokens JWT
-- **notificationHelpers.ts**: Helpers de notificação
-- **profileCompleteness.ts**: Cálculo de completude do perfil
+Utility functions:
+- **jwt.ts**: JWT token manipulation
+- **notificationHelpers.ts**: Notification helpers
+- **profileCompleteness.ts**: Profile completeness calculation
 
 #### src/i18n/
-Internacionalização:
-- **locales/pt/**: Traduções em português
-- **index.ts**: Configuração do i18n
+Internationalization:
+- **locales/pt/**: Portuguese translations
+- **index.ts**: i18n configuration
 
 #### src/constants/
-Constantes da aplicação:
-- **countries.ts**: Lista de países
-- **languages.ts**: Lista de idiomas suportados
+Application constants:
+- **countries.ts**: Country list
+- **languages.ts**: Supported language list
 
 #### src/types/
-Definições de tipos TypeScript:
-- **user.types.ts**: Tipos relacionados a usuários
+TypeScript type definitions:
+- **user.types.ts**: User-related types
 
 **Section sources**
 - [API/src/common/index.ts:1-50](file://API/src/common/index.ts#L1-L50)
 - [src/components/layout/AppLayout.tsx:1-100](file://src/components/layout/AppLayout.tsx#L1-L100)
-- [src/services/auth.service.ts:1-150](file://src/services/auth.service.ts#L1-L150)
-- [src/utils/jwt.ts:1-80](file://src/utils/jwt.ts#L1-L80)
+- [src/services/auth.service.ts:1-150](file://src/services/auth.service.ts#L1-150)
+- [src/utils/jwt.ts:1-80](file://src/utils/jwt.ts#L1-80)
 
-Este documento fornece uma visão completa da estrutura do projeto Windlog, destacando a separação clara de responsabilidades entre backend e frontend, a organização modular do código e as boas práticas implementadas para facilitar a manutenção e escalabilidade do sistema.
+This document provides a comprehensive overview of the Windlog project structure, highlighting the clear separation of responsibilities between backend and frontend, the modular code organization, and the best practices implemented to facilitate system maintenance and scalability.

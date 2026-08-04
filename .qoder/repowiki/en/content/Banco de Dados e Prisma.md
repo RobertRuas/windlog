@@ -9,16 +9,16 @@
 - [create-timesheet.dto.ts](file://API/src/modules/weekly-timesheet/dto/create-timesheet.dto.ts)
 - [update-timesheet.dto.ts](file://API/src/modules/weekly-timesheet/dto/update-timesheet.dto.ts)
 - [timesheet-filter.dto.ts](file://API/src/modules/weekly-timesheet/dto/timesheet-filter.dto.ts)
+- [133413_add_system_setting/migration.sql](file://API/prisma/migrations/20260804133413_add_system_setting/migration.sql)
 </cite>
 
 ## Update Summary
 **Changes Made**
-- Added comprehensive documentation for the new WeeklyTimesheet model and related entities
-- Updated schema section to include timesheet data structures
-- Enhanced modeling conventions with timesheet-specific patterns
-- Added new migration documentation covering timesheet schema evolution
-- Expanded soft delete implementation details for timesheet entities
-- **Updated**: Added documentation for the signatureData field extension in user profiles for storing signature images
+- Added comprehensive documentation for the new SystemSetting model for persistent configuration storage
+- Updated schema section to include system configuration key-value pair management
+- Enhanced modeling conventions with system setting patterns
+- Added new migration documentation covering system setting schema evolution
+- Expanded configuration management capabilities for application-wide settings
 
 ## Table of Contents
 - Schema Prisma
@@ -28,6 +28,7 @@
 - Data Seeding
 - Timesheet Data Structures
 - User Profile Extensions
+- System Configuration Management
 
 ## Schema Prisma
 This section documents the Prisma schema that defines the data model for the Windlog backend. The schema is located at API/prisma/schema.prisma and is consumed by the NestJS application through a dedicated Prisma service.
@@ -40,6 +41,7 @@ Key aspects to consider when working with the schema:
 - Enums are used for constrained fields such as roles, statuses, and types.
 - **Updated**: The schema now includes comprehensive timesheet data structures supporting weekly time tracking functionality.
 - **Updated**: The User model has been extended with a signatureData field to support digital signature image storage in user profiles.
+- **Updated**: The schema now includes a SystemSetting model for persistent application configuration management with key-value pair storage.
 
 The Prisma client is provided via a NestJS service (API/src/database/prisma.service.ts), which should be injected into modules and services to perform database operations.
 
@@ -78,6 +80,7 @@ The project follows consistent modeling conventions to ensure clarity, maintaina
 
 - **Updated**: Timesheet entities follow specialized patterns for time tracking data including date ranges, work hours, and approval workflows.
 - **Updated**: User profile extensions include signatureData field following binary data storage patterns for image files.
+- **Updated**: System settings follow a key-value pair pattern with unique constraint on keys for efficient configuration lookup.
 
 These conventions align with the project's emphasis on consistency and readability across the codebase.
 
@@ -133,6 +136,7 @@ Migrations manage schema evolution safely and reproducibly:
 
 - **Updated**: Recent migrations include comprehensive timesheet schema additions with 223 new lines supporting complete time tracking functionality including weekly timesheets, daily entries, and approval workflows.
 - **Updated**: Signature data migration adds signatureData field to user profiles for storing digital signature images in Base64 format.
+- **Updated**: System setting migration introduces a new table for persistent configuration storage with key-value pair management capabilities.
 
 Adhering to these practices minimizes risk and maintains database consistency across environments.
 
@@ -242,3 +246,68 @@ The user profile system has been enhanced to support digital signature functiona
 
 **Section sources**
 - [schema.prisma](file://API/prisma/schema.prisma)
+
+## System Configuration Management
+The system now includes a robust configuration management system for storing and retrieving application-wide settings:
+
+### SystemSetting Model
+- **SystemSetting**: Core entity for persistent configuration storage
+  - Unique key field for identifying configuration parameters
+  - Flexible value field supporting various data types
+  - Descriptive text field for configuration metadata
+  - Timestamps for tracking configuration changes
+  - Soft delete support for configuration history
+
+### Key-Value Pair Architecture
+- **key**: Unique identifier for each configuration parameter
+  - Enforces uniqueness constraint to prevent duplicate settings
+  - Supports hierarchical naming patterns (e.g., "app.feature.enabled")
+  - Case-sensitive for precise configuration targeting
+
+- **value**: Flexible storage for configuration values
+  - Supports string-based representation of various data types
+  - Enables dynamic configuration without schema modifications
+  - Optimized for frequent read operations
+
+- **description**: Human-readable explanation of configuration purpose
+  - Provides context for administrators managing settings
+  - Supports internationalization for multi-language applications
+
+### Configuration Management Features
+- Centralized configuration storage accessible throughout the application
+- Runtime configuration updates without service restarts
+- Configuration versioning and change tracking
+- Type-safe configuration access through Prisma client
+- Audit trail for configuration modifications
+
+### Use Cases
+- Application feature flags and toggles
+- Environment-specific configuration overrides
+- User preference storage
+- System behavior customization
+- A/B testing configuration management
+
+### Implementation Pattern
+```mermaid
+graph TD
+A[SystemSetting Model] --> B[Configuration Service]
+B --> C[Feature Flags]
+B --> D[App Settings]
+B --> E[User Preferences]
+F[Application Modules] --> B
+G[Admin Interface] --> B
+```
+
+**Diagram sources**
+- [schema.prisma](file://API/prisma/schema.prisma)
+
+### Migration Details
+The system setting functionality was introduced through a dedicated migration that:
+- Creates the SystemSetting table with appropriate indexes
+- Establishes unique constraints on the key field
+- Implements proper timestamp management
+- Supports soft delete operations for configuration history
+
+**Section sources**
+- [schema.prisma](file://API/prisma/schema.prisma)
+- [133413_add_system_setting/migration.sql](file://API/prisma/migrations/20260804133413_add_system_setting/migration.sql)

@@ -33,7 +33,8 @@ export default defineConfig({
 
   // Configuração do servidor de desenvolvimento
   server: {
-    port: 5173,      // Porta padrão do Vite
+    host: '0.0.0.0', // Escuta em todas as interfaces de rede (acesso pela LAN)
+    port: 5173,
 
     // Proxy: redireciona chamadas /api para o backend NestJS
     // Exemplo: /api/v1/auth/login -> http://localhost:3000/api/v1/auth/login

@@ -23,12 +23,13 @@ import { useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Plus, Trash2, Eye, Pencil, Calendar, Wrench, Clock, Plane } from 'lucide-react';
+import { Plus, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { AppLayout } from '@/components/layout/AppLayout';
 import { TimesheetCreateModal } from './components/TimesheetCreateModal';
 import { TimesheetViewModal } from './components/TimesheetViewModal';
+import { TimesheetTable } from './components/TimesheetTable';
 import { useTimesheetMutations } from './hooks/useTimesheetMutations';
 import {
   getTimesheets,
@@ -104,34 +105,6 @@ export function WeeklyTimesheetPage() {
   const timesheets = response?.data?.data || [];
   const meta = response?.data?.meta;
 
-  /**
-   * Formata horas em formato curto (ex: "12.5h" ou "0h").
-   * Arredonda para 1 casa decimal.
-   */
-  function formatHours(hours: number | undefined): string {
-    if (!hours || hours === 0) return '0h';
-    const rounded = Math.round(hours * 10) / 10;
-    return `${rounded}h`;
-  }
-
-  /**
-   * Badge de status colorido.
-   */
-  function StatusBadge({ status }: { status: string }) {
-    const colors: Record<string, string> = {
-      DRAFT: 'bg-yellow-100 text-yellow-800',
-      SUBMITTED: 'bg-blue-100 text-blue-800',
-      APPROVED: 'bg-green-100 text-green-800',
-    };
-
-    return (
-      <span
-        className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${colors[status] || 'bg-gray-100 text-gray-800'}`}
-      >
-        {t(`status.${status}`)}
-      </span>
-    );
-  }
 
   /**
    * Abre o modal de visualização (modo impressão).
@@ -253,156 +226,17 @@ export function WeeklyTimesheetPage() {
         </div>
 
         {/* ── Tabela ────────────────────────────────────────────────── */}
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          {isLoading ? (
-            <div className="p-8 text-center text-gray-500">
-              {t('table.loading')}
-            </div>
-          ) : timesheets.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
-              {t('table.empty')}
-            </div>
-          ) : (
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="text-center px-4 py-3 font-medium text-gray-700 whitespace-nowrap">
-                    {t('table.week')}
-                  </th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-700 whitespace-nowrap">
-                    {t('table.project')}
-                  </th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-700 whitespace-nowrap">
-                    {t('table.createdBy')}
-                  </th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-700 whitespace-nowrap">
-                    {t('table.status')}
-                  </th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-700 whitespace-nowrap">
-                    {t('table.hoursSummary')}
-                  </th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-700 whitespace-nowrap">
-                    {t('table.actions')}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {timesheets.map((ts: TimesheetListItem) => (
-                  <tr
-                    key={ts.id}
-                    className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="px-4 py-3 text-center text-gray-600 whitespace-nowrap">
-                      #{ts.week}
-                    </td>
-                    <td className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap">
-                      {ts.project.name}
-                    </td>
-                    <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
-                      {ts.creator.firstName} {ts.creator.lastName}
-                    </td>
-                    <td className="px-4 py-3 text-center whitespace-nowrap">
-                      <StatusBadge status={ts.status} />
-                    </td>
-                    {/* ── Resumo de Horas (ícones + totais) ─────────── */}
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <div className="flex items-center justify-center gap-3 text-xs text-gray-600">
-                        {/* Trabalho */}
-                        <span
-                          className="flex items-center gap-1"
-                          title={t('sheet.workingHrs')}
-                        >
-                          <Wrench size={13} className="text-blue-500" />
-                          {formatHours(ts._totals?.workingHrs)}
-                        </span>
-                        {/* Stand-by */}
-                        <span
-                          className="flex items-center gap-1"
-                          title={t('sheet.standbyHrs')}
-                        >
-                          <Clock size={13} className="text-amber-500" />
-                          {formatHours(ts._totals?.standbyHrs)}
-                        </span>
-                        {/* Deslocamento */}
-                        <span
-                          className="flex items-center gap-1"
-                          title={t('sheet.travelHrs')}
-                        >
-                          <Plane size={13} className="text-green-500" />
-                          {formatHours(ts._totals?.travelHrs)}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <div className="flex items-center justify-center gap-1">
-                        {/* Visualizar / Baixar (modal modo impressão) */}
-                        <button
-                          onClick={(e) => handleView(ts.id, e)}
-                          className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors"
-                          title={t('actions.view')}
-                        >
-                          <Eye size={16} />
-                        </button>
-                        {/* Editar (modo edição) — apenas para criador ou ADMIN/HR/TeamLeader */}
-                        {(currentUser?.role !== 'STANDARD' || currentUser?.isTeamLeader || ts.createdBy === currentUser?.id) && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate(`/timesheets/${ts.id}`);
-                            }}
-                            className="p-1.5 text-gray-400 hover:text-amber-600 transition-colors"
-                            title={t('actions.edit')}
-                          >
-                            <Pencil size={16} />
-                          </button>
-                        )}
-                        {/* Excluir (com confirmação) — apenas para criador ou ADMIN/HR/TeamLeader */}
-                        {(currentUser?.role !== 'STANDARD' || currentUser?.isTeamLeader || ts.createdBy === currentUser?.id) && (
-                          <button
-                            onClick={(e) => handleDelete(ts.id, e)}
-                            className="p-1.5 text-gray-400 hover:text-red-600 transition-colors"
-                            title={t('actions.delete')}
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-
-        {/* ── Paginação ─────────────────────────────────────────────── */}
-        {meta && meta.totalPages > 1 && (
-          <div className="flex items-center justify-between mt-4">
-            <span className="text-sm text-gray-500">
-              {t('table.pagination', {
-                page: meta.page,
-                totalPages: meta.totalPages,
-                total: meta.total,
-              })}
-            </span>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page === 1}
-                className="px-3 py-1 text-sm border border-gray-300 rounded-lg disabled:opacity-50 hover:bg-gray-50"
-              >
-                ←
-              </button>
-              <button
-                onClick={() => setPage((p) => Math.min(meta.totalPages, p + 1))}
-                disabled={page === meta.totalPages}
-                className="px-3 py-1 text-sm border border-gray-300 rounded-lg disabled:opacity-50 hover:bg-gray-50"
-              >
-                →
-              </button>
-            </div>
-          </div>
-        )}
+        <TimesheetTable
+          timesheets={timesheets}
+          isLoading={isLoading}
+          currentUser={currentUser}
+          onView={handleView}
+          onEdit={(id) => navigate(`/timesheets/${id}`)}
+          onDelete={handleDelete}
+          meta={meta}
+          onPageChange={setPage}
+          t={t}
+        />
       </div>
 
       {/* ── Modal de criação ────────────────────────────────────────── */}

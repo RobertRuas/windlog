@@ -104,7 +104,7 @@ async function bootstrap() {
   // Permite que o frontend (em outro domínio/porta) acesse a API
   // Usa variável de ambiente CORS_ORIGIN para controlar origem permitida
   app.enableCors({
-    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+    origin: true, // Permite todas as origens em desenvolvimento (localhost + rede)
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
@@ -222,9 +222,10 @@ async function bootstrap() {
   // 10. INICIA O SERVIDOR
   // -------------------------------------------------------------------------
   const port = configService.get<number>('PORT', 3000);
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0'); // Escuta em todas as interfaces de rede (acesso pela LAN)
 
   logger.log(`Application running on: http://localhost:${port}`);
+  logger.log(`Network access: http://<seu-ip>:${port}`);
   logger.log(`Swagger docs available at: http://localhost:${port}/api/docs`);
   logger.log(
     `Environment: ${configService.get<string>('NODE_ENV', 'development')}`,

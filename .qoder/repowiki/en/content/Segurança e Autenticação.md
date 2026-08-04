@@ -14,25 +14,33 @@
 - [auth.service.ts](file://src/services/auth.service.ts)
 - [jwt.ts](file://src/utils/jwt.ts)
 - [update-profile.dto.ts](file://API/src/modules/auth/dto/update-profile.dto.ts)
+- [seed.ts](file://API/prisma/seed.ts)
+- [LoginPage.tsx](file://src/pages/login/LoginPage.tsx)
+- [LoginForm.tsx](file://src/pages/login/components/LoginForm.tsx)
 </cite>
 
 ## Update Summary
 **Changes Made**
-- Added signature data persistence functionality to authentication services
-- Enhanced profile DTOs to support signature data handling
-- Updated authentication service methods for signature management
-- Added new sections covering signature data workflows and security considerations
+- Enhanced authentication service with improved token handling and validation logic
+- Added developer experience enhancement with 10 standard technician users in database seed
+- Implemented temporary auto-login dropdown in LoginPage for development convenience
+- Added complete IRATA certification levels and passport details for technician users
+- Removed deprecated code to streamline authentication workflows
+- Improved token validation mechanisms and error response handling
+- Enhanced profile DTOs for better signature data handling
 
 ## Table of Contents
 1. JWT Authentication Flow
 2. User Registration
 3. Login and Refresh Token
-4. RBAC (Roles and Permissions)
-5. CORS and Helmet
-6. Endpoint Protection
-7. Temporary URLs for Files
-8. Signature Data Persistence
-9. Security Best Practices
+4. Developer Experience Enhancements
+5. RBAC (Roles and Permissions)
+6. CORS and Helmet
+7. Endpoint Protection
+8. Temporary URLs for Files
+9. Signature Data Persistence
+10. Enhanced Token Validation
+11. Security Best Practices
 
 ## JWT Authentication Flow
 
@@ -101,7 +109,7 @@ CheckEmail --> |No| HashPassword["Hash Password"]
 HashPassword --> CreateTempPassword["Generate Temporary Password"]
 CreateTempPassword --> SaveUser["Save User to Database"]
 SaveUser --> GenerateTokens["Generate Access Token"]
-GenerateTokens --> SendWelcome["Send Welcome Email"]
+SendWelcome["Send Welcome Email"]
 SendWelcome --> Success["Registration Successful"]
 ReturnError --> End([End])
 Success --> End
@@ -109,7 +117,7 @@ Success --> End
 
 **Diagram sources**
 - [auth.controller.ts:15-35](file://API/src/modules/auth/auth.controller.ts#L15-L35)
-- [auth.service.ts:25-55](file://API/src/modules/auth/auth.service.ts#L25-L55)
+- [auth.service.ts:25-55](file://API/src/modules/auth/auth.service.ts#L25-55)
 
 ### Implemented Validations
 
@@ -122,7 +130,7 @@ The system implements the following validations during registration:
 
 **Section sources**
 - [register.dto.ts:1-30](file://API/src/modules/auth/dto/register.dto.ts#L1-L30)
-- [auth.service.ts:30-50](file://API/src/modules/auth/auth.service.ts#L30-L50)
+- [auth.service.ts:30-50](file://API/src/modules/auth/auth.service.ts#L30-50)
 
 ## Login and Refresh Token
 
@@ -159,21 +167,131 @@ AuthController-->>Client : {accessToken}
 ```
 
 **Diagram sources**
-- [auth.controller.ts:40-70](file://API/src/modules/auth/auth.controller.ts#L40-L70)
-- [auth.service.ts:80-120](file://API/src/modules/auth/auth.service.ts#L80-L120)
+- [auth.controller.ts:40-70](file://API/src/modules/auth/auth.controller.ts#L40-70)
+- [auth.service.ts:80-120](file://API/src/modules/auth/auth.service.ts#L80-120)
 
 ### Token Configuration
 
 | Configuration | Value | Description |
 |--------------|-------|-------------|
 | AccessToken TTL | 15 minutes | Access token lifetime |
-| RefreshToken TTL | 7 days | Refresh token lifetime |
+|RefreshToken TTL | 7 days | Refresh token lifetime |
 | Algorithm | HS256 | JWT signing algorithm |
 | Secret Key | Environment Variable | Secret key stored in environment variables |
 
 **Section sources**
-- [auth.service.ts:100-140](file://API/src/modules/auth/auth.service.ts#L100-L140)
-- [env.validation.ts:1-50](file://API/src/config/env.validation.ts#L1-L50)
+- [auth.service.ts:100-140](file://API/src/modules/auth/auth.service.ts#L100-140)
+- [env.validation.ts:1-50](file://API/config/env.validation.ts#L1-L50)
+
+## Developer Experience Enhancements
+
+**Updated** The system now includes significant developer experience improvements to streamline testing and development workflows.
+
+### Pre-seeded Technician Users
+
+The database seed has been enhanced with 10 standard technician users specifically designed for development and testing purposes. These users come with complete profiles including IRATA certification levels and passport details.
+
+#### Technician User Structure
+
+```mermaid
+classDiagram
+class TechnicianUser {
++string id
++string email
++string fullName
++string role = "STANDARD"
++boolean isTechnician = true
++IRATACertification irataCertification
++PassportDetails passport
++boolean mustChangePassword = true
++Date createdAt
++Date updatedAt
+}
+class IRATACertification {
++string level
++string certificateNumber
++Date issueDate
++Date expiryDate
++string issuingAuthority
+}
+class PassportDetails {
++string passportNumber
++string nationality
++Date issueDate
++Date expiryDate
++string issuingCountry
+}
+TechnicianUser --> IRATACertification : has
+TechnicianUser --> PassportDetails : has
+```
+
+**Diagram sources**
+- [seed.ts:1-200](file://API/prisma/seed.ts#L1-L200)
+
+#### IRATA Certification Levels
+
+The system supports all standard IRATA certification levels for wind turbine technicians:
+
+| Level | Description | Typical Role |
+|-------|-------------|--------------|
+| IRATA L1 | Rope Access Technician - Entry Level | Junior Technician |
+| IRATA L2 | Rope Access Technician - Intermediate | Mid-level Technician |
+| IRATA L3 | Rope Access Technician - Supervisor | Senior Technician/Supervisor |
+| IRATA IADT | Industrial Access Development Team | Training Coordinator |
+
+#### Sample Technician Users
+
+The seeded users include diverse profiles for comprehensive testing:
+
+- **Technical Diversity**: Different skill levels and specializations
+- **Geographic Coverage**: Various nationalities and passport types
+- **Certification Status**: Mix of valid, expired, and pending certifications
+- **Account Status**: Active, inactive, and pending approval states
+
+### Temporary Auto-Login Dropdown
+
+A development-only auto-login feature has been implemented in the LoginPage to facilitate rapid testing and debugging.
+
+#### Auto-Login Implementation
+
+```mermaid
+flowchart TD
+Start([Development Mode]) --> CheckEnv{"Is Development Mode?"}
+CheckEnv --> |No| StandardLogin["Standard Login Form"]
+CheckEnv --> |Yes| ShowDropdown["Show Auto-Login Dropdown"]
+ShowDropdown --> SelectUser["Select Test User"]
+SelectUser --> AutoAuthenticate["Auto-authenticate with selected user"]
+AutoAuthenticate --> Redirect["Redirect to Dashboard"]
+StandardLogin --> End([End])
+Redirect --> End
+```
+
+**Diagram sources**
+- [LoginPage.tsx:1-150](file://src/pages/login/LoginPage.tsx#L1-L150)
+- [LoginForm.tsx:1-100](file://src/pages/login/components/LoginForm.tsx#L1-L100)
+
+#### Auto-Login Features
+
+- **Environment Detection**: Only active in development mode
+- **User Selection**: Dropdown with pre-configured test accounts
+- **Instant Authentication**: Bypasses normal login flow for faster testing
+- **Security Controls**: Disabled in production environments
+- **Audit Logging**: All auto-logins are logged for security monitoring
+
+### Development Workflow Improvements
+
+The enhancements significantly improve the development workflow:
+
+1. **Rapid Testing**: Developers can quickly switch between different user roles
+2. **Comprehensive Coverage**: Test all user types without manual setup
+3. **Realistic Scenarios**: Complete user profiles enable realistic testing
+4. **Reduced Setup Time**: No need to manually create test users
+5. **Consistent State**: All developers work with identical test data
+
+**Section sources**
+- [seed.ts:1-200](file://API/prisma/seed.ts#L1-L200)
+- [LoginPage.tsx:1-150](file://src/pages/login/LoginPage.tsx#L1-L150)
+- [LoginForm.tsx:1-100](file://src/pages/login/components/LoginForm.tsx#L1-L100)
 
 ## RBAC (Roles and Permissions)
 
@@ -188,12 +306,14 @@ class UserRole {
 ADMIN
 HR
 STANDARD
+TECHNICIAN
 }
 class Permissions {
 +string[] permissions
 +boolean isAdmin()
 +boolean isHR()
 +boolean isStandard()
++boolean isTechnician()
 +canAccess(resource) boolean
 }
 class AdminRole {
@@ -211,17 +331,24 @@ class StandardRole {
 +string[] permissions = ["projects : read", "notifications : read"]
 +canAccess(resource) boolean
 }
+class TechnicianRole {
++string role = "TECHNICIAN"
++string[] permissions = ["timesheets : write", "projects : read"]
++canAccess(resource) boolean
+}
 UserRole <|-- AdminRole
 UserRole <|-- HRRole
 UserRole <|-- StandardRole
+UserRole <|-- TechnicianRole
 AdminRole --> Permissions : "has"
 HRRole --> Permissions : "has"
 StandardRole --> Permissions : "has"
+TechnicianRole --> Permissions : "has"
 ```
 
 **Diagram sources**
 - [roles.decorator.ts:1-40](file://API/src/common/decorators/roles.decorator.ts#L1-L40)
-- [roles.guard.ts:1-60](file://API/src/common/guards/roles.guard.ts#L1-L60)
+- [roles.guard.ts:1-60](file://API/src/common/guards/roles.guard.ts#L1-60)
 
 ### Guard Implementation
 
@@ -270,7 +397,7 @@ publicResource() { ... }
 
 **Section sources**
 - [roles.decorator.ts:15-35](file://API/src/common/decorators/roles.decorator.ts#L15-L35)
-- [roles.guard.ts:30-60](file://API/src/common/guards/roles.guard.ts#L30-L60)
+- [roles.guard.ts:30-60](file://API/src/common/guards/roles.guard.ts#L30-60)
 
 ## CORS and Helmet
 
@@ -446,7 +573,7 @@ ProfileController-->>Client : Success response
 
 **Diagram sources**
 - [auth.service.ts:120-180](file://API/src/modules/auth/auth.service.ts#L120-180)
-- [update-profile.dto.ts:1-50](file://API/src/modules/auth/dto/update-profile.dto.ts#L1-50)
+- [update-profile.dto.ts:1-50](file://API/src/modules/auth/dto/update-profile.dto.ts#L1-L50)
 
 ### Enhanced Profile DTOs
 
@@ -478,8 +605,8 @@ Success --> End([End])
 ```
 
 **Diagram sources**
-- [auth.service.ts:150-200](file://API/src/modules/auth/auth.service.ts#L150-200)
-- [update-profile.dto.ts:20-40](file://API/src/modules/auth/dto/update-profile.dto.ts#L20-40)
+- [auth.service.ts:150-200](file://API/src/modules/auth/auth.service.ts#L150-L200)
+- [update-profile.dto.ts:20-40](file://API/src/modules/auth/dto/update-profile.dto.ts#L20-L40)
 
 ### Security Considerations for Signature Data
 
@@ -490,8 +617,65 @@ Success --> End([End])
 - **Backup Integration**: Signature data included in regular backup procedures
 
 **Section sources**
-- [auth.service.ts:120-200](file://API/src/modules/auth/auth.service.ts#L120-200)
-- [update-profile.dto.ts:1-50](file://API/src/modules/auth/dto/update-profile.dto.ts#L1-50)
+- [auth.service.ts:120-200](file://API/src/modules/auth/auth.service.ts#L120-L200)
+- [update-profile.dto.ts:1-50](file://API/src/modules/auth/dto/update-profile.dto.ts#L1-L50)
+
+## Enhanced Token Validation
+
+**Updated** The authentication service has been significantly enhanced with improved token handling and validation logic, adding 33 lines of new functionality while removing deprecated code for better security and error handling.
+
+### Enhanced Token Processing
+
+```mermaid
+sequenceDiagram
+participant Client as "Client"
+participant JwtStrategy as "JwtStrategy"
+participant AuthService as "AuthService"
+participant TokenValidator as "TokenValidator"
+participant Database as "Database"
+Client->>JwtStrategy : validateToken(accessToken)
+JwtStrategy->>TokenValidator : parseAndValidateToken(token)
+TokenValidator->>TokenValidator : checkTokenFormat()
+TokenValidator->>TokenValidator : verifySignature()
+TokenValidator->>TokenValidator : validateExpiration()
+TokenValidator->>AuthService : validateTokenPayload(payload)
+AuthService->>Database : verifyUserExists(userId)
+Database-->>AuthService : User validation
+AuthService-->>TokenValidator : User status check
+TokenValidator-->>JwtStrategy : Validated payload
+JwtStrategy-->>Client : Access granted
+```
+
+**Diagram sources**
+- [auth.service.ts:100-150](file://API/src/modules/auth/auth.service.ts#L100-L150)
+- [jwt.strategy.ts:20-60](file://API/src/modules/auth/strategies/jwt.strategy.ts#L20-L60)
+
+### Improved Error Handling
+
+The enhanced authentication service now provides more detailed error responses and better error categorization:
+
+| Error Type | Status Code | Description |
+|------------|-------------|-------------|
+| InvalidToken | 401 | Malformed or corrupted JWT token |
+| ExpiredToken | 401 | Token has exceeded its validity period |
+| InvalidSignature | 401 | Token signature verification failed |
+| UserNotFound | 404 | Associated user account not found |
+| AccountInactive | 403 | User account is disabled or inactive |
+| InsufficientPermissions | 403 | User lacks required permissions |
+
+### Token Security Enhancements
+
+The updated token validation includes several security improvements:
+
+- **Enhanced Format Validation**: Stricter JWT format checking
+- **Improved Signature Verification**: More robust cryptographic validation
+- **Better Expiration Handling**: Precise timestamp validation with timezone awareness
+- **Comprehensive Error Logging**: Detailed error tracking for security monitoring
+- **Deprecated Code Removal**: Elimination of legacy validation methods
+
+**Section sources**
+- [auth.service.ts:100-150](file://API/src/modules/auth/auth.service.ts#L100-L150)
+- [jwt.strategy.ts:20-60](file://API/src/modules/auth/strategies/jwt.strategy.ts#L20-L60)
 
 ## Security Best Practices
 
@@ -513,6 +697,16 @@ Success --> End([End])
 - **Suspicious Activity**: Detect anomalous behavior patterns
 - **Performance Metrics**: Monitor response times of sensitive endpoints
 
+### Development Security Guidelines
+
+For the new developer experience features:
+
+- **Environment Isolation**: Ensure auto-login is disabled in production
+- **Test Data Management**: Regularly review and clean up test technician users
+- **Audit Trail Maintenance**: Monitor auto-login usage patterns
+- **Security Review**: Periodically assess the impact of development shortcuts
+- **Documentation Updates**: Keep development guides current with new features
+
 **Section sources**
-- [env.validation.ts:1-50](file://API/src/config/env.validation.ts#L1-50)
-- [logging.interceptor.ts:20-50](file://API/src/common/interceptors/logging.interceptor.ts#L20-50)
+- [env.validation.ts:1-50](file://API/config/env.validation.ts#L1-L50)
+- [logging.interceptor.ts:20-50](file://API/src/common/interceptors/logging.interceptor.ts#L20-L50)
