@@ -16,9 +16,13 @@
     "description_placeholder": "Descreva em detalhe o que aconteceu. Se for um bug, inclua os passos para reproduzir.",
     "description_required": "A descrição é obrigatória",
     "category": "Categoria",
-    "screenshot": "Screenshot",
-    "screenshot_hint": "Capture uma parte da página ou a página inteira para ilustrar o problema",
+    "screenshot": "Captura de ecrã",
+    "screenshot_hint": "Tire uma captura (Print Screen) e carregue a imagem aqui",
     "screenshot_optional": "Opcional — ajuda a entender melhor o problema",
+    "screenshot_upload_text": "Clique para carregar ou arraste e largue",
+    "screenshot_upload_formats": "PNG, JPG até 5MB",
+    "screenshot_error_type": "Selecione um ficheiro de imagem (PNG, JPG, etc.)",
+    "screenshot_error_size": "O ficheiro deve ter menos de 5MB",
     "page_url": "Página atual",
     "admin_notes": "Notas do Administrador",
     "admin_notes_placeholder": "Adicione notas sobre a análise, resolução ou motivo de fechamento..."
@@ -52,10 +56,10 @@
     "capture_visible": "Capturar visível",
     "capture_full": "Capturar página inteira",
     "capture_area": "Selecionar área",
-    "remove": "Remover screenshot",
+    "remove": "Remover captura",
     "preview": "Pré-visualização",
     "capturing": "A capturar...",
-    "no_capture": "Nenhuma captura"
+    "no_capture": "Sem captura"
   },
 
   "actions": {
@@ -66,7 +70,7 @@
     "update": "Atualizar",
     "delete": "Eliminar",
     "view": "Ver detalhes",
-    "change_status": "Mudar status",
+    "change_status": "Mudar estado",
     "change_priority": "Mudar prioridade"
   },
 
@@ -78,24 +82,31 @@
     "resolved_by": "Resolvido por",
     "resolved_at": "Resolvido em",
     "page_context": "Página",
-    "browser_info": "Browser",
+    "browser_info": "Navegador",
     "screen_info": "Ecrã",
-    "no_screenshot": "Sem screenshot"
+    "no_screenshot": "Sem captura"
   },
 
   "stats": {
     "total": "Total",
     "new": "Novos",
-    "by_status": "Por Status",
+    "by_status": "Por Estado",
     "by_category": "Por Categoria",
     "by_priority": "Por Prioridade"
   },
 
   "filters": {
-    "all_statuses": "Todos os status",
+    "all_statuses": "Todos os estados",
     "all_categories": "Todas as categorias",
     "all_priorities": "Todas as prioridades",
     "search_placeholder": "Pesquisar no título ou descrição..."
+  },
+
+  "technical": {
+    "console_logs_captured": "log(s) do console capturado(s)",
+    "recent_system_errors": "Erro(s) recente(s) do sistema",
+    "connection": "Conexão",
+    "uploading": "A carregar..."
   },
 
   "toast": {
