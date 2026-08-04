@@ -79,9 +79,10 @@ export function ProfilePage() {
 
   // Normaliza o número de telefone para remover o código do país,
   // pois o campo phone deve conter apenas o número local.
+  // Também converte isTeamLeader (boolean) para string para exibição.
   const normalizedData = useMemo(() => {
     if (!data) return data;
-    const normalized = { ...data };
+    const normalized = { ...data } as any;
     if (normalized.phone && normalized.phoneCountryCode) {
       const codeDigits = normalized.phoneCountryCode.replace(/\D/g, '');
       const phoneDigits = normalized.phone.replace(/\D/g, '');
@@ -89,8 +90,10 @@ export function ProfilePage() {
         normalized.phone = phoneDigits.slice(codeDigits.length);
       }
     }
+    // Converte boolean isTeamLeader para string para exibição no ProfileSection
+    normalized.isTeamLeaderStr = normalized.isTeamLeader ? t('profile.yesTeamLeader') : t('profile.noTeamLeader');
     return normalized;
-  }, [data]);
+  }, [data, t]);
 
   const {
     profileMutation,
@@ -181,13 +184,11 @@ export function ProfilePage() {
       },
     },
     {
-      key: 'isTeamLeader',
+      key: 'isTeamLeaderStr',
       label: t('profile.isTeamLeader'),
       category: 'professional',
       virtual: true,
-      formatDisplay: (d) => {
-        return d.isTeamLeader ? t('profile.yesTeamLeader') : null;
-      },
+      formatDisplay: (d) => d.isTeamLeaderStr || null,
     },
     // Sobre
     { key: 'bio', label: t('profile.bio'), type: 'textarea', span: 2, category: 'about' },
@@ -282,6 +283,11 @@ export function ProfilePage() {
           </h1>
           <p className="text-sm text-gray-500 mt-0.5">
             {data?.position || data?.department || t('sections.personal.description')}
+            {data?.isTeamLeader && (
+              <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
+                {t('profile.teamLeaderBadge')}
+              </span>
+            )}
           </p>
         </div>
       </div>

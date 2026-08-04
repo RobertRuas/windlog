@@ -400,6 +400,7 @@ export class AuthService {
       irataNumber: user.irataNumber,
       preferredAirportCity: user.preferredAirportCity,
       preferredAirportCountry: user.preferredAirportCountry,
+      isTeamLeader: user.isTeamLeader,
       createdAt: user.createdAt,
       phoneNumbers: user.phoneNumbers,
       certifications: user.certifications,
