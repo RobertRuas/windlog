@@ -374,7 +374,6 @@ export function FeedbacksPage() {
                   <tr className="border-b border-gray-200 bg-gray-50">
                     <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase whitespace-nowrap">{t('fields.title')}</th>
                     <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase whitespace-nowrap">{t('fields.category')}</th>
-                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase whitespace-nowrap">{t('fields.screenshot', { ns: 'feedback' })}</th>
                     <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Status</th>
                     <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Prioridade</th>
                     <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase whitespace-nowrap">{t('list.reported_by')}</th>
@@ -396,13 +395,6 @@ export function FeedbacksPage() {
                             <CatIcon size={14} />
                             {t(`categories.${fb.category}`)}
                           </span>
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          {fb.screenshotPath ? (
-                            <span className="text-xs text-green-600">✓</span>
-                          ) : (
-                            <span className="text-xs text-gray-400">—</span>
-                          )}
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">
                           <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[fb.status]}`}>
