@@ -12,11 +12,13 @@
  * SEÇÕES DO PERFIL:
  * -----------------
  * 1. Informações Pessoais e Profissionais (com avatar)
- * 2. Documentos Pessoais (logo após informações pessoais)
- * 3. Contato (telefones)
+ * 2. Contato (telefones) — logo após informações pessoais
+ * 3. Documentos Pessoais
  * 4. Dados Bancários
  * 5. Certificações
  * 6. Idiomas
+ * 7. EPIs
+ * 8. Assinatura
  *
  * LAYOUT:
  * -------
@@ -328,23 +330,7 @@ export function ProfilePage() {
             />
           </div>
 
-          {/* 2. Documentos Pessoais */}
-          <div id="section-documents">
-            <Accordion
-              title={t('documents.title')}
-              icon={<CreditCard className="w-5 h-5 text-rose-600" />}
-              defaultOpen={false}
-            >
-              <DocumentSection
-                documents={(data?.documents || []) as unknown as UserDocument[]}
-                onAdd={handleAddDocument}
-                onUpdate={handleUpdateDocument}
-                onRemove={handleRemoveDocument}
-              />
-            </Accordion>
-          </div>
-
-          {/* 3. Contato (telefones) */}
+          {/* 2. Contato (telefones) — logo após informações pessoais */}
           <div id="section-phones">
             <Accordion
               title={t('phones.title')}
@@ -356,6 +342,22 @@ export function ProfilePage() {
                 onAdd={handleAddPhone}
                 onUpdate={handleUpdatePhone}
                 onRemove={handleRemovePhone}
+              />
+            </Accordion>
+          </div>
+
+          {/* 3. Documentos Pessoais */}
+          <div id="section-documents">
+            <Accordion
+              title={t('documents.title')}
+              icon={<CreditCard className="w-5 h-5 text-rose-600" />}
+              defaultOpen={false}
+            >
+              <DocumentSection
+                documents={(data?.documents || []) as unknown as UserDocument[]}
+                onAdd={handleAddDocument}
+                onUpdate={handleUpdateDocument}
+                onRemove={handleRemoveDocument}
               />
             </Accordion>
           </div>
