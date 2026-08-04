@@ -99,16 +99,16 @@ function isFilled(value: unknown): boolean {
 /**
  * Define todas as seções verificáveis do perfil com seus pesos.
  *
- * PESOS (total = 100):
+ * PESOS (total = 75):
  * - Identidade: 15 (nome, sobrenome, data nascimento, nacionalidade, foto)
  * - Contato: 10 (telefone)
  * - Localização: 12 (endereço, cidade, código postal, país)
  * - Profissional: 13 (departamento, cargo, data contratação)
- * - Sobre: 0 (biografia - opcional, não conta para o progresso)
- * - Documentos: 25 (passaporte obrigatório + outros)
- * - Dados Bancários: 0 (opcional, não conta para o progresso)
+ * - Documentos: 25 (passaporte obrigatório)
  * - Idiomas: 5 (pelo menos um idioma)
- * - Certificações: 0 (opcional, não conta para o progresso)
+ *
+ * SEÇÕES EXCLUÍDO (opcionais, não contam para o progresso):
+ * - Bio, Dados Bancários, Certificações
  */
 function getProfileSections(): ProfileSection[] {
   return [
@@ -145,14 +145,6 @@ function getProfileSections(): ProfileSection[] {
       filledCount: (d) => [d.department, d.position, d.hireDate].filter(isFilled).length,
     },
     {
-      id: 'about',
-      weight: 0,
-      fields: ['bio'],
-      requiredFields: [],
-      isComplete: (d) => isFilled(d.bio),
-      filledCount: (d) => isFilled(d.bio) ? 1 : 0,
-    },
-    {
       id: 'documents',
       weight: 25,
       fields: ['passport'],
@@ -167,28 +159,12 @@ function getProfileSections(): ProfileSection[] {
       },
     },
     {
-      id: 'bankAccounts',
-      weight: 0,
-      fields: ['bankAccount'],
-      requiredFields: [],
-      isComplete: (d) => (d.bankAccounts?.length ?? 0) > 0,
-      filledCount: (d) => (d.bankAccounts?.length ?? 0) > 0 ? 1 : 0,
-    },
-    {
       id: 'languages',
       weight: 5,
       fields: ['language'],
       requiredFields: [],
       isComplete: (d) => (d.languages?.length ?? 0) > 0,
       filledCount: (d) => (d.languages?.length ?? 0) > 0 ? 1 : 0,
-    },
-    {
-      id: 'certifications',
-      weight: 0,
-      fields: ['certification'],
-      requiredFields: [],
-      isComplete: (d) => (d.certifications?.length ?? 0) > 0,
-      filledCount: (d) => (d.certifications?.length ?? 0) > 0 ? 1 : 0,
     },
   ];
 }
