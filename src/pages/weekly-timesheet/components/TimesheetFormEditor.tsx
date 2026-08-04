@@ -105,10 +105,13 @@ export function TimesheetFormEditor({
   // Ref para evitar reset do form durante auto-save (o form só reinicializa no remount)
   const isInitialLoad = useRef(true);
 
-  // Accordion: primeiro dia aberto, demais recolhidos
+  // Accordion: todos os dias começam fechados
   const [collapsedDays, setCollapsedDays] = useState<Set<number>>(
-    () => new Set(form.days.slice(1).map((_, i) => i + 1)),
+    () => new Set(form.days.map((_, i) => i)),
   );
+
+  // Refs para scroll automático ao abrir um dia
+  const dayHeaderRefs = useRef<Record<number, HTMLDivElement | null>>({});
 
   // Erros de validação
   const [validationErrors, setValidationErrors] = useState<Set<number>>(new Set());
@@ -122,7 +125,7 @@ export function TimesheetFormEditor({
       isInitialLoad.current = false;
       const state = timesheetToFormState(timesheet);
       setForm(state);
-      setCollapsedDays(new Set(state.days.slice(1).map((_, i) => i + 1)));
+      setCollapsedDays(new Set(state.days.map((_, i) => i)));
     }
   }, [timesheet]);
 
@@ -195,6 +198,10 @@ export function TimesheetFormEditor({
       // Abre apenas o dia clicado, fecha todos os outros (accordion: só 1 aberto)
       return new Set(form.days.map((_, i) => i).filter((i) => i !== dayIdx));
     });
+    // Scroll suave até o título do acordeão aberto
+    setTimeout(() => {
+      dayHeaderRefs.current[dayIdx]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
   }
 
   // ── Manipuladores ─────────────────────────────────────────────────
@@ -396,6 +403,7 @@ export function TimesheetFormEditor({
           <section key={day.id || dayIdx} className={`bg-white rounded-xl border-2 ${borderColor} overflow-hidden transition-colors`}>
             {/* Header do dia */}
             <div
+              ref={(el) => { dayHeaderRefs.current[dayIdx] = el; }}
               className={`px-5 py-3 border-b ${borderColor} ${headerBg} flex items-center justify-between cursor-pointer hover:opacity-90 transition-all`}
               onClick={() => toggleDay(dayIdx)}
             >
