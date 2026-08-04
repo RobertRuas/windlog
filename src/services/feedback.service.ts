@@ -53,6 +53,82 @@ export interface FeedbackReporter {
 }
 
 /**
+ * Log do console capturado.
+ */
+export interface ConsoleLog {
+  level: 'error' | 'warn' | 'log' | 'info';
+  message: string;
+  timestamp: string;
+  args?: string[];
+}
+
+/**
+ * Contexto técnico completo.
+ */
+export interface TechnicalContext {
+  browser: {
+    name: string;
+    version: string;
+    language: string;
+    languages: string[];
+    cookiesEnabled: boolean;
+    doNotTrack: boolean;
+    userAgent: string;
+  };
+  system: {
+    os: string;
+    platform: string;
+    cores: number;
+    memory?: number;
+    online: boolean;
+  };
+  screen: {
+    width: number;
+    height: number;
+    availWidth: number;
+    availHeight: number;
+    colorDepth: number;
+    pixelRatio: number;
+    orientation: string;
+  };
+  viewport: {
+    width: number;
+    height: number;
+    scrollX: number;
+    scrollY: number;
+  };
+  connection: {
+    type?: string;
+    effectiveType?: string;
+    downlink?: number;
+    rtt?: number;
+    saveData?: boolean;
+  };
+  performance: {
+    navigationStart: number;
+    domContentLoaded: number;
+    loadComplete: number;
+    memoryUsed?: number;
+    memoryLimit?: number;
+  };
+  page: {
+    url: string;
+    path: string;
+    referrer: string;
+    title: string;
+  };
+  features: {
+    webgl: boolean;
+    canvas: boolean;
+    webWorkers: boolean;
+    localStorage: boolean;
+    sessionStorage: boolean;
+    serviceWorker: boolean;
+  };
+  timestamp: string;
+}
+
+/**
  * Feedback completo retornado pela API.
  */
 export interface Feedback {
@@ -67,6 +143,8 @@ export interface Feedback {
   screenResolution?: string | null;
   screenshotPath?: string | null;
   adminNotes?: string | null;
+  technicalContext?: TechnicalContext | null;
+  consoleLogs?: ConsoleLog[] | null;
   reportedBy: string;
   reporter: FeedbackReporter;
   resolvedBy?: string | null;

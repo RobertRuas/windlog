@@ -67,6 +67,8 @@ export class FeedbackService {
         pageUrl: dto.pageUrl,
         userAgent: dto.userAgent,
         screenResolution: dto.screenResolution,
+        technicalContext: dto.technicalContext,
+        consoleLogs: dto.consoleLogs,
         reportedBy: userId,
         status: 'NEW',
         priority: 'MEDIUM',

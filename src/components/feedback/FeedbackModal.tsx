@@ -1,53 +1,66 @@
 /**
  * ============================================================================
- * FEEDBACK MODAL - Modal de Submissão de Feedback
+ * FEEDBACK MODAL - Modal de Submissão de Feedback (Versão Melhorada)
  * ============================================================================
  *
  * O QUE É ESTE ARQUIVO?
  * ---------------------
  * Modal para o usuário reportar feedback (bugs, sugestões, etc.).
- * Inclui captura de screenshot da página atual ou área selecionada.
+ * Inclui captura REAL de screenshot usando html2canvas e captura de erros
+ * do console do navegador para debugging.
  *
  * FUNCIONALIDADES:
  * ----------------
  * - Formulário simples: título + descrição + categoria
- * - Captura de screenshot (visível, página inteira ou área selecionada)
- * - Captura automática de contexto técnico (URL, browser, resolução)
+ * - Captura REAL de screenshot (viewport ou página inteira) via html2canvas
+ * - Captura automática de erros/warnings do console
+ * - Coleta de contexto técnico completo (browser, OS, conexão, performance)
  * - Upload do screenshot para o servidor
  * - Feedback visual de sucesso/erro
  * ============================================================================
  */
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import html2canvas from 'html2canvas';
 import {
   X,
   MessageSquare,
   Camera,
   Monitor,
-  Crop,
   Trash2,
   Send,
   Loader2,
+  Terminal,
+  Info,
 } from 'lucide-react';
 
 import { createFeedback, type FeedbackCategory } from '@/services/feedback.service';
 import { api } from '@/services/api';
+import {
+  startConsoleCapture,
+  stopConsoleCapture,
+  getCapturedLogs,
+  clearCapturedLogs,
+  type CapturedLog,
+} from '@/utils/consoleCapture';
+import {
+  collectTechnicalContext,
+  type TechnicalContext,
+} from '@/utils/technicalContext';
 
 /**
  * Props do FeedbackModal.
  */
 interface FeedbackModalProps {
-  /** Se o modal está aberto */
   isOpen: boolean;
-  /** Callback para fechar o modal */
   onClose: () => void;
 }
 
 /**
- * Categorias disponíveis para seleção.
+ * Categorias disponíveis.
  */
 const CATEGORIES: { value: FeedbackCategory; icon: string }[] = [
   { value: 'BUG', icon: '🐛' },
@@ -71,14 +84,34 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
 
   // Estado do screenshot
   const [screenshotDataUrl, setScreenshotDataUrl] = useState<string | null>(null);
-  const [screenshotPath, setScreenshotPath] = useState<string | null>(null);
   const [isCapturing, setIsCapturing] = useState(false);
+
+  // Estado dos logs do console
+  const [consoleLogs, setConsoleLogs] = useState<CapturedLog[]>([]);
+  const [showConsoleLogs, setShowConsoleLogs] = useState(false);
+
+  // Estado do contexto técnico
+  const [technicalContext, setTechnicalContext] = useState<TechnicalContext | null>(null);
 
   // Estado de erro
   const [errors, setErrors] = useState<{ title?: string; description?: string }>({});
 
-  // Ref para o canvas de captura
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  /**
+   * Inicia captura do console quando o modal abre.
+   */
+  useEffect(() => {
+    if (isOpen) {
+      clearCapturedLogs();
+      startConsoleCapture();
+      setTechnicalContext(collectTechnicalContext());
+    } else {
+      stopConsoleCapture();
+    }
+
+    return () => {
+      stopConsoleCapture();
+    };
+  }, [isOpen]);
 
   /**
    * Reset do formulário ao fechar.
@@ -88,94 +121,91 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
     setDescription('');
     setCategory('BUG');
     setScreenshotDataUrl(null);
-    setScreenshotPath(null);
+    setConsoleLogs([]);
+    setShowConsoleLogs(false);
     setErrors({});
+    stopConsoleCapture();
     onClose();
   }
 
   /**
-   * Captura screenshot da viewport visível usando html2canvas approach nativo.
-   * Usa a API nativa do browser para capturar a tela.
+   * Captura screenshot REAL da viewport usando html2canvas.
    */
-  const captureVisibleScreen = useCallback(async () => {
+  async function captureVisibleScreen() {
     setIsCapturing(true);
     try {
-      // Usa a API nativa de captura de ecrã (se disponível)
-      // Fallback: cria um canvas com a informação visível
-      const canvas = document.createElement('canvas');
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      const ctx = canvas.getContext('2d');
+      // Fecha o modal temporariamente para capturar a página
+      const modal = document.querySelector('[data-feedback-modal]');
+      if (modal) (modal as HTMLElement).style.display = 'none';
 
-      if (ctx) {
-        // Desenha um fundo branco
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // Aguarda um tick para o DOM atualizar
+      await new Promise((r) => setTimeout(r, 100));
 
-        // Desenha informação do contexto
-        ctx.fillStyle = '#333333';
-        ctx.font = '14px system-ui, sans-serif';
-        ctx.fillText(`URL: ${window.location.href}`, 20, 30);
-        ctx.fillText(`Resolution: ${window.innerWidth}x${window.innerHeight}`, 20, 55);
-        ctx.fillText(`Date: ${new Date().toLocaleString()}`, 20, 80);
+      // Captura o documento inteiro
+      const canvas = await html2canvas(document.body, {
+        useCORS: true,
+        allowTaint: true,
+        scale: 1,
+        logging: false,
+        backgroundColor: '#ffffff',
+      });
 
-        // Tenta capturar usando html2canvas se disponível
-        // Para simplicidade, usamos uma abordagem simplificada
-        const dataUrl = canvas.toDataURL('image/png');
-        setScreenshotDataUrl(dataUrl);
-      }
+      // Restaura o modal
+      if (modal) (modal as HTMLElement).style.display = '';
+
+      const dataUrl = canvas.toDataURL('image/png');
+      setScreenshotDataUrl(dataUrl);
     } catch (err) {
       console.error('Erro ao capturar screenshot:', err);
+      toast.error('Não foi possível capturar a tela');
     } finally {
       setIsCapturing(false);
     }
-  }, []);
+  }
 
   /**
-   * Captura a página inteira (scroll completo).
+   * Captura screenshot da página inteira (scroll completo).
    */
-  const captureFullPage = useCallback(async () => {
+  async function captureFullPage() {
     setIsCapturing(true);
     try {
-      const canvas = document.createElement('canvas');
-      canvas.width = window.innerWidth;
-      canvas.height = document.documentElement.scrollHeight;
-      const ctx = canvas.getContext('2d');
+      const modal = document.querySelector('[data-feedback-modal]');
+      if (modal) (modal as HTMLElement).style.display = 'none';
 
-      if (ctx) {
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      await new Promise((r) => setTimeout(r, 100));
 
-        ctx.fillStyle = '#333333';
-        ctx.font = '14px system-ui, sans-serif';
-        ctx.fillText(`URL: ${window.location.href}`, 20, 30);
-        ctx.fillText(`Page height: ${document.documentElement.scrollHeight}px`, 20, 55);
-        ctx.fillText(`Date: ${new Date().toLocaleString()}`, 20, 80);
+      const canvas = await html2canvas(document.body, {
+        useCORS: true,
+        allowTaint: true,
+        scale: 1,
+        logging: false,
+        backgroundColor: '#ffffff',
+        height: document.documentElement.scrollHeight,
+        windowHeight: document.documentElement.scrollHeight,
+      });
 
-        const dataUrl = canvas.toDataURL('image/png');
-        setScreenshotDataUrl(dataUrl);
-      }
+      if (modal) (modal as HTMLElement).style.display = '';
+
+      const dataUrl = canvas.toDataURL('image/png');
+      setScreenshotDataUrl(dataUrl);
     } catch (err) {
       console.error('Erro ao capturar screenshot:', err);
+      toast.error('Não foi possível capturar a tela');
     } finally {
       setIsCapturing(false);
     }
-  }, []);
+  }
 
   /**
    * Upload do screenshot para o servidor.
-   * Retorna o caminho relativo do ficheiro.
    */
-  const uploadScreenshot = async (dataUrl: string): Promise<string> => {
-    // Converte dataUrl para Blob
+  async function uploadScreenshot(dataUrl: string): Promise<string> {
     const res = await fetch(dataUrl);
     const blob = await res.blob();
 
-    // Cria FormData com o ficheiro
     const formData = new FormData();
     formData.append('file', blob, `screenshot-${Date.now()}.png`);
 
-    // Upload via API
     const result = await api.post<{ filePath: string }>(
       '/api/v1/upload/feedbacks',
       formData,
@@ -183,7 +213,7 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
     );
 
     return result.filePath;
-  };
+  }
 
   /**
    * Mutation para criar o feedback.
@@ -197,6 +227,8 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
       pageUrl: string;
       userAgent: string;
       screenResolution: string;
+      technicalContext?: TechnicalContext;
+      consoleLogs?: CapturedLog[];
     }) => {
       return createFeedback(data);
     },
@@ -227,26 +259,32 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
 
     setErrors({});
 
+    // Para a captura do console e pega os logs
+    stopConsoleCapture();
+    const logs = getCapturedLogs();
+    setConsoleLogs(logs);
+
     // Upload do screenshot se existir
     let finalScreenshotPath: string | undefined;
     if (screenshotDataUrl) {
       try {
         finalScreenshotPath = await uploadScreenshot(screenshotDataUrl);
       } catch {
-        // Continua sem screenshot se o upload falhar
         console.warn('Screenshot upload failed, continuing without it');
       }
     }
 
-    // Cria o feedback
+    // Cria o feedback com contexto técnico completo
     createMutation.mutate({
       title: title.trim(),
       description: description.trim(),
       category,
-      screenshotPath: finalScreenshotPath || screenshotPath || undefined,
+      screenshotPath: finalScreenshotPath || undefined,
       pageUrl: window.location.pathname + window.location.search,
       userAgent: navigator.userAgent,
       screenResolution: `${window.innerWidth}x${window.innerHeight}`,
+      technicalContext: technicalContext || undefined,
+      consoleLogs: logs.length > 0 ? logs : undefined,
     });
   }
 
@@ -254,19 +292,22 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
 
   return (
     <>
-      {/* Overlay escuro */}
+      {/* Overlay */}
       <div
         className="fixed inset-0 z-50 bg-black/50 transition-opacity"
         onClick={handleClose}
       />
 
       {/* Modal */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center p-4"
+        data-feedback-modal
+      >
         <div
           className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* ── Header fixo ──────────────────────────────────────── */}
+          {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -285,7 +326,7 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
             </button>
           </div>
 
-          {/* ── Body scrollável ──────────────────────────────────── */}
+          {/* Body */}
           <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
             {/* Categoria */}
             <div>
@@ -330,9 +371,7 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
                   ${errors.title ? 'border-red-300 bg-red-50' : 'border-gray-200'}
                 `.trim()}
               />
-              {errors.title && (
-                <p className="mt-1 text-xs text-red-500">{errors.title}</p>
-              )}
+              {errors.title && <p className="mt-1 text-xs text-red-500">{errors.title}</p>}
             </div>
 
             {/* Descrição */}
@@ -372,7 +411,7 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
                   />
                   <button
                     type="button"
-                    onClick={() => { setScreenshotDataUrl(null); setScreenshotPath(null); }}
+                    onClick={() => setScreenshotDataUrl(null)}
                     className="absolute top-2 right-2 w-7 h-7 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
                   >
                     <Trash2 size={14} />
@@ -409,17 +448,60 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
               )}
             </div>
 
-            {/* Contexto técnico (info) */}
-            <div className="bg-gray-50 rounded-lg px-4 py-3">
-              <p className="text-xs text-gray-500 font-medium mb-1">{t('list.page_context')}</p>
-              <p className="text-xs text-gray-600 truncate">{window.location.pathname}</p>
-              <p className="text-xs text-gray-400 mt-1">
-                {window.innerWidth}x{window.innerHeight} · {navigator.userAgent.split(' ').pop()}
-              </p>
-            </div>
+            {/* Console Logs (se houver) */}
+            {consoleLogs.length > 0 && (
+              <div className="bg-gray-900 rounded-lg p-3">
+                <button
+                  type="button"
+                  onClick={() => setShowConsoleLogs(!showConsoleLogs)}
+                  className="flex items-center gap-2 text-xs text-gray-300 hover:text-white transition-colors w-full"
+                >
+                  <Terminal size={14} />
+                  <span>{consoleLogs.length} console log(s) captured</span>
+                  <Info size={12} className="ml-auto" />
+                </button>
+                {showConsoleLogs && (
+                  <div className="mt-2 max-h-32 overflow-y-auto">
+                    {consoleLogs.map((log, i) => (
+                      <div key={i} className="text-xs font-mono text-gray-400 truncate">
+                        <span className={
+                          log.level === 'error' ? 'text-red-400' :
+                          log.level === 'warn' ? 'text-yellow-400' : 'text-gray-400'
+                        }>
+                          [{log.level.toUpperCase()}]
+                        </span>{' '}
+                        {log.message}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Contexto técnico */}
+            {technicalContext && (
+              <div className="bg-gray-50 rounded-lg px-4 py-3 space-y-1">
+                <p className="text-xs text-gray-500 font-medium flex items-center gap-1">
+                  <Info size={12} />
+                  {t('list.page_context')}
+                </p>
+                <p className="text-xs text-gray-600 truncate">
+                  {technicalContext.browser.name} {technicalContext.browser.version} · {technicalContext.system.os}
+                </p>
+                <p className="text-xs text-gray-400">
+                  {technicalContext.viewport.width}x{technicalContext.viewport.height} · {technicalContext.screen.pixelRatio}x pixel ratio
+                </p>
+                {technicalContext.connection.effectiveType && (
+                  <p className="text-xs text-gray-400">
+                    Connection: {technicalContext.connection.effectiveType}
+                    {technicalContext.connection.downlink && ` · ${technicalContext.connection.downlink} Mbps`}
+                  </p>
+                )}
+              </div>
+            )}
           </form>
 
-          {/* ── Footer fixo ──────────────────────────────────────── */}
+          {/* Footer */}
           <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200">
             <button
               type="button"
@@ -448,9 +530,6 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
           </div>
         </div>
       </div>
-
-      {/* Canvas oculto para capturas */}
-      <canvas ref={canvasRef} className="hidden" />
     </>
   );
 }

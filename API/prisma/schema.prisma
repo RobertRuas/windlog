@@ -983,6 +983,10 @@ model Feedback {
   userAgent String?
   /// Resolução do ecrã (ex: "1920x1080")
   screenResolution String?
+  /// Contexto técnico completo em JSON (browser, OS, conexão, performance, etc.)
+  technicalContext Json?
+  /// Logs do console capturados (erros, warnings) em formato JSON
+  consoleLogs Json?
 
   // Screenshot
   /// Caminho relativo do screenshot (relativo a uploads/{userId}/feedbacks/)

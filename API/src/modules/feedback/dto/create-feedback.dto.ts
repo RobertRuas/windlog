@@ -30,7 +30,7 @@
  * ============================================================================
  */
 
-import { IsString, IsOptional, IsEnum } from 'class-validator';
+import { IsString, IsOptional, IsEnum, IsObject, IsArray } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 /**
@@ -122,4 +122,28 @@ export class CreateFeedbackDto {
   @IsOptional()
   @IsString()
   screenResolution?: string;
+
+  /**
+   * Contexto técnico completo (JSON com browser, OS, conexão, performance, etc.).
+   * Capturado automaticamente pelo frontend.
+   */
+  @ApiPropertyOptional({
+    description: 'Contexto técnico completo (JSON)',
+    example: { browser: { name: 'Chrome', version: '120' }, system: { os: 'macOS' } },
+  })
+  @IsOptional()
+  @IsObject()
+  technicalContext?: Record<string, any>;
+
+  /**
+   * Logs do console capturados (erros, warnings).
+   * Capturado automaticamente pelo frontend.
+   */
+  @ApiPropertyOptional({
+    description: 'Logs do console capturados (array de erros/warnings)',
+    example: [{ level: 'error', message: 'Failed to fetch', timestamp: '2024-01-01T12:00:00Z' }],
+  })
+  @IsOptional()
+  @IsArray()
+  consoleLogs?: any[];
 }

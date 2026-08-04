@@ -37,6 +37,11 @@ import {
   Zap,
   AlertTriangle,
   FileText,
+  Terminal,
+  Cpu,
+  Globe,
+  Wifi,
+  Monitor,
 } from 'lucide-react';
 
 import { AppLayout } from '@/components/layout/AppLayout';
@@ -50,6 +55,8 @@ import {
   type FeedbackStatus,
   type FeedbackPriority,
   type FeedbackCategory,
+  type TechnicalContext,
+  type ConsoleLog,
 } from '@/services/feedback.service';
 
 /**
@@ -470,6 +477,130 @@ export function FeedbacksPage() {
                     </div>
                   )}
                 </div>
+
+                {/* ── Informações Técnicas Detalhadas ─────────────────────────── */}
+                {selectedFeedback.technicalContext && (
+                  <div className="border-t border-gray-200 pt-5">
+                    <h4 className="text-sm font-semibold text-gray-900 flex items-center gap-2 mb-3">
+                      <Cpu size={14} />
+                      Technical Details
+                    </h4>
+                    <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                      {/* Browser e OS */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <p className="text-xs text-gray-500 flex items-center gap-1">
+                            <Globe size={10} /> Browser
+                          </p>
+                          <p className="text-sm text-gray-700">
+                            {selectedFeedback.technicalContext.browser.name} {selectedFeedback.technicalContext.browser.version}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500">OS</p>
+                          <p className="text-sm text-gray-700">
+                            {selectedFeedback.technicalContext.system.os}
+                            {selectedFeedback.technicalContext.system.memory && ` · ${selectedFeedback.technicalContext.system.memory}GB RAM`}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500">Language</p>
+                          <p className="text-sm text-gray-700">{selectedFeedback.technicalContext.browser.language}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500">CPU Cores</p>
+                          <p className="text-sm text-gray-700">{selectedFeedback.technicalContext.system.cores}</p>
+                        </div>
+                      </div>
+
+                      {/* Tela e Viewport */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <p className="text-xs text-gray-500 flex items-center gap-1">
+                            <Monitor size={10} /> Screen
+                          </p>
+                          <p className="text-sm text-gray-700">
+                            {selectedFeedback.technicalContext.screen.width}x{selectedFeedback.technicalContext.screen.height}
+                            {' '}({selectedFeedback.technicalContext.screen.colorDepth}bit)
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500">Viewport</p>
+                          <p className="text-sm text-gray-700">
+                            {selectedFeedback.technicalContext.viewport.width}x{selectedFeedback.technicalContext.viewport.height}
+                            {' '}@ {selectedFeedback.technicalContext.screen.pixelRatio}x
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Conexão */}
+                      {selectedFeedback.technicalContext.connection.effectiveType && (
+                        <div>
+                          <p className="text-xs text-gray-500 flex items-center gap-1">
+                            <Wifi size={10} /> Connection
+                          </p>
+                          <p className="text-sm text-gray-700">
+                            {selectedFeedback.technicalContext.connection.effectiveType.toUpperCase()}
+                            {selectedFeedback.technicalContext.connection.downlink && ` · ${selectedFeedback.technicalContext.connection.downlink} Mbps`}
+                            {selectedFeedback.technicalContext.connection.rtt && ` · ${selectedFeedback.technicalContext.connection.rtt}ms RTT`}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Performance */}
+                      {selectedFeedback.technicalContext.performance.memoryUsed && (
+                        <div>
+                          <p className="text-xs text-gray-500">Memory Usage</p>
+                          <p className="text-sm text-gray-700">
+                            {selectedFeedback.technicalContext.performance.memoryUsed}MB / {selectedFeedback.technicalContext.performance.memoryLimit}MB
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Features */}
+                      <div>
+                        <p className="text-xs text-gray-500 mb-1">Browser Features</p>
+                        <div className="flex flex-wrap gap-2">
+                          {Object.entries(selectedFeedback.technicalContext.features).map(([key, value]) => (
+                            <span
+                              key={key}
+                              className={`text-xs px-2 py-0.5 rounded ${value ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}
+                            >
+                              {key}: {value ? '✓' : '✗'}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* ── Console Logs ────────────────────────────────────────────── */}
+                {selectedFeedback.consoleLogs && selectedFeedback.consoleLogs.length > 0 && (
+                  <div className="border-t border-gray-200 pt-5">
+                    <h4 className="text-sm font-semibold text-gray-900 flex items-center gap-2 mb-3">
+                      <Terminal size={14} />
+                      Console Logs ({selectedFeedback.consoleLogs.length})
+                    </h4>
+                    <div className="bg-gray-900 rounded-lg p-3 max-h-48 overflow-y-auto">
+                      {selectedFeedback.consoleLogs.map((log: ConsoleLog, i: number) => (
+                        <div key={i} className="text-xs font-mono mb-1">
+                          <span className="text-gray-500">
+                            {new Date(log.timestamp).toLocaleTimeString()}
+                          </span>{' '}
+                          <span className={
+                            log.level === 'error' ? 'text-red-400' :
+                            log.level === 'warn' ? 'text-yellow-400' :
+                            log.level === 'info' ? 'text-blue-400' : 'text-gray-400'
+                          }>
+                            [{log.level.toUpperCase()}]
+                          </span>{' '}
+                          <span className="text-gray-300">{log.message}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Edição: Status e Prioridade */}
                 <div className="border-t border-gray-200 pt-5 space-y-4">
