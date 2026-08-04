@@ -6,6 +6,8 @@
     "allProjects": "Todos os projetos",
     "allStatuses": "Todos os status",
     "allAuthors": "Todos os autores",
+    "allWeeks": "Todas as semanas",
+    "weekLabel": "Sem.",
     "weekPlaceholder": "Semana...",
     "searchPlaceholder": "Buscar por projeto ou cliente..."
   },

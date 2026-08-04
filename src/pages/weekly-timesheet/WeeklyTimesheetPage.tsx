@@ -83,6 +83,11 @@ export function WeeklyTimesheetPage() {
     ).values()
   ).sort((a, b) => a.name.localeCompare(b.name));
 
+  // Extrai semanas únicas dos timesheets existentes
+  const filterWeeks = Array.from(
+    new Set(allTimesheets.map((ts) => ts.week))
+  ).sort((a, b) => parseInt(b) - parseInt(a));
+
   // ── Busca timesheets ────────────────────────────────────────────────
   const { data: response, isLoading } = useQuery({
     queryKey: ['timesheets', page, statusFilter, weekFilter, projectFilter, authorFilter],
@@ -217,13 +222,16 @@ export function WeeklyTimesheetPage() {
           </select>
 
           {/* Semana */}
-          <input
-            type="text"
+          <select
             value={weekFilter}
             onChange={(e) => { setWeekFilter(e.target.value); setPage(1); }}
-            placeholder={t('filters.weekPlaceholder')}
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-28"
-          />
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
+          >
+            <option value="">{t('filters.allWeeks')}</option>
+            {filterWeeks.map((w) => (
+              <option key={w} value={w}>{t('filters.weekLabel')} {w}</option>
+            ))}
+          </select>
 
           {/* Projeto */}
           <select
