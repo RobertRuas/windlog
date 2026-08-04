@@ -39,14 +39,23 @@
     "unavailable": "Ficheiro indisponível"
   },
   "error": {
-    "unknown": "Erro desconhecido",
-    "token_missing": "Token de autenticação não fornecido. Por favor, faça login.",
-    "session_expired": "Sessão expirada. Autenticação necessária.",
-    "session_ended": "A sua sessão terminou. Por favor, faça login novamente.",
-    "link_expired": "Este link de ficheiro expirou ou já não é válido. Volte e atualize a página para obter um novo link.",
-    "file_load_error": "Ocorreu um erro ao carregar o ficheiro. Por favor, tente novamente.",
-    "back": "[ ← Voltar ]",
-    "login": "[ Login → ]"
+    "unknown": "Ocorreu algo inesperado",
+    "token_missing": "Para continuar, precisa de fazer login. A sua sessão não foi iniciada.",
+    "session_expired": "A sua sessão expirou por segurança. Por favor, faça login novamente.",
+    "session_ended": "A sua sessão terminou. Faça login para continuar a usar a aplicação.",
+    "link_expired": "Este link expirou ou não é mais válido. Volte à página anterior e tente novamente.",
+    "file_load_error": "Não foi possível carregar o ficheiro. Por favor, tente novamente.",
+    "back": "Voltar",
+    "login": "Fazer Login",
+    "auth": {
+      "title": "Ops! Precisa de fazer login"
+    },
+    "not_found": {
+      "title": "Não encontrámos o que procura"
+    },
+    "generic": {
+      "title": "Algo correu mal"
+    }
   },
   "signature": {
     "title": "Assinatura",

@@ -1,20 +1,19 @@
 /**
  * ============================================================================
- * ERROR PAGE - Página de Erro Estilo Programador Vintage
+ * ERROR PAGE - Página de Erro Suave e Amigável
  * ============================================================================
  *
  * O QUE É ESTA PÁGINA?
  * --------------------
- * Página minimalista estilo terminal/programador vintage para exibir
- * mensagens de erro da aplicação de forma elegante e nostálgica.
+ * Página de erro com visual suave e acolhedor para exibir mensagens
+ * de forma amigável ao usuário, sem aparência de algo perigoso.
  *
  * COMO FUNCIONA?
  * --------------
  * 1. A mensagem de erro é passada via URL (search param ?msg=...)
  * 2. Se nenhuma mensagem for fornecida, exibe mensagem padrão
- * 3. Visual inspirado em terminais CRT antigos (fundo escuro, texto verde)
- * 4. Efeito de "scanline" para simular monitor vintage
- * 5. Cursor piscando para dar sensação "viva"
+ * 3. Visual clean com gradientes suaves e ícone amigável
+ * 4. Botões de navegação claros e intuitivos
  *
  * ROTAS:
  * ------
@@ -24,7 +23,6 @@
  */
 
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 /**
@@ -40,16 +38,24 @@ const KNOWN_MESSAGES: Record<string, string> = {
 };
 
 /**
- * Componente ErrorPage - Página de erro estilo terminal vintage.
+ * Mapeia mensagens conhecidas para títulos amigáveis.
+ */
+const FRIENDLY_TITLES: Record<string, string> = {
+  'error.token_missing': 'error.auth.title',
+  'error.session_expired': 'error.auth.title',
+  'error.session_ended': 'error.auth.title',
+  'error.link_expired': 'error.not_found.title',
+  'error.file_load_error': 'error.not_found.title',
+};
+
+/**
+ * Componente ErrorPage - Página de erro com visual suave e amigável.
  *
- * Exibe a mensagem de erro com estética retro (fundo escuro,
- * texto verde fosforescente, efeito scanline, cursor piscando).
+ * Exibe a mensagem de erro com estética clean (fundo claro,
+ * cores suaves, ícone amigável, tipografia acolhedora).
  */
 export function ErrorPage() {
-  // Hook de tradução para mensagens em português
   const { t } = useTranslation('common');
-
-  // Lê a mensagem de erro dos parâmetros da URL
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
@@ -60,39 +66,13 @@ export function ErrorPage() {
   const messageKey = KNOWN_MESSAGES[rawMessage];
   const message = messageKey ? t(messageKey) : rawMessage;
 
-  // Determina o código de status baseado na mensagem
+  // Determina o título amigável baseado no tipo de erro
+  const titleKey = messageKey ? FRIENDLY_TITLES[messageKey] : 'error.generic.title';
+  const title = t(titleKey);
+
+  // Determina o ícone baseado no tipo de erro
   const isFileError = rawMessage === 'Link expirado ou inválido' || rawMessage === 'Erro ao carregar ficheiro';
-  const statusCode = isFileError ? '404' : '401';
-
-  // Estado para o efeito de "typing" (digitação)
-  const [displayedText, setDisplayedText] = useState('');
-  const [showCursor, setShowCursor] = useState(true);
-
-  // Efeito de digitação caractere por caractere
-  useEffect(() => {
-    const fullText = `ERROR: ${message}`;
-    let index = 0;
-    setDisplayedText('');
-
-    const typeInterval = setInterval(() => {
-      if (index < fullText.length) {
-        setDisplayedText(fullText.slice(0, index + 1));
-        index++;
-      } else {
-        clearInterval(typeInterval);
-      }
-    }, 40); // 40ms por caractere
-
-    return () => clearInterval(typeInterval);
-  }, [message]);
-
-  // Cursor piscante
-  useEffect(() => {
-    const blink = setInterval(() => {
-      setShowCursor((prev) => !prev);
-    }, 530);
-    return () => clearInterval(blink);
-  }, []);
+  const isAuthError = !isFileError;
 
   /**
    * Redireciona para a página de login.
@@ -113,110 +93,113 @@ export function ErrorPage() {
   };
 
   return (
-    /* Container fullscreen com fundo escuro estilo terminal */
+    /* Container fullscreen com gradiente suave */
     <div
-      className="min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden"
-      style={{ backgroundColor: '#0a0a0a' }}
+      className="min-h-screen flex flex-col items-center justify-center p-6"
+      style={{
+        background: 'linear-gradient(135deg, #f8fafc 0%, #e8f0fe 50%, #f0e6ff 100%)',
+      }}
     >
-      {/* Efeito scanline - simula linhas de monitor CRT */}
+      {/* Card principal */}
       <div
-        className="absolute inset-0 pointer-events-none"
+        className="max-w-md w-full rounded-3xl p-10 text-center"
         style={{
-          background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 255, 0, 0.03) 2px, rgba(0, 255, 0, 0.03) 4px)',
-          zIndex: 1,
+          backgroundColor: 'rgba(255, 255, 255, 0.85)',
+          backdropFilter: 'blur(12px)',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04)',
+          border: '1px solid rgba(255, 255, 255, 0.6)',
         }}
-      />
-
-      {/* Efeito de vinheta nas bordas (escurece os cantos) */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: 'radial-gradient(ellipse at center, transparent 50%, rgba(0, 0, 0, 0.6) 100%)',
-          zIndex: 1,
-        }}
-      />
-
-      {/* Conteúdo principal */}
-      <div className="relative z-10 max-w-lg w-full text-center">
-        {/* Header do "terminal" */}
-        <div
-          className="text-xs tracking-widest uppercase mb-8 opacity-40"
-          style={{ color: '#00ff41', fontFamily: '"Courier New", Courier, monospace' }}
-        >
-          — windlog system —
+      >
+        {/* Ícone amigável */}
+        <div className="mb-6">
+          {isAuthError ? (
+            /* Ícone de cadeado suave para erros de autenticação */
+            <svg
+              className="mx-auto"
+              width="72"
+              height="72"
+              viewBox="0 0 72 72"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle cx="36" cy="36" r="36" fill="#EEF2FF" />
+              <circle cx="36" cy="36" r="28" fill="#E0E7FF" />
+              <path
+                d="M36 20C31.582 20 28 23.582 28 28V32H26C24.895 32 24 32.895 24 34V46C24 47.105 24.895 48 26 48H46C47.105 48 48 47.105 48 46V34C48 32.895 47.105 32 46 32H44V28C44 23.582 40.418 20 36 20ZM32 28C32 25.791 33.791 24 36 24C38.209 24 40 25.791 40 28V32H32V28ZM36 38C37.105 38 38 38.895 38 40C38 40.74 37.598 41.384 37 41.732V44H35V41.732C34.402 41.384 34 40.74 34 40C34 38.895 34.895 38 36 38Z"
+                fill="#6366F1"
+              />
+            </svg>
+          ) : (
+            /* Ícone de nuvem suave para erros de ficheiro */
+            <svg
+              className="mx-auto"
+              width="72"
+              height="72"
+              viewBox="0 0 72 72"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle cx="36" cy="36" r="36" fill="#FFF7ED" />
+              <circle cx="36" cy="36" r="28" fill="#FFEDD5" />
+              <path
+                d="M48 40C49.105 40 50 39.105 50 38C50 33.582 46.418 30 42 30C41.735 30 41.473 30.013 41.213 30.038C40.352 26.647 37.254 24 33.5 24C29.082 24 25.5 27.582 25.5 32C25.5 32.172 25.505 32.343 25.515 32.513C22.443 33.082 20 35.756 20 39C20 42.866 23.134 46 27 46H46C48.209 46 50 44.209 50 42C50 39.791 48.209 38 46 38"
+                fill="#F97316"
+                opacity="0.2"
+              />
+              <path
+                d="M33 38L36 35L39 38M36 35V45"
+                stroke="#EA580C"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          )}
         </div>
 
-        {/* Caixa de erro estilo terminal */}
+        {/* Título amigável */}
+        <h1
+          className="text-xl font-semibold mb-3"
+          style={{ color: '#1E293B' }}
+        >
+          {title}
+        </h1>
+
+        {/* Mensagem descritiva */}
+        <p
+          className="text-sm leading-relaxed mb-8"
+          style={{ color: '#64748B' }}
+        >
+          {message}
+        </p>
+
+        {/* Separador suave */}
         <div
-          className="border rounded-sm p-8 mb-8"
+          className="mb-8"
           style={{
-            borderColor: '#00ff4133',
-            backgroundColor: 'rgba(0, 255, 65, 0.02)',
+            height: '1px',
+            background: 'linear-gradient(90deg, transparent 0%, #E2E8F0 50%, transparent 100%)',
           }}
-        >
-          {/* Código de status */}
-          <div
-            className="text-xs tracking-widest mb-4"
-            style={{ color: '#00ff4180', fontFamily: '"Courier New", Courier, monospace' }}
-          >
-            STATUS: {statusCode}
-          </div>
-
-          {/* Separador */}
-          <div
-            className="mb-4"
-            style={{ borderBottom: '1px solid #00ff4120' }}
-          />
-
-          {/* Mensagem de erro com efeito de digitação */}
-          <div
-            className="text-base leading-relaxed"
-            style={{
-              color: '#00ff41',
-              fontFamily: '"Courier New", Courier, monospace',
-              textShadow: '0 0 8px rgba(0, 255, 65, 0.4)',
-            }}
-          >
-            <span>{'> '}</span>
-            {displayedText}
-            {/* Cursor piscante */}
-            <span
-              className="inline-block w-2 h-4 ml-0.5 align-middle"
-              style={{
-                backgroundColor: showCursor ? '#00ff41' : 'transparent',
-                boxShadow: showCursor ? '0 0 6px rgba(0, 255, 65, 0.6)' : 'none',
-              }}
-            />
-          </div>
-        </div>
-
-        {/* Mensagem de rodapé do terminal */}
-        <div
-          className="text-xs mb-6 opacity-30"
-          style={{ color: '#00ff41', fontFamily: '"Courier New", Courier, monospace' }}
-        >
-          {t('buttons.continue')}
-        </div>
+        />
 
         {/* Botões de ação */}
-        <div className="flex items-center justify-center gap-4">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           {/* Botão voltar */}
           <button
             onClick={handleGoBack}
-            className="px-5 py-2 text-xs tracking-wider uppercase transition-all duration-200 cursor-pointer"
+            className="w-full sm:w-auto px-6 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 cursor-pointer"
             style={{
-              color: '#00ff41',
-              fontFamily: '"Courier New", Courier, monospace',
-              border: '1px solid #00ff4140',
-              backgroundColor: 'transparent',
+              color: '#475569',
+              backgroundColor: '#F1F5F9',
+              border: '1px solid #E2E8F0',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'rgba(0, 255, 65, 0.1)';
-              e.currentTarget.style.borderColor = '#00ff41';
+              e.currentTarget.style.backgroundColor = '#E2E8F0';
+              e.currentTarget.style.borderColor = '#CBD5E1';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent';
-              e.currentTarget.style.borderColor = '#00ff4140';
+              e.currentTarget.style.backgroundColor = '#F1F5F9';
+              e.currentTarget.style.borderColor = '#E2E8F0';
             }}
           >
             {t('error.back')}
@@ -225,32 +208,33 @@ export function ErrorPage() {
           {/* Botão login */}
           <button
             onClick={handleGoToLogin}
-            className="px-5 py-2 text-xs tracking-wider uppercase transition-all duration-200 cursor-pointer"
+            className="w-full sm:w-auto px-6 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 cursor-pointer"
             style={{
-              color: '#0a0a0a',
-              fontFamily: '"Courier New", Courier, monospace',
-              backgroundColor: '#00ff41',
-              border: '1px solid #00ff41',
-              boxShadow: '0 0 12px rgba(0, 255, 65, 0.3)',
+              color: '#FFFFFF',
+              backgroundColor: '#6366F1',
+              border: '1px solid #6366F1',
+              boxShadow: '0 2px 8px rgba(99, 102, 241, 0.25)',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.boxShadow = '0 0 20px rgba(0, 255, 65, 0.5)';
+              e.currentTarget.style.backgroundColor = '#4F46E5';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(99, 102, 241, 0.35)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.boxShadow = '0 0 12px rgba(0, 255, 65, 0.3)';
+              e.currentTarget.style.backgroundColor = '#6366F1';
+              e.currentTarget.style.boxShadow = '0 2px 8px rgba(99, 102, 241, 0.25)';
             }}
           >
             {t('error.login')}
           </button>
         </div>
+      </div>
 
-        {/* Rodapé discreto */}
-        <div
-          className="mt-12 text-xs opacity-20"
-          style={{ color: '#00ff41', fontFamily: '"Courier New", Courier, monospace' }}
-        >
-          WINDLOG v1.0 · {new Date().getFullYear()}
-        </div>
+      {/* Rodapé discreto */}
+      <div
+        className="mt-8 text-xs"
+        style={{ color: '#94A3B8' }}
+      >
+        Windlog · {new Date().getFullYear()}
       </div>
     </div>
   );

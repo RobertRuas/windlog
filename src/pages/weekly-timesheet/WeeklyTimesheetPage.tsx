@@ -23,7 +23,7 @@ import { useState, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Plus, Trash2, Eye, Pencil, Calendar } from 'lucide-react';
+import { Plus, Trash2, Eye, Pencil, Calendar, Wrench, Clock, Plane } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { AppLayout } from '@/components/layout/AppLayout';
@@ -66,6 +66,16 @@ export function WeeklyTimesheetPage() {
 
   const timesheets = response?.data?.data || [];
   const meta = response?.data?.meta;
+
+  /**
+   * Formata horas em formato curto (ex: "12.5h" ou "0h").
+   * Arredonda para 1 casa decimal.
+   */
+  function formatHours(hours: number | undefined): string {
+    if (!hours || hours === 0) return '0h';
+    const rounded = Math.round(hours * 10) / 10;
+    return `${rounded}h`;
+  }
 
   /**
    * Badge de status colorido.
@@ -203,6 +213,9 @@ export function WeeklyTimesheetPage() {
                     {t('table.status')}
                   </th>
                   <th className="text-center px-4 py-3 font-medium text-gray-700 whitespace-nowrap">
+                    {t('table.hoursSummary')}
+                  </th>
+                  <th className="text-center px-4 py-3 font-medium text-gray-700 whitespace-nowrap">
                     {t('table.actions')}
                   </th>
                 </tr>
@@ -224,6 +237,35 @@ export function WeeklyTimesheetPage() {
                     </td>
                     <td className="px-4 py-3 text-center whitespace-nowrap">
                       <StatusBadge status={ts.status} />
+                    </td>
+                    {/* ── Resumo de Horas (ícones + totais) ─────────── */}
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <div className="flex items-center justify-center gap-3 text-xs text-gray-600">
+                        {/* Trabalho */}
+                        <span
+                          className="flex items-center gap-1"
+                          title={t('sheet.workingHrs')}
+                        >
+                          <Wrench size={13} className="text-blue-500" />
+                          {formatHours(ts._totals?.workingHrs)}
+                        </span>
+                        {/* Stand-by */}
+                        <span
+                          className="flex items-center gap-1"
+                          title={t('sheet.standbyHrs')}
+                        >
+                          <Clock size={13} className="text-amber-500" />
+                          {formatHours(ts._totals?.standbyHrs)}
+                        </span>
+                        {/* Deslocamento */}
+                        <span
+                          className="flex items-center gap-1"
+                          title={t('sheet.travelHrs')}
+                        >
+                          <Plane size={13} className="text-green-500" />
+                          {formatHours(ts._totals?.travelHrs)}
+                        </span>
+                      </div>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <div className="flex items-center justify-center gap-1">

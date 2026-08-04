@@ -24,17 +24,17 @@
 - [multer.config.ts](file://API/src/modules/upload/multer.config.ts)
 - [user-document.dto.ts](file://API/src/modules/auth/dto/user-document.dto.ts)
 - [user-certification.dto.ts](file://API/src/modules/auth/dto/user-certification.dto.ts)
+- [projects.controller.ts](file://API/src/modules/projects/projects.controller.ts)
+- [projects.service.ts](file://API/src/modules/projects/projects.service.ts)
 </cite>
 
 ## Update Summary
 **Changes Made**
-- Enhanced backend API to support signature functionality for timesheet documents including TimesheetSignatures component rendering and client signature handling
-- Added signature data migration to database schema with dedicated signature fields for PDF document signing
-- Updated authentication service with enhanced attachment management capabilities for signature files
-- Extended Multer configuration to handle signature file uploads with proper validation and security measures
-- Integrated signature toggle functionality in form editor for client-side signature management
-- Enhanced DTO definitions to support signature-related data structures and metadata
-- **Updated** Enhanced main.ts configuration with increased body size limit to 10MB for base64-encoded signature images and corrected module system from CommonJS require to ES module import syntax for Express, resolving runtime errors in TypeScript environment
+- Enhanced backend API to include user.position data in getProjectMembers response, supporting automatic role assignment in timesheet form editor
+- Updated project members endpoint to return comprehensive user information including position field
+- Integrated position data into the timesheet form editor for automatic role assignment functionality
+- Enhanced project service methods to handle user position data in member responses
+- Updated DTOs and response structures to support position field inclusion
 
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -51,7 +51,7 @@
 12. [Conclusion](#conclusion)
 
 ## Introduction
-This document describes the backend implementation of the Weekly Timesheet (Timesheet Semanal) module within the Windlog system. It explains how weekly timesheets are modeled, created, updated, filtered, and persisted using NestJS, Prisma, and a PostgreSQL database. The module now includes enhanced support for shared values through a flexible JSON column system, allowing for dynamic key-value pair storage on timesheet days. Most importantly, it features improved timezone handling with the parseDateSafe() helper function that prevents timezone drift issues for negative UTC timezones like BRT (UTC-3), ensuring reliable date calculations across different timezone scenarios. The module has been extended with comprehensive attachment management capabilities, supporting secure file uploads for user documents, certifications, and photos through enhanced authentication services and Multer configuration. Additionally, the module now includes robust signature functionality for PDF document signing, enabling clients to add digital signatures to timesheet documents with proper validation and storage. The backend configuration has been optimized to handle large base64-encoded signature images with increased body size limits and modernized module imports for better TypeScript compatibility.
+This document describes the backend implementation of the Weekly Timesheet (Timesheet Semanal) module within the Windlog system. It explains how weekly timesheets are modeled, created, updated, filtered, and persisted using NestJS, Prisma, and a PostgreSQL database. The module now includes enhanced support for shared values through a flexible JSON column system, allowing for dynamic key-value pair storage on timesheet days. Most importantly, it features improved timezone handling with the parseDateSafe() helper function that prevents timezone drift issues for negative UTC timezones like BRT (UTC-3), ensuring reliable date calculations across different timezone scenarios. The module has been extended with comprehensive attachment management capabilities, supporting secure file uploads for user documents, certifications, and photos through enhanced authentication services and Multer configuration. Additionally, the module now includes robust signature functionality for PDF document signing, enabling clients to add digital signatures to timesheet documents with proper validation and storage. The backend configuration has been optimized to handle large base64-encoded signature images with increased body size limits and modernized module imports for better TypeScript compatibility. **Updated** The project members API has been enhanced to include user.position data in responses, enabling automatic role assignment functionality in the timesheet form editor.
 
 ## Project Structure
 The Weekly Timesheet module is implemented as a NestJS feature module under API/src/modules/weekly-timesheet with:
@@ -75,18 +75,20 @@ H["parseDateSafe() Helper"]
 I["auth.service.ts"]
 J["multer.config.ts"]
 K["Signature Handler"]
+L["projects.controller.ts"]
+M["projects.service.ts"]
 end
 subgraph "Prisma & DB"
-L["schema.prisma"]
-M["migration.sql"]
-N["shared_values_migration.sql"]
-O["signature_data_migration.sql"]
+N["schema.prisma"]
+O["migration.sql"]
+P["shared_values_migration.sql"]
+Q["signature_data_migration.sql"]
 end
 subgraph "File Upload System"
-P["upload.controller.ts"]
-Q["upload.service.ts"]
-R["uploads/"]
-S["signatures/"]
+R["upload.controller.ts"]
+S["upload.service.ts"]
+T["uploads/"]
+U["signatures/"]
 end
 A --> C
 A --> D
@@ -94,16 +96,18 @@ C --> D
 D --> H
 D --> I
 D --> K
-D --> L
-H --> M
-H --> N
+D --> N
 H --> O
+H --> P
+H --> Q
 I --> J
-I --> P
-P --> Q
-Q --> R
-Q --> S
-B --> A
+I --> R
+R --> S
+S --> T
+S --> U
+A --> L
+L --> M
+M --> N
 ```
 
 **Diagram sources**
@@ -120,6 +124,8 @@ B --> A
 - [20260803110016_add_signature_data/migration.sql](file://API/prisma/migrations/20260803110016_add_signature_data/migration.sql)
 - [auth.service.ts](file://API/src/modules/auth/auth.service.ts)
 - [multer.config.ts](file://API/src/modules/upload/multer.config.ts)
+- [projects.controller.ts](file://API/src/modules/projects/projects.controller.ts)
+- [projects.service.ts](file://API/src/modules/projects/projects.service.ts)
 
 **Section sources**
 - [weekly-timesheet.controller.ts](file://API/src/modules/weekly-timesheet/weekly-timesheet.controller.ts)
@@ -147,7 +153,7 @@ Key responsibilities:
 - Signature validation and storage for PDF document signing.
 - Consistent response formatting and error handling.
 
-**Updated** Enhanced with signature functionality including digital signature validation, PDF document signing capabilities, and integration with the signature management system through authentication service.
+**Updated** Enhanced with signature functionality including digital signature validation, PDF document signing capabilities, and integration with the signature management system through authentication service. **Updated** Enhanced project members API to include user.position data for automatic role assignment in timesheet form editor.
 
 **Section sources**
 - [weekly-timesheet.controller.ts](file://API/src/modules/weekly-timesheet/weekly-timesheet.controller.ts)
@@ -175,6 +181,7 @@ participant SignatureHandler as "Signature Handler"
 participant AuthService as "AuthService"
 participant DateHelper as "parseDateSafe()"
 participant UploadSystem as "Upload System"
+participant ProjectsService as "ProjectsService"
 participant Prisma as "Prisma Client"
 participant DB as "PostgreSQL"
 Client->>Controller : "POST /weekly-timesheets"
@@ -190,6 +197,8 @@ Service->>AuthService : "Manage attachments if needed"
 AuthService->>UploadSystem : "Handle file uploads"
 UploadSystem-->>AuthService : "File URLs"
 AuthService-->>Service : "Attachment metadata"
+Service->>ProjectsService : "Get project members with positions"
+ProjectsService-->>Service : "Members with position data"
 Service->>Prisma : "Persist record with sharedValues + signatures"
 Prisma->>DB : "INSERT with JSON columns"
 DB-->>Prisma : "Success"
@@ -198,12 +207,13 @@ Service-->>Controller : "Result"
 Controller-->>Client : "Standardized Response"
 ```
 
-**Updated** Enhanced sequence diagram to reflect timezone-safe date processing, shared values handling, signature management integration, and attachment management through the authentication service.
+**Updated** Enhanced sequence diagram to reflect timezone-safe date processing, shared values handling, signature management integration, attachment management through the authentication service, and project members API enhancement with position data support.
 
 **Diagram sources**
 - [weekly-timesheet.controller.ts](file://API/src/modules/weekly-timesheet/weekly-timesheet.controller.ts)
 - [weekly-timesheet.service.ts](file://API/src/modules/weekly-timesheet/weekly-timesheet.service.ts)
 - [auth.service.ts](file://API/src/modules/auth/auth.service.ts)
+- [projects.service.ts](file://API/src/modules/projects/projects.service.ts)
 - [roles.guard.ts](file://API/src/common/guards/roles.guard.ts)
 - [schema.prisma](file://API/prisma/schema.prisma)
 
@@ -288,7 +298,10 @@ BuildQuery --> HandleSharedValues{"Has sharedValues?"}
 HandleSharedValues --> |Yes| ProcessSharedValues["Process sharedValues JSON"]
 HandleSharedValues --> |No| CheckAttachments{"Has Attachments?"}
 CheckAttachments --> |Yes| ProcessAttachments["Process via AuthService"]
-CheckAttachments --> |No| Execute["Execute via Prisma Client"]
+CheckAttachments --> |No| CheckProjectMembers{"Need Project Members?"}
+CheckProjectMembers --> |Yes| GetMembersWithPositions["Get Members with Position Data"]
+CheckProjectMembers --> |No| Execute["Execute via Prisma Client"]
+GetMembersWithPositions --> Execute
 ProcessSharedValues --> Execute
 ProcessAttachments --> Execute
 Execute --> Success{"Operation Success?"}
@@ -299,11 +312,12 @@ HandleError --> Return
 ThrowError --> Return
 ```
 
-**Updated** Enhanced flowchart to include timezone-safe date parsing, signature validation, shared values processing, and attachment management integration steps in the service method execution flow.
+**Updated** Enhanced flowchart to include timezone-safe date parsing, signature validation, shared values processing, attachment management integration, and project members API enhancement with position data support in the service method execution flow.
 
 **Diagram sources**
 - [weekly-timesheet.service.ts](file://API/src/modules/weekly-timesheet/weekly-timesheet.service.ts)
 - [auth.service.ts](file://API/src/modules/auth/auth.service.ts)
+- [projects.service.ts](file://API/src/modules/projects/projects.service.ts)
 
 **Section sources**
 - [weekly-timesheet.service.ts](file://API/src/modules/weekly-timesheet/weekly-timesheet.service.ts)
@@ -384,12 +398,13 @@ USER {
 uuid id PK
 string email
 string role
+string position
 }
 WEEKLY_TIMESHEET ||--o{ WEEKLY_TIMESHEET_DAY : "has many"
 USER ||--o{ WEEKLY_TIMESHEET : "has many"
 ```
 
-**Updated** ER diagram now includes WEEKLY_TIMESHEET_DAY entity with shared_values JSON column and WEEKLY_TIMESHEET with signature_data field.
+**Updated** ER diagram now includes WEEKLY_TIMESHEET_DAY entity with shared_values JSON column, WEEKLY_TIMESHEET with signature_data field, and USER entity with position field for project member role assignment.
 
 **Diagram sources**
 - [schema.prisma](file://API/prisma/schema.prisma)
@@ -562,7 +577,7 @@ Global cross-cutting concerns:
 - RolesGuard enforces RBAC based on JWT payload for signature operations.
 - Env validation ensures required configuration variables exist for signature functionality.
 
-**Updated** Enhanced dependency analysis to include signature management system integration and attachment management capabilities.
+**Updated** Enhanced dependency analysis to include signature management system integration, attachment management capabilities, and project members API enhancement with position data support.
 
 ```mermaid
 graph TB
@@ -582,9 +597,13 @@ UploadModule --> Multer["Multer Config"]
 WeeklyModule --> SignatureModule["Signature Handler"]
 SignatureModule --> AuthService
 AuthService --> UploadModule
+WeeklyModule --> ProjectsModule["ProjectsModule"]
+ProjectsModule --> ProjectsController["ProjectsController"]
+ProjectsModule --> ProjectsService["ProjectsService"]
+ProjectsService --> PositionData["Position Data Support"]
 ```
 
-**Updated** Enhanced diagram to show signature management dependencies and attachment management integration.
+**Updated** Enhanced diagram to show signature management dependencies, attachment management integration, and project members API enhancement with position data support.
 
 **Diagram sources**
 - [main.ts](file://API/src/main.ts)
@@ -599,6 +618,8 @@ AuthService --> UploadModule
 - [env.validation.ts](file://API/src/config/env.validation.ts)
 - [auth.service.ts](file://API/src/modules/auth/auth.service.ts)
 - [multer.config.ts](file://API/src/modules/upload/multer.config.ts)
+- [projects.controller.ts](file://API/src/modules/projects/projects.controller.ts)
+- [projects.service.ts](file://API/src/modules/projects/projects.service.ts)
 
 **Section sources**
 - [main.ts](file://API/src/main.ts)
@@ -611,6 +632,8 @@ AuthService --> UploadModule
 - [env.validation.ts](file://API/src/config/env.validation.ts)
 - [auth.service.ts](file://API/src/modules/auth/auth.service.ts)
 - [multer.config.ts](file://API/src/modules/upload/multer.config.ts)
+- [projects.controller.ts](file://API/src/modules/projects/projects.controller.ts)
+- [projects.service.ts](file://API/src/modules/projects/projects.service.ts)
 
 ## Performance Considerations
 - Use Prisma query optimization: select only needed fields, avoid N+1 queries by leveraging relations and include/select appropriately.
@@ -628,8 +651,9 @@ AuthService --> UploadModule
 - Use asynchronous processing for signature validation and PDF manipulation operations.
 - **Updated** Configure optimal body size limits for signature image uploads to balance performance and functionality.
 - **Updated** Utilize ES module imports for better tree-shaking and bundle optimization.
+- **Updated** Optimize project members API queries to efficiently retrieve user position data for automatic role assignment.
 
-**Updated** Added guidance for optimizing signature data processing, JSON column operations for shared values, efficient file upload handling for attachment management, signature-specific performance considerations, and modern module import benefits.
+**Updated** Added guidance for optimizing signature data processing, JSON column operations for shared values, efficient file upload handling for attachment management, signature-specific performance considerations, modern module import benefits, and project members API optimization for position data retrieval.
 
 ## Troubleshooting Guide
 Common issues and resolutions:
@@ -645,9 +669,10 @@ Common issues and resolutions:
 - PDF signature issues: Verify PDF document compatibility; check signature embedding success; validate signature overlay positioning.
 - **Updated** Body size limit errors: Increase body parser limits in main.ts configuration to accommodate large base64-encoded signature images; verify 10MB limit is sufficient for signature requirements.
 - **Updated** Module import errors: Ensure ES module import syntax is used throughout the application; replace CommonJS require statements with proper import statements; verify TypeScript configuration for module resolution.
+- **Updated** Project members API issues: Verify user.position data is properly included in getProjectMembers response; check position field availability in user records; ensure automatic role assignment functionality works correctly with position data.
 - Logging and tracing: Use LoggingInterceptor output to identify slow endpoints and failed requests including signature operations.
 
-**Updated** Added troubleshooting guidance for shared values functionality, timezone-related date processing issues, attachment management problems, signature-related issues including PDF document signing and signature validation, body size limit configuration, and module import syntax errors.
+**Updated** Added troubleshooting guidance for shared values functionality, timezone-related date processing issues, attachment management problems, signature-related issues including PDF document signing and signature validation, body size limit configuration, module import syntax errors, and project members API issues with position data and automatic role assignment.
 
 **Section sources**
 - [roles.guard.ts](file://API/src/common/guards/roles.guard.ts)
@@ -657,8 +682,10 @@ Common issues and resolutions:
 - [auth.service.ts](file://API/src/modules/auth/auth.service.ts)
 - [multer.config.ts](file://API/src/modules/upload/multer.config.ts)
 - [main.ts](file://API/src/main.ts)
+- [projects.controller.ts](file://API/src/modules/projects/projects.controller.ts)
+- [projects.service.ts](file://API/src/modules/projects/projects.service.ts)
 
 ## Conclusion
-The Weekly Timesheet module integrates cleanly with the Windlog backend's established patterns: NestJS modularity, Prisma ORM, JWT-based authentication, RBAC, standardized responses, and comprehensive logging. The addition of shared values support provides flexible key-value pair storage capabilities while maintaining the module's security, performance, and reliability standards. Most importantly, the enhanced timezone handling with parseDateSafe() helper function ensures accurate date processing across different timezone scenarios, particularly benefiting users in negative UTC timezones like BRT (UTC-3). The recent extension with comprehensive attachment management capabilities through the authentication service and Multer configuration enables secure file uploads for user documents, certifications, and photos. Additionally, the new signature functionality provides robust digital document signing capabilities for PDF timesheet documents, enabling clients to add secure digital signatures with proper validation and storage. The backend configuration has been optimized with increased body size limits for signature images and modernized module imports for better TypeScript compatibility. By following the documented structure and best practices, developers can extend and maintain the module effectively while ensuring reliable date calculations, flexible data storage capabilities, robust attachment management functionality, comprehensive signature support for digital document workflows, and optimal performance through modern JavaScript module systems.
+The Weekly Timesheet module integrates cleanly with the Windlog backend's established patterns: NestJS modularity, Prisma ORM, JWT-based authentication, RBAC, standardized responses, and comprehensive logging. The addition of shared values support provides flexible key-value pair storage capabilities while maintaining the module's security, performance, and reliability standards. Most importantly, the enhanced timezone handling with parseDateSafe() helper function ensures accurate date processing across different timezone scenarios, particularly benefiting users in negative UTC timezones like BRT (UTC-3). The recent extension with comprehensive attachment management capabilities through the authentication service and Multer configuration enables secure file uploads for user documents, certifications, and photos. Additionally, the new signature functionality provides robust digital document signing capabilities for PDF timesheet documents, enabling clients to add secure digital signatures with proper validation and storage. The backend configuration has been optimized with increased body size limits for signature images and modernized module imports for better TypeScript compatibility. **Updated** The project members API enhancement with user.position data support enables automatic role assignment functionality in the timesheet form editor, improving user experience and workflow automation. By following the documented structure and best practices, developers can extend and maintain the module effectively while ensuring reliable date calculations, flexible data storage capabilities, robust attachment management functionality, comprehensive signature support for digital document workflows, automatic role assignment through position data, and optimal performance through modern JavaScript module systems.
 
-**Updated** Enhanced conclusion to reflect the new shared values functionality, timezone-safe date processing capabilities, attachment management system integration, signature functionality for PDF document signing, backend configuration optimizations including body size limits and ES module imports, and their benefits for international users and comprehensive document management workflows.
+**Updated** Enhanced conclusion to reflect the new shared values functionality, timezone-safe date processing capabilities, attachment management system integration, signature functionality for PDF document signing, backend configuration optimizations including body size limits and ES module imports, project members API enhancement with position data support for automatic role assignment, and their benefits for international users and comprehensive document management workflows.

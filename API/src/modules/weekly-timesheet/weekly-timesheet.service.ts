@@ -384,8 +384,8 @@ export class WeeklyTimesheetService {
       ];
     }
 
-    // Busca com paginação
-    const [data, total] = await Promise.all([
+    // Busca com paginação (inclui dias/entradas para calcular totais de horas)
+    const [rawData, total] = await Promise.all([
       this.prisma.weeklyTimesheet.findMany({
         where,
         include: {
@@ -398,6 +398,17 @@ export class WeeklyTimesheetService {
           _count: {
             select: { days: true },
           },
+          days: {
+            select: {
+              entries: {
+                select: {
+                  workingHrs: true,
+                  standbyHrs: true,
+                  travelHrs: true,
+                },
+              },
+            },
+          },
         },
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * limit,
@@ -405,6 +416,27 @@ export class WeeklyTimesheetService {
       }),
       this.prisma.weeklyTimesheet.count({ where }),
     ]);
+
+    // Calcula totais de horas (trabalho, standby, viagem) por timesheet
+    // e remove o array de dias da resposta para manter o payload leve
+    const data = rawData.map(({ days, ...rest }) => {
+      let workingHrs = 0;
+      let standbyHrs = 0;
+      let travelHrs = 0;
+
+      for (const day of days) {
+        for (const entry of day.entries) {
+          workingHrs += parseFloat(entry.workingHrs || '0') || 0;
+          standbyHrs += parseFloat(entry.standbyHrs || '0') || 0;
+          travelHrs += parseFloat(entry.travelHrs || '0') || 0;
+        }
+      }
+
+      return {
+        ...rest,
+        _totals: { workingHrs, standbyHrs, travelHrs },
+      };
+    });
 
     return {
       data,

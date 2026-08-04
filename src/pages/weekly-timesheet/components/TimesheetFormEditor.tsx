@@ -46,7 +46,7 @@ import type {
 } from '@/services/weekly-timesheet.service';
 import { updateTimesheet } from '@/services/weekly-timesheet.service';
 import { getProfile } from '@/services/auth.service';
-import { getProjectMembers, type ProjectMember } from '@/services/project.service';
+import { getProjectMembers, getProjectTurbines, type ProjectMember } from '@/services/project.service';
 import { DatePicker } from '@/components/ui/DatePicker';
 
 // =========================================================================
@@ -455,6 +455,12 @@ export function TimesheetFormEditor({
     queryFn: () => getProjectMembers(timesheet.projectId),
   });
 
+  // ── Busca turbinas do projeto para o select de turbina ─────────────
+  const { data: projectTurbines } = useQuery({
+    queryKey: ['project-turbines', timesheet.projectId],
+    queryFn: () => getProjectTurbines(timesheet.projectId),
+  });
+
   const systemUsers: SystemUser[] = (projectMembers || []).map((m: ProjectMember) => ({
     id: m.user.id,
     firstName: m.user.firstName,
@@ -587,6 +593,18 @@ export function TimesheetFormEditor({
     });
   }
 
+  /**
+   * Validação de horas: restringe valor entre 0 e 24, com passo de 0.5.
+   */
+  function handleHourChange(dayIdx: number, field: SharedFieldKey, raw: string) {
+    let val = parseFloat(raw);
+    if (isNaN(val) || val < 0) val = 0;
+    if (val > 24) val = 24;
+    // Arredonda para múltiplos de 0.5
+    val = Math.round(val * 2) / 2;
+    handleSharedChange(dayIdx, field, val === 0 && raw.trim() === '' ? '' : String(val));
+  }
+
   function handleEntryChange(
     dayIdx: number,
     entryIdx: number,
@@ -666,6 +684,8 @@ export function TimesheetFormEditor({
     'w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60';
   const smallInput =
     'w-full px-2 py-1.5 border border-gray-200 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-60';
+  const hourInput =
+    'w-full px-1.5 py-1 border border-gray-200 rounded text-xs text-center font-mono focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-60';
   const labelClass = 'block text-sm font-medium text-gray-700 mb-1';
   const smallLabel = 'block text-xs font-medium text-gray-500 mb-0.5';
 
@@ -775,46 +795,111 @@ export function TimesheetFormEditor({
                     </h4>
                   </div>
 
+                  {/* ── Turbina: dropdown + campos auto-preenchidos ── */}
                   <div className="grid grid-cols-4 gap-3">
                     <div>
                       <label className={smallLabel}>{t('sheet.localTurbineNo')}</label>
-                      <input type="text" value={day.shared.localTurbineNo} onChange={(e) => handleSharedChange(dayIdx, 'localTurbineNo', e.target.value)} placeholder="eg WEA1" disabled={isSaving} className={smallInput} />
+                      <select
+                        value={day.shared.localTurbineNo}
+                        onChange={(e) => {
+                          const turbineName = e.target.value;
+                          // Ao selecionar turbina, preenche automaticamente os campos relacionados
+                          const selected = (projectTurbines || []).find((tb) => tb.name === turbineName);
+                          handleSharedChange(dayIdx, 'localTurbineNo', turbineName);
+                          if (selected) {
+                            handleSharedChange(dayIdx, 'turbineIdNo', selected.model || '');
+                            handleSharedChange(dayIdx, 'towerNo', selected.manufacturer || '');
+                            handleSharedChange(dayIdx, 'bladeNo', '');
+                          } else {
+                            handleSharedChange(dayIdx, 'turbineIdNo', '');
+                            handleSharedChange(dayIdx, 'towerNo', '');
+                            handleSharedChange(dayIdx, 'bladeNo', '');
+                          }
+                        }}
+                        disabled={isSaving}
+                        className={smallInput}
+                      >
+                        <option value="">—</option>
+                        {(projectTurbines || []).map((tb) => (
+                          <option key={tb.id} value={tb.name}>
+                            {tb.name}{tb.location ? ` (${tb.location})` : ''}
+                          </option>
+                        ))}
+                      </select>
                     </div>
                     <div>
                       <label className={smallLabel}>{t('sheet.turbineIdNo')}</label>
-                      <input type="text" value={day.shared.turbineIdNo} onChange={(e) => handleSharedChange(dayIdx, 'turbineIdNo', e.target.value)} placeholder="eg 552201011" disabled={isSaving} className={smallInput} />
+                      <input type="text" value={day.shared.turbineIdNo} readOnly placeholder="Auto" disabled={isSaving} className={smallInput + ' bg-gray-50 text-gray-500 cursor-default'} />
                     </div>
                     <div>
                       <label className={smallLabel}>{t('sheet.towerNo')}</label>
-                      <input type="text" value={day.shared.towerNo} onChange={(e) => handleSharedChange(dayIdx, 'towerNo', e.target.value)} placeholder="eg G20_001234_DE" disabled={isSaving} className={smallInput} />
+                      <input type="text" value={day.shared.towerNo} readOnly placeholder="Auto" disabled={isSaving} className={smallInput + ' bg-gray-50 text-gray-500 cursor-default'} />
                     </div>
                     <div>
                       <label className={smallLabel}>{t('sheet.bladeNo')}</label>
-                      <input type="text" value={day.shared.bladeNo} onChange={(e) => handleSharedChange(dayIdx, 'bladeNo', e.target.value)} disabled={isSaving} className={smallInput} />
+                      <input type="text" value={day.shared.bladeNo} readOnly placeholder="Auto" disabled={isSaving} className={smallInput + ' bg-gray-50 text-gray-500 cursor-default'} />
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-5 gap-3 mt-3">
+                  {/* ── Horas compactas com validação ── */}
+                  <div className="grid grid-cols-4 gap-2 mt-3">
                     <div>
                       <label className={smallLabel}>{t('sheet.standbyHrs')}</label>
-                      <input type="text" value={day.shared.standbyHrs} onChange={(e) => handleSharedChange(dayIdx, 'standbyHrs', e.target.value)} disabled={isSaving} className={smallInput + ' text-center'} />
+                      <input
+                        type="number" min="0" max="24" step="0.5"
+                        value={day.shared.standbyHrs}
+                        onChange={(e) => handleSharedChange(dayIdx, 'standbyHrs', e.target.value)}
+                        onBlur={(e) => handleHourChange(dayIdx, 'standbyHrs', e.target.value)}
+                        disabled={isSaving}
+                        className={hourInput}
+                      />
                     </div>
                     <div>
                       <label className={smallLabel}>{t('sheet.workingHrs')}</label>
-                      <input type="text" value={day.shared.workingHrs} onChange={(e) => handleSharedChange(dayIdx, 'workingHrs', e.target.value)} disabled={isSaving} className={smallInput + ' text-center'} />
+                      <input
+                        type="number" min="0" max="24" step="0.5"
+                        value={day.shared.workingHrs}
+                        onChange={(e) => handleSharedChange(dayIdx, 'workingHrs', e.target.value)}
+                        onBlur={(e) => handleHourChange(dayIdx, 'workingHrs', e.target.value)}
+                        disabled={isSaving}
+                        className={hourInput}
+                      />
                     </div>
                     <div>
                       <label className={smallLabel}>{t('sheet.travelHrs')}</label>
-                      <input type="text" value={day.shared.travelHrs} onChange={(e) => handleSharedChange(dayIdx, 'travelHrs', e.target.value)} disabled={isSaving} className={smallInput + ' text-center'} />
+                      <input
+                        type="number" min="0" max="24" step="0.5"
+                        value={day.shared.travelHrs}
+                        onChange={(e) => handleSharedChange(dayIdx, 'travelHrs', e.target.value)}
+                        onBlur={(e) => handleHourChange(dayIdx, 'travelHrs', e.target.value)}
+                        disabled={isSaving}
+                        className={hourInput}
+                      />
                     </div>
                     <div>
                       <label className={smallLabel}>{t('sheet.downtimeHrs')}</label>
-                      <input type="text" value={day.shared.downtimeHrs} onChange={(e) => handleSharedChange(dayIdx, 'downtimeHrs', e.target.value)} disabled={isSaving} className={smallInput + ' text-center'} />
+                      <input
+                        type="number" min="0" max="24" step="0.5"
+                        value={day.shared.downtimeHrs}
+                        onChange={(e) => handleSharedChange(dayIdx, 'downtimeHrs', e.target.value)}
+                        onBlur={(e) => handleHourChange(dayIdx, 'downtimeHrs', e.target.value)}
+                        disabled={isSaving}
+                        className={hourInput}
+                      />
                     </div>
-                    <div>
-                      <label className={smallLabel}>{t('sheet.standbyReason')}</label>
-                      <input type="text" value={day.shared.standbyReason} onChange={(e) => handleSharedChange(dayIdx, 'standbyReason', e.target.value)} disabled={isSaving} className={smallInput} />
-                    </div>
+                  </div>
+
+                  {/* ── Motivo do Stand-by (texto livre) ── */}
+                  <div className="mt-2">
+                    <label className={smallLabel}>{t('sheet.standbyReason')}</label>
+                    <input
+                      type="text"
+                      value={day.shared.standbyReason}
+                      onChange={(e) => handleSharedChange(dayIdx, 'standbyReason', e.target.value)}
+                      disabled={isSaving}
+                      className={smallInput}
+                      placeholder=" "
+                    />
                   </div>
                 </div>
 

@@ -426,6 +426,10 @@ table.ts-excel-table th {
   height: 16px;
 }
 
+.cell-data-left {
+  text-align: left;
+}
+
 .cell-data-date {
   font-size: 12px;
   border: 1px solid var(--excel-border-color);

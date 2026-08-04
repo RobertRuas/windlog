@@ -168,6 +168,15 @@ export interface TimesheetListItem {
   _count: {
     days: number;
   };
+  /**
+   * Totais de horas calculados pelo backend.
+   * Soma de todas as entradas de todos os dias do timesheet.
+   */
+  _totals: {
+    workingHrs: number;
+    standbyHrs: number;
+    travelHrs: number;
+  };
   createdAt: string;
   updatedAt: string;
 }

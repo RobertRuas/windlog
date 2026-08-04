@@ -3,7 +3,7 @@ schema_version: 1
 locale: en-US
 branch: main
 nodes_managed: true
-exported_at: "2026-08-03T21:40:37Z"
+exported_at: "2026-08-03T22:11:15Z"
 modules:
     "":
         dir_name: NestJS + React Full-Stack Application

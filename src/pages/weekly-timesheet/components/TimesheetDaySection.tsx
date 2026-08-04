@@ -177,7 +177,7 @@ export function TimesheetDaySection({
               ].map((field) => (
                 <td
                   key={field}
-                  className={`cell-data ${isEditMode ? 'cell-editable' : ''}`}
+                  className={`cell-data ${field === 'technicianName' ? 'cell-data-left' : ''} ${isEditMode ? 'cell-editable' : ''}`}
                   contentEditable={isEditMode}
                   suppressContentEditableWarning
                   onBlur={(e) =>
