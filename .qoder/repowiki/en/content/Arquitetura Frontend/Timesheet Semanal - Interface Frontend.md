@@ -7,6 +7,8 @@
 - [timesheet.css](file://src/pages/weekly-timesheet/styles/timesheet.css)
 - [WeeklyTimesheetDetailPage.tsx](file://src/pages/weekly-timesheet/WeeklyTimesheetDetailPage.tsx)
 - [WeeklyTimesheetPage.tsx](file://src/pages/weekly-timesheet/WeeklyTimesheetPage.tsx)
+- [ErrorPage.tsx](file://src/pages/error/ErrorPage.tsx)
+- [index.css](file://src/index.css)
 - [timesheet.json](file://src/i18n/locales/pt/timesheet.json)
 - [common.json](file://src/i18n/locales/pt/common.json)
 </cite>
@@ -20,6 +22,8 @@
 - **Updated**: Timesheet form editor now auto-fills role field from technician's position instead of manual selection
 - **Updated**: Added visible delete icons for all entries throughout the interface
 - **Updated**: Removed debug try-catch blocks for cleaner error handling
+- **Updated**: Enhanced error page redesign with clean, friendly design using soft gradients (blue/lilac backgrounds), glassmorphism cards, SVG icons, and accessible button styling
+- **Updated**: Removed terminal/hacker aesthetic including typing animations and scanlines for more empathetic messaging
 
 ## Table of Contents
 1. [Overview](#overview)
@@ -27,14 +31,15 @@
 3. [Technician Selection System Enhancement](#technician-selection-system-enhancement)
 4. [Internationalization Improvements](#internationalization-improvements)
 5. [List Page UX Refinements](#list-page-ux-refinements)
-6. [TimesheetDaySection Component](#timesheetdaysection-component)
-7. [TimesheetFormEditor Component](#timesheetformeditor-component)
-8. [Styling and Layout](#styling-and-layout)
-9. [User Experience Improvements](#user-experience-improvements)
-10. [Implementation Details](#implementation-details)
+6. [Enhanced Error Page Design](#enhanced-error-page-design)
+7. [TimesheetDaySection Component](#timesheetdaysection-component)
+8. [TimesheetFormEditor Component](#timesheetformeditor-component)
+9. [Styling and Layout](#styling-and-layout)
+10. [User Experience Improvements](#user-experience-improvements)
+11. [Implementation Details](#implementation-details)
 
 ## Overview
-The Weekly Timesheet interface provides a comprehensive frontend solution for managing weekly timesheet entries. The system has been significantly enhanced with improved technician selection capabilities, comprehensive internationalization support, refined user experience elements, and automated role assignment features that ensure optimal usability across different devices and screen sizes.
+The Weekly Timesheet interface provides a comprehensive frontend solution for managing weekly timesheet entries. The system has been significantly enhanced with improved technician selection capabilities, comprehensive internationalization support, refined user experience elements, automated role assignment features, and a completely redesigned error page that prioritizes empathy and accessibility over technical aesthetics.
 
 ## Component Architecture
 The weekly timesheet functionality is built around several key components that work together to provide a seamless user experience:
@@ -46,20 +51,24 @@ B --> C[TimesheetDaySection]
 B --> D[TimesheetFormEditor]
 B --> E[TimesheetMetadata]
 B --> F[TimesheetSignatures]
-C --> G[Enhanced Technician Dropdown]
-D --> H[Improved Form Validation]
-C --> I[Row Height Management]
-D --> J[Internationalized Input Handling]
-E --> K[Simplified Column Display]
-F --> L[Modal Integration]
-G --> M[Auto-fill Role from Position]
-H --> N[Visible Delete Icons]
+B --> G[Enhanced Error Page]
+C --> H[Enhanced Technician Dropdown]
+D --> I[Improved Form Validation]
+C --> J[Row Height Management]
+D --> K[Internationalized Input Handling]
+E --> L[Simplified Column Display]
+F --> M[Modal Integration]
+G --> N[Soft Gradient Backgrounds]
+G --> O[Glassmorphism Cards]
+G --> P[SVG Icons]
+G --> Q[Accessible Buttons]
 style A fill:#e1f5fe
 style B fill:#f3e5f5
 style C fill:#e8f5e8
 style D fill:#fff3e0
 style E fill:#ffeaa7
 style F fill:#dfe6e9
+style G fill:#e8f5e8
 ```
 
 **Diagram sources**
@@ -67,6 +76,7 @@ style F fill:#dfe6e9
 - [WeeklyTimesheetDetailPage.tsx](file://src/pages/weekly-timesheet/WeeklyTimesheetDetailPage.tsx)
 - [TimesheetDaySection.tsx](file://src/pages/weekly-timesheet/components/TimesheetDaySection.tsx)
 - [TimesheetFormEditor.tsx](file://src/pages/weekly-timesheet/components/TimesheetFormEditor.tsx)
+- [ErrorPage.tsx](file://src/pages/error/ErrorPage.tsx)
 
 ## Technician Selection System Enhancement
 The technician selection system has undergone a major transformation from an autocomplete-based approach to a restrictive dropdown system that significantly improves data integrity and user experience.
@@ -157,6 +167,55 @@ Complex operations have been moved into modal dialogs to:
 - [WeeklyTimesheetPage.tsx](file://src/pages/weekly-timesheet/WeeklyTimesheetPage.tsx)
 - [WeeklyTimesheetDetailPage.tsx](file://src/pages/weekly-timesheet/WeeklyTimesheetDetailPage.tsx)
 
+## Enhanced Error Page Design
+The error page has undergone a complete redesign to prioritize user empathy and accessibility over technical aesthetics. The previous terminal/hacker aesthetic with typing animations and scanlines has been replaced with a modern, friendly design that focuses on helping users recover from errors gracefully.
+
+### Modern Design Philosophy
+The new error page design emphasizes:
+- **Empathetic Messaging**: User-friendly language that acknowledges frustration without being condescending
+- **Clean Visual Hierarchy**: Clear separation between error information and recovery actions
+- **Professional Appearance**: Consistent with the overall application design language
+- **Accessibility First**: Proper contrast ratios, semantic HTML, and screen reader support
+
+### Soft Gradient Backgrounds
+The error page now features soft gradient backgrounds using blue and lilac color schemes:
+- **Blue Gradients**: Calming blue tones that convey trust and reliability
+- **Lilac Accents**: Subtle purple undertones that add warmth and approachability
+- **Smooth Transitions**: Gentle color transitions that don't overwhelm users
+- **Dark Mode Support**: Appropriate gradient adjustments for dark mode themes
+
+### Glassmorphism Card Design
+Error information is presented in elegant glassmorphism-style cards:
+- **Translucent Backgrounds**: Semi-transparent card backgrounds with backdrop blur effects
+- **Subtle Borders**: Delicate borders that define card boundaries without harsh lines
+- **Shadow Effects**: Soft shadows that create depth and visual hierarchy
+- **Rounded Corners**: Friendly, approachable corner radiuses
+
+### SVG Icon Integration
+The error page uses custom SVG icons for better scalability and accessibility:
+- **Error State Icons**: Clear visual indicators for different error types
+- **Recovery Action Icons**: Intuitive icons for suggested next steps
+- **Consistent Styling**: Icons match the application's design system
+- **Animation Support**: Subtle animations for icon states and transitions
+
+### Accessible Button Styling
+Recovery actions are presented with accessible, user-friendly buttons:
+- **High Contrast**: Strong color contrast for visibility and readability
+- **Clear Typography**: Legible font sizes and weights for button text
+- **Focus Indicators**: Visible focus states for keyboard navigation
+- **Touch-Friendly**: Adequate sizing and spacing for touch interactions
+
+### Empathetic Messaging Strategy
+The error messaging has been completely rewritten to be more user-friendly:
+- **Acknowledgment**: Recognition that something went wrong without blame
+- **Clarity**: Clear explanation of what happened in plain language
+- **Action-Oriented**: Specific steps users can take to resolve the issue
+- **Support Information**: Contact details and help resources when appropriate
+
+**Section sources**
+- [ErrorPage.tsx](file://src/pages/error/ErrorPage.tsx)
+- [index.css](file://src/index.css)
+
 ## TimesheetDaySection Component
 The TimesheetDaySection component has been significantly enhanced to improve visual consistency and user experience through automatic empty row management and improved layout handling.
 
@@ -229,7 +288,7 @@ Debug try-catch blocks have been removed in favor of cleaner error handling mech
 - [TimesheetFormEditor.tsx](file://src/pages/weekly-timesheet/components/TimesheetFormEditor.tsx)
 
 ## Styling and Layout
-The styling system has been optimized to support the new technician selection dropdown, internationalization requirements, improved list page design, and enhanced delete functionality.
+The styling system has been optimized to support the new technician selection dropdown, internationalization requirements, improved list page design, enhanced delete functionality, and the completely redesigned error page.
 
 ### CSS Improvements
 - **Responsive Dropdown Styles**: Custom styling for the new technician dropdown
@@ -237,6 +296,7 @@ The styling system has been optimized to support the new technician selection dr
 - **Print Styles**: Optimized styles for English print output
 - **Accessibility Enhancements**: Improved color contrast and focus indicators
 - **Delete Icon Styling**: Consistent styling for visible delete icons across all entries
+- **Error Page Styling**: Complete redesign with soft gradients, glassmorphism, and accessible components
 
 ### Layout Optimization
 - **Flexible Grid System**: Adaptive layout for different screen sizes
@@ -249,12 +309,14 @@ The styling system has been optimized to support the new technician selection dr
 - **Icon Integration**: Consistent icon styling across the application
 - **Modal Styling**: Professional modal dialog appearance
 - **Status Indicators**: Clear visual indicators for form state and validation
+- **Error Page Components**: Glassmorphism cards, gradient backgrounds, and accessible buttons
 
 **Section sources**
 - [timesheet.css](file://src/pages/weekly-timesheet/styles/timesheet.css)
+- [index.css](file://src/index.css)
 
 ## User Experience Improvements
-The recent updates focus primarily on improving the overall user experience through better data validation, internationalization support, refined interface design, and automated role assignment features.
+The recent updates focus primarily on improving the overall user experience through better data validation, internationalization support, refined interface design, automated role assignment features, and a completely redesigned error handling experience.
 
 ### Data Validation Improvements
 - **Proactive Error Prevention**: Errors caught before submission
@@ -273,6 +335,9 @@ Users no longer need to manually select roles, as the system automatically assig
 
 ### **Updated**: Enhanced Delete Functionality
 Visible delete icons provide immediate visual feedback for removal actions, making it easier for users to manage their timesheet entries efficiently.
+
+### **Updated**: Empathetic Error Handling
+The redesigned error page provides a much more user-friendly experience when things go wrong, focusing on helping users recover rather than displaying technical error information.
 
 ### Performance Optimizations
 - **Lazy Loading**: Deferred loading of non-critical resources
@@ -325,6 +390,13 @@ The technical implementation of these improvements involves several key areas of
 - **Logging Integration**: Proper logging without exposing sensitive information
 - **Recovery Strategies**: Graceful error recovery and user guidance
 
+### **Updated**: Error Page Redesign Implementation
+- **Gradient Background System**: Dynamic gradient generation with blue/lilac color schemes
+- **Glassmorphism Card Components**: Reusable glassmorphism card components with backdrop blur
+- **SVG Icon Integration**: Scalable, accessible SVG icons for error states and actions
+- **Accessible Button System**: WCAG-compliant button components with proper focus management
+- **Responsive Design**: Mobile-first approach with adaptive layouts for all screen sizes
+
 ### Modal and Dialog Management
 - **Modal State Management**: Centralized modal state management
 - **Animation System**: Smooth animations for modal open/close transitions
@@ -336,3 +408,5 @@ The technical implementation of these improvements involves several key areas of
 - [WeeklyTimesheetPage.tsx](file://src/pages/weekly-timesheet/WeeklyTimesheetPage.tsx)
 - [TimesheetFormEditor.tsx](file://src/pages/weekly-timesheet/components/TimesheetFormEditor.tsx)
 - [TimesheetDaySection.tsx](file://src/pages/weekly-timesheet/components/TimesheetDaySection.tsx)
+- [ErrorPage.tsx](file://src/pages/error/ErrorPage.tsx)
+- [index.css](file://src/index.css)

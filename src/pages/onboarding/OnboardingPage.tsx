@@ -52,7 +52,7 @@ import { submitOnboarding } from '@/services/auth.service';
 /**
  * Estilo comum para selects (mesma altura dos text fields).
  */
-const selectClassName = 'w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white';
+const selectClassName = 'w-full h-[38px] px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white';
 
 /**
  * Componente OnboardingPage - Formulário obrigatório de onboarding.
@@ -335,28 +335,28 @@ export function OnboardingPage() {
                 required
               />
               <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium text-gray-700">{t('fields.phoneCountryCode.label')}</label>
-                <select
-                  value={phoneCountryCode}
-                  onChange={(e) => setPhoneCountryCode(e.target.value)}
-                  className={selectClassName}
-                  required
-                >
-                  <option value="">{t('fields.phoneCountryCode.placeholder')}</option>
-                  {PREDEFINED_COUNTRIES.map(c => (
-                    <option key={c.code} value={c.phoneCode}>{c.name} ({c.phoneCode})</option>
-                  ))}
-                </select>
-              </div>
-              <div className="sm:col-span-2">
-                <Input
-                  label={t('fields.phone.label')}
-                  type="tel"
-                  value={phone}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPhone(e.target.value)}
-                  placeholder={t('fields.phone.placeholder')}
-                  required
-                />
+                <label className="text-sm font-medium text-gray-700">{t('fields.phone.label')}</label>
+                <div className="flex gap-1">
+                  <select
+                    value={phoneCountryCode}
+                    onChange={(e) => setPhoneCountryCode(e.target.value)}
+                    className="w-24 h-[38px] px-2 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white flex-shrink-0"
+                    required
+                  >
+                    <option value="">{t('fields.phoneCountryCode.placeholder')}</option>
+                    {PREDEFINED_COUNTRIES.map(c => (
+                      <option key={c.code} value={c.phoneCode}>{c.phoneCode}</option>
+                    ))}
+                  </select>
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPhone(e.target.value)}
+                    placeholder={t('fields.phone.placeholder')}
+                    className="flex-1 h-[38px] px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
               </div>
             </div>
           </SectionCard>

@@ -1,0 +1,8 @@
+- Backend modules follow the strict pattern of {name}.module.ts + {name}.controller.ts + {name}.service.ts + dto/{name}.dto.ts, with all business logic in services and zero database access in controllers.
+- Backend DTOs use class-validator decorators (@IsString, @IsEmail, @IsOptional, etc.) where every optional field must explicitly include @IsOptional() — TypeScript's ? operator is not sufficient.
+- Frontend pages follow {PageName}.tsx with colocated components/ and hooks/ directories; services reside in src/services/ encapsulating API calls via the shared api.ts fetch wrapper.
+- TanStack Query keys follow ['entity', filter?] for lists and ['entity', id] for details, with mutations invalidating all related keys.
+- UI components are split between src/components/ui/ (generic reusable) and src/components/layout/ (structural like AppLayout, Sidebar) — never mixed together.
+- Toast notifications via Sonner are mandatory for all CRUD operations with Portuguese messages following the pattern 'X criado/atualizado/removido com sucesso'.
+- Soft delete is mandatory for all business entities (User, Project, Turbine, File) via deletedAt filtering; only junction tables use hard delete.
+- LoggingInterceptor automatically maps URL + HTTP method to LogAction enum values — new endpoints require adding their LogAction to determineAction().
