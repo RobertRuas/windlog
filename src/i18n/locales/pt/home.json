@@ -1,7 +1,40 @@
 {
   "title": "Bem-vindo",
-  "subtitle": "Seu perfil",
-  "homeSubtitle": "Aqui está um resumo do seu perfil.",
+  "subtitle": "Painel de resumo",
+  "homeSubtitle": "Visão geral da sua atividade.",
+  "dashboard": {
+    "timesheets": {
+      "title": "Horas do Mês",
+      "working": "Trabalho",
+      "standby": "Standby",
+      "travel": "Viagem",
+      "total": "Total",
+      "noData": "Sem registos este mês",
+      "hours": "{{value}}h",
+      "viewAll": "Ver todos"
+    },
+    "projects": {
+      "title": "Projetos",
+      "active": "Ativos",
+      "total": "Total",
+      "noData": "Sem projetos atribuídos",
+      "viewAll": "Ver todos"
+    },
+    "tips": {
+      "title": "Sabia que...",
+      "tip1": "Os timesheets são semanais e devem ser submetidos até ao fim da semana.",
+      "tip2": "Apenas Team Leaders podem criar timesheets para a sua equipa.",
+      "tip3": "O passaporte é obrigatório para trabalhar em projetos internacionais.",
+      "tip4": "Certificações expiradas impedem a alocação em projetos.",
+      "tip5": "Administradores podem configurar permissões por módulo em Configurações."
+    },
+    "profileReminder": {
+      "title": "Perfil incompleto",
+      "message": "Faltam documentos ou certificações no seu perfil.",
+      "action": "Completar",
+      "complete": "Perfil completo"
+    }
+  },
   "profileCard": {
     "title": "Editar Perfil",
     "description": "Atualize suas informações pessoais, contatos, certificações e idiomas.",
