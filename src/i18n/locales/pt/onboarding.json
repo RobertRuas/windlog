@@ -6,6 +6,7 @@
   "submit": "Salvar e continuar",
   "submitting": "A guardar...",
   "cancel": "Cancelar e sair",
+  "loading": "A carregar dados...",
   "sections": {
     "personal": "Dados Pessoais",
     "passport": "Passaporte",

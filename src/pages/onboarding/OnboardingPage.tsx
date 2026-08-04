@@ -31,11 +31,11 @@
  * ============================================================================
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { UserCircle, Plane, Globe, MapPin, Phone, FileText, Briefcase } from 'lucide-react';
+import { UserCircle, Plane, Globe, MapPin, Phone, FileText, Briefcase, Loader2 } from 'lucide-react';
 
 // Componentes compartilhados
 import { Button } from '@/components/ui/Button';
@@ -47,7 +47,7 @@ import { PREDEFINED_COUNTRIES } from '@/constants/countries';
 import { PREDEFINED_LANGUAGES } from '@/constants/languages';
 
 // Serviço de autenticação
-import { submitOnboarding } from '@/services/auth.service';
+import { submitOnboarding, getProfile } from '@/services/auth.service';
 
 /**
  * Estilo comum para selects (mesma altura dos text fields).
@@ -62,6 +62,7 @@ export function OnboardingPage() {
   const navigate = useNavigate();
 
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingData, setIsLoadingData] = useState(true);
   const [error, setError] = useState('');
 
   // === DADOS PESSOAIS ===
@@ -98,6 +99,74 @@ export function OnboardingPage() {
   const [windaId, setWindaId] = useState('');
   const [irataLevel, setIrataLevel] = useState('');
   const [irataNumber, setIrataNumber] = useState('');
+
+  /**
+   * Carrega os dados existentes do perfil ao montar a página.
+   * Pré-preenche os campos que já possuem dados.
+   */
+  useEffect(() => {
+    async function loadProfileData() {
+      try {
+        const profile = await getProfile();
+
+        // Pré-preenche dados pessoais
+        if (profile.firstName) setFirstName(profile.firstName);
+        if (profile.lastName) setLastName(profile.lastName);
+        if (profile.nationality) setNationality(profile.nationality);
+        if (profile.dateOfBirth) {
+          // Converte ISO para DD/MM/YYYY
+          const iso = profile.dateOfBirth;
+          const parts = iso.split('T')[0].split('-');
+          if (parts.length === 3) setDateOfBirth(`${parts[2]}/${parts[1]}/${parts[0]}`);
+        }
+
+        // Pré-preenche contato
+        if (profile.email) setEmail(profile.email);
+        if (profile.phoneCountryCode) setPhoneCountryCode(profile.phoneCountryCode);
+        if (profile.phone) setPhone(profile.phone);
+
+        // Pré-preenche localização
+        if (profile.address) setAddress(profile.address);
+        if (profile.city) setCity(profile.city);
+        if (profile.postalCode) setPostalCode(profile.postalCode);
+        if (profile.country) setCountry(profile.country);
+
+        // Pré-preenche aeroporto preferido
+        if (profile.preferredAirportCity) setPreferredAirportCity(profile.preferredAirportCity);
+        if (profile.preferredAirportCountry) setPreferredAirportCountry(profile.preferredAirportCountry);
+
+        // Pré-preenche dados profissionais
+        if (profile.windaId) setWindaId(profile.windaId);
+        if (profile.irataLevel) setIrataLevel(profile.irataLevel);
+        if (profile.irataNumber) setIrataNumber(profile.irataNumber);
+
+        // Pré-preenche passaporte (se existir documento do tipo PASSPORT)
+        const passport = profile.documents?.find(d => d.type === 'PASSPORT');
+        if (passport) {
+          if (passport.documentNumber) setPassportNumber(passport.documentNumber);
+          if (passport.issuingCountry) setPassportIssuingCountry(passport.issuingCountry);
+          if (passport.issueDate) {
+            const parts = passport.issueDate.split('T')[0].split('-');
+            if (parts.length === 3) setPassportIssueDate(`${parts[2]}/${parts[1]}/${parts[0]}`);
+          }
+          if (passport.expiryDate) {
+            const parts = passport.expiryDate.split('T')[0].split('-');
+            if (parts.length === 3) setPassportExpiryDate(`${parts[2]}/${parts[1]}/${parts[0]}`);
+          }
+        }
+
+        // Pré-preenche idioma materno (se existir idioma com nível NATIVE)
+        const nativeLang = profile.languages?.find(l => l.level === 'NATIVE');
+        if (nativeLang) setMotherTongue(nativeLang.language);
+      } catch {
+        // Silencioso - usuário pode preencher manualmente
+      } finally {
+        setIsLoadingData(false);
+      }
+    }
+
+    loadProfileData();
+  }, []);
 
   /**
    * Valida se o usuário tem pelo menos 18 anos.
@@ -225,6 +294,18 @@ export function OnboardingPage() {
     if (parts.length === 3) return `${parts[2]}-${parts[1]}-${parts[0]}`;
     if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
     return '';
+  }
+
+  // Estado de carregamento enquanto busca dados do perfil
+  if (isLoadingData) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-3" />
+          <p className="text-sm text-gray-600">{t('loading')}</p>
+        </div>
+      </div>
+    );
   }
 
   return (
