@@ -36,6 +36,7 @@ import {
   type TimesheetListItem,
   type WeeklyTimesheet,
 } from '@/services/weekly-timesheet.service';
+import { getProfile } from '@/services/auth.service';
 
 /**
  * Página WeeklyTimesheetPage - Listagem de timesheets.
@@ -44,6 +45,12 @@ export function WeeklyTimesheetPage() {
   const navigate = useNavigate();
   const { t } = useTranslation('timesheet');
   const mutations = useTimesheetMutations();
+
+  // ── Perfil do usuário atual ─────────────────────────────────────────
+  const { data: currentUser } = useQuery({
+    queryKey: ['profile', 'current'],
+    queryFn: getProfile,
+  });
 
   // ── Estado local ────────────────────────────────────────────────────
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -277,25 +284,29 @@ export function WeeklyTimesheetPage() {
                         >
                           <Eye size={16} />
                         </button>
-                        {/* Editar (modo edição) */}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate(`/timesheets/${ts.id}`);
-                          }}
-                          className="p-1.5 text-gray-400 hover:text-amber-600 transition-colors"
-                          title={t('actions.edit')}
-                        >
-                          <Pencil size={16} />
-                        </button>
-                        {/* Excluir (com confirmação) */}
-                        <button
-                          onClick={(e) => handleDelete(ts.id, e)}
-                          className="p-1.5 text-gray-400 hover:text-red-600 transition-colors"
-                          title={t('actions.delete')}
-                        >
-                          <Trash2 size={16} />
-                        </button>
+                        {/* Editar (modo edição) — apenas para criador ou ADMIN/HR */}
+                        {(currentUser?.role === 'ADMIN' || currentUser?.role === 'HR' || ts.createdBy === currentUser?.id) && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/timesheets/${ts.id}`);
+                            }}
+                            className="p-1.5 text-gray-400 hover:text-amber-600 transition-colors"
+                            title={t('actions.edit')}
+                          >
+                            <Pencil size={16} />
+                          </button>
+                        )}
+                        {/* Excluir (com confirmação) — apenas para criador ou ADMIN/HR */}
+                        {(currentUser?.role === 'ADMIN' || currentUser?.role === 'HR' || ts.createdBy === currentUser?.id) && (
+                          <button
+                            onClick={(e) => handleDelete(ts.id, e)}
+                            className="p-1.5 text-gray-400 hover:text-red-600 transition-colors"
+                            title={t('actions.delete')}
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>

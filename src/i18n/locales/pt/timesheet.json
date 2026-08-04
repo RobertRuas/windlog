@@ -54,7 +54,9 @@
     "exportExcel": "Exportar para Excel",
     "print": "Gerar PDF / Imprimir",
     "zoomIn": "Aumentar Escala",
-    "zoomOut": "Diminuir Escala"
+    "zoomOut": "Diminuir Escala",
+    "readOnlyTitle": "Somente leitura",
+    "readOnlyHint": "Apenas o criador do timesheet pode editá-lo."
   },
   "sheet": {
     "title": "TIMESHEET SEMANAL",

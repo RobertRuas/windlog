@@ -32,12 +32,13 @@ import { useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Eye } from 'lucide-react';
+import { ArrowLeft, Eye, Lock } from 'lucide-react';
 
 import { AppLayout } from '@/components/layout/AppLayout';
 import { TimesheetFormEditor } from './components/TimesheetFormEditor';
 import { TimesheetViewModal } from './components/TimesheetViewModal';
 import { useTimesheetMutations } from './hooks/useTimesheetMutations';
+import { getProfile } from '@/services/auth.service';
 import {
   getTimesheetById,
   type UpdateTimesheetPayload,
@@ -72,8 +73,19 @@ export function WeeklyTimesheetDetailPage() {
     refetchOnMount: 'always', // Sempre busca dados frescos ao (re)montar o componente
   });
 
+  // ── Busca o perfil do usuário atual ─────────────────────────────────
+  const { data: currentUser } = useQuery({
+    queryKey: ['profile', 'current'],
+    queryFn: getProfile,
+  });
+
   // Extrai o timesheet da resposta da API
   const timesheet = response?.data;
+
+  // Verifica se o usuário atual pode editar (criador ou ADMIN/HR)
+  const canEdit = timesheet && currentUser
+    ? currentUser.role === 'ADMIN' || currentUser.role === 'HR' || timesheet.createdBy === currentUser.id
+    : false;
 
   /**
    * Salva as alterações do formulário no backend.
@@ -183,12 +195,37 @@ export function WeeklyTimesheetDetailPage() {
           </div>
         </div>
 
-        {/* ── Editor (modo padrão) ──────────────────────────────────── */}
-        <TimesheetFormEditor
-          timesheet={timesheet}
-          onSave={handleFormSave}
-          isSaving={mutations.updateTimesheet.isPending}
-        />
+        {/* ── Editor (modo padrão) — apenas para quem pode editar ──── */}
+        {canEdit ? (
+          <TimesheetFormEditor
+            timesheet={timesheet}
+            onSave={handleFormSave}
+            isSaving={mutations.updateTimesheet.isPending}
+          />
+        ) : (
+          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 bg-amber-50 flex items-center gap-3">
+              <Lock size={18} className="text-amber-600 shrink-0" />
+              <div>
+                <p className="text-sm font-semibold text-amber-800">
+                  {t('detail.readOnlyTitle')}
+                </p>
+                <p className="text-xs text-amber-600 mt-0.5">
+                  {t('detail.readOnlyHint')}
+                </p>
+              </div>
+            </div>
+            <div className="p-6">
+              <button
+                onClick={() => setIsViewModalOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
+              >
+                <Eye size={16} />
+                {t('detail.viewButton')}
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* ── Modal de Visualização (planilha em modo de impressão) ── */}
         {isViewModalOpen && (
