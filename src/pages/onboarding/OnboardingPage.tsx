@@ -334,7 +334,7 @@ export function OnboardingPage() {
                 placeholder={t('fields.email.placeholder')}
                 required
               />
-              <div className="flex flex-col gap-1">
+              <div className="flex flex-col gap-1 min-w-0">
                 <label className="text-sm font-medium text-gray-700">{t('fields.phone.label')}</label>
                 <div className="flex gap-1">
                   <select
@@ -353,7 +353,7 @@ export function OnboardingPage() {
                     value={phone}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPhone(e.target.value)}
                     placeholder={t('fields.phone.placeholder')}
-                    className="flex-1 h-[38px] px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 min-w-0 h-[38px] px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required
                   />
                 </div>
