@@ -3,21 +3,12 @@ schema_version: 1
 locale: en-US
 branch: main
 nodes_managed: true
-exported_at: "2026-08-04T09:49:25Z"
+exported_at: "2026-08-04T10:17:01Z"
 modules:
     "":
         dir_name: Windlog Full-Stack Application (NestJS Backend + React Frontend)
         title: Windlog Full-Stack Application (NestJS Backend + React Frontend)
         scope: []
-        source_files: []
-        children: []
-        depends_on: []
-        related_to: []
-    components_ui:
-        dir_name: Reusable UI Component Library
-        title: Reusable UI Component Library
-        scope:
-            - src/components/ui/
         source_files: []
         children: []
         depends_on: []

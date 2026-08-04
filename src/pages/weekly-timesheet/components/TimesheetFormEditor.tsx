@@ -98,6 +98,8 @@ interface FormEntry {
   id?: string;
   technicianName: string;
   role: string;
+  /** ID do usuário vinculado (para controle de acesso de visualização) */
+  userId?: string | null;
   /** Se é o entry do usuário atual (bloqueado para remoção) */
   isCurrentUser?: boolean;
 }
@@ -193,6 +195,7 @@ function timesheetToFormState(ts: WeeklyTimesheet): FormState {
           id: e.id,
           technicianName: e.technicianName || '',
           role: e.role || '',
+          userId: e.userId || null,
         })),
       };
     }),
@@ -221,6 +224,7 @@ function formStateToPayload(form: FormState): UpdateTimesheetPayload {
       sharedValues: { ...day.shared },
       entries: day.entries.map((e): UpdateEntryPayload => ({
         id: e.id,
+        userId: e.userId || undefined,
         technicianName: e.technicianName,
         role: e.role || undefined,
         // Aplica shared values a cada entry (todos usam as informações comuns)
@@ -525,6 +529,7 @@ export function TimesheetFormEditor({
                 ...day.entries[0],
                 technicianName: currentUserName,
                 role: day.entries[0].role || currentUserPosition,
+                userId: currentUser?.id || day.entries[0].userId || null,
                 isCurrentUser: true,
               },
               ...day.entries.slice(1),
@@ -624,6 +629,14 @@ export function TimesheetFormEditor({
    * Quando seleciona um usuário do autocomplete, preenche o role.
    */
   function handleSelectUser(dayIdx: number, entryIdx: number, user: SystemUser) {
+    // Armazena o userId para que o backend vincule o técnico ao usuário do sistema
+    setForm((prev) => {
+      const days = [...prev.days];
+      const entries = [...days[dayIdx].entries];
+      entries[entryIdx] = { ...entries[entryIdx], userId: user.id };
+      days[dayIdx] = { ...days[dayIdx], entries };
+      return { ...prev, days };
+    });
     if (user.position) {
       handleEntryChange(dayIdx, entryIdx, 'role', user.position);
     }

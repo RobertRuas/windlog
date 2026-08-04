@@ -1,1 +1,0 @@
-Co-located NestJS backend and React frontend sharing Prisma schema as the single source of truth, with feature modules on both sides communicating through typed REST APIs.

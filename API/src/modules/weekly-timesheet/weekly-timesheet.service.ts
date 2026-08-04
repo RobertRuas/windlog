@@ -130,12 +130,24 @@ export class WeeklyTimesheetService {
   }
 
   /**
+   * Busca o nome completo do usuário no banco.
+   * Usado para matching por technicianName em entradas antigas (sem userId).
+   */
+  private async getUserFullName(userId: string): Promise<string> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { firstName: true, lastName: true },
+    });
+    return user ? `${user.firstName} ${user.lastName}` : '';
+  }
+
+  /**
    * Verifica se o usuário pode visualizar um timesheet.
    *
    * REGRAS:
    * - ADMIN e HR: sempre podem
    * - Criador do timesheet: sempre pode
-   * - Técnico mencionado nas entradas: pode visualizar
+   * - Técnico mencionado nas entradas (por userId OU technicianName): pode visualizar
    * - Team Leader: mesma regra do STANDARD (apenas associados ao seu nome)
    *
    * @param timesheetId - ID do timesheet
@@ -162,11 +174,17 @@ export class WeeklyTimesheetService {
     // Verifica se é o criador
     if (timesheet.createdBy === userId) return true;
 
-    // Verifica se o usuário aparece nas entradas do timesheet
+    // Busca o nome completo do usuário para matching por technicianName
+    const userFullName = await this.getUserFullName(userId);
+
+    // Verifica se o usuário aparece nas entradas (por userId OU por nome)
     const entry = await this.prisma.weeklyTimesheetEntry.findFirst({
       where: {
         day: { timesheetId },
-        userId,
+        OR: [
+          { userId },
+          ...(userFullName ? [{ technicianName: userFullName }] : []),
+        ],
       },
     });
 
@@ -374,13 +392,21 @@ export class WeeklyTimesheetService {
 
     // Para não-ADMIN/HR, filtra apenas timesheets associados ao seu nome
     if (userRole !== 'ADMIN' && userRole !== 'HR') {
+      // Busca o nome completo do usuário para matching por technicianName
+      const userFullName = await this.getUserFullName(userId);
+
       where.OR = [
         { createdBy: userId },
         {
           days: {
             some: {
               entries: {
-                some: { userId },
+                some: {
+                  OR: [
+                    { userId },
+                    ...(userFullName ? [{ technicianName: userFullName }] : []),
+                  ],
+                },
               },
             },
           },
@@ -467,13 +493,21 @@ export class WeeklyTimesheetService {
 
     // Para não-ADMIN/HR, filtra apenas timesheets associados ao seu nome
     if (userRole !== 'ADMIN' && userRole !== 'HR') {
+      // Busca o nome completo do usuário para matching por technicianName
+      const userFullName = await this.getUserFullName(userId);
+
       where.OR = [
         { createdBy: userId },
         {
           days: {
             some: {
               entries: {
-                some: { userId },
+                some: {
+                  OR: [
+                    { userId },
+                    ...(userFullName ? [{ technicianName: userFullName }] : []),
+                  ],
+                },
               },
             },
           },

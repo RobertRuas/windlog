@@ -1,1 +1,0 @@
-No build or setup specific to this module; components are imported directly by pages and other components. Requires the shared `@/hooks/useFileUrl` hook and i18n translation keys under the `common` namespace (e.g. `file.no_file`, `signature.drawMode`).

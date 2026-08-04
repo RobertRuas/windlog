@@ -1,1 +1,0 @@
-New backend features must be scaffolded as a full set of four files (`*.module.ts`, `*.controller.ts`, `*.service.ts`, `dto/*.dto.ts`) and registered in `AppModule.imports`; new frontend pages go under `src/pages/<feature>/` with colocated `components/` and `hooks/`, and their route is added in `src/App.tsx`.

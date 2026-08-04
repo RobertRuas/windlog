@@ -1,9 +1,0 @@
-- Backend modules follow the rigid four-file pattern: `{name}.module.ts + {name}.controller.ts + {name}.service.ts + dto/{name}.dto.ts`, with business logic only in services and no logic in controllers.
-- Backend DTOs use class-validator decorators (`@IsString`, `@IsEmail`, `@IsOptional`, …); every optional field must declare `@IsOptional()` because TypeScript's `?` is not sufficient.
-- Frontend pages are named `{PageName}.tsx` with colocated `components/` and `hooks/` directories, and API calls live in `src/services/` wrapping axios.
-- TanStack Query keys follow `['entity', filter?]` for lists and `['entity', id]` for details; mutations invalidate all related keys.
-- UI components stay in `src/components/ui/` (generic) and layout components in `src/components/layout/` (structural); they must never be mixed.
-- All CRUD operations surface user feedback via Sonner toast notifications in Portuguese using the pattern 'X criado/atualizado/removido com sucesso'.
-- Prisma schema is the authoritative type source; enums in code mirror `schema.prisma` and database access is performed exclusively inside Services.
-- Business entities use soft delete (`deletedAt`) and queries always filter `deletedAt: null`; junction tables may use hard delete.
-- New endpoints register their action in `LoggingInterceptor.determineAction()` so URL + HTTP method map automatically to `LogAction` entries.
