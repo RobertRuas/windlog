@@ -1,71 +1,92 @@
 {
-  "title": "Complete o seu Perfil",
-  "subtitle": "Preencha os dados obrigatórios para acessar o sistema",
-  "info": "Estes dados são obrigatórios para todos os colaboradores. Preencha todas as secções para continuar.",
+  "title": "Complete seu perfil",
+  "subtitle": "Preencha todos os dados obrigatórios para acessar o sistema",
+  "info": "Estes dados são essenciais para o seu cadastro e conformidade com as normas internacionais. O preenchimento é obrigatório para continuar.",
+  "success": "Perfil completo com sucesso!",
+  "submit": "Salvar e continuar",
+  "submitting": "A guardar...",
   "sections": {
     "personal": "Dados Pessoais",
     "passport": "Passaporte",
     "contact": "Contato",
     "location": "Localização",
-    "languages": "Idiomas",
+    "motherTongue": "Idioma Materno",
     "airport": "Aeroporto Preferido",
     "professional": "Dados Profissionais"
   },
   "fields": {
     "firstName": {
       "label": "Nome",
-      "placeholder": "Digite o seu nome"
+      "placeholder": "Digite seu nome"
     },
     "lastName": {
       "label": "Sobrenome",
-      "placeholder": "Digite o seu sobrenome"
+      "placeholder": "Digite seu sobrenome"
     },
     "nationality": {
       "label": "Nacionalidade",
-      "placeholder": "Selecione a nacionalidade"
+      "placeholder": "Selecione sua nacionalidade"
     },
     "dateOfBirth": {
-      "label": "Data de Nascimento",
-      "placeholder": "Selecione a data"
+      "label": "Data de nascimento",
+      "hint": "Idade mínima: 18 anos"
     },
     "passportNumber": {
-      "label": "Número do Passaporte",
+      "label": "Número do passaporte",
       "placeholder": "Ex: AB123456"
     },
     "passportIssuingCountry": {
-      "label": "País de Emissão",
-      "placeholder": "Selecione o país"
+      "label": "País emissor",
+      "placeholder": "Selecione o país emissor"
     },
     "passportIssueDate": {
-      "label": "Data de Emissão",
-      "placeholder": "Selecione a data"
+      "label": "Data de expedição"
     },
     "passportExpiryDate": {
-      "label": "Validade",
-      "placeholder": "Selecione a data"
+      "label": "Data de validade"
     },
     "passportFile": {
-      "label": "Foto ou PDF do Passaporte",
-      "hint": "Pode anexar posteriormente"
+      "label": "Foto/PDF do passaporte",
+      "hint": "Pode anexar posteriormente no seu perfil"
     },
     "email": {
-      "label": "E-mail",
-      "placeholder": "seu@email.com"
+      "label": "E-mail de contato",
+      "placeholder": "exemplo@email.com"
+    },
+    "phoneCountryCode": {
+      "label": "Código do país",
+      "placeholder": "Selecione o código"
     },
     "phone": {
-      "label": "Telefone",
-      "placeholder": "+351 912 345 678"
+      "label": "Telefone de contato",
+      "placeholder": "Ex: 912345678"
     },
     "address": {
       "label": "Endereço",
-      "placeholder": "Digite o seu endereço completo"
+      "placeholder": "Rua, número, complemento"
+    },
+    "city": {
+      "label": "Cidade",
+      "placeholder": "Digite sua cidade"
+    },
+    "postalCode": {
+      "label": "Código postal",
+      "placeholder": "Ex: 1000-001"
+    },
+    "country": {
+      "label": "País de residência",
+      "placeholder": "Selecione seu país"
+    },
+    "motherTongue": {
+      "label": "Idioma materno",
+      "placeholder": "Selecione seu idioma materno"
     },
     "preferredAirportCity": {
-      "label": "Cidade",
+      "label": "Cidade do aeroporto",
       "placeholder": "Ex: Lisboa"
     },
     "preferredAirportCountry": {
-      "label": "País",
+      "label": "País do aeroporto",
       "placeholder": "Selecione o país"
     },
     "windaId": {
@@ -73,25 +94,12 @@
       "placeholder": "Ex: RR092285BR"
     },
     "irataLevel": {
-      "label": "IRATA Nível",
+      "label": "Nível IRATA",
       "placeholder": "Selecione o nível"
     },
     "irataNumber": {
-      "label": "IRATA Nº",
-      "placeholder": "Ex: 134109 ou Não se aplica"
-    }
-  },
-  "languageEntry": {
-    "title": "Idioma {{index}}",
-    "addLanguage": "Adicionar Idioma",
-    "removeLanguage": "Remover",
-    "language": {
-      "label": "Idioma",
-      "placeholder": "Selecione o idioma"
-    },
-    "level": {
-      "label": "Nível",
-      "placeholder": "Selecione o nível"
+      "label": "Número IRATA",
+      "placeholder": "Ex: 134109"
     }
   },
   "irataOptions": {
@@ -103,13 +111,9 @@
   "irataNumberOptions": {
     "notApplicable": "Não se aplica"
   },
-  "submit": "Completar e Acessar o Sistema",
-  "submitting": "A guardar...",
-  "success": "Perfil completado com sucesso! Bem-vindo ao Windlog.",
   "errors": {
-    "generic": "Erro ao completar o perfil. Verifique os dados e tente novamente.",
-    "requiredField": "Este campo é obrigatório",
-    "invalidEmail": "Digite um e-mail válido",
-    "minLanguages": "Adicione pelo menos um idioma"
+    "requiredField": "Por favor, preencha todos os campos obrigatórios.",
+    "minAge18": "O usuário deve ter pelo menos 18 anos de idade.",
+    "generic": "Ocorreu um erro ao salvar. Tente novamente."
   }
 }

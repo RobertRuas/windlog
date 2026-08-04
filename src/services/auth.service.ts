@@ -224,9 +224,13 @@ export interface OnboardingPayload {
   passportIssueDate: string;
   passportExpiryDate: string;
   email: string;
+  phoneCountryCode: string;
   phone: string;
   address: string;
-  languages: { language: string; level: string }[];
+  city: string;
+  postalCode: string;
+  country: string;
+  motherTongue: string;
   preferredAirportCity: string;
   preferredAirportCountry: string;
   windaId: string;

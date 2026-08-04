@@ -21,11 +21,11 @@
  *
  * SECÇÕES:
  * --------
- * - Dados Pessoais (nome, sobrenome, nacionalidade, data de nascimento)
+ * - Dados Pessoais (nome, sobrenome, nacionalidade, data de nascimento ≥18)
  * - Passaporte (número, país emissor, data emissão, validade)
- * - Contato (email, telefone)
- * - Localização (endereço)
- * - Idiomas (pelo menos um idioma com nível)
+ * - Contato (email, código país + telefone separados)
+ * - Localização (endereço, cidade, código postal, país)
+ * - Idioma Materno (apenas idioma materno)
  * - Aeroporto Preferido (cidade, país)
  * - Dados Profissionais (WINDA ID, IRATA nível, IRATA número)
  * ============================================================================
@@ -35,7 +35,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { UserCircle, Plane, GraduationCap, Globe, MapPin, Phone, FileText, Briefcase } from 'lucide-react';
+import { UserCircle, Plane, Globe, MapPin, Phone, FileText, Briefcase } from 'lucide-react';
 
 // Componentes compartilhados
 import { Button } from '@/components/ui/Button';
@@ -50,17 +50,9 @@ import { PREDEFINED_LANGUAGES } from '@/constants/languages';
 import { submitOnboarding } from '@/services/auth.service';
 
 /**
- * Interface para uma entrada de idioma no formulário.
+ * Estilo comum para selects (mesma altura dos text fields).
  */
-interface LanguageEntry {
-  language: string;
-  level: string;
-}
-
-/**
- * Níveis de proficiência de idiomas (escala CEFR).
- */
-const LANGUAGE_LEVELS = ['NATIVE', 'C2', 'C1', 'B2', 'B1', 'A2', 'A1'];
+const selectClassName = 'w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white';
 
 /**
  * Componente OnboardingPage - Formulário obrigatório de onboarding.
@@ -86,15 +78,17 @@ export function OnboardingPage() {
 
   // === CONTATO ===
   const [email, setEmail] = useState('');
+  const [phoneCountryCode, setPhoneCountryCode] = useState('');
   const [phone, setPhone] = useState('');
 
   // === LOCALIZAÇÃO ===
   const [address, setAddress] = useState('');
+  const [city, setCity] = useState('');
+  const [postalCode, setPostalCode] = useState('');
+  const [country, setCountry] = useState('');
 
-  // === IDIOMAS ===
-  const [languages, setLanguages] = useState<LanguageEntry[]>([
-    { language: '', level: '' },
-  ]);
+  // === IDIOMA MATERNO ===
+  const [motherTongue, setMotherTongue] = useState('');
 
   // === AEROPORTO PREFERIDO ===
   const [preferredAirportCity, setPreferredAirportCity] = useState('');
@@ -106,27 +100,21 @@ export function OnboardingPage() {
   const [irataNumber, setIrataNumber] = useState('');
 
   /**
-   * Adiciona uma nova entrada de idioma.
+   * Valida se o usuário tem pelo menos 18 anos.
    */
-  function addLanguage() {
-    setLanguages([...languages, { language: '', level: '' }]);
-  }
-
-  /**
-   * Remove uma entrada de idioma.
-   */
-  function removeLanguage(index: number) {
-    if (languages.length <= 1) return; // Pelo menos um idioma
-    setLanguages(languages.filter((_, i) => i !== index));
-  }
-
-  /**
-   * Atualiza um campo de um idioma.
-   */
-  function updateLanguage(index: number, field: keyof LanguageEntry, value: string) {
-    setLanguages(languages.map((lang, i) =>
-      i === index ? { ...lang, [field]: value } : lang
-    ));
+  function isOlderThan18(dateStr: string): boolean {
+    if (!dateStr) return false;
+    const parts = dateStr.split('/');
+    let isoDate = dateStr;
+    if (parts.length === 3) isoDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
+    const birthDate = new Date(isoDate);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age >= 18;
   }
 
   /**
@@ -141,20 +129,25 @@ export function OnboardingPage() {
       setError(t('errors.requiredField'));
       return;
     }
+    // Validação de idade mínima (18 anos)
+    if (!isOlderThan18(dateOfBirth)) {
+      setError(t('errors.minAge18'));
+      return;
+    }
     if (!passportNumber || !passportIssuingCountry || !passportIssueDate || !passportExpiryDate) {
       setError(t('errors.requiredField'));
       return;
     }
-    if (!email || !phone) {
+    if (!email || !phoneCountryCode || !phone) {
       setError(t('errors.requiredField'));
       return;
     }
-    if (!address) {
+    if (!address || !city || !postalCode || !country) {
       setError(t('errors.requiredField'));
       return;
     }
-    if (languages.some(l => !l.language || !l.level)) {
-      setError(t('errors.minLanguages'));
+    if (!motherTongue) {
+      setError(t('errors.requiredField'));
       return;
     }
     if (!preferredAirportCity || !preferredAirportCountry) {
@@ -166,7 +159,7 @@ export function OnboardingPage() {
       return;
     }
 
-    // Converte data de nascimento de DD/MM/YYYY para ISO
+    // Converte datas de DD/MM/YYYY para ISO
     const dobIso = convertToIso(dateOfBirth);
     const issueDateIso = convertToIso(passportIssueDate);
     const expiryDateIso = convertToIso(passportExpiryDate);
@@ -189,9 +182,13 @@ export function OnboardingPage() {
         passportIssueDate: issueDateIso,
         passportExpiryDate: expiryDateIso,
         email,
+        phoneCountryCode,
         phone,
         address,
-        languages,
+        city,
+        postalCode,
+        country,
+        motherTongue,
         preferredAirportCity,
         preferredAirportCountry,
         windaId,
@@ -265,7 +262,7 @@ export function OnboardingPage() {
                 <select
                   value={nationality}
                   onChange={(e) => setNationality(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className={selectClassName}
                   required
                 >
                   <option value="">{t('fields.nationality.placeholder')}</option>
@@ -279,8 +276,9 @@ export function OnboardingPage() {
                 <DatePicker
                   value={dateOfBirth}
                   onChange={setDateOfBirth}
-                  max={new Date().toISOString().split('T')[0]}
+                  max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]}
                 />
+                <span className="text-xs text-gray-400">{t('fields.dateOfBirth.hint')}</span>
               </div>
             </div>
           </SectionCard>
@@ -300,7 +298,7 @@ export function OnboardingPage() {
                 <select
                   value={passportIssuingCountry}
                   onChange={(e) => setPassportIssuingCountry(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className={selectClassName}
                   required
                 >
                   <option value="">{t('fields.passportIssuingCountry.placeholder')}</option>
@@ -311,17 +309,11 @@ export function OnboardingPage() {
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-medium text-gray-700">{t('fields.passportIssueDate.label')}</label>
-                <DatePicker
-                  value={passportIssueDate}
-                  onChange={setPassportIssueDate}
-                />
+                <DatePicker value={passportIssueDate} onChange={setPassportIssueDate} />
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-medium text-gray-700">{t('fields.passportExpiryDate.label')}</label>
-                <DatePicker
-                  value={passportExpiryDate}
-                  onChange={setPassportExpiryDate}
-                />
+                <DatePicker value={passportExpiryDate} onChange={setPassportExpiryDate} />
               </div>
               <div className="sm:col-span-2">
                 <p className="text-xs text-gray-500 mt-1">
@@ -342,83 +334,91 @@ export function OnboardingPage() {
                 placeholder={t('fields.email.placeholder')}
                 required
               />
-              <Input
-                label={t('fields.phone.label')}
-                type="tel"
-                value={phone}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPhone(e.target.value)}
-                placeholder={t('fields.phone.placeholder')}
-                required
-              />
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium text-gray-700">{t('fields.phoneCountryCode.label')}</label>
+                <select
+                  value={phoneCountryCode}
+                  onChange={(e) => setPhoneCountryCode(e.target.value)}
+                  className={selectClassName}
+                  required
+                >
+                  <option value="">{t('fields.phoneCountryCode.placeholder')}</option>
+                  {PREDEFINED_COUNTRIES.map(c => (
+                    <option key={c.code} value={c.phoneCode}>{c.name} ({c.phoneCode})</option>
+                  ))}
+                </select>
+              </div>
+              <div className="sm:col-span-2">
+                <Input
+                  label={t('fields.phone.label')}
+                  type="tel"
+                  value={phone}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPhone(e.target.value)}
+                  placeholder={t('fields.phone.placeholder')}
+                  required
+                />
+              </div>
             </div>
           </SectionCard>
 
           {/* === LOCALIZAÇÃO === */}
           <SectionCard icon={<MapPin size={18} />} title={t('sections.location')}>
-            <Input
-              label={t('fields.address.label')}
-              value={address}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddress(e.target.value)}
-              placeholder={t('fields.address.placeholder')}
-              required
-            />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="sm:col-span-2">
+                <Input
+                  label={t('fields.address.label')}
+                  value={address}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddress(e.target.value)}
+                  placeholder={t('fields.address.placeholder')}
+                  required
+                />
+              </div>
+              <Input
+                label={t('fields.city.label')}
+                value={city}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCity(e.target.value)}
+                placeholder={t('fields.city.placeholder')}
+                required
+              />
+              <Input
+                label={t('fields.postalCode.label')}
+                value={postalCode}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPostalCode(e.target.value)}
+                placeholder={t('fields.postalCode.placeholder')}
+                required
+              />
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium text-gray-700">{t('fields.country.label')}</label>
+                <select
+                  value={country}
+                  onChange={(e) => setCountry(e.target.value)}
+                  className={selectClassName}
+                  required
+                >
+                  <option value="">{t('fields.country.placeholder')}</option>
+                  {PREDEFINED_COUNTRIES.map(c => (
+                    <option key={c.code} value={c.code}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
           </SectionCard>
 
-          {/* === IDIOMAS === */}
-          <SectionCard icon={<Globe size={18} />} title={t('sections.languages')}>
-            <div className="space-y-3">
-              {languages.map((lang, index) => (
-                <div key={index} className="flex items-end gap-3">
-                  <div className="flex-1">
-                    <label className="text-sm font-medium text-gray-700">
-                      {t('languageEntry.language.label')}
-                    </label>
-                    <select
-                      value={lang.language}
-                      onChange={(e) => updateLanguage(index, 'language', e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mt-1"
-                      required
-                    >
-                      <option value="">{t('languageEntry.language.placeholder')}</option>
-                      {PREDEFINED_LANGUAGES.map(l => (
-                        <option key={l.code} value={l.name}>{l.name} ({l.nativeName})</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="flex-1">
-                    <label className="text-sm font-medium text-gray-700">
-                      {t('languageEntry.level.label')}
-                    </label>
-                    <select
-                      value={lang.level}
-                      onChange={(e) => updateLanguage(index, 'level', e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mt-1"
-                      required
-                    >
-                      <option value="">{t('languageEntry.level.placeholder')}</option>
-                      {LANGUAGE_LEVELS.map(l => (
-                        <option key={l} value={l}>{l}</option>
-                      ))}
-                    </select>
-                  </div>
-                  {languages.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeLanguage(index)}
-                      className="text-sm text-red-600 hover:text-red-700 pb-2 px-2"
-                    >
-                      {t('languageEntry.removeLanguage')}
-                    </button>
-                  )}
-                </div>
-              ))}
-              <button
-                type="button"
-                onClick={addLanguage}
-                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+          {/* === IDIOMA MATERNO === */}
+          <SectionCard icon={<Globe size={18} />} title={t('sections.motherTongue')}>
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-gray-700">{t('fields.motherTongue.label')}</label>
+              <select
+                value={motherTongue}
+                onChange={(e) => setMotherTongue(e.target.value)}
+                className={selectClassName}
+                required
               >
-                + {t('languageEntry.addLanguage')}
-              </button>
+                <option value="">{t('fields.motherTongue.placeholder')}</option>
+                {PREDEFINED_LANGUAGES.map(l => (
+                  <option key={l.code} value={l.name}>{l.name} ({l.nativeName})</option>
+                ))}
+              </select>
             </div>
           </SectionCard>
 
@@ -437,7 +437,7 @@ export function OnboardingPage() {
                 <select
                   value={preferredAirportCountry}
                   onChange={(e) => setPreferredAirportCountry(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className={selectClassName}
                   required
                 >
                   <option value="">{t('fields.preferredAirportCountry.placeholder')}</option>
@@ -465,15 +465,13 @@ export function OnboardingPage() {
                   value={irataLevel}
                   onChange={(e) => {
                     setIrataLevel(e.target.value);
-                    // Se "Não se aplica", preenche automaticamente o número
                     if (e.target.value === 'NOT_APPLICABLE') {
                       setIrataNumber('NOT_APPLICABLE');
                     } else if (irataNumber === 'NOT_APPLICABLE') {
-                      // Se mudou para outro nível, limpa o valor auto-preenchido
                       setIrataNumber('');
                     }
                   }}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className={selectClassName}
                   required
                 >
                   <option value="">{t('fields.irataLevel.placeholder')}</option>

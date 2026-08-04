@@ -11,17 +11,17 @@
  * TODOS OS CAMPOS SÃO OBRIGATÓRIOS para completar o onboarding:
  *
  * DADOS PESSOAIS:
- * - firstName, lastName, nationality, dateOfBirth
+ * - firstName, lastName, nationality, dateOfBirth (mínimo 18 anos)
  * - passportNumber, passportIssueDate, passportExpiryDate, passportIssuingCountry
  *
  * CONTATO:
- * - email, phone
+ * - email, phoneCountryCode, phone (separados)
  *
  * LOCALIZAÇÃO:
- * - address
+ * - address, city, postalCode, country
  *
- * IDIOMAS:
- * - Pelo menos um idioma com nível
+ * IDIOMA MATERNO:
+ * - motherTongue (apenas o idioma materno)
  *
  * AEROPORTO PREFERIDO:
  * - preferredAirportCity, preferredAirportCountry
@@ -36,26 +36,34 @@ import {
   IsNotEmpty,
   IsEmail,
   IsDateString,
-  IsArray,
-  ValidateNested,
   IsOptional,
+  Validate,
+  ValidationArguments,
+  ValidatorConstraint,
+  ValidatorConstraintInterface,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
 
 /**
- * DTO para um idioma dentro do onboarding.
+ * Validação customizada: o usuário deve ter no mínimo 18 anos de idade.
  */
-export class OnboardingLanguageDto {
-  @ApiProperty({ description: 'Nome do idioma', example: 'English' })
-  @IsString()
-  @IsNotEmpty()
-  language: string;
+@ValidatorConstraint({ name: 'isOlderThan18' })
+export class IsOlderThan18Constraint implements ValidatorConstraintInterface {
+  validate(dateStr: string): boolean {
+    if (!dateStr) return false;
+    const birthDate = new Date(dateStr);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age >= 18;
+  }
 
-  @ApiProperty({ description: 'Nível de proficiência (A1, A2, B1, B2, C1, C2, NATIVE)', example: 'NATIVE' })
-  @IsString()
-  @IsNotEmpty()
-  level: string;
+  defaultMessage(_args: ValidationArguments): string {
+    return 'User must be at least 18 years old';
+  }
 }
 
 /**
@@ -82,9 +90,10 @@ export class OnboardingDto {
   @IsNotEmpty({ message: 'Nationality is required' })
   nationality: string;
 
-  @ApiProperty({ description: 'Data de nascimento (ISO 8601)', example: '1990-01-15' })
+  @ApiProperty({ description: 'Data de nascimento (ISO 8601) - mínimo 18 anos', example: '1990-01-15' })
   @IsDateString({}, { message: 'Date of birth must be a valid date' })
   @IsNotEmpty({ message: 'Date of birth is required' })
+  @Validate(IsOlderThan18Constraint, { message: 'User must be at least 18 years old' })
   dateOfBirth: string;
 
   // =========================================================================
@@ -120,32 +129,48 @@ export class OnboardingDto {
   @IsNotEmpty({ message: 'Email is required' })
   email: string;
 
-  @ApiProperty({ description: 'Telefone de contato', example: '+351912345678' })
+  @ApiProperty({ description: 'Código do país do telefone (ex: "+351")', example: '+351' })
+  @IsString()
+  @IsNotEmpty({ message: 'Phone country code is required' })
+  phoneCountryCode: string;
+
+  @ApiProperty({ description: 'Número de telefone (sem código do país)', example: '912345678' })
   @IsString()
   @IsNotEmpty({ message: 'Phone is required' })
   phone: string;
 
   // =========================================================================
-  // LOCALIZAÇÃO
+  // LOCALIZAÇÃO (completo, igual ao perfil)
   // =========================================================================
 
-  @ApiProperty({ description: 'Endereço completo', example: 'Rua das Flores, 123' })
+  @ApiProperty({ description: 'Endereço', example: 'Rua das Flores, 123' })
   @IsString()
   @IsNotEmpty({ message: 'Address is required' })
   address: string;
 
+  @ApiProperty({ description: 'Cidade', example: 'Lisboa' })
+  @IsString()
+  @IsNotEmpty({ message: 'City is required' })
+  city: string;
+
+  @ApiProperty({ description: 'Código postal', example: '1000-001' })
+  @IsString()
+  @IsNotEmpty({ message: 'Postal code is required' })
+  postalCode: string;
+
+  @ApiProperty({ description: 'País de residência (código ISO)', example: 'PT' })
+  @IsString()
+  @IsNotEmpty({ message: 'Country is required' })
+  country: string;
+
   // =========================================================================
-  // IDIOMAS
+  // IDIOMA MATERNO
   // =========================================================================
 
-  @ApiProperty({
-    description: 'Idiomas falados (pelo menos um)',
-    type: [OnboardingLanguageDto],
-  })
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => OnboardingLanguageDto)
-  languages: OnboardingLanguageDto[];
+  @ApiProperty({ description: 'Idioma materno (nome do idioma)', example: 'Portuguese' })
+  @IsString()
+  @IsNotEmpty({ message: 'Mother tongue is required' })
+  motherTongue: string;
 
   // =========================================================================
   // AEROPORTO PREFERIDO

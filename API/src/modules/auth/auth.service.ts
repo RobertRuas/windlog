@@ -285,8 +285,12 @@ export class AuthService {
           nationality: dto.nationality,
           dateOfBirth: new Date(dto.dateOfBirth),
           email: dto.email,
+          phoneCountryCode: dto.phoneCountryCode,
           phone: dto.phone,
           address: dto.address,
+          city: dto.city,
+          postalCode: dto.postalCode,
+          country: dto.country,
           preferredAirportCity: dto.preferredAirportCity,
           preferredAirportCountry: dto.preferredAirportCountry,
           windaId: dto.windaId,
@@ -309,16 +313,14 @@ export class AuthService {
         },
       });
 
-      // 3. Cria os idiomas (um por um)
-      for (const lang of dto.languages) {
-        await tx.userLanguage.create({
-          data: {
-            userId,
-            language: lang.language,
-            level: lang.level as any,
-          },
-        });
-      }
+      // 3. Cria o idioma materno (nível NATIVE)
+      await tx.userLanguage.create({
+        data: {
+          userId,
+          language: dto.motherTongue,
+          level: 'NATIVE',
+        },
+      });
 
       return updatedUser;
     });
