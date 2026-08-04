@@ -19,7 +19,7 @@
  */
 
 import { useState } from 'react';
-import { MessageSquare } from 'lucide-react';
+import { Bug } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { FeedbackModal } from './FeedbackModal';
@@ -51,7 +51,7 @@ export function FeedbackButton() {
         title={t('button')}
         aria-label={t('button')}
       >
-        <MessageSquare size={20} />
+        <Bug size={20} />
 
         {/* Tooltip ao hover */}
         <span className="
