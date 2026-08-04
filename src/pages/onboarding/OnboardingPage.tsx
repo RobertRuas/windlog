@@ -179,7 +179,7 @@ export function OnboardingPage() {
     setIsLoading(true);
 
     try {
-      await submitOnboarding({
+      const result = await submitOnboarding({
         firstName,
         lastName,
         nationality,
@@ -198,6 +198,9 @@ export function OnboardingPage() {
         irataLevel,
         irataNumber,
       });
+
+      // Substitui o token JWT pelo novo token com profileComplete: true
+      localStorage.setItem('accessToken', result.accessToken);
 
       toast.success(t('success'));
       navigate('/');

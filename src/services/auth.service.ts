@@ -236,14 +236,23 @@ export interface OnboardingPayload {
 }
 
 /**
+ * Resposta do onboarding (perfil + novo token JWT).
+ */
+export interface OnboardingResponse extends ProfileResponse {
+  /** Novo token JWT com profileComplete: true */
+  accessToken: string;
+}
+
+/**
  * Submete o onboarding obrigatório do usuário.
  * Preenche todos os dados essenciais e marca o perfil como completo.
+ * Retorna um novo token JWT com profileComplete: true.
  *
  * @param data - Dados do onboarding
- * @returns Perfil completo atualizado
+ * @returns Perfil completo + novo token JWT
  */
-export async function submitOnboarding(data: OnboardingPayload): Promise<ProfileResponse> {
-  const response = await api.post<ApiResponse<ProfileResponse>>('/api/v1/auth/onboarding', data);
+export async function submitOnboarding(data: OnboardingPayload): Promise<OnboardingResponse> {
+  const response = await api.post<ApiResponse<OnboardingResponse>>('/api/v1/auth/onboarding', data);
   return response.data;
 }
 

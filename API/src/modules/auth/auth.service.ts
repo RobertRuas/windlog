@@ -325,8 +325,21 @@ export class AuthService {
 
     this.logger.log(`Onboarding completed for user: ${user.email} (${user.id})`);
 
-    // Retorna o perfil completo
-    return this.getProfile(userId);
+    // Gera um novo token JWT com profileComplete: true
+    const newPayload: JwtPayload = {
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+      profileComplete: true,
+    };
+    const newToken = await this.jwtService.signAsync(newPayload);
+
+    // Retorna o perfil completo e o novo token
+    const profile = await this.getProfile(userId);
+    return {
+      ...profile,
+      accessToken: newToken,
+    };
   }
 
   /**
