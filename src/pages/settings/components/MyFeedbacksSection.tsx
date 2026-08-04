@@ -14,8 +14,9 @@
  * ============================================================================
  */
 
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { MessageSquare, Bug, Lightbulb, Palette, Zap, FileText, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import { MessageSquare, Bug, Lightbulb, Palette, Zap, FileText, CheckCircle, Clock, AlertCircle, X } from 'lucide-react';
 import { getMyFeedbacks, type MyFeedback, type FeedbackStatus, type FeedbackCategory } from '@/services/feedback.service';
 
 /**
@@ -52,6 +53,8 @@ const CATEGORY_ICONS: Record<FeedbackCategory, typeof Bug> = {
  * Componente MyFeedbacksSection - Seção de feedbacks nas configurações.
  */
 export function MyFeedbacksSection({ t }: MyFeedbacksSectionProps) {
+  const [showModal, setShowModal] = useState(false);
+
   // Query: busca os feedbacks do usuário
   const { data: feedbacks, isLoading } = useQuery({
     queryKey: ['my-feedbacks'],
@@ -59,43 +62,64 @@ export function MyFeedbacksSection({ t }: MyFeedbacksSectionProps) {
     staleTime: 60000,
   });
 
+  // Mostrar apenas o primeiro feedback na seção
+  const visibleFeedback = feedbacks?.slice(0, 1) || [];
+  const hasMore = feedbacks && feedbacks.length > 1;
+
   return (
-    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-      <div className="px-5 py-4 border-b border-gray-100">
-        <div className="flex items-center gap-2">
-          <MessageSquare size={18} className="text-gray-500" />
-          <h2 className="text-sm font-semibold text-gray-700">{t('sections.my_feedbacks')}</h2>
+    <>
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="px-5 py-4 border-b border-gray-100">
+          <div className="flex items-center gap-2">
+            <MessageSquare size={18} className="text-gray-500" />
+            <h2 className="text-sm font-semibold text-gray-700">{t('sections.my_feedbacks')}</h2>
+          </div>
+        </div>
+
+        <div className="divide-y divide-gray-100">
+          {/* Loading */}
+          {isLoading && (
+            <div className="px-5 py-8 text-center">
+              <div className="animate-spin rounded-full h-6 w-6 border-2 border-blue-600 border-t-transparent mx-auto" />
+              <p className="text-sm text-gray-500 mt-3">{t('loading')}</p>
+            </div>
+          )}
+
+          {/* Empty state */}
+          {!isLoading && (!feedbacks || feedbacks.length === 0) && (
+            <div className="px-5 py-8 text-center">
+              <MessageSquare size={32} className="text-gray-300 mx-auto mb-2" />
+              <p className="text-sm text-gray-500">{t('my_feedbacks.empty')}</p>
+              <p className="text-xs text-gray-400 mt-1">{t('my_feedbacks.empty_description')}</p>
+            </div>
+          )}
+
+          {/* Lista de feedbacks (apenas 1) */}
+          {!isLoading && visibleFeedback.length > 0 && (
+            <>
+              {visibleFeedback.map((feedback) => (
+                <FeedbackItem key={feedback.id} feedback={feedback} t={t} />
+              ))}
+
+              {/* Botão Ver mais */}
+              {hasMore && (
+                <button
+                  onClick={() => setShowModal(true)}
+                  className="w-full px-5 py-3 text-sm text-blue-600 hover:bg-blue-50 transition-colors font-medium"
+                >
+                  {t('my_feedbacks.view_more')}
+                </button>
+              )}
+            </>
+          )}
         </div>
       </div>
 
-      <div className="divide-y divide-gray-100">
-        {/* Loading */}
-        {isLoading && (
-          <div className="px-5 py-8 text-center">
-            <div className="animate-spin rounded-full h-6 w-6 border-2 border-blue-600 border-t-transparent mx-auto" />
-            <p className="text-sm text-gray-500 mt-3">{t('loading')}</p>
-          </div>
-        )}
-
-        {/* Empty state */}
-        {!isLoading && (!feedbacks || feedbacks.length === 0) && (
-          <div className="px-5 py-8 text-center">
-            <MessageSquare size={32} className="text-gray-300 mx-auto mb-2" />
-            <p className="text-sm text-gray-500">{t('my_feedbacks.empty')}</p>
-            <p className="text-xs text-gray-400 mt-1">{t('my_feedbacks.empty_description')}</p>
-          </div>
-        )}
-
-        {/* Lista de feedbacks */}
-        {!isLoading && feedbacks && feedbacks.length > 0 && (
-          <div className="max-h-96 overflow-y-auto">
-            {feedbacks.map((feedback) => (
-              <FeedbackItem key={feedback.id} feedback={feedback} t={t} />
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
+      {/* Modal com todos os feedbacks */}
+      {showModal && feedbacks && (
+        <FeedbacksModal feedbacks={feedbacks} onClose={() => setShowModal(false)} t={t} />
+      )}
+    </>
   );
 }
 
@@ -168,5 +192,51 @@ function FeedbackItem({ feedback, t }: { feedback: MyFeedback; t: (key: string) 
         </div>
       </div>
     </div>
+  );
+}
+
+/**
+ * Modal com todos os feedbacks do usuário.
+ */
+function FeedbacksModal({
+  feedbacks,
+  onClose,
+  t,
+}: {
+  feedbacks: MyFeedback[];
+  onClose: () => void;
+  t: (key: string) => string;
+}) {
+  return (
+    <>
+      {/* Overlay */}
+      <div className="fixed inset-0 z-50 bg-black/50" onClick={onClose} />
+
+      {/* Modal */}
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div
+          className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+            <h2 className="text-lg font-semibold text-gray-900">{t('sections.my_feedbacks')}</h2>
+            <button
+              onClick={onClose}
+              className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+            >
+              <X size={18} />
+            </button>
+          </div>
+
+          {/* Body */}
+          <div className="flex-1 overflow-y-auto divide-y divide-gray-100">
+            {feedbacks.map((feedback) => (
+              <FeedbackItem key={feedback.id} feedback={feedback} t={t} />
+            ))}
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
