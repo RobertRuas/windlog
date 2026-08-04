@@ -23,6 +23,7 @@
     "screenshot_upload_formats": "PNG, JPG até 5MB",
     "screenshot_error_type": "Selecione um ficheiro de imagem (PNG, JPG, etc.)",
     "screenshot_error_size": "O ficheiro deve ter menos de 5MB",
+    "screenshot_unavailable": "Imagem não disponível",
     "page_url": "Página atual",
     "admin_notes": "Notas do Administrador",
     "admin_notes_placeholder": "Adicione notas sobre a análise, resolução ou motivo de fechamento..."

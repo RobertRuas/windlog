@@ -59,6 +59,7 @@ import {
   type ConsoleLog,
 } from '@/services/feedback.service';
 import type { SystemLog } from '@/services/system-log.service';
+import { useFileUrl } from '@/hooks/useFileUrl';
 
 /**
  * Cores para cada status.
@@ -92,6 +93,55 @@ const CATEGORY_ICONS: Record<FeedbackCategory, typeof Bug> = {
   PERFORMANCE: Zap,
   OTHER: FileText,
 };
+
+/**
+ * Componente para visualizar o screenshot anexado ao feedback.
+ */
+function ScreenshotViewer({ screenshotPath }: { screenshotPath: string }) {
+  const { url, isLoading } = useFileUrl(screenshotPath);
+  const { t } = useTranslation('feedback');
+
+  if (isLoading) {
+    return (
+      <div className="border border-gray-200 rounded-lg p-4 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-6 w-6 border-2 border-blue-600 border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (!url) {
+    return (
+      <div className="border border-gray-200 rounded-lg p-4 text-center text-sm text-gray-500">
+        {t('fields.screenshot_unavailable')}
+      </div>
+    );
+  }
+
+  return (
+    <div className="border border-gray-200 rounded-lg overflow-hidden">
+      <div className="bg-gray-50 px-4 py-2 border-b border-gray-200 flex items-center justify-between">
+        <span className="text-xs font-medium text-gray-600">{t('fields.screenshot')}</span>
+        <a
+          href={url}
+          download
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1"
+        >
+          <FileText size={12} />
+          {t('buttons.download', { ns: 'common' })}
+        </a>
+      </div>
+      <div className="p-2 bg-gray-100">
+        <img
+          src={url}
+          alt="Screenshot"
+          className="max-w-full max-h-64 mx-auto rounded"
+        />
+      </div>
+    </div>
+  );
+}
 
 /**
  * Componente FeedbacksPage - Página de gestão de feedbacks (ADMIN).
@@ -450,6 +500,11 @@ export function FeedbacksPage() {
                   <h3 className="text-base font-semibold text-gray-900">{selectedFeedback.title}</h3>
                   <p className="text-sm text-gray-600 mt-2 whitespace-pre-wrap">{selectedFeedback.description}</p>
                 </div>
+
+                {/* Screenshot */}
+                {selectedFeedback.screenshotPath && (
+                  <ScreenshotViewer screenshotPath={selectedFeedback.screenshotPath} />
+                )}
 
                 {/* Metadata */}
                 <div className="grid grid-cols-2 gap-4">
