@@ -1,0 +1,100 @@
+{
+  "app_name": "Windlog",
+  "nav": {
+    "home": "Home",
+    "profile": "Profile",
+    "settings": "Settings",
+    "users": "Users",
+    "projects": "Projects",
+    "timesheets": "Timesheets",
+    "logs": "Logs",
+    "notifications": "Notifications",
+    "feedbacks": "Feedbacks"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "mark_all_read": "Mark all as read",
+    "clear_read": "Clear read",
+    "no_notifications": "No notifications",
+    "loading": "Loading..."
+  },
+  "buttons": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back",
+    "confirm": "Confirm",
+    "logout": "Log out",
+    "login": "Log in",
+    "download": "Download",
+    "continue": "Press a button to continue..."
+  },
+  "status": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "success": "Success"
+  },
+  "file": {
+    "no_file": "No file attached",
+    "loading": "Loading...",
+    "unavailable": "File unavailable"
+  },
+  "error": {
+    "unknown": "Something unexpected happened",
+    "token_missing": "To continue, you need to log in. Your session has not been started.",
+    "session_expired": "Your session has expired for security reasons. Please log in again.",
+    "session_ended": "Your session has ended. Please log in to continue using the application.",
+    "link_expired": "This link has expired or is no longer valid. Go back to the previous page and try again.",
+    "file_load_error": "Could not load the file. Please try again.",
+    "back": "Back",
+    "login": "Log in",
+    "auth": {
+      "title": "Oops! You need to log in"
+    },
+    "not_found": {
+      "title": "We couldn't find what you're looking for"
+    },
+    "generic": {
+      "title": "Something went wrong"
+    }
+  },
+  "signature": {
+    "title": "Signature",
+    "description": "Draw your signature or capture from paper to use in documents",
+    "clear": "Clear",
+    "apply": "Apply",
+    "cancelEdit": "Cancel",
+    "noSignature": "No signature registered",
+    "saved": "Signature saved successfully!",
+    "removed": "Signature removed successfully!",
+    "error": "Error saving signature",
+    "configure": "Configure Signature",
+    "useMySignature": "Use my signature",
+    "removeSignature": "Remove signature",
+    "drawMode": "Draw",
+    "cameraMode": "Camera / Photo",
+    "tips": "Tips for a good signature",
+    "tip1": "1. Sign on a sheet of white paper with a black or blue pen",
+    "tip2": "2. Use good lighting, without shadows over the signature",
+    "tip3": "3. Take the photo directly from above, well aligned",
+    "tip4": "4. Crop the image to leave only the signature area",
+    "clickToCapture": "Tap to take a photo or select an image",
+    "supportsFormats": "JPG, PNG or WebP",
+    "cropInstruction": "Drag to select the signature area",
+    "applyCrop": "Crop and Use",
+    "cancelCrop": "Back",
+    "currentPreview": "Current preview:",
+    "savedSuccessfully": "Signature saved successfully!",
+    "redoSignature": "Redo signature"
+  },
+  "mobileGuard": {
+    "title": "Computer or tablet access only",
+    "description": "Windlog was designed for larger screens. Please access via a computer or tablet for the best experience.",
+    "hint": "Tip: use a computer, laptop or tablet in landscape mode."
+  },
+  "ariaLabels": {
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu"
+  }
+}

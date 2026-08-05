@@ -35,7 +35,7 @@ export type Theme = 'light' | 'dark' | 'auto';
 /**
  * Idiomas disponíveis para a interface.
  */
-export type Language = 'pt';
+export type Language = 'pt' | 'en-GB' | 'es' | 'de' | 'fi' | 'lt';
 
 /**
  * Interface UserSettings - Preferências do usuário.

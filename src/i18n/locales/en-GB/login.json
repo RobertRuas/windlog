@@ -1,0 +1,45 @@
+{
+  "title": "Log in",
+  "subtitle": "Access your Windlog account",
+  "email": {
+    "label": "Email",
+    "placeholder": "your@email.com"
+  },
+  "password": {
+    "label": "Password",
+    "placeholder": "Enter your password"
+  },
+  "submit": "Log in",
+  "devSwitcher": {
+    "label": "Quick login (Dev)",
+    "placeholder": "Select a user...",
+    "logging": "Logging in...",
+    "or": "or log in with email and password"
+  },
+  "errors": {
+    "invalid_credentials": "Incorrect email or password",
+    "required_field": "This field is required",
+    "invalid_email": "Enter a valid email",
+    "generic": "Error logging in. Please try again."
+  },
+  "changeTempPassword": {
+    "title": "Change Password",
+    "subtitle": "Create a new password for your account",
+    "info": "You are using a temporary password. Create a new password to continue.",
+    "newPassword": {
+      "label": "New Password",
+      "placeholder": "Enter your new password"
+    },
+    "confirmPassword": {
+      "label": "Confirm Password",
+      "placeholder": "Confirm your new password"
+    },
+    "submit": "Save New Password",
+    "errors": {
+      "passwordMismatch": "Passwords do not match",
+      "minLength": "Password must be at least 6 characters",
+      "generic": "Error changing password. Please try again."
+    },
+    "success": "Password changed successfully!"
+  }
+}

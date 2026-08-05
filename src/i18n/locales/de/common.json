@@ -1,0 +1,100 @@
+{
+  "app_name": "Windlog",
+  "nav": {
+    "home": "Startseite",
+    "profile": "Profil",
+    "settings": "Einstellungen",
+    "users": "Benutzer",
+    "projects": "Projekte",
+    "timesheets": "Stundenzettel",
+    "logs": "Protokolle",
+    "notifications": "Benachrichtigungen",
+    "feedbacks": "Rückmeldungen"
+  },
+  "notifications": {
+    "title": "Benachrichtigungen",
+    "mark_all_read": "Alle als gelesen markieren",
+    "clear_read": "Gelesene löschen",
+    "no_notifications": "Keine Benachrichtigungen",
+    "loading": "Wird geladen..."
+  },
+  "buttons": {
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "back": "Zurück",
+    "confirm": "Bestätigen",
+    "logout": "Abmelden",
+    "login": "Anmelden",
+    "download": "Herunterladen",
+    "continue": "Drücken Sie eine Taste, um fortzufahren..."
+  },
+  "status": {
+    "loading": "Wird geladen...",
+    "error": "Ein Fehler ist aufgetreten",
+    "success": "Erfolg"
+  },
+  "file": {
+    "no_file": "Keine Datei angehängt",
+    "loading": "Wird geladen...",
+    "unavailable": "Datei nicht verfügbar"
+  },
+  "error": {
+    "unknown": "Etwas Unerwartetes ist passiert",
+    "token_missing": "Um fortzufahren, müssen Sie sich anmelden. Ihre Sitzung wurde nicht gestartet.",
+    "session_expired": "Ihre Sitzung ist aus Sicherheitsgründen abgelaufen. Bitte melden Sie sich erneut an.",
+    "session_ended": "Ihre Sitzung ist beendet. Bitte melden Sie sich an, um die Anwendung weiterhin zu nutzen.",
+    "link_expired": "Dieser Link ist abgelaufen oder nicht mehr gültig. Gehen Sie zur vorherigen Seite zurück und versuchen Sie es erneut.",
+    "file_load_error": "Die Datei konnte nicht geladen werden. Bitte versuchen Sie es erneut.",
+    "back": "Zurück",
+    "login": "Anmelden",
+    "auth": {
+      "title": "Hoppla! Sie müssen sich anmelden"
+    },
+    "not_found": {
+      "title": "Wir konnten nicht finden, was Sie suchen"
+    },
+    "generic": {
+      "title": "Etwas ist schiefgelaufen"
+    }
+  },
+  "signature": {
+    "title": "Unterschrift",
+    "description": "Zeichnen Sie Ihre Unterschrift oder erfassen Sie sie von Papier zur Verwendung in Dokumenten",
+    "clear": "Löschen",
+    "apply": "Anwenden",
+    "cancelEdit": "Abbrechen",
+    "noSignature": "Keine Unterschrift registriert",
+    "saved": "Unterschrift erfolgreich gespeichert!",
+    "removed": "Unterschrift erfolgreich entfernt!",
+    "error": "Fehler beim Speichern der Unterschrift",
+    "configure": "Unterschrift konfigurieren",
+    "useMySignature": "Meine Unterschrift verwenden",
+    "removeSignature": "Unterschrift entfernen",
+    "drawMode": "Zeichnen",
+    "cameraMode": "Kamera / Foto",
+    "tips": "Tipps für eine gute Unterschrift",
+    "tip1": "1. Unterschreiben Sie auf einem Blatt weißes Papier mit einem schwarzen oder blauen Stift",
+    "tip2": "2. Verwenden Sie gute Beleuchtung, ohne Schatten auf der Unterschrift",
+    "tip3": "3. Machen Sie das Foto direkt von oben, gut ausgerichtet",
+    "tip4": "4. Schneiden Sie das Bild zu, sodass nur der Unterschriftbereich übrig bleibt",
+    "clickToCapture": "Tippen Sie, um ein Foto zu machen oder ein Bild auszuwählen",
+    "supportsFormats": "JPG, PNG oder WebP",
+    "cropInstruction": "Ziehen Sie, um den Unterschriftbereich auszuwählen",
+    "applyCrop": "Zuschneiden und verwenden",
+    "cancelCrop": "Zurück",
+    "currentPreview": "Aktuelle Vorschau:",
+    "savedSuccessfully": "Unterschrift erfolgreich gespeichert!",
+    "redoSignature": "Unterschrift wiederholen"
+  },
+  "mobileGuard": {
+    "title": "Nur Zugriff über Computer oder Tablet",
+    "description": "Windlog wurde für größere Bildschirme entwickelt. Bitte greifen Sie über einen Computer oder ein Tablet zu, um die beste Erfahrung zu machen.",
+    "hint": "Tipp: Verwenden Sie einen Computer, Laptop oder Tablet im Querformat."
+  },
+  "ariaLabels": {
+    "openMenu": "Menü öffnen",
+    "closeMenu": "Menü schließen"
+  }
+}

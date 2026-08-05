@@ -1,0 +1,99 @@
+{
+  "title": "Sistemos žurnalai",
+  "subtitle": "Realaus laiko stebėjimas ir auditas",
+  "capture": {
+    "label": "Žurnalų fiksavimas",
+    "enabled": "Įjungtas",
+    "disabled": "Pristabdytas",
+    "toastEnabled": "Žurnalų fiksavimas įjungtas. Visi įvykiai vėl bus registruojami įprastai.",
+    "toastDisabled": "Žurnalų fiksavimas pristabdytas. Tik klaidos bus toliau registruojamos.",
+    "toastError": "Klaida keičiant fiksavimo būseną"
+  },
+  "stats": {
+    "total": "Iš viso",
+    "errors": "Klaidos",
+    "warnings": "Įspėjimai",
+    "critical": "Kritinės"
+  },
+  "search": {
+    "placeholder": "Ieškoti pagal žinutę, vartotoją...",
+    "button": "Ieškoti",
+    "filters": "Filtrai",
+    "clear": "Išvalyti"
+  },
+  "filters": {
+    "action": "Veiksmas",
+    "severity": "Sunkumas",
+    "startDate": "Pradžios data",
+    "endDate": "Pabaigos data",
+    "all": "Visi"
+  },
+  "table": {
+    "date": "Data",
+    "level": "Lygis",
+    "request": "Užklausa",
+    "status": "Būsena",
+    "duration": "Trukmė",
+    "action": "Veiksmas",
+    "user": "Vartotojas",
+    "records": "{{count}} įrašai",
+    "loading": "Kraunami žurnalai...",
+    "empty": "Žurnalų nerasta",
+    "emptyHint": "Pabandykite pakeisti filtrus",
+    "page": "Puslapis {{page}} iš {{totalPages}}",
+    "previous": "Ankstesnis",
+    "next": "Kitas"
+  },
+  "details": {
+    "ipAddress": "IP adresas",
+    "userAgent": "Naršyklė",
+    "entity": "Entitetas",
+    "message": "Žinutė",
+    "details": "Detalės"
+  },
+  "severity": {
+    "info": "Info",
+    "warning": "Įspėjimas",
+    "error": "Klaida",
+    "critical": "Kritinė"
+  },
+  "actions": {
+    "LOGIN": "Prisijungimas",
+    "LOGOUT": "Atsijungimas",
+    "LOGIN_FAILED": "Prisijungimas nepavyko",
+    "PASSWORD_CHANGE": "Slaptažodžio keitimas",
+    "PASSWORD_RESET": "Slaptažodžio atstatymas",
+    "USER_CREATE": "Sukurti vartotoją",
+    "USER_UPDATE": "Atnaujinti vartotoją",
+    "USER_DELETE": "Ištrinti vartotoją",
+    "USER_DEACTIVATE": "Deaktyvuoti vartotoją",
+    "USER_REACTIVATE": "Iš naujo aktyvuoti vartotoją",
+    "USER_ROLE_CHANGE": "Rolės keitimas",
+    "PROFILE_UPDATE": "Atnaujinti profilį",
+    "PROFILE_VIEW": "Peržiūrėti profilį",
+    "PHONE_ADD": "Pridėti telefoną",
+    "PHONE_UPDATE": "Atnaujinti telefoną",
+    "PHONE_DELETE": "Ištrinti telefoną",
+    "CERTIFICATION_ADD": "Pridėti sertifikaciją",
+    "CERTIFICATION_UPDATE": "Atnaujinti sertifikaciją",
+    "CERTIFICATION_DELETE": "Ištrinti sertifikaciją",
+    "LANGUAGE_ADD": "Pridėti kalbą",
+    "LANGUAGE_UPDATE": "Atnaujinti kalbą",
+    "LANGUAGE_DELETE": "Ištrinti kalbą",
+    "PROJECT_CREATE": "Sukurti projektą",
+    "PROJECT_UPDATE": "Atnaujinti projektą",
+    "PROJECT_DELETE": "Ištrinti projektą",
+    "TURBINE_CREATE": "Sukurti turbiną",
+    "TURBINE_UPDATE": "Atnaujinti turbiną",
+    "TURBINE_DELETE": "Ištrinti turbiną",
+    "TECHNICIAN_CREATE": "Sukurti techniką",
+    "TECHNICIAN_UPDATE": "Atnaujinti techniką",
+    "TECHNICIAN_DELETE": "Ištrinti techniką",
+    "SYSTEM_ERROR": "Sistemos klaida",
+    "API_ERROR": "API klaida",
+    "ACCESS_DENIED": "Prieiga uždrausta",
+    "DATA_EXPORT": "Eksportuoti duomenis",
+    "DATA_IMPORT": "Importuoti duomenis",
+    "OTHER": "Kita"
+  }
+}

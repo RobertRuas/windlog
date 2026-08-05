@@ -1,0 +1,122 @@
+{
+  "title": "Vervollständigen Sie Ihr Profil",
+  "subtitle": "Füllen Sie alle erforderlichen Daten aus, um auf das System zuzugreifen",
+  "info": "Diese Daten sind für Ihre Registrierung und die Einhaltung internationaler Vorschriften unerlässlich. Das Ausfüllen ist zur Fortsetzung obligatorisch.",
+  "success": "Profil erfolgreich vervollständigt!",
+  "submit": "Speichern und fortfahren",
+  "submitting": "Wird gespeichert...",
+  "cancel": "Abbrechen und verlassen",
+  "loading": "Daten werden geladen...",
+  "sections": {
+    "personal": "Persönliche Daten",
+    "passport": "Reisepass",
+    "contact": "Kontakt",
+    "location": "Standort",
+    "motherTongue": "Muttersprache",
+    "airport": "Bevorzugter Flughafen",
+    "professional": "Berufliche Daten"
+  },
+  "fields": {
+    "firstName": {
+      "label": "Vorname",
+      "placeholder": "Geben Sie Ihren Vornamen ein"
+    },
+    "lastName": {
+      "label": "Nachname",
+      "placeholder": "Geben Sie Ihren Nachnamen ein"
+    },
+    "nationality": {
+      "label": "Staatsangehörigkeit",
+      "placeholder": "Wählen Sie Ihre Staatsangehörigkeit"
+    },
+    "dateOfBirth": {
+      "label": "Geburtsdatum",
+      "hint": "Mindestalter: 18 Jahre"
+    },
+    "passportNumber": {
+      "label": "Reisepassnummer",
+      "placeholder": "z.B. AB123456"
+    },
+    "passportIssuingCountry": {
+      "label": "Ausstellungsland",
+      "placeholder": "Wählen Sie das Ausstellungsland"
+    },
+    "passportIssueDate": {
+      "label": "Ausstellungsdatum"
+    },
+    "passportExpiryDate": {
+      "label": "Ablaufdatum"
+    },
+    "passportFile": {
+      "label": "Reisepass-Foto/PDF",
+      "hint": "Sie können es später in Ihrem Profil anhängen"
+    },
+    "email": {
+      "label": "Kontakt-E-Mail",
+      "placeholder": "beispiel@email.com"
+    },
+    "phoneCountryCode": {
+      "label": "Ländervorwahl",
+      "placeholder": "Wählen Sie den Code"
+    },
+    "phone": {
+      "label": "Kontakttelefon",
+      "placeholder": "z.B. 912345678"
+    },
+    "address": {
+      "label": "Adresse",
+      "placeholder": "Straße, Nummer, Etage"
+    },
+    "city": {
+      "label": "Stadt",
+      "placeholder": "Geben Sie Ihre Stadt ein"
+    },
+    "postalCode": {
+      "label": "Postleitzahl",
+      "placeholder": "z.B. 1000-001"
+    },
+    "country": {
+      "label": "Wohnsitzland",
+      "placeholder": "Wählen Sie Ihr Land"
+    },
+    "motherTongue": {
+      "label": "Muttersprache",
+      "placeholder": "Wählen Sie Ihre Muttersprache"
+    },
+    "preferredAirportCity": {
+      "label": "Flughafenstadt",
+      "placeholder": "z.B. Berlin"
+    },
+    "preferredAirportCountry": {
+      "label": "Flughafenland",
+      "placeholder": "Wählen Sie das Land"
+    },
+    "windaId": {
+      "label": "WINDA-ID",
+      "placeholder": "z.B. RR092285BR"
+    },
+    "irataLevel": {
+      "label": "IRATA-Stufe",
+      "placeholder": "Wählen Sie die Stufe"
+    },
+    "irataNumber": {
+      "label": "IRATA-Nummer",
+      "placeholder": "z.B. 134109"
+    }
+  },
+  "irataOptions": {
+    "L1": "Stufe 1",
+    "L2": "Stufe 2",
+    "L3": "Stufe 3",
+    "NOT_APPLICABLE": "Nicht zutreffend"
+  },
+  "irataNumberOptions": {
+    "notApplicable": "Nicht zutreffend"
+  },
+  "errors": {
+    "requiredField": "Bitte füllen Sie alle erforderlichen Felder aus.",
+    "minAge18": "Der Benutzer muss mindestens 18 Jahre alt sein.",
+    "expiryBeforeIssue": "Das Ablaufdatum des Reisepasses darf nicht vor dem Ausstellungsdatum liegen.",
+    "generic": "Beim Speichern ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut."
+  }
+}

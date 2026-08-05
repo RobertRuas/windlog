@@ -1,0 +1,76 @@
+{
+  "title": "Pranešimai",
+  "subtitle_one": "{{count}} pranešimas",
+  "subtitle_other": "{{count}} pranešimai",
+  "loading": "Kraunami pranešimai...",
+  "loadError": "Klaida kraunant pranešimus",
+  "notFound": "Pranešimas nerastas",
+  "backToList": "Grįžti į pranešimus",
+  "detailTitle": "Pranešimo detalės",
+  "loadingDetail": "Kraunama...",
+
+  "filters": {
+    "all": "Visi",
+    "unread": "Neskaityti",
+    "read": "Skaityti"
+  },
+
+  "empty": {
+    "all": "Nėra pranešimų",
+    "unread": "Nėra neskaitytų pranešimų",
+    "read": "Nėra skaitytų pranešimų",
+    "hint": "Kai turėsite pranešimų, jie bus rodomi čia"
+  },
+
+  "actions": {
+    "markAllRead": "Pažymėti visus kaip skaitytus",
+    "clearRead": "Išvalyti skaitytus",
+    "markAsRead": "Pažymėti kaip skaitytą",
+    "delete": "Ištrinti",
+    "back": "Grįžti",
+    "goToProfile": "Eiti į profilį",
+    "viewDetails": "Peržiūrėti detales"
+  },
+
+  "status": {
+    "read": "Skaitytas",
+    "unread": "Neskaitytas"
+  },
+
+  "types": {
+    "ACTION_REQUIRED": "Privalomas veiksmas",
+    "DOCUMENT_EXPIRING": "Dokumentas baigia galioti",
+    "CERTIFICATION_EXPIRING": "Sertifikacija baigia galioti",
+    "PASSWORD_EXPIRING": "Slaptažodis baigia galioti",
+    "RECOMMENDED_ACTION": "Rekomenduojamas veiksmas",
+    "PROFILE_INCOMPLETE": "Neužpildytas profilis",
+    "INFO": "Informacija",
+    "PROJECT_UPDATE": "Projekto atnaujinimas",
+    "SYSTEM_UPDATE": "Sistemos atnaujinimas",
+    "SUCCESS": "Sėkmė",
+    "WARNING": "Įspėjimas",
+    "ERROR": "Klaida"
+  },
+
+  "typeDefault": "Pranešimas",
+
+  "priority": {
+    "URGENT": "Skubus",
+    "HIGH": "Aukštas",
+    "MEDIUM": "Vidutinis",
+    "LOW": "Žemas"
+  },
+
+  "relativeDate": {
+    "now": "Ką tik",
+    "minutesAgo": "prieš {{count}} min",
+    "hoursAgo": "prieš {{count}} val",
+    "daysAgo": "prieš {{count}} d"
+  },
+
+  "ariaLabels": {
+    "notifications": "Pranešimai",
+    "openMenu": "Atidaryti meniu",
+    "closeMenu": "Uždaryti meniu"
+  }
+}

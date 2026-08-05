@@ -1,0 +1,45 @@
+{
+  "title": "Anmelden",
+  "subtitle": "Greifen Sie auf Ihr Windlog-Konto zu",
+  "email": {
+    "label": "E-Mail",
+    "placeholder": "ihre@email.com"
+  },
+  "password": {
+    "label": "Passwort",
+    "placeholder": "Geben Sie Ihr Passwort ein"
+  },
+  "submit": "Anmelden",
+  "devSwitcher": {
+    "label": "Schnellanmeldung (Dev)",
+    "placeholder": "Wählen Sie einen Benutzer...",
+    "logging": "Anmeldung läuft...",
+    "or": "oder melden Sie sich mit E-Mail und Passwort an"
+  },
+  "errors": {
+    "invalid_credentials": "Falsche E-Mail oder falsches Passwort",
+    "required_field": "Dieses Feld ist erforderlich",
+    "invalid_email": "Geben Sie eine gültige E-Mail ein",
+    "generic": "Fehler bei der Anmeldung. Bitte versuchen Sie es erneut."
+  },
+  "changeTempPassword": {
+    "title": "Passwort ändern",
+    "subtitle": "Erstellen Sie ein neues Passwort für Ihr Konto",
+    "info": "Sie verwenden ein temporäres Passwort. Erstellen Sie ein neues Passwort, um fortzufahren.",
+    "newPassword": {
+      "label": "Neues Passwort",
+      "placeholder": "Geben Sie Ihr neues Passwort ein"
+    },
+    "confirmPassword": {
+      "label": "Passwort bestätigen",
+      "placeholder": "Bestätigen Sie Ihr neues Passwort"
+    },
+    "submit": "Neues Passwort speichern",
+    "errors": {
+      "passwordMismatch": "Passwörter stimmen nicht überein",
+      "minLength": "Das Passwort muss mindestens 6 Zeichen lang sein",
+      "generic": "Fehler beim Ändern des Passworts. Bitte versuchen Sie es erneut."
+    },
+    "success": "Passwort erfolgreich geändert!"
+  }
+}

@@ -1,0 +1,157 @@
+{
+  "title": "Palaute",
+  "subtitle": "Ilmoita bugeista, ehdotuksista tai järjestelmän poikkeavuuksista",
+  "admin_title": "Palautteiden hallinta",
+  "admin_subtitle": "Hallitse kaikkia käyttäjien ilmoittamia palautteita",
+
+  "button": "Lähetä palautetta",
+  "modal_title": "Ilmoita palaute",
+  "modal_description": "Auta meitä parantamaan järjestelmää. Kuvaile kohtaamasi ongelma tai ehdotus.",
+
+  "fields": {
+    "title": "Otsikko",
+    "title_placeholder": "Lyhyt yhteenveto ongelmasta (esim. Painike ei toimi)",
+    "title_required": "Otsikko on pakollinen",
+    "description": "Kuvaus",
+    "description_placeholder": "Kuvaile yksityiskohtaisesti mitä tapahtui. Jos kyseessä on bugi, sisällytä vaiheet toistamiseen.",
+    "description_required": "Kuvaus on pakollinen",
+    "category": "Kategoria",
+    "screenshot": "Kuvakaappaus",
+    "screenshot_hint": "Ota kuvakaappaus (Print Screen) ja lataa kuva tähän",
+    "screenshot_optional": "Valinnainen — auttaa ymmärtämään ongelmaa paremmin",
+    "screenshot_upload_text": "Napsauta ladataksesi tai vedä ja pudota",
+    "screenshot_upload_formats": "PNG, JPG enintään 5MB",
+    "screenshot_error_type": "Valitse kuvatiedosto (PNG, JPG jne.)",
+    "screenshot_error_size": "Tiedoston on oltava alle 5MB",
+    "screenshot_unavailable": "Kuva ei saatavilla",
+    "page_url": "Nykyinen sivu",
+    "admin_notes": "Ylläpitäjän huomautukset",
+    "admin_notes_placeholder": "Lisää huomautuksia analyysistä, ratkaisusta tai sulkemisen syystä..."
+  },
+
+  "categories": {
+    "BUG": "Bugi / Virhe",
+    "UI_ISSUE": "Ulkoasuongelma",
+    "FEATURE": "Ehdotus",
+    "INCONSISTENCY": "Poikkeavuus",
+    "PERFORMANCE": "Suorituskyky",
+    "OTHER": "Muu"
+  },
+
+  "priorities": {
+    "LOW": "Matala",
+    "MEDIUM": "Keskitaso",
+    "HIGH": "Korkea",
+    "CRITICAL": "Kriittinen"
+  },
+
+  "statuses": {
+    "NEW": "Uusi",
+    "TRIAGED": "Luokiteltu",
+    "IN_PROGRESS": "Ratkaisussa",
+    "RESOLVED": "Ratkaistu",
+    "CLOSED": "Suljettu"
+  },
+
+  "screenshot": {
+    "capture_visible": "Kaappaa näkyvä",
+    "capture_full": "Kaappaa koko sivu",
+    "capture_area": "Valitse alue",
+    "remove": "Poista kaappaus",
+    "preview": "Esikatselu",
+    "capturing": "Kaapataan...",
+    "no_capture": "Ei kaappausta"
+  },
+
+  "actions": {
+    "submit": "Lähetä palautetta",
+    "submitting": "Lähetetään...",
+    "submitted": "Palaute lähetetty onnistuneesti!",
+    "error": "Virhe palautteen lähettämisessä",
+    "update": "Päivitä",
+    "delete": "Poista",
+    "view": "Näytä tiedot",
+    "change_status": "Vaihda tila",
+    "change_priority": "Vaihda prioriteetti"
+  },
+
+  "list": {
+    "empty": "Palautteita ei löytynyt",
+    "empty_description": "Käyttäjien ilmoittamat palautteet näkyvät täällä",
+    "reported_by": "Ilmoittanut",
+    "reported_at": "Ilmoitettu",
+    "resolved_by": "Ratkaisija",
+    "resolved_at": "Ratkaistu",
+    "page_context": "Sivu",
+    "browser_info": "Selain",
+    "screen_info": "Näyttö",
+    "no_screenshot": "Ei kaappausta"
+  },
+
+  "stats": {
+    "total": "Yhteensä",
+    "new": "Uudet",
+    "by_status": "Tilan mukaan",
+    "by_category": "Kategorian mukaan",
+    "by_priority": "Prioriteetin mukaan"
+  },
+
+  "filters": {
+    "all_statuses": "Kaikki tilat",
+    "all_categories": "Kaikki kategoriat",
+    "all_priorities": "Kaikki prioriteetit",
+    "search_placeholder": "Hae otsikosta tai kuvauksesta..."
+  },
+
+  "technical": {
+    "console_logs_captured": "konsoliloki(a) kaapattu",
+    "recent_system_errors": "Viimeaikaiset järjestelmävirheet",
+    "connection": "Yhteys",
+    "uploading": "Ladataan..."
+  },
+
+  "toast": {
+    "create_success": "Palaute lähetetty onnistuneesti! Kiitos avustasi.",
+    "create_error": "Virhe palautteen lähettämisessä. Yritä uudelleen.",
+    "update_success": "Palaute päivitetty onnistuneesti!",
+    "update_error": "Virhe palautteen päivittämisessä.",
+    "delete_success": "Palaute poistettu onnistuneesti!",
+    "delete_error": "Virhe palautteen poistamisessa.",
+    "confirm_delete": "Haluatko varmasti poistaa tämän palautteen?"
+  },
+
+  "table": {
+    "status": "Tila",
+    "priority": "Prioriteetti",
+    "date": "Päivä",
+    "actions": "Toiminnot",
+    "clear": "Tyhjennä",
+    "pagination_info": "{{total}} palautetta · Sivu {{page}} / {{totalPages}}",
+    "previous": "Edellinen",
+    "next": "Seuraava"
+  },
+
+  "detail": {
+    "technical_title": "Tekniset tiedot",
+    "browser": "Selain",
+    "os": "Käyttöjärjestelmä",
+    "language": "Kieli",
+    "cpu_cores": "CPU-ytimet",
+    "screen": "Näyttö",
+    "viewport": "Näkymä",
+    "connection": "Yhteys",
+    "memory_usage": "Muistin käyttö",
+    "browser_features": "Selaimen ominaisuudet",
+    "console_logs": "Konsolilokit",
+    "recent_errors": "Viimeaikaiset järjestelmävirheet"
+  },
+
+  "modal_categories": {
+    "bug": "Bugi",
+    "visual": "Ulkoasu",
+    "idea": "Idea",
+    "error": "Virhe",
+    "slow": "Hidas",
+    "other": "Muu"
+  }
+}

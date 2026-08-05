@@ -1,0 +1,45 @@
+{
+  "title": "Prisijungti",
+  "subtitle": "Pasiekite savo Windlog paskyrą",
+  "email": {
+    "label": "El. paštas",
+    "placeholder": "jusu@elpastas.com"
+  },
+  "password": {
+    "label": "Slaptažodis",
+    "placeholder": "Įveskite slaptažodį"
+  },
+  "submit": "Prisijungti",
+  "devSwitcher": {
+    "label": "Greitas prisijungimas (Dev)",
+    "placeholder": "Pasirinkite vartotoją...",
+    "logging": "Prisijungiama...",
+    "or": "arba prisijunkite su el. paštu ir slaptažodžiu"
+  },
+  "errors": {
+    "invalid_credentials": "Neteisingas el. paštas arba slaptažodis",
+    "required_field": "Šis laukas yra privalomas",
+    "invalid_email": "Įveskite galiojantį el. paštą",
+    "generic": "Klaida prisijungiant. Bandykite dar kartą."
+  },
+  "changeTempPassword": {
+    "title": "Pakeisti slaptažodį",
+    "subtitle": "Sukurkite naują slaptažodį savo paskyrai",
+    "info": "Naudojate laikiną slaptažodį. Sukurkite naują slaptažodį, kad tęstumėte.",
+    "newPassword": {
+      "label": "Naujas slaptažodis",
+      "placeholder": "Įveskite naują slaptažodį"
+    },
+    "confirmPassword": {
+      "label": "Patvirtinti slaptažodį",
+      "placeholder": "Patvirtinkite naują slaptažodį"
+    },
+    "submit": "Išsaugoti naują slaptažodį",
+    "errors": {
+      "passwordMismatch": "Slaptažodžiai nesutampa",
+      "minLength": "Slaptažodį turi sudaryti bent 6 simboliai",
+      "generic": "Klaida keičiant slaptažodį. Bandykite dar kartą."
+    },
+    "success": "Slaptažodis sėkmingai pakeistas!"
+  }
+}

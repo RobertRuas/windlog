@@ -30,6 +30,11 @@ interface PreferencesSectionProps {
  */
 const LANGUAGE_OPTIONS: { value: Language; flag: string; label: string }[] = [
   { value: 'pt', flag: '🇵🇹', label: 'Português' },
+  { value: 'en-GB', flag: '🇬🇧', label: 'English (UK)' },
+  { value: 'es', flag: '🇪🇸', label: 'Español' },
+  { value: 'de', flag: '🇩🇪', label: 'Deutsch' },
+  { value: 'fi', flag: '🇫🇮', label: 'Suomi' },
+  { value: 'lt', flag: '🇱🇹', label: 'Lietuvių' },
 ];
 
 /**

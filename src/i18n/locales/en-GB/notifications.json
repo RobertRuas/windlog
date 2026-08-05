@@ -1,0 +1,76 @@
+{
+  "title": "Notifications",
+  "subtitle_one": "{{count}} notification",
+  "subtitle_other": "{{count}} notifications",
+  "loading": "Loading notifications...",
+  "loadError": "Error loading notifications",
+  "notFound": "Notification not found",
+  "backToList": "Back to notifications",
+  "detailTitle": "Notification Details",
+  "loadingDetail": "Loading...",
+
+  "filters": {
+    "all": "All",
+    "unread": "Unread",
+    "read": "Read"
+  },
+
+  "empty": {
+    "all": "No notifications",
+    "unread": "No unread notifications",
+    "read": "No read notifications",
+    "hint": "When you have notifications, they will appear here"
+  },
+
+  "actions": {
+    "markAllRead": "Mark all as read",
+    "clearRead": "Clear read",
+    "markAsRead": "Mark as read",
+    "delete": "Delete",
+    "back": "Back",
+    "goToProfile": "Go to Profile",
+    "viewDetails": "View Details"
+  },
+
+  "status": {
+    "read": "Read",
+    "unread": "Unread"
+  },
+
+  "types": {
+    "ACTION_REQUIRED": "Action Required",
+    "DOCUMENT_EXPIRING": "Document Expiring",
+    "CERTIFICATION_EXPIRING": "Certification Expiring",
+    "PASSWORD_EXPIRING": "Password Expiring",
+    "RECOMMENDED_ACTION": "Recommended Action",
+    "PROFILE_INCOMPLETE": "Profile Incomplete",
+    "INFO": "Information",
+    "PROJECT_UPDATE": "Project Update",
+    "SYSTEM_UPDATE": "System Update",
+    "SUCCESS": "Success",
+    "WARNING": "Warning",
+    "ERROR": "Error"
+  },
+
+  "typeDefault": "Notification",
+
+  "priority": {
+    "URGENT": "Urgent",
+    "HIGH": "High",
+    "MEDIUM": "Medium",
+    "LOW": "Low"
+  },
+
+  "relativeDate": {
+    "now": "Just now",
+    "minutesAgo": "{{count}} min ago",
+    "hoursAgo": "{{count}}h ago",
+    "daysAgo": "{{count}}d ago"
+  },
+
+  "ariaLabels": {
+    "notifications": "Notifications",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu"
+  }
+}

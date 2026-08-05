@@ -1,0 +1,99 @@
+{
+  "title": "System Logs",
+  "subtitle": "Real-time monitoring and auditing",
+  "capture": {
+    "label": "Log capture",
+    "enabled": "Enabled",
+    "disabled": "Paused",
+    "toastEnabled": "Log capture enabled. All events are being recorded normally again.",
+    "toastDisabled": "Log capture paused. Only errors will continue to be recorded.",
+    "toastError": "Error changing capture status"
+  },
+  "stats": {
+    "total": "Total",
+    "errors": "Errors",
+    "warnings": "Warnings",
+    "critical": "Critical"
+  },
+  "search": {
+    "placeholder": "Search by message, user...",
+    "button": "Search",
+    "filters": "Filters",
+    "clear": "Clear"
+  },
+  "filters": {
+    "action": "Action",
+    "severity": "Severity",
+    "startDate": "Start date",
+    "endDate": "End date",
+    "all": "All"
+  },
+  "table": {
+    "date": "Date",
+    "level": "Level",
+    "request": "Request",
+    "status": "Status",
+    "duration": "Duration",
+    "action": "Action",
+    "user": "User",
+    "records": "{{count}} records",
+    "loading": "Loading logs...",
+    "empty": "No logs found",
+    "emptyHint": "Try adjusting the filters",
+    "page": "Page {{page}} of {{totalPages}}",
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "details": {
+    "ipAddress": "IP Address",
+    "userAgent": "User Agent",
+    "entity": "Entity",
+    "message": "Message",
+    "details": "Details"
+  },
+  "severity": {
+    "info": "Info",
+    "warning": "Warning",
+    "error": "Error",
+    "critical": "Critical"
+  },
+  "actions": {
+    "LOGIN": "Login",
+    "LOGOUT": "Logout",
+    "LOGIN_FAILED": "Login Failed",
+    "PASSWORD_CHANGE": "Password Change",
+    "PASSWORD_RESET": "Password Reset",
+    "USER_CREATE": "Create User",
+    "USER_UPDATE": "Update User",
+    "USER_DELETE": "Delete User",
+    "USER_DEACTIVATE": "Deactivate User",
+    "USER_REACTIVATE": "Reactivate User",
+    "USER_ROLE_CHANGE": "Change Role",
+    "PROFILE_UPDATE": "Update Profile",
+    "PROFILE_VIEW": "View Profile",
+    "PHONE_ADD": "Add Phone",
+    "PHONE_UPDATE": "Update Phone",
+    "PHONE_DELETE": "Delete Phone",
+    "CERTIFICATION_ADD": "Add Certification",
+    "CERTIFICATION_UPDATE": "Update Certification",
+    "CERTIFICATION_DELETE": "Delete Certification",
+    "LANGUAGE_ADD": "Add Language",
+    "LANGUAGE_UPDATE": "Update Language",
+    "LANGUAGE_DELETE": "Delete Language",
+    "PROJECT_CREATE": "Create Project",
+    "PROJECT_UPDATE": "Update Project",
+    "PROJECT_DELETE": "Delete Project",
+    "TURBINE_CREATE": "Create Turbine",
+    "TURBINE_UPDATE": "Update Turbine",
+    "TURBINE_DELETE": "Delete Turbine",
+    "TECHNICIAN_CREATE": "Create Technician",
+    "TECHNICIAN_UPDATE": "Update Technician",
+    "TECHNICIAN_DELETE": "Delete Technician",
+    "SYSTEM_ERROR": "System Error",
+    "API_ERROR": "API Error",
+    "ACCESS_DENIED": "Access Denied",
+    "DATA_EXPORT": "Export Data",
+    "DATA_IMPORT": "Import Data",
+    "OTHER": "Other"
+  }
+}

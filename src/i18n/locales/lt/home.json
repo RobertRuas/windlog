@@ -1,0 +1,338 @@
+{
+  "title": "Sveiki",
+  "subtitle": "Suvestinės skydelis",
+  "homeSubtitle": "Jūsų veiklos apžvalga.",
+  "dashboard": {
+    "timesheets": {
+      "title": "Mėnesio valandos",
+      "working": "Darbas",
+      "standby": "Budėjimas",
+      "travel": "Kelionė",
+      "total": "Iš viso",
+      "noData": "Nėra įrašų šį mėnesį",
+      "hours": "{{value}}val",
+      "viewAll": "Peržiūrėti visus"
+    },
+    "projects": {
+      "title": "Projektai",
+      "active": "Aktyvūs",
+      "total": "Iš viso",
+      "noData": "Nėra priskirtų projektų",
+      "viewAll": "Peržiūrėti visus"
+    },
+    "tips": {
+      "title": "Ar žinojote, kad...",
+      "tip1": "Darbo laiko ataskaitos yra savaitinės ir turi būti pateiktos iki savaitės pabaigos.",
+      "tip2": "Tik komandų vadovai gali kurti darbo laiko ataskaitas savo komandai.",
+      "tip3": "Pasas yra privalomas dirbant tarptautiniuose projektuose.",
+      "tip4": "Pasibaigusios sertifikacijos neleidžia paskirti į projektus.",
+      "tip5": "Administratoriai gali konfigūruoti leidimus pagal modulius Nustatymuose."
+    },
+    "profileReminder": {
+      "title": "Neužpildytas profilis",
+      "message": "Jūsų profilyje trūksta dokumentų arba sertifikacijų.",
+      "action": "Užpildyti",
+      "complete": "Profilis užpildytas"
+    }
+  },
+  "profileCard": {
+    "title": "Redaguoti profilį",
+    "description": "Atnaujinkite savo asmeninę informaciją, kontaktus, sertifikacijas ir kalbas.",
+    "action": "Eiti į profilį"
+  },
+  "sections": {
+    "personal": {
+      "title": "Asmeninė ir profesinė informacija",
+      "description": "Jūsų asmeniniai duomenys, adresas ir įmonės informacija"
+    },
+    "documents": {
+      "title": "Asmeniniai dokumentai",
+      "description": "Pasas, mokesčių kodas, asmens tapatybės kortelė ir kiti dokumentai"
+    },
+    "address": {
+      "title": "Adresas",
+      "description": "Jūsų gyvenamoji vieta"
+    },
+    "professional": {
+      "title": "Profesinė informacija",
+      "description": "Jūsų duomenys įmonėje"
+    }
+  },
+  "groups": {
+    "identity": "Tapatybė",
+    "contact": "Kontaktai",
+    "location": "Vieta",
+    "professional": "Profesinė",
+    "documents": "Dokumentai",
+    "about": "Apie"
+  },
+  "profile": {
+    "firstName": "Vardas",
+    "lastName": "Pavardė",
+    "email": "El. paštas",
+    "phone": "Telefonas",
+    "phoneCountryCode": "Šalies kodas",
+    "dateOfBirth": "Gimimo data",
+    "nationality": "Pilietybė",
+    "address": "Adresas",
+    "city": "Miestas",
+    "postalCode": "Pašto kodas",
+    "country": "Šalis",
+    "department": "Skyrius",
+    "position": "Pareigos",
+    "hireDate": "Įdarbinimo data",
+    "bio": "Biografija",
+    "role": "Prieiga",
+    "isTeamLeader": "Komandos vadovas",
+    "yesTeamLeader": "Taip",
+    "noTeamLeader": "Ne",
+    "teamLeaderBadge": "Komandos vadovas",
+    "photoUrl": "Nuotraukos URL",
+    "avatar": "Profilio nuotrauka",
+    "avatarUpload": "Įkelti nuotrauką",
+    "avatarCamera": "Naudoti kamerą",
+    "avatarHint": "Nuotrauka 3x4 (JPEG, PNG arba WebP, maks. 3 MB)",
+    "cameraError": "Nepavyksta pasiekti kameros. Patikrinkite leidimus."
+  },
+  "phones": {
+    "title": "Kontaktai",
+    "add": "Pridėti telefono numerį",
+    "empty": "Nėra užregistruotų telefono numerių",
+    "countryCode": "Šalies kodas",
+    "number": "Numeris",
+    "type": "Tipas",
+    "primary": "Pagrindinis",
+    "confirmDelete": "Ar tikrai norite pašalinti šį numerį?",
+    "types": {
+      "mobile": "Mobilusis",
+      "home": "Namų",
+      "work": "Darbo"
+    }
+  },
+  "certifications": {
+    "title": "Sertifikacijos",
+    "add": "Pridėti sertifikaciją",
+    "empty": "Nėra užregistruotų sertifikacijų",
+    "name": "Sertifikacijos pavadinimas",
+    "issuer": "Išdavusi įstaiga",
+    "type": "Tipas",
+    "description": "Aprašymas",
+    "descriptionPlaceholder": "Neprivalomas aprašymas",
+    "certNumber": "Sertifikacijos numeris",
+    "issueDate": "Išdavimo data",
+    "expiryDate": "Galiojimo pabaigos data",
+    "expired": "Pasibaigusi",
+    "confirmDelete": "Ar tikrai norite pašalinti šią sertifikaciją?",
+    "types": {
+      "certification": "Sertifikacija",
+      "diploma": "Diplomas",
+      "course": "Kursas",
+      "training": "Mokymai",
+      "license": "Licencija"
+    }
+  },
+  "languages": {
+    "title": "Kalbos",
+    "add": "Pridėti kalbą",
+    "empty": "Nėra užregistruotų kalbų",
+    "language": "Kalba",
+    "level": "Lygis",
+    "selectLanguage": "Pasirinkite kalbą",
+    "confirmDelete": "Ar tikrai norite pašalinti šią kalbą?",
+    "levels": {
+      "a1": "A1 - Pradinis",
+      "a2": "A2 - Elementarus",
+      "b1": "B1 - Vidutinis",
+      "b2": "B2 - Aukštesnis vidutinis",
+      "c1": "C1 - Pažengęs",
+      "c2": "C2 - Ekspertas",
+      "native": "Gimtoji"
+    }
+  },
+  "documents": {
+    "title": "Asmeniniai dokumentai",
+    "add": "Pridėti dokumentą",
+    "empty": "Nėra užregistruotų dokumentų",
+    "type": "Dokumento tipas",
+    "documentNumber": "Dokumento numeris",
+    "issuingCountry": "Išdavusi šalis",
+    "issueDate": "Išdavimo data",
+    "expiryDate": "Galiojimo pabaigos data",
+    "description": "Aprašymas",
+    "descriptionPlaceholder": "Pvz. D tipo viza, leidimas gyventi...",
+    "expired": "Pasibaigęs",
+    "confirmDelete": "Ar tikrai norite pašalinti šį dokumentą?",
+    "fileUpload": "Priedas (nuotrauka arba PDF)",
+    "fileUploadHint": "JPEG, PNG, WebP arba PDF (maks. 10 MB)",
+    "fileUploadMultiple": "Galite pridėti kelis failus",
+    "noFiles": "Nėra pridėtų failų",
+    "filesAttached": "{{count}} failas(-ai) pridėti",
+    "removeFile": "Pašalinti failą",
+    "viewAttachment": "Peržiūrėti priedą",
+    "replaceAttachment": "Pakeisti",
+    "attachmentWillBeRemoved": "Dabartinis priedas bus pašalintas",
+    "chooseFile": "Pasirinkti failą",
+    "types": {
+      "passport": "Pasas",
+      "id_card": "Asmens tapatybės kortelė",
+      "tax_id": "Mokesčių kodas (NIF/TIN)",
+      "social_security": "Socialinis draudimas",
+      "work_permit": "Darbo leidimas",
+      "visa": "Viza",
+      "drivers_license": "Vairuotojo pažymėjimas",
+      "posting_order": "Komandiruotė (A1)",
+      "medical_exam": "Medicininė apžiūra",
+      "other": "Kita"
+    }
+  },
+  "bankAccounts": {
+    "title": "Banko duomenys",
+    "add": "Pridėti banko sąskaitą",
+    "empty": "Nėra užregistruotų banko sąskaitų",
+    "bankName": "Banko pavadinimas",
+    "iban": "IBAN",
+    "bicSwift": "BIC/SWIFT",
+    "accountHolder": "Sąskaitos turėtojas",
+    "isPrimary": "Pagrindinė sąskaita",
+    "description": "Aprašymas",
+    "descriptionPlaceholder": "Pvz. Atlyginimo sąskaita, Asmeninė sąskaita...",
+    "confirmDelete": "Ar tikrai norite pašalinti šią banko sąskaitą?",
+    "primary": "Pagrindinė"
+  },
+  "actions": {
+    "edit": "Redaguoti",
+    "save": "Išsaugoti",
+    "cancel": "Atšaukti",
+    "saving": "Saugoma...",
+    "add": "Pridėti"
+  },
+  "feedback": {
+    "success": "Sėkmingai atnaujinta!",
+    "error": "Klaida atnaujinant. Bandykite dar kartą."
+  },
+  "validation": {
+    "minLength": "Mažiausiai {{count}} simboliai",
+    "required": "Privalomas laukas",
+    "invalidDate": "Neteisinga data",
+    "selectOption": "Pasirinkite..."
+  },
+  "completeness": {
+    "title": "Profilio pažanga",
+    "subtitle": "Užpildykite savo profilį, kad galėtumėte naudotis visomis funkcijomis",
+    "percentage": "{{value}}% užpildyta",
+    "sectionsComplete": "Pagrindinė informacija užpildyta!",
+    "basicInfoComplete": "Visa pagrindinė informacija užpildyta",
+    "complete": "Užpildyta",
+    "required": "Privaloma",
+    "showDetails": "Peržiūrėti detales",
+    "hideDetails": "Slėpti",
+    "sections": {
+      "identity": "Asmeniniai duomenys",
+      "contact": "Kontaktai",
+      "location": "Vieta",
+      "professional": "Profesiniai duomenys",
+      "about": "Biografija",
+      "documents": "Asmeniniai dokumentai",
+      "bankAccounts": "Banko duomenys",
+      "languages": "Kalbos",
+      "certifications": "Sertifikacijos"
+    },
+    "hints": {
+      "identity": "Pridėkite gimimo datą ir pilietybę",
+      "contact": "Pridėkite bent vieną telefono numerį",
+      "location": "Užpildykite adresą, miestą, pašto kodą ir šalį",
+      "professional": "Užpildykite skyrių, pareigas ir įdarbinimo datą",
+      "about": "Parašykite trumpą profesinę biografiją",
+      "documents": "Pridėkite savo pasą (privaloma)",
+      "bankAccounts": "Pridėkite bent vieną banko sąskaitą",
+      "languages": "Pridėkite bent vieną kalbą",
+      "certifications": "Pridėkite bent vieną sertifikaciją"
+    },
+    "notification": {
+      "title": "Užpildykite savo profilį",
+      "message": "Jūsų profilyje trūksta svarbių duomenų. Paspauskite, kad užpildytumėte."
+    }
+  },
+  "wizard": {
+    "welcome": "Nustatykime jūsų profilį",
+    "subtitle": "Užpildykite esminę informaciją, kad galėtumėte pradėti",
+    "step": "Žingsnis {{current}} iš {{total}}",
+    "next": "Tęsti",
+    "previous": "Grįžti",
+    "skip": "Praleisti šį žingsnį",
+    "finish": "Pradėti naudoti",
+    "steps": {
+      "identity": "Apie jus",
+      "contact": "Kaip su jumis susisiekti",
+      "location": "Kur esate",
+      "professional": "Jūsų pareigos",
+      "documents": "Dokumentai"
+    },
+    "descriptions": {
+      "identity": "Papasakokite šiek tiek daugiau apie save",
+      "contact": "Pridėkite telefono numerį susisiekimui",
+      "location": "Nurodykite savo dabartinę vietą",
+      "professional": "Nurodykite savo profesinius duomenis įmonėje",
+      "documents": "Pridėkite savo pasą (privaloma)"
+    },
+    "passportRequired": "Pasas yra privalomas norint tęsti",
+    "phoneAdded": "Telefonas sėkmingai pridėtas!",
+    "allDone": "Profilis nustatytas!",
+    "allDoneDesc": "Jau galite naudotis sistema. Užpildykite likusius, kai norėsite."
+  },
+  "roles": {
+    "ADMIN": "Administratorius",
+    "HR": "Personalas",
+    "STANDARD": "Standartinis"
+  },
+  "signatureSection": {
+    "title": "Parašas",
+    "description": "Nustatykite savo asmeninį parašą dokumentų pasirašymui"
+  },
+  "ppes": {
+    "title": "Asmeninės apsaugos priemonės (AAP)",
+    "add": "Pridėti AAP",
+    "empty": "Nėra užregistruotų AAP",
+    "name": "AAP pavadinimas",
+    "namePlaceholder": "Pvz. Apsauginiai diržai, Šalmas...",
+    "category": "Kategorija",
+    "type": "Įrangos tipas",
+    "brand": "Prekės ženklas",
+    "model": "Modelis",
+    "serialNumber": "Serijos numeris",
+    "purchaseDate": "Pirkimo data",
+    "lastInspectionDate": "Paskutinė apžiūra",
+    "nextInspectionDate": "Kita apžiūra",
+    "condition": "Būklė",
+    "notes": "Pastabos",
+    "notesPlaceholder": "Pvz. Vizualinė apžiūra prieš kiekvieną naudojimą...",
+    "inspectionOverdue": "Apžiūra vėluoja — skubiai suplanuokite naują apžiūrą",
+    "inspectionExpiring": "Apžiūra baigsis per artimiausias 30 dienų",
+    "confirmDelete": "Ar tikrai norite pašalinti šią AAP?",
+    "categories": {
+      "company_provided": "Įmonės suteikta",
+      "personal": "Asmeninė"
+    },
+    "types": {
+      "harness": "Apsauginiai diržai",
+      "helmet": "Šalmas",
+      "rope": "Virvė",
+      "fall_arrest": "Kritimo stabdiklis",
+      "gloves": "Apsauginės pirštinės",
+      "footwear": "Apsauginė avalynė",
+      "eye_protection": "Akių apsauga",
+      "respiratory": "Kvėpavimo apsauga",
+      "anchor_connector": "Inkarai ir jungtys",
+      "first_aid": "Pirmosios pagalbos rinkinys",
+      "other": "Kita AAP"
+    },
+    "conditions": {
+      "new": "Nauja",
+      "good": "Gera būklė",
+      "fair": "Patenkinama",
+      "needs_replacement": "Reikia pakeisti",
+      "expired": "Pasibaigusi",
+      "retired": "Nurašyta"
+    }
+  }
+}

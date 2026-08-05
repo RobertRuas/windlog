@@ -1,0 +1,100 @@
+{
+  "app_name": "Windlog",
+  "nav": {
+    "home": "Pradžia",
+    "profile": "Profilis",
+    "settings": "Nustatymai",
+    "users": "Vartotojai",
+    "projects": "Projektai",
+    "timesheets": "Lentelės",
+    "logs": "Žurnalai",
+    "notifications": "Pranešimai",
+    "feedbacks": "Atsiliepimai"
+  },
+  "notifications": {
+    "title": "Pranešimai",
+    "mark_all_read": "Pažymėti visus kaip skaitytus",
+    "clear_read": "Išvalyti skaitytus",
+    "no_notifications": "Nėra pranešimų",
+    "loading": "Kraunama..."
+  },
+  "buttons": {
+    "save": "Išsaugoti",
+    "cancel": "Atšaukti",
+    "delete": "Ištrinti",
+    "edit": "Redaguoti",
+    "back": "Grįžti",
+    "confirm": "Patvirtinti",
+    "logout": "Atsijungti",
+    "login": "Prisijungti",
+    "download": "Atsisiųsti",
+    "continue": "Paspauskite mygtuką, kad tęstumėte..."
+  },
+  "status": {
+    "loading": "Kraunama...",
+    "error": "Įvyko klaida",
+    "success": "Sėkmė"
+  },
+  "file": {
+    "no_file": "Nėra pridėto failo",
+    "loading": "Kraunama...",
+    "unavailable": "Failas nepasiekiamas"
+  },
+  "error": {
+    "unknown": "Atsitiko kažkas netikėto",
+    "token_missing": "Norėdami tęsti, turite prisijungti. Jūsų sesija nepradėta.",
+    "session_expired": "Jūsų sesija baigėsi saugumo sumetimais. Prašome prisijungti dar kartą.",
+    "session_ended": "Jūsų sesija baigėsi. Prisijunkite, kad galėtumėte toliau naudotis programa.",
+    "link_expired": "Ši nuoroda nebegalioja arba baigėsi. Grįžkite į ankstesnį puslapį ir bandykite dar kartą.",
+    "file_load_error": "Nepavyko įkelti failo. Prašome bandyti dar kartą.",
+    "back": "Grįžti",
+    "login": "Prisijungti",
+    "auth": {
+      "title": "Oi! Reikia prisijungti"
+    },
+    "not_found": {
+      "title": "Neradome ko ieškote"
+    },
+    "generic": {
+      "title": "Kažkas nutiko ne taip"
+    }
+  },
+  "signature": {
+    "title": "Parašas",
+    "description": "Nupieškite savo parašą arba nufotografuokite nuo popieriaus, kad naudotumėte dokumentuose",
+    "clear": "Išvalyti",
+    "apply": "Taikyti",
+    "cancelEdit": "Atšaukti",
+    "noSignature": "Nėra užregistruoto parašo",
+    "saved": "Parašas sėkmingai išsaugotas!",
+    "removed": "Parašas sėkmingai pašalintas!",
+    "error": "Klaida išsaugant parašą",
+    "configure": "Konfigūruoti parašą",
+    "useMySignature": "Naudoti mano parašą",
+    "removeSignature": "Pašalinti parašą",
+    "drawMode": "Piešti",
+    "cameraMode": "Kamera / Nuotrauka",
+    "tips": "Patarimai geram parašui",
+    "tip1": "1. Pasirašykite ant balto popieriaus lapo juodu arba mėlynu rašikliu",
+    "tip2": "2. Naudokite gerą apšvietimą, be šešėlių ant parašo",
+    "tip3": "3. Nufotografuokite tiesiai iš viršaus, gerai suderintą",
+    "tip4": "4. Apkirpkite vaizdą, kad liktų tik parašo sritis",
+    "clickToCapture": "Paspauskite, kad nufotografuotumėte arba pasirinktumėte vaizdą",
+    "supportsFormats": "JPG, PNG arba WebP",
+    "cropInstruction": "Vilkite, kad pasirinktumėte parašo sritį",
+    "applyCrop": "Iškirpti ir naudoti",
+    "cancelCrop": "Grįžti",
+    "currentPreview": "Dabartinė peržiūra:",
+    "savedSuccessfully": "Parašas sėkmingai išsaugotas!",
+    "redoSignature": "Padaryti naują parašą"
+  },
+  "mobileGuard": {
+    "title": "Prieiga tik iš kompiuterio arba planšetės",
+    "description": "Windlog skirtas didesniems ekranams. Prašome prisijungti iš kompiuterio arba planšetės, kad galėtumėte mėgautis geriausia patirtimi.",
+    "hint": "Patarimas: naudokite kompiuterį, nešiojamąjį kompiuterį arba planšetę gulsčio režimu."
+  },
+  "ariaLabels": {
+    "openMenu": "Atidaryti meniu",
+    "closeMenu": "Uždaryti meniu"
+  }
+}

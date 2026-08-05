@@ -1,0 +1,122 @@
+{
+  "title": "Complete your profile",
+  "subtitle": "Fill in all required details to access the system",
+  "info": "This information is essential for your registration and compliance with international regulations. Completion is mandatory to continue.",
+  "success": "Profile completed successfully!",
+  "submit": "Save and continue",
+  "submitting": "Saving...",
+  "cancel": "Cancel and exit",
+  "loading": "Loading data...",
+  "sections": {
+    "personal": "Personal Details",
+    "passport": "Passport",
+    "contact": "Contact",
+    "location": "Location",
+    "motherTongue": "Mother Tongue",
+    "airport": "Preferred Airport",
+    "professional": "Professional Details"
+  },
+  "fields": {
+    "firstName": {
+      "label": "First name",
+      "placeholder": "Enter your first name"
+    },
+    "lastName": {
+      "label": "Surname",
+      "placeholder": "Enter your surname"
+    },
+    "nationality": {
+      "label": "Nationality",
+      "placeholder": "Select your nationality"
+    },
+    "dateOfBirth": {
+      "label": "Date of birth",
+      "hint": "Minimum age: 18 years"
+    },
+    "passportNumber": {
+      "label": "Passport number",
+      "placeholder": "e.g. AB123456"
+    },
+    "passportIssuingCountry": {
+      "label": "Issuing country",
+      "placeholder": "Select issuing country"
+    },
+    "passportIssueDate": {
+      "label": "Issue date"
+    },
+    "passportExpiryDate": {
+      "label": "Expiry date"
+    },
+    "passportFile": {
+      "label": "Passport photo/PDF",
+      "hint": "You can attach it later in your profile"
+    },
+    "email": {
+      "label": "Contact email",
+      "placeholder": "example@email.com"
+    },
+    "phoneCountryCode": {
+      "label": "Country code",
+      "placeholder": "Select code"
+    },
+    "phone": {
+      "label": "Contact phone",
+      "placeholder": "e.g. 912345678"
+    },
+    "address": {
+      "label": "Address",
+      "placeholder": "Street, number, flat"
+    },
+    "city": {
+      "label": "City",
+      "placeholder": "Enter your city"
+    },
+    "postalCode": {
+      "label": "Postcode",
+      "placeholder": "e.g. 1000-001"
+    },
+    "country": {
+      "label": "Country of residence",
+      "placeholder": "Select your country"
+    },
+    "motherTongue": {
+      "label": "Mother tongue",
+      "placeholder": "Select your mother tongue"
+    },
+    "preferredAirportCity": {
+      "label": "Airport city",
+      "placeholder": "e.g. London"
+    },
+    "preferredAirportCountry": {
+      "label": "Airport country",
+      "placeholder": "Select country"
+    },
+    "windaId": {
+      "label": "WINDA ID",
+      "placeholder": "e.g. RR092285BR"
+    },
+    "irataLevel": {
+      "label": "IRATA Level",
+      "placeholder": "Select level"
+    },
+    "irataNumber": {
+      "label": "IRATA Number",
+      "placeholder": "e.g. 134109"
+    }
+  },
+  "irataOptions": {
+    "L1": "Level 1",
+    "L2": "Level 2",
+    "L3": "Level 3",
+    "NOT_APPLICABLE": "Not applicable"
+  },
+  "irataNumberOptions": {
+    "notApplicable": "Not applicable"
+  },
+  "errors": {
+    "requiredField": "Please fill in all required fields.",
+    "minAge18": "User must be at least 18 years old.",
+    "expiryBeforeIssue": "Passport expiry date cannot be before the issue date.",
+    "generic": "An error occurred while saving. Please try again."
+  }
+}

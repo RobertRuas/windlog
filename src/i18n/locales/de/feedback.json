@@ -1,0 +1,157 @@
+{
+  "title": "Rückmeldungen",
+  "subtitle": "Fehler, Vorschläge oder Systeminkonsistenzen melden",
+  "admin_title": "Rückmeldungsverwaltung",
+  "admin_subtitle": "Alle von Benutzern gemeldeten Rückmeldungen verwalten",
+
+  "button": "Rückmeldung senden",
+  "modal_title": "Rückmeldung melden",
+  "modal_description": "Helfen Sie uns, das System zu verbessern. Beschreiben Sie das Problem oder den Vorschlag, den Sie gefunden haben.",
+
+  "fields": {
+    "title": "Titel",
+    "title_placeholder": "Kurze Zusammenfassung des Problems (z.B. Schaltfläche funktioniert nicht)",
+    "title_required": "Titel ist erforderlich",
+    "description": "Beschreibung",
+    "description_placeholder": "Beschreiben Sie detailliert, was passiert ist. Wenn es ein Fehler ist, fügen Sie die Schritte zum Reproduzieren bei.",
+    "description_required": "Beschreibung ist erforderlich",
+    "category": "Kategorie",
+    "screenshot": "Screenshot",
+    "screenshot_hint": "Machen Sie einen Screenshot (Print Screen) und laden Sie das Bild hier hoch",
+    "screenshot_optional": "Optional — hilft, das Problem besser zu verstehen",
+    "screenshot_upload_text": "Klicken Sie zum Hochladen oder ziehen und ablegen",
+    "screenshot_upload_formats": "PNG, JPG bis 5MB",
+    "screenshot_error_type": "Wählen Sie eine Bilddatei (PNG, JPG usw.)",
+    "screenshot_error_size": "Datei muss kleiner als 5MB sein",
+    "screenshot_unavailable": "Bild nicht verfügbar",
+    "page_url": "Aktuelle Seite",
+    "admin_notes": "Administrator-Notizen",
+    "admin_notes_placeholder": "Fügen Sie Notizen zur Analyse, Lösung oder zum Schließungsgrund hinzu..."
+  },
+
+  "categories": {
+    "BUG": "Fehler",
+    "UI_ISSUE": "Visuelles Problem",
+    "FEATURE": "Vorschlag",
+    "INCONSISTENCY": "Unstimmigkeit",
+    "PERFORMANCE": "Leistung",
+    "OTHER": "Sonstiges"
+  },
+
+  "priorities": {
+    "LOW": "Niedrig",
+    "MEDIUM": "Mittel",
+    "HIGH": "Hoch",
+    "CRITICAL": "Kritisch"
+  },
+
+  "statuses": {
+    "NEW": "Neu",
+    "TRIAGED": "Klassifiziert",
+    "IN_PROGRESS": "In Bearbeitung",
+    "RESOLVED": "Gelöst",
+    "CLOSED": "Geschlossen"
+  },
+
+  "screenshot": {
+    "capture_visible": "Sichtbaren erfassen",
+    "capture_full": "Ganze Seite erfassen",
+    "capture_area": "Bereich auswählen",
+    "remove": "Erfassung entfernen",
+    "preview": "Vorschau",
+    "capturing": "Wird erfasst...",
+    "no_capture": "Keine Erfassung"
+  },
+
+  "actions": {
+    "submit": "Rückmeldung senden",
+    "submitting": "Wird gesendet...",
+    "submitted": "Rückmeldung erfolgreich gesendet!",
+    "error": "Fehler beim Senden der Rückmeldung",
+    "update": "Aktualisieren",
+    "delete": "Löschen",
+    "view": "Details anzeigen",
+    "change_status": "Status ändern",
+    "change_priority": "Priorität ändern"
+  },
+
+  "list": {
+    "empty": "Keine Rückmeldungen gefunden",
+    "empty_description": "Von Benutzern gemeldete Rückmeldungen werden hier angezeigt",
+    "reported_by": "Gemeldet von",
+    "reported_at": "Gemeldet am",
+    "resolved_by": "Gelöst von",
+    "resolved_at": "Gelöst am",
+    "page_context": "Seite",
+    "browser_info": "Browser",
+    "screen_info": "Bildschirm",
+    "no_screenshot": "Keine Erfassung"
+  },
+
+  "stats": {
+    "total": "Gesamt",
+    "new": "Neu",
+    "by_status": "Nach Status",
+    "by_category": "Nach Kategorie",
+    "by_priority": "Nach Priorität"
+  },
+
+  "filters": {
+    "all_statuses": "Alle Status",
+    "all_categories": "Alle Kategorien",
+    "all_priorities": "Alle Prioritäten",
+    "search_placeholder": "In Titel oder Beschreibung suchen..."
+  },
+
+  "technical": {
+    "console_logs_captured": "Konsoleprotokoll(e) erfasst",
+    "recent_system_errors": "Letzte Systemfehler",
+    "connection": "Verbindung",
+    "uploading": "Wird hochgeladen..."
+  },
+
+  "toast": {
+    "create_success": "Rückmeldung erfolgreich gesendet! Vielen Dank für Ihre Hilfe.",
+    "create_error": "Fehler beim Senden der Rückmeldung. Bitte versuchen Sie es erneut.",
+    "update_success": "Rückmeldung erfolgreich aktualisiert!",
+    "update_error": "Fehler beim Aktualisieren der Rückmeldung.",
+    "delete_success": "Rückmeldung erfolgreich gelöscht!",
+    "delete_error": "Fehler beim Löschen der Rückmeldung.",
+    "confirm_delete": "Sind Sie sicher, dass Sie diese Rückmeldung löschen möchten?"
+  },
+
+  "table": {
+    "status": "Status",
+    "priority": "Priorität",
+    "date": "Datum",
+    "actions": "Aktionen",
+    "clear": "Löschen",
+    "pagination_info": "{{total}} Rückmeldungen · Seite {{page}} von {{totalPages}}",
+    "previous": "Zurück",
+    "next": "Weiter"
+  },
+
+  "detail": {
+    "technical_title": "Technische Details",
+    "browser": "Browser",
+    "os": "BS",
+    "language": "Sprache",
+    "cpu_cores": "CPU-Kerne",
+    "screen": "Bildschirm",
+    "viewport": "Ansichtsfenster",
+    "connection": "Verbindung",
+    "memory_usage": "Speicherverbrauch",
+    "browser_features": "Browser-Funktionen",
+    "console_logs": "Konsoleprotokolle",
+    "recent_errors": "Letzte Systemfehler"
+  },
+
+  "modal_categories": {
+    "bug": "Fehler",
+    "visual": "Visuell",
+    "idea": "Idee",
+    "error": "Fehler",
+    "slow": "Langsam",
+    "other": "Sonstiges"
+  }
+}

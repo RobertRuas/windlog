@@ -1,0 +1,163 @@
+{
+  "title": "Projects",
+  "subtitle": "Manage all system projects",
+  "newProject": "New Project",
+  "search": {
+    "placeholder": "Search by name or client..."
+  },
+  "filter": {
+    "allStatuses": "All statuses"
+  },
+  "table": {
+    "name": "Name",
+    "client": "Client",
+    "location": "Location",
+    "status": "Status",
+    "turbines": "Turbines",
+    "members": "Members",
+    "files": "Files",
+    "resources": "Resources",
+    "actions": "Actions",
+    "loading": "Loading...",
+    "empty": "No projects found",
+    "pagination": "Page {{page}} of {{totalPages}} ({{total}} projects)"
+  },
+  "status": {
+    "PLANNING": "Planning",
+    "IN_PROGRESS": "In Progress",
+    "ON_HOLD": "On Hold",
+    "COMPLETED": "Completed",
+    "CANCELLED": "Cancelled"
+  },
+  "turbineStatus": {
+    "OPERATIONAL": "Operational",
+    "MAINTENANCE": "Maintenance",
+    "OFFLINE": "Offline",
+    "DECOMMISSIONED": "Decommissioned"
+  },
+  "actions": {
+    "edit": "Edit",
+    "delete": "Delete",
+    "viewDetails": "View Details",
+    "backToList": "Back to Projects",
+    "addTurbine": "New Turbine",
+    "addMember": "Add Member",
+    "editProject": "Edit Project",
+    "editMemberRole": "Edit Role",
+    "confirmDelete": "Are you sure you want to delete project \"{{name}}\"?",
+    "confirmDeleteTurbine": "Are you sure you want to delete turbine \"{{name}}\"?",
+    "confirmRemoveMember": "Are you sure you want to remove {{name}} from the project?",
+    "confirmDeleteFile": "Are you sure you want to delete file \"{{name}}\"?",
+    "download": "Download",
+    "view": "View"
+  },
+  "tabs": {
+    "info": "Information",
+    "turbines": "Turbines",
+    "members": "Team",
+    "files": "Files"
+  },
+  "modal": {
+    "editTitle": "Edit Project",
+    "createTitle": "New Project",
+    "basicInfo": "Basic Information",
+    "additionalInfo": "Additional Information",
+    "name": "Project Name",
+    "client": "Client",
+    "location": "Location",
+    "scope": "Scope",
+    "description": "Description",
+    "latitude": "Latitude",
+    "longitude": "Longitude",
+    "startDate": "Start Date",
+    "status": "Status",
+    "cancel": "Cancel",
+    "save": "Save",
+    "create": "Create"
+  },
+  "turbineTable": {
+    "name": "Name",
+    "location": "Location",
+    "manufacturer": "Manufacturer",
+    "model": "Model",
+    "nacelleHeight": "Nacelle Height",
+    "status": "Status",
+    "empty": "No turbines registered in this project"
+  },
+  "turbineModal": {
+    "createTitle": "New Turbine",
+    "editTitle": "Edit Turbine",
+    "name": "Turbine Name",
+    "location": "Location",
+    "manufacturer": "Manufacturer",
+    "model": "Model",
+    "nacelleHeight": "Nacelle Height (m)",
+    "latitude": "Latitude",
+    "longitude": "Longitude",
+    "status": "Status"
+  },
+  "memberTable": {
+    "name": "Name",
+    "email": "Email",
+    "role": "Role",
+    "projectRole": "Project Role",
+    "empty": "No members associated with this project",
+    "noRole": "No role defined",
+    "membersCount": "{{count}} member(s)"
+  },
+  "memberSearch": {
+    "placeholder": "Search user to add...",
+    "noResults": "No users found"
+  },
+  "memberModal": {
+    "allUsersAlreadyMembers": "All system users are already members of this project"
+  },
+  "editProjectModal": {
+    "title": "Edit Project"
+  },
+  "editMemberModal": {
+    "title": "Edit Member Role",
+    "role": "Project Role",
+    "rolePlaceholder": "e.g. Lead Technician"
+  },
+  "errors": {
+    "notFound": "Project not found"
+  },
+  "toast": {
+    "createSuccess": "Project created successfully",
+    "createError": "Error creating project",
+    "updateSuccess": "Project updated successfully",
+    "updateError": "Error updating project",
+    "deleteSuccess": "Project deleted successfully",
+    "deleteError": "Error deleting project",
+    "turbineCreateSuccess": "Turbine added successfully",
+    "turbineCreateError": "Error adding turbine",
+    "turbineUpdateSuccess": "Turbine updated successfully",
+    "turbineUpdateError": "Error updating turbine",
+    "turbineDeleteSuccess": "Turbine removed successfully",
+    "turbineDeleteError": "Error removing turbine",
+    "memberAddSuccess": "Member added successfully",
+    "memberAddError": "Error adding member",
+    "memberUpdateSuccess": "Member role updated successfully",
+    "memberUpdateError": "Error updating member role",
+    "memberRemoveSuccess": "Member removed successfully",
+    "memberRemoveError": "Error removing member",
+    "fileUploadSuccess": "File added successfully",
+    "fileUploadError": "Error adding file",
+    "fileDeleteSuccess": "File removed successfully",
+    "fileDeleteError": "Error removing file"
+  },
+  "files": {
+    "empty": "No files associated with this project",
+    "dropzone": "Drag files here or click to select",
+    "dropzoneHint": "PDF, Word, Excel, PowerPoint or JPEG up to 10 MB",
+    "uploading": "Uploading...",
+    "exceedsLimit": "\"{{name}}\" exceeds the 10 MB limit"
+  },
+  "filesTable": {
+    "name": "Name",
+    "type": "Type",
+    "size": "Size",
+    "date": "Date"
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "title": "Settings",
+  "subtitle": "Manage system options",
+  "loading": "Loading...",
+  "help": {
+    "title": "Help — Settings",
+    "overview_title": "What this page is for",
+    "overview_text": "The Settings page centralises personal preferences and administrative features. Adjust the language, visual theme and interface scale. Access your profile, view your feedbacks and, if you are an administrator, access system logs.",
+    "sections_title": "Available sections",
+    "step_preferences": "Preferences — adjust the language, theme (light/dark/auto) and interface scale",
+    "step_account": "Account — access your profile to view and edit your personal details (name, email, photo, etc.)",
+    "step_feedbacks": "My Feedbacks — view the status of bugs, suggestions or improvements you have submitted (collapsible section)",
+    "step_admin": "Administration (ADMIN only) — access system logs to view all recorded actions",
+    "tip_title": "Tip",
+    "tip_text": "Use the feedback button in the bottom-right corner of the application to submit suggestions or report issues at any time."
+  },
+  "sections": {
+    "preferences": "Preferences",
+    "account": "Account",
+    "administration": "Administration",
+    "my_feedbacks": "My Feedbacks"
+  },
+  "preferences": {
+    "language": "Language",
+    "language_desc": "Application interface language",
+    "theme": "Theme",
+    "theme_desc": "Visual appearance of the interface",
+    "theme_light": "Light",
+    "theme_dark": "Dark",
+    "theme_auto": "System",
+    "scale": "Scale",
+    "scale_desc": "Interface element size (60% to 110%)"
+  },
+  "account": {
+    "myProfile": {
+      "title": "My Profile",
+      "description": "View and edit your personal details"
+    }
+  },
+  "my_feedbacks": {
+    "empty": "You haven't submitted any feedback yet",
+    "empty_description": "Use the feedback button in the bottom-right corner to report bugs or suggestions",
+    "admin_response": "Administrator response",
+    "resolved_at": "Resolved at",
+    "view_more": "View all feedbacks"
+  },
+  "admin": {
+    "systemLogs": {
+      "title": "System Logs",
+      "description": "View all actions recorded in the system"
+    },
+    "noAccess": "No administrative settings available for your profile."
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "app_name": "Windlog",
+  "nav": {
+    "home": "Etusivu",
+    "profile": "Profiili",
+    "settings": "Asetukset",
+    "users": "Käyttäjät",
+    "projects": "Projektit",
+    "timesheets": "Tuntiraportit",
+    "logs": "Lokit",
+    "notifications": "Ilmoitukset",
+    "feedbacks": "Palautteet"
+  },
+  "notifications": {
+    "title": "Ilmoitukset",
+    "mark_all_read": "Merkitse kaikki luetuiksi",
+    "clear_read": "Tyhjennä luetut",
+    "no_notifications": "Ei ilmoituksia",
+    "loading": "Ladataan..."
+  },
+  "buttons": {
+    "save": "Tallenna",
+    "cancel": "Peruuta",
+    "delete": "Poista",
+    "edit": "Muokkaa",
+    "back": "Takaisin",
+    "confirm": "Vahvista",
+    "logout": "Kirjaudu ulos",
+    "login": "Kirjaudu sisään",
+    "download": "Lataa",
+    "continue": "Paina painiketta jatkaaksesi..."
+  },
+  "status": {
+    "loading": "Ladataan...",
+    "error": "Tapahtui virhe",
+    "success": "Onnistui"
+  },
+  "file": {
+    "no_file": "Ei liitetiedostoa",
+    "loading": "Ladataan...",
+    "unavailable": "Tiedosto ei saatavilla"
+  },
+  "error": {
+    "unknown": "Jotain odottamatonta tapahtui",
+    "token_missing": "Jatkaaksesi sinun on kirjauduttava sisään. Istuntoasi ei ole aloitettu.",
+    "session_expired": "Istuntosi on vanhentunut turvallisuussyistä. Kirjaudu sisään uudelleen.",
+    "session_ended": "Istuntosi on päättynyt. Kirjaudu sisään jatkaaksesi sovelluksen käyttöä.",
+    "link_expired": "Tämä linkki on vanhentunut tai ei enää voimassa. Palaa edelliselle sivulle ja yritä uudelleen.",
+    "file_load_error": "Tiedostoa ei voitu ladata. Yritä uudelleen.",
+    "back": "Takaisin",
+    "login": "Kirjaudu sisään",
+    "auth": {
+      "title": "Hups! Sinun on kirjauduttava sisään"
+    },
+    "not_found": {
+      "title": "Emme löytäneet etsimääsi"
+    },
+    "generic": {
+      "title": "Jotain meni pieleen"
+    }
+  },
+  "signature": {
+    "title": "Allekirjoitus",
+    "description": "Piirrä allekirjoituksesi tai tallenna paperista asiakirjoissa käytettäväksi",
+    "clear": "Tyhjennä",
+    "apply": "Käytä",
+    "cancelEdit": "Peruuta",
+    "noSignature": "Ei rekisteröityä allekirjoitusta",
+    "saved": "Allekirjoitus tallennettu onnistuneesti!",
+    "removed": "Allekirjoitus poistettu onnistuneesti!",
+    "error": "Virhe tallennettaessa allekirjoitusta",
+    "configure": "Määritä allekirjoitus",
+    "useMySignature": "Käytä allekirjoitustani",
+    "removeSignature": "Poista allekirjoitus",
+    "drawMode": "Piirrä",
+    "cameraMode": "Kamera / Kuva",
+    "tips": "Vinkkejä hyvään allekirjoitukseen",
+    "tip1": "1. Allekirjoita valkoiselle paperille mustalla tai sinisellä kynällä",
+    "tip2": "2. Käytä hyvää valaistusta, ei varjoja allekirjoituksen päällä",
+    "tip3": "3. Ota kuva suoraan ylhäältä, hyvin suunnattuna",
+    "tip4": "4. Rajaa kuva jättämään vain allekirjoitusalue",
+    "clickToCapture": "Napauta ottaaksesi kuvan tai valitaksesi kuvan",
+    "supportsFormats": "JPG, PNG tai WebP",
+    "cropInstruction": "Vedä valitaksesi allekirjoitusalueen",
+    "applyCrop": "Rajaa ja käytä",
+    "cancelCrop": "Takaisin",
+    "currentPreview": "Nykyinen esikatselu:",
+    "savedSuccessfully": "Allekirjoitus tallennettu onnistuneesti!",
+    "redoSignature": "Tee uusi allekirjoitus"
+  },
+  "mobileGuard": {
+    "title": "Vain tietokone- tai tablet-käyttö",
+    "description": "Windlog on suunniteltu suuremmille näytöille. Käytä tietokonetta tai tablettia parhaan kokemuksen saamiseksi.",
+    "hint": "Vinkki: käytä tietokonetta, kannettavaa tai tablettia vaakatilassa."
+  },
+  "ariaLabels": {
+    "openMenu": "Avaa valikko",
+    "closeMenu": "Sulje valikko"
+  }
+}

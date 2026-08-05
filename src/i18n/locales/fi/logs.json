@@ -1,0 +1,19 @@
+{
+  "title": "Järjestelmälokit",
+  "subtitle": "Reaaliaikainen valvonta ja auditointi",
+  "capture": {
+    "label": "Lokien tallennus",
+    "enabled": "Käytössä",
+    "disabled": "Pysäytetty",
+    "toastEnabled": "Lokien tallennus käytössä. Kaikki tapahtumat tallennetaan taas normaalisti.",
+    "toastDisabled": "Lokien tallennus pysäytetty. Vain virheet tallennetaan edelleen.",
+    "toastError": "Virhe muutettaessa tallennustilaa"
+  },
+  "stats": { "total": "Yhteensä", "errors": "Virheet", "warnings": "Varoitukset", "critical": "Kriittiset" },
+  "search": { "placeholder": "Hae viestillä, käyttäjällä...", "button": "Hae", "filters": "Suodattimet", "clear": "Tyhjennä" },
+  "filters": { "action": "Toiminto", "severity": "Vakavuus", "startDate": "Alkupäivä", "endDate": "Loppupäivä", "all": "Kaikki" },
+  "table": { "date": "Päivä", "level": "Taso", "request": "Pyyntö", "status": "Tila", "duration": "Kesto", "action": "Toiminto", "user": "Käyttäjä", "records": "{{count}} merkintää", "loading": "Ladataan lokeja...", "empty": "Lokeja ei löytynyt", "emptyHint": "Yritä muokata suodattimia", "page": "Sivu {{page}} / {{totalPages}}", "previous": "Edellinen", "next": "Seuraava" },
+  "details": { "ipAddress": "IP-osoite", "userAgent": "Käyttäjäagentti", "entity": "Entiteetti", "message": "Viesti", "details": "Tiedot" },
+  "severity": { "info": "Info", "warning": "Varoitus", "error": "Virhe", "critical": "Kriittinen" },
+  "actions": { "LOGIN": "Kirjautuminen", "LOGOUT": "Uloskirjautuminen", "LOGIN_FAILED": "Kirjautuminen epäonnistui", "PASSWORD_CHANGE": "Salasanan vaihto", "PASSWORD_RESET": "Salasanan nollaus", "USER_CREATE": "Luo käyttäjä", "USER_UPDATE": "Päivitä käyttäjä", "USER_DELETE": "Poista käyttäjä", "USER_DEACTIVATE": "Deaktivoi käyttäjä", "USER_REACTIVATE": "Reaktivoi käyttäjä", "USER_ROLE_CHANGE": "Vaihda rooli", "PROFILE_UPDATE": "Päivitä profiili", "PROFILE_VIEW": "Näytä profiili", "PHONE_ADD": "Lisää puhelin", "PHONE_UPDATE": "Päivitä puhelin", "PHONE_DELETE": "Poista puhelin", "CERTIFICATION_ADD": "Lisää sertifiointi", "CERTIFICATION_UPDATE": "Päivitä sertifiointi", "CERTIFICATION_DELETE": "Poista sertifiointi", "LANGUAGE_ADD": "Lisää kieli", "LANGUAGE_UPDATE": "Päivitä kieli", "LANGUAGE_DELETE": "Poista kieli", "PROJECT_CREATE": "Luo projekti", "PROJECT_UPDATE": "Päivitä projekti", "PROJECT_DELETE": "Poista projekti", "TURBINE_CREATE": "Luo turbiini", "TURBINE_UPDATE": "Päivitä turbiini", "TURBINE_DELETE": "Poista turbiini", "TECHNICIAN_CREATE": "Luo teknikko", "TECHNICIAN_UPDATE": "Päivitä teknikko", "TECHNICIAN_DELETE": "Poista teknikko", "SYSTEM_ERROR": "Järjestelmävirhe", "API_ERROR": "API-virhe", "ACCESS_DENIED": "Pääsy evätty", "DATA_EXPORT": "Vie tiedot", "DATA_IMPORT": "Tuo tiedot", "OTHER": "Muu" }
+}

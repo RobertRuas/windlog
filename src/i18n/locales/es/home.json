@@ -1,0 +1,338 @@
+{
+  "title": "Bienvenido",
+  "subtitle": "Panel de resumen",
+  "homeSubtitle": "Resumen de su actividad.",
+  "dashboard": {
+    "timesheets": {
+      "title": "Horas del mes",
+      "working": "Trabajo",
+      "standby": "Standby",
+      "travel": "Viaje",
+      "total": "Total",
+      "noData": "Sin registros este mes",
+      "hours": "{{value}}h",
+      "viewAll": "Ver todos"
+    },
+    "projects": {
+      "title": "Proyectos",
+      "active": "Activos",
+      "total": "Total",
+      "noData": "Sin proyectos asignados",
+      "viewAll": "Ver todos"
+    },
+    "tips": {
+      "title": "¿Sabía que...?",
+      "tip1": "Los partes de horas son semanales y deben enviarse antes del fin de semana.",
+      "tip2": "Solo los Team Leaders pueden crear partes de horas para su equipo.",
+      "tip3": "El pasaporte es obligatorio para trabajar en proyectos internacionales.",
+      "tip4": "Las certificaciones caducadas impiden la asignación a proyectos.",
+      "tip5": "Los administradores pueden configurar permisos por módulo en Configuración."
+    },
+    "profileReminder": {
+      "title": "Perfil incompleto",
+      "message": "Faltan documentos o certificaciones en su perfil.",
+      "action": "Completar",
+      "complete": "Perfil completo"
+    }
+  },
+  "profileCard": {
+    "title": "Editar perfil",
+    "description": "Actualice su información personal, contactos, certificaciones e idiomas.",
+    "action": "Ir al perfil"
+  },
+  "sections": {
+    "personal": {
+      "title": "Información personal y profesional",
+      "description": "Sus datos personales, dirección e información en la empresa"
+    },
+    "documents": {
+      "title": "Documentos personales",
+      "description": "Pasaporte, identificación fiscal, tarjeta de ciudadano y otros documentos"
+    },
+    "address": {
+      "title": "Dirección",
+      "description": "Su dirección residencial"
+    },
+    "professional": {
+      "title": "Información profesional",
+      "description": "Sus datos en la empresa"
+    }
+  },
+  "groups": {
+    "identity": "Identidad",
+    "contact": "Contacto",
+    "location": "Ubicación",
+    "professional": "Profesional",
+    "documents": "Documentos",
+    "about": "Acerca de"
+  },
+  "profile": {
+    "firstName": "Nombre",
+    "lastName": "Apellido",
+    "email": "Correo",
+    "phone": "Teléfono",
+    "phoneCountryCode": "Código del país",
+    "dateOfBirth": "Fecha de nacimiento",
+    "nationality": "Nacionalidad",
+    "address": "Dirección",
+    "city": "Ciudad",
+    "postalCode": "Código postal",
+    "country": "País",
+    "department": "Departamento",
+    "position": "Cargo",
+    "hireDate": "Fecha de contratación",
+    "bio": "Biografía",
+    "role": "Acceso",
+    "isTeamLeader": "Team Leader",
+    "yesTeamLeader": "Sí",
+    "noTeamLeader": "No",
+    "teamLeaderBadge": "Team Leader",
+    "photoUrl": "URL de la foto",
+    "avatar": "Foto de perfil",
+    "avatarUpload": "Subir foto",
+    "avatarCamera": "Usar cámara",
+    "avatarHint": "Foto 3x4 (JPEG, PNG o WebP, máx. 3 MB)",
+    "cameraError": "No se ha podido acceder a la cámara. Verifique los permisos."
+  },
+  "phones": {
+    "title": "Contacto",
+    "add": "Añadir teléfono",
+    "empty": "Ningún número de teléfono registrado",
+    "countryCode": "Código del país",
+    "number": "Número",
+    "type": "Tipo",
+    "primary": "Principal",
+    "confirmDelete": "¿Está seguro de que desea eliminar este número?",
+    "types": {
+      "mobile": "Móvil",
+      "home": "Casa",
+      "work": "Trabajo"
+    }
+  },
+  "certifications": {
+    "title": "Certificaciones",
+    "add": "Añadir certificación",
+    "empty": "Ninguna certificación registrada",
+    "name": "Nombre de la certificación",
+    "issuer": "Entidad emisora",
+    "type": "Tipo",
+    "description": "Descripción",
+    "descriptionPlaceholder": "Descripción opcional",
+    "certNumber": "Número de certificación",
+    "issueDate": "Fecha de expedición",
+    "expiryDate": "Fecha de caducidad",
+    "expired": "Caducada",
+    "confirmDelete": "¿Está seguro de que desea eliminar esta certificación?",
+    "types": {
+      "certification": "Certificación",
+      "diploma": "Diploma",
+      "course": "Curso",
+      "training": "Formación",
+      "license": "Licencia"
+    }
+  },
+  "languages": {
+    "title": "Idiomas",
+    "add": "Añadir idioma",
+    "empty": "Ningún idioma registrado",
+    "language": "Idioma",
+    "level": "Nivel",
+    "selectLanguage": "Seleccione un idioma",
+    "confirmDelete": "¿Está seguro de que desea eliminar este idioma?",
+    "levels": {
+      "a1": "A1 - Básico",
+      "a2": "A2 - Elemental",
+      "b1": "B1 - Intermedio",
+      "b2": "B2 - Intermedio superior",
+      "c1": "C1 - Avanzado",
+      "c2": "C2 - Competente",
+      "native": "Nativo"
+    }
+  },
+  "documents": {
+    "title": "Documentos personales",
+    "add": "Añadir documento",
+    "empty": "Ningún documento registrado",
+    "type": "Tipo de documento",
+    "documentNumber": "Número del documento",
+    "issuingCountry": "País emisor",
+    "issueDate": "Fecha de expedición",
+    "expiryDate": "Fecha de caducidad",
+    "description": "Descripción",
+    "descriptionPlaceholder": "Ej: Visado tipo D, Permiso de residencia...",
+    "expired": "Caducado",
+    "confirmDelete": "¿Está seguro de que desea eliminar este documento?",
+    "fileUpload": "Adjunto (Foto o PDF)",
+    "fileUploadHint": "JPEG, PNG, WebP o PDF (máx. 10 MB)",
+    "fileUploadMultiple": "Puede adjuntar múltiples archivos",
+    "noFiles": "Ningún archivo adjunto",
+    "filesAttached": "{{count}} archivo(s) adjunto(s)",
+    "removeFile": "Eliminar archivo",
+    "viewAttachment": "Ver adjunto",
+    "replaceAttachment": "Sustituir",
+    "attachmentWillBeRemoved": "El adjunto actual será eliminado",
+    "chooseFile": "Elegir archivo",
+    "types": {
+      "passport": "Pasaporte",
+      "id_card": "Tarjeta de identidad",
+      "tax_id": "Identificación fiscal (NIF/TIN)",
+      "social_security": "Seguridad Social",
+      "work_permit": "Permiso de trabajo",
+      "visa": "Visado",
+      "drivers_license": "Permiso de conducir",
+      "posting_order": "Destacamiento (A1)",
+      "medical_exam": "Examen médico",
+      "other": "Otro"
+    }
+  },
+  "bankAccounts": {
+    "title": "Datos bancarios",
+    "add": "Añadir cuenta bancaria",
+    "empty": "Ninguna cuenta bancaria registrada",
+    "bankName": "Nombre del banco",
+    "iban": "IBAN",
+    "bicSwift": "BIC/SWIFT",
+    "accountHolder": "Titular de la cuenta",
+    "isPrimary": "Cuenta principal",
+    "description": "Descripción",
+    "descriptionPlaceholder": "Ej: Cuenta de nómina, Cuenta personal...",
+    "confirmDelete": "¿Está seguro de que desea eliminar esta cuenta bancaria?",
+    "primary": "Principal"
+  },
+  "actions": {
+    "edit": "Editar",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "saving": "Guardando...",
+    "add": "Añadir"
+  },
+  "feedback": {
+    "success": "¡Actualizado con éxito!",
+    "error": "Error al actualizar. Inténtelo de nuevo."
+  },
+  "validation": {
+    "minLength": "Mínimo {{count}} caracteres",
+    "required": "Campo obligatorio",
+    "invalidDate": "Fecha inválida",
+    "selectOption": "Seleccione..."
+  },
+  "completeness": {
+    "title": "Progreso del perfil",
+    "subtitle": "Complete su perfil para aprovechar todas las funcionalidades",
+    "percentage": "{{value}}% completo",
+    "sectionsComplete": "¡Información básica completa!",
+    "basicInfoComplete": "Toda la información básica está cumplimentada",
+    "complete": "Completo",
+    "required": "Obligatorio",
+    "showDetails": "Ver detalles",
+    "hideDetails": "Ocultar",
+    "sections": {
+      "identity": "Datos personales",
+      "contact": "Contacto",
+      "location": "Ubicación",
+      "professional": "Datos profesionales",
+      "about": "Biografía",
+      "documents": "Documentos personales",
+      "bankAccounts": "Datos bancarios",
+      "languages": "Idiomas",
+      "certifications": "Certificaciones"
+    },
+    "hints": {
+      "identity": "Añada fecha de nacimiento y nacionalidad",
+      "contact": "Añada al menos un número de teléfono",
+      "location": "Rellene dirección, ciudad, código postal y país",
+      "professional": "Rellene departamento, cargo y fecha de contratación",
+      "about": "Escriba una breve biografía profesional",
+      "documents": "Añada su pasaporte (obligatorio)",
+      "bankAccounts": "Añada al menos una cuenta bancaria",
+      "languages": "Añada al menos un idioma",
+      "certifications": "Añada al menos una certificación"
+    },
+    "notification": {
+      "title": "Complete su perfil",
+      "message": "Faltan datos importantes en su perfil. Toque para completar."
+    }
+  },
+  "wizard": {
+    "welcome": "Vamos a configurar su perfil",
+    "subtitle": "Rellene la información esencial para empezar",
+    "step": "Paso {{current}} de {{total}}",
+    "next": "Continuar",
+    "previous": "Volver",
+    "skip": "Saltar este paso",
+    "finish": "Empezar a usar",
+    "steps": {
+      "identity": "Sobre usted",
+      "contact": "Cómo contactar",
+      "location": "Dónde está",
+      "professional": "Su función",
+      "documents": "Documentos"
+    },
+    "descriptions": {
+      "identity": "Cuéntenos un poco más sobre usted",
+      "contact": "Añada un número de teléfono de contacto",
+      "location": "Indique su ubicación actual",
+      "professional": "Indique sus datos profesionales en la empresa",
+      "documents": "Añada su pasaporte (obligatorio)"
+    },
+    "passportRequired": "El pasaporte es obligatorio para continuar",
+    "phoneAdded": "¡Teléfono añadido con éxito!",
+    "allDone": "¡Perfil configurado!",
+    "allDoneDesc": "Ya puede usar el sistema. Complete el resto cuando quiera."
+  },
+  "roles": {
+    "ADMIN": "Administrador",
+    "HR": "Recursos Humanos",
+    "STANDARD": "Estándar"
+  },
+  "signatureSection": {
+    "title": "Firma",
+    "description": "Configure su firma personal para firmar documentos"
+  },
+  "ppes": {
+    "title": "EPIs (Equipos de Protección Individual)",
+    "add": "Añadir EPI",
+    "empty": "Ningún EPI registrado",
+    "name": "Nombre del EPI",
+    "namePlaceholder": "Ej: Arnés de seguridad, Casco...",
+    "category": "Categoría",
+    "type": "Tipo de equipo",
+    "brand": "Marca",
+    "model": "Modelo",
+    "serialNumber": "Número de serie",
+    "purchaseDate": "Fecha de adquisición",
+    "lastInspectionDate": "Última inspección",
+    "nextInspectionDate": "Próxima inspección",
+    "condition": "Estado",
+    "notes": "Observaciones",
+    "notesPlaceholder": "Ej: Inspección visual antes de cada uso...",
+    "inspectionOverdue": "Inspección vencida — programar nueva inspección urgente",
+    "inspectionExpiring": "Inspección a vencer en los próximos 30 días",
+    "confirmDelete": "¿Está seguro de que desea eliminar este EPI?",
+    "categories": {
+      "company_provided": "Proporcionado por la empresa",
+      "personal": "Personal"
+    },
+    "types": {
+      "harness": "Arnés",
+      "helmet": "Casco",
+      "rope": "Cuerda",
+      "fall_arrest": "Dispositivo anticaída",
+      "gloves": "Guantes de protección",
+      "footwear": "Calzado de seguridad",
+      "eye_protection": "Protección ocular",
+      "respiratory": "Protección respiratoria",
+      "anchor_connector": "Anclaje y conectores",
+      "first_aid": "Kit de primeros auxilios",
+      "other": "Otro EPI"
+    },
+    "conditions": {
+      "new": "Nuevo",
+      "good": "Buen estado",
+      "fair": "Regular",
+      "needs_replacement": "Necesita sustitución",
+      "expired": "Caducado",
+      "retired": "Retirado"
+    }
+  }
+}

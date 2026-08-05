@@ -1,0 +1,338 @@
+{
+  "title": "Welcome",
+  "subtitle": "Summary dashboard",
+  "homeSubtitle": "Overview of your activity.",
+  "dashboard": {
+    "timesheets": {
+      "title": "Month Hours",
+      "working": "Working",
+      "standby": "Standby",
+      "travel": "Travel",
+      "total": "Total",
+      "noData": "No records this month",
+      "hours": "{{value}}h",
+      "viewAll": "View all"
+    },
+    "projects": {
+      "title": "Projects",
+      "active": "Active",
+      "total": "Total",
+      "noData": "No projects assigned",
+      "viewAll": "View all"
+    },
+    "tips": {
+      "title": "Did you know...",
+      "tip1": "Timesheets are weekly and must be submitted by the end of the week.",
+      "tip2": "Only Team Leaders can create timesheets for their team.",
+      "tip3": "A passport is required to work on international projects.",
+      "tip4": "Expired certifications prevent allocation to projects.",
+      "tip5": "Administrators can configure permissions by module in Settings."
+    },
+    "profileReminder": {
+      "title": "Incomplete profile",
+      "message": "Documents or certifications are missing from your profile.",
+      "action": "Complete",
+      "complete": "Profile complete"
+    }
+  },
+  "profileCard": {
+    "title": "Edit Profile",
+    "description": "Update your personal information, contacts, certifications and languages.",
+    "action": "Go to Profile"
+  },
+  "sections": {
+    "personal": {
+      "title": "Personal and Professional Information",
+      "description": "Your personal details, address and company information"
+    },
+    "documents": {
+      "title": "Personal Documents",
+      "description": "Passport, tax ID, citizen card and other documents"
+    },
+    "address": {
+      "title": "Address",
+      "description": "Your residential address"
+    },
+    "professional": {
+      "title": "Professional Information",
+      "description": "Your company details"
+    }
+  },
+  "groups": {
+    "identity": "Identity",
+    "contact": "Contact",
+    "location": "Location",
+    "professional": "Professional",
+    "documents": "Documents",
+    "about": "About"
+  },
+  "profile": {
+    "firstName": "First Name",
+    "lastName": "Surname",
+    "email": "Email",
+    "phone": "Phone",
+    "phoneCountryCode": "Country Code",
+    "dateOfBirth": "Date of Birth",
+    "nationality": "Nationality",
+    "address": "Address",
+    "city": "City",
+    "postalCode": "Postcode",
+    "country": "Country",
+    "department": "Department",
+    "position": "Position",
+    "hireDate": "Hire Date",
+    "bio": "Biography",
+    "role": "Access",
+    "isTeamLeader": "Team Leader",
+    "yesTeamLeader": "Yes",
+    "noTeamLeader": "No",
+    "teamLeaderBadge": "Team Leader",
+    "photoUrl": "Photo URL",
+    "avatar": "Profile Photo",
+    "avatarUpload": "Upload Photo",
+    "avatarCamera": "Use Camera",
+    "avatarHint": "3x4 photo (JPEG, PNG or WebP, max 3 MB)",
+    "cameraError": "Could not access camera. Check permissions."
+  },
+  "phones": {
+    "title": "Contact",
+    "add": "Add Phone",
+    "empty": "No phone numbers registered",
+    "countryCode": "Country Code",
+    "number": "Number",
+    "type": "Type",
+    "primary": "Primary",
+    "confirmDelete": "Are you sure you want to remove this number?",
+    "types": {
+      "mobile": "Mobile",
+      "home": "Home",
+      "work": "Work"
+    }
+  },
+  "certifications": {
+    "title": "Certifications",
+    "add": "Add Certification",
+    "empty": "No certifications registered",
+    "name": "Certification Name",
+    "issuer": "Issuing Body",
+    "type": "Type",
+    "description": "Description",
+    "descriptionPlaceholder": "Optional description",
+    "certNumber": "Certification Number",
+    "issueDate": "Issue Date",
+    "expiryDate": "Expiry Date",
+    "expired": "Expired",
+    "confirmDelete": "Are you sure you want to remove this certification?",
+    "types": {
+      "certification": "Certification",
+      "diploma": "Diploma",
+      "course": "Course",
+      "training": "Training",
+      "license": "Licence"
+    }
+  },
+  "languages": {
+    "title": "Languages",
+    "add": "Add Language",
+    "empty": "No languages registered",
+    "language": "Language",
+    "level": "Level",
+    "selectLanguage": "Select a language",
+    "confirmDelete": "Are you sure you want to remove this language?",
+    "levels": {
+      "a1": "A1 - Basic",
+      "a2": "A2 - Elementary",
+      "b1": "B1 - Intermediate",
+      "b2": "B2 - Upper Intermediate",
+      "c1": "C1 - Advanced",
+      "c2": "C2 - Proficient",
+      "native": "Native"
+    }
+  },
+  "documents": {
+    "title": "Personal Documents",
+    "add": "Add Document",
+    "empty": "No documents registered",
+    "type": "Document Type",
+    "documentNumber": "Document Number",
+    "issuingCountry": "Issuing Country",
+    "issueDate": "Issue Date",
+    "expiryDate": "Expiry Date",
+    "description": "Description",
+    "descriptionPlaceholder": "e.g. Type D visa, Residence permit...",
+    "expired": "Expired",
+    "confirmDelete": "Are you sure you want to remove this document?",
+    "fileUpload": "Attachment (Photo or PDF)",
+    "fileUploadHint": "JPEG, PNG, WebP or PDF (max 10 MB)",
+    "fileUploadMultiple": "You can attach multiple files",
+    "noFiles": "No files attached",
+    "filesAttached": "{{count}} file(s) attached",
+    "removeFile": "Remove file",
+    "viewAttachment": "View attachment",
+    "replaceAttachment": "Replace",
+    "attachmentWillBeRemoved": "The current attachment will be removed",
+    "chooseFile": "Choose file",
+    "types": {
+      "passport": "Passport",
+      "id_card": "ID Card",
+      "tax_id": "Tax ID (NIF/TIN)",
+      "social_security": "Social Security",
+      "work_permit": "Work Permit",
+      "visa": "Visa",
+      "drivers_license": "Driving Licence",
+      "posting_order": "Posting Order (A1)",
+      "medical_exam": "Medical Exam",
+      "other": "Other"
+    }
+  },
+  "bankAccounts": {
+    "title": "Bank Details",
+    "add": "Add Bank Account",
+    "empty": "No bank accounts registered",
+    "bankName": "Bank Name",
+    "iban": "IBAN",
+    "bicSwift": "BIC/SWIFT",
+    "accountHolder": "Account Holder",
+    "isPrimary": "Primary Account",
+    "description": "Description",
+    "descriptionPlaceholder": "e.g. Salary account, Personal account...",
+    "confirmDelete": "Are you sure you want to remove this bank account?",
+    "primary": "Primary"
+  },
+  "actions": {
+    "edit": "Edit",
+    "save": "Save",
+    "cancel": "Cancel",
+    "saving": "Saving...",
+    "add": "Add"
+  },
+  "feedback": {
+    "success": "Updated successfully!",
+    "error": "Error updating. Please try again."
+  },
+  "validation": {
+    "minLength": "Minimum {{count}} characters",
+    "required": "Required field",
+    "invalidDate": "Invalid date",
+    "selectOption": "Select..."
+  },
+  "completeness": {
+    "title": "Profile Progress",
+    "subtitle": "Complete your profile to take advantage of all features",
+    "percentage": "{{value}}% complete",
+    "sectionsComplete": "Basic information complete!",
+    "basicInfoComplete": "All basic information has been filled in",
+    "complete": "Complete",
+    "required": "Required",
+    "showDetails": "View details",
+    "hideDetails": "Hide",
+    "sections": {
+      "identity": "Personal details",
+      "contact": "Contact",
+      "location": "Location",
+      "professional": "Professional details",
+      "about": "Biography",
+      "documents": "Personal documents",
+      "bankAccounts": "Bank details",
+      "languages": "Languages",
+      "certifications": "Certifications"
+    },
+    "hints": {
+      "identity": "Add date of birth and nationality",
+      "contact": "Add at least one phone number",
+      "location": "Fill in address, city, postcode and country",
+      "professional": "Fill in department, position and hire date",
+      "about": "Write a brief professional biography",
+      "documents": "Add your passport (required)",
+      "bankAccounts": "Add at least one bank account",
+      "languages": "Add at least one language",
+      "certifications": "Add at least one certification"
+    },
+    "notification": {
+      "title": "Complete your profile",
+      "message": "Important data is missing from your profile. Tap to complete."
+    }
+  },
+  "wizard": {
+    "welcome": "Let's set up your profile",
+    "subtitle": "Fill in the essential information to get started",
+    "step": "Step {{current}} of {{total}}",
+    "next": "Continue",
+    "previous": "Back",
+    "skip": "Skip this step",
+    "finish": "Start using",
+    "steps": {
+      "identity": "About you",
+      "contact": "How to contact you",
+      "location": "Where you are",
+      "professional": "Your role",
+      "documents": "Documents"
+    },
+    "descriptions": {
+      "identity": "Tell us a bit more about yourself",
+      "contact": "Add a contact phone number",
+      "location": "Provide your current location",
+      "professional": "Provide your professional details at the company",
+      "documents": "Add your passport (required)"
+    },
+    "passportRequired": "Passport is required to continue",
+    "phoneAdded": "Phone added successfully!",
+    "allDone": "Profile set up!",
+    "allDoneDesc": "You can now use the system. Complete the rest whenever you like."
+  },
+  "roles": {
+    "ADMIN": "Administrator",
+    "HR": "Human Resources",
+    "STANDARD": "Standard"
+  },
+  "signatureSection": {
+    "title": "Signature",
+    "description": "Configure your personal signature to sign documents"
+  },
+  "ppes": {
+    "title": "PPE (Personal Protective Equipment)",
+    "add": "Add PPE",
+    "empty": "No PPE registered",
+    "name": "PPE Name",
+    "namePlaceholder": "e.g. Safety harness, Helmet...",
+    "category": "Category",
+    "type": "Equipment Type",
+    "brand": "Brand",
+    "model": "Model",
+    "serialNumber": "Serial Number",
+    "purchaseDate": "Purchase Date",
+    "lastInspectionDate": "Last Inspection",
+    "nextInspectionDate": "Next Inspection",
+    "condition": "Condition",
+    "notes": "Notes",
+    "notesPlaceholder": "e.g. Visual inspection before each use...",
+    "inspectionOverdue": "Inspection overdue — schedule new urgent inspection",
+    "inspectionExpiring": "Inspection due within the next 30 days",
+    "confirmDelete": "Are you sure you want to remove this PPE?",
+    "categories": {
+      "company_provided": "Company Provided",
+      "personal": "Personal"
+    },
+    "types": {
+      "harness": "Harness",
+      "helmet": "Helmet",
+      "rope": "Rope",
+      "fall_arrest": "Fall Arrest Device",
+      "gloves": "Protective Gloves",
+      "footwear": "Safety Footwear",
+      "eye_protection": "Eye Protection",
+      "respiratory": "Respiratory Protection",
+      "anchor_connector": "Anchor & Connectors",
+      "first_aid": "First Aid Kit",
+      "other": "Other PPE"
+    },
+    "conditions": {
+      "new": "New",
+      "good": "Good Condition",
+      "fair": "Fair",
+      "needs_replacement": "Needs Replacement",
+      "expired": "Expired",
+      "retired": "Retired"
+    }
+  }
+}

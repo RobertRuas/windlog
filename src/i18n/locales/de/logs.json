@@ -1,0 +1,99 @@
+{
+  "title": "Systemprotokolle",
+  "subtitle": "Echtzeit-Überwachung und -Auditierung",
+  "capture": {
+    "label": "Protokollerfassung",
+    "enabled": "Aktiviert",
+    "disabled": "Pausiert",
+    "toastEnabled": "Protokollerfassung aktiviert. Alle Ereignisse werden wieder normal aufgezeichnet.",
+    "toastDisabled": "Protokollerfassung pausiert. Nur Fehler werden weiterhin aufgezeichnet.",
+    "toastError": "Fehler beim Ändern des Erfassungsstatus"
+  },
+  "stats": {
+    "total": "Gesamt",
+    "errors": "Fehler",
+    "warnings": "Warnungen",
+    "critical": "Kritisch"
+  },
+  "search": {
+    "placeholder": "Nach Nachricht, Benutzer suchen...",
+    "button": "Suchen",
+    "filters": "Filter",
+    "clear": "Löschen"
+  },
+  "filters": {
+    "action": "Aktion",
+    "severity": "Schweregrad",
+    "startDate": "Startdatum",
+    "endDate": "Enddatum",
+    "all": "Alle"
+  },
+  "table": {
+    "date": "Datum",
+    "level": "Stufe",
+    "request": "Anfrage",
+    "status": "Status",
+    "duration": "Dauer",
+    "action": "Aktion",
+    "user": "Benutzer",
+    "records": "{{count}} Einträge",
+    "loading": "Protokolle werden geladen...",
+    "empty": "Keine Protokolle gefunden",
+    "emptyHint": "Versuchen Sie, die Filter anzupassen",
+    "page": "Seite {{page}} von {{totalPages}}",
+    "previous": "Zurück",
+    "next": "Weiter"
+  },
+  "details": {
+    "ipAddress": "IP-Adresse",
+    "userAgent": "Benutzer-Agent",
+    "entity": "Entität",
+    "message": "Nachricht",
+    "details": "Details"
+  },
+  "severity": {
+    "info": "Info",
+    "warning": "Warnung",
+    "error": "Fehler",
+    "critical": "Kritisch"
+  },
+  "actions": {
+    "LOGIN": "Anmeldung",
+    "LOGOUT": "Abmeldung",
+    "LOGIN_FAILED": "Anmeldung fehlgeschlagen",
+    "PASSWORD_CHANGE": "Passwortänderung",
+    "PASSWORD_RESET": "Passwort-Zurücksetzung",
+    "USER_CREATE": "Benutzer erstellen",
+    "USER_UPDATE": "Benutzer aktualisieren",
+    "USER_DELETE": "Benutzer löschen",
+    "USER_DEACTIVATE": "Benutzer deaktivieren",
+    "USER_REACTIVATE": "Benutzer reaktivieren",
+    "USER_ROLE_CHANGE": "Rolle ändern",
+    "PROFILE_UPDATE": "Profil aktualisieren",
+    "PROFILE_VIEW": "Profil anzeigen",
+    "PHONE_ADD": "Telefon hinzufügen",
+    "PHONE_UPDATE": "Telefon aktualisieren",
+    "PHONE_DELETE": "Telefon löschen",
+    "CERTIFICATION_ADD": "Zertifizierung hinzufügen",
+    "CERTIFICATION_UPDATE": "Zertifizierung aktualisieren",
+    "CERTIFICATION_DELETE": "Zertifizierung löschen",
+    "LANGUAGE_ADD": "Sprache hinzufügen",
+    "LANGUAGE_UPDATE": "Sprache aktualisieren",
+    "LANGUAGE_DELETE": "Sprache löschen",
+    "PROJECT_CREATE": "Projekt erstellen",
+    "PROJECT_UPDATE": "Projekt aktualisieren",
+    "PROJECT_DELETE": "Projekt löschen",
+    "TURBINE_CREATE": "Turbine erstellen",
+    "TURBINE_UPDATE": "Turbine aktualisieren",
+    "TURBINE_DELETE": "Turbine löschen",
+    "TECHNICIAN_CREATE": "Techniker erstellen",
+    "TECHNICIAN_UPDATE": "Techniker aktualisieren",
+    "TECHNICIAN_DELETE": "Techniker löschen",
+    "SYSTEM_ERROR": "Systemfehler",
+    "API_ERROR": "API-Fehler",
+    "ACCESS_DENIED": "Zugriff verweigert",
+    "DATA_EXPORT": "Daten exportieren",
+    "DATA_IMPORT": "Daten importieren",
+    "OTHER": "Sonstiges"
+  }
+}

@@ -10,7 +10,7 @@
  *
  * CAMPOS:
  * -------
- * - language: Idioma da interface (atualmente apenas "pt")
+ * - language: Idioma da interface ("pt", "en-GB", "es", "de", "fi", "lt")
  * - theme: Tema visual ("light", "dark" ou "auto")
  * - scale: Escala da interface em percentagem (60 a 110)
  * ============================================================================
@@ -30,7 +30,7 @@ export class UpdateSettingsDto {
   })
   @IsOptional()
   @IsString()
-  @IsIn(['pt'], { message: 'Language must be one of: pt' })
+  @IsIn(['pt', 'en-GB', 'es', 'de', 'fi', 'lt'], { message: 'Language must be one of: pt, en-GB, es, de, fi, lt' })
   language?: string;
 
   @ApiPropertyOptional({

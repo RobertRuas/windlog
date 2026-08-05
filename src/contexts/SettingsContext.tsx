@@ -19,7 +19,8 @@
 
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react';
 import { toast } from 'sonner';
-import { getSettings, updateSettings as updateSettingsApi, type UserSettings, type Theme } from '@/services/settings.service';
+import { getSettings, updateSettings as updateSettingsApi, type UserSettings, type Theme, type Language } from '@/services/settings.service';
+import i18n from '@/i18n';
 
 /**
  * Chave usada para cache local das preferências.
@@ -73,6 +74,16 @@ function applyScale(scale: number): void {
 }
 
 /**
+ * Aplica o idioma ao i18next.
+ * Muda dinamicamente todas as traduções da interface.
+ */
+function applyLanguage(language: Language): void {
+  if (i18n.language !== language) {
+    i18n.changeLanguage(language);
+  }
+}
+
+/**
  * Carrega preferências do localStorage (cache).
  */
 function loadCachedSettings(): UserSettings {
@@ -95,10 +106,11 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<UserSettings>(loadCachedSettings);
   const [loading, setLoading] = useState(false);
 
-  // Aplica tema e escala sempre que settings mudar
+  // Aplica tema, escala e idioma sempre que settings mudar
   useEffect(() => {
     applyTheme(settings.theme);
     applyScale(settings.scale);
+    applyLanguage(settings.language);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
   }, [settings]);
 

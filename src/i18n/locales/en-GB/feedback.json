@@ -1,0 +1,157 @@
+{
+  "title": "Feedback",
+  "subtitle": "Report bugs, suggestions or system inconsistencies",
+  "admin_title": "Feedback Management",
+  "admin_subtitle": "Manage all feedback reported by users",
+
+  "button": "Send Feedback",
+  "modal_title": "Report Feedback",
+  "modal_description": "Help us improve the system. Describe the problem or suggestion you found.",
+
+  "fields": {
+    "title": "Title",
+    "title_placeholder": "Short summary of the problem (e.g. Button doesn't work)",
+    "title_required": "Title is required",
+    "description": "Description",
+    "description_placeholder": "Describe in detail what happened. If it's a bug, include the steps to reproduce.",
+    "description_required": "Description is required",
+    "category": "Category",
+    "screenshot": "Screenshot",
+    "screenshot_hint": "Take a screenshot (Print Screen) and upload the image here",
+    "screenshot_optional": "Optional — helps to better understand the problem",
+    "screenshot_upload_text": "Click to upload or drag and drop",
+    "screenshot_upload_formats": "PNG, JPG up to 5MB",
+    "screenshot_error_type": "Select an image file (PNG, JPG, etc.)",
+    "screenshot_error_size": "File must be less than 5MB",
+    "screenshot_unavailable": "Image not available",
+    "page_url": "Current page",
+    "admin_notes": "Administrator Notes",
+    "admin_notes_placeholder": "Add notes about analysis, resolution or closure reason..."
+  },
+
+  "categories": {
+    "BUG": "Bug / Error",
+    "UI_ISSUE": "Visual Issue",
+    "FEATURE": "Suggestion",
+    "INCONSISTENCY": "Inconsistency",
+    "PERFORMANCE": "Performance",
+    "OTHER": "Other"
+  },
+
+  "priorities": {
+    "LOW": "Low",
+    "MEDIUM": "Medium",
+    "HIGH": "High",
+    "CRITICAL": "Critical"
+  },
+
+  "statuses": {
+    "NEW": "New",
+    "TRIAGED": "Triaged",
+    "IN_PROGRESS": "In Progress",
+    "RESOLVED": "Resolved",
+    "CLOSED": "Closed"
+  },
+
+  "screenshot": {
+    "capture_visible": "Capture visible",
+    "capture_full": "Capture full page",
+    "capture_area": "Select area",
+    "remove": "Remove capture",
+    "preview": "Preview",
+    "capturing": "Capturing...",
+    "no_capture": "No capture"
+  },
+
+  "actions": {
+    "submit": "Send Feedback",
+    "submitting": "Sending...",
+    "submitted": "Feedback sent successfully!",
+    "error": "Error sending feedback",
+    "update": "Update",
+    "delete": "Delete",
+    "view": "View details",
+    "change_status": "Change status",
+    "change_priority": "Change priority"
+  },
+
+  "list": {
+    "empty": "No feedback found",
+    "empty_description": "Feedback reported by users will appear here",
+    "reported_by": "Reported by",
+    "reported_at": "Reported at",
+    "resolved_by": "Resolved by",
+    "resolved_at": "Resolved at",
+    "page_context": "Page",
+    "browser_info": "Browser",
+    "screen_info": "Screen",
+    "no_screenshot": "No capture"
+  },
+
+  "stats": {
+    "total": "Total",
+    "new": "New",
+    "by_status": "By Status",
+    "by_category": "By Category",
+    "by_priority": "By Priority"
+  },
+
+  "filters": {
+    "all_statuses": "All statuses",
+    "all_categories": "All categories",
+    "all_priorities": "All priorities",
+    "search_placeholder": "Search in title or description..."
+  },
+
+  "technical": {
+    "console_logs_captured": "console log(s) captured",
+    "recent_system_errors": "Recent system error(s)",
+    "connection": "Connection",
+    "uploading": "Uploading..."
+  },
+
+  "toast": {
+    "create_success": "Feedback sent successfully! Thank you for your help.",
+    "create_error": "Error sending feedback. Please try again.",
+    "update_success": "Feedback updated successfully!",
+    "update_error": "Error updating feedback.",
+    "delete_success": "Feedback deleted successfully!",
+    "delete_error": "Error deleting feedback.",
+    "confirm_delete": "Are you sure you want to delete this feedback?"
+  },
+
+  "table": {
+    "status": "Status",
+    "priority": "Priority",
+    "date": "Date",
+    "actions": "Actions",
+    "clear": "Clear",
+    "pagination_info": "{{total}} feedbacks · Page {{page}} of {{totalPages}}",
+    "previous": "Previous",
+    "next": "Next"
+  },
+
+  "detail": {
+    "technical_title": "Technical Details",
+    "browser": "Browser",
+    "os": "OS",
+    "language": "Language",
+    "cpu_cores": "CPU Cores",
+    "screen": "Screen",
+    "viewport": "Viewport",
+    "connection": "Connection",
+    "memory_usage": "Memory Usage",
+    "browser_features": "Browser Features",
+    "console_logs": "Console Logs",
+    "recent_errors": "Recent System Errors"
+  },
+
+  "modal_categories": {
+    "bug": "Bug",
+    "visual": "Visual",
+    "idea": "Idea",
+    "error": "Error",
+    "slow": "Slow",
+    "other": "Other"
+  }
+}

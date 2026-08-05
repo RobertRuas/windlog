@@ -1,0 +1,163 @@
+{
+  "title": "Proyectos",
+  "subtitle": "Gestionar todos los proyectos del sistema",
+  "newProject": "Nuevo proyecto",
+  "search": {
+    "placeholder": "Buscar por nombre o cliente..."
+  },
+  "filter": {
+    "allStatuses": "Todos los estados"
+  },
+  "table": {
+    "name": "Nombre",
+    "client": "Cliente",
+    "location": "Ubicación",
+    "status": "Estado",
+    "turbines": "Turbinas",
+    "members": "Miembros",
+    "files": "Archivos",
+    "resources": "Recursos",
+    "actions": "Acciones",
+    "loading": "Cargando...",
+    "empty": "Ningún proyecto encontrado",
+    "pagination": "Página {{page}} de {{totalPages}} ({{total}} proyectos)"
+  },
+  "status": {
+    "PLANNING": "Planificación",
+    "IN_PROGRESS": "En progreso",
+    "ON_HOLD": "En espera",
+    "COMPLETED": "Completado",
+    "CANCELLED": "Cancelado"
+  },
+  "turbineStatus": {
+    "OPERATIONAL": "Operativa",
+    "MAINTENANCE": "En mantenimiento",
+    "OFFLINE": "Desconectada",
+    "DECOMMISSIONADA": "Desmantelada"
+  },
+  "actions": {
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "viewDetails": "Ver detalles",
+    "backToList": "Volver a proyectos",
+    "addTurbine": "Nueva turbina",
+    "addMember": "Añadir miembro",
+    "editProject": "Editar proyecto",
+    "editMemberRole": "Editar rol",
+    "confirmDelete": "¿Está seguro de que desea eliminar el proyecto \"{{name}}\"?",
+    "confirmDeleteTurbine": "¿Está seguro de que desea eliminar la turbina \"{{name}}\"?",
+    "confirmRemoveMember": "¿Está seguro de que desea eliminar {{name}} del proyecto?",
+    "confirmDeleteFile": "¿Está seguro de que desea eliminar el archivo \"{{name}}\"?",
+    "download": "Descargar",
+    "view": "Ver"
+  },
+  "tabs": {
+    "info": "Información",
+    "turbines": "Turbinas",
+    "members": "Equipo",
+    "files": "Archivos"
+  },
+  "modal": {
+    "editTitle": "Editar proyecto",
+    "createTitle": "Nuevo proyecto",
+    "basicInfo": "Información básica",
+    "additionalInfo": "Información complementaria",
+    "name": "Nombre del proyecto",
+    "client": "Cliente",
+    "location": "Ubicación",
+    "scope": "Alcance",
+    "description": "Descripción",
+    "latitude": "Latitud",
+    "longitude": "Longitud",
+    "startDate": "Fecha de inicio",
+    "status": "Estado",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "create": "Crear"
+  },
+  "turbineTable": {
+    "name": "Nombre",
+    "location": "Ubicación",
+    "manufacturer": "Fabricante",
+    "model": "Modelo",
+    "nacelleHeight": "Altura de la góndola",
+    "status": "Estado",
+    "empty": "Ninguna turbina registrada en este proyecto"
+  },
+  "turbineModal": {
+    "createTitle": "Nueva turbina",
+    "editTitle": "Editar turbina",
+    "name": "Nombre de la turbina",
+    "location": "Ubicación",
+    "manufacturer": "Fabricante",
+    "model": "Modelo",
+    "nacelleHeight": "Altura de la góndola (m)",
+    "latitude": "Latitud",
+    "longitude": "Longitud",
+    "status": "Estado"
+  },
+  "memberTable": {
+    "name": "Nombre",
+    "email": "Correo",
+    "role": "Rol",
+    "projectRole": "Rol en el proyecto",
+    "empty": "Ningún miembro asociado a este proyecto",
+    "noRole": "Sin rol definido",
+    "membersCount": "{{count}} miembro(s)"
+  },
+  "memberSearch": {
+    "placeholder": "Buscar usuario para añadir...",
+    "noResults": "Ningún usuario encontrado"
+  },
+  "memberModal": {
+    "allUsersAlreadyMembers": "Todos los usuarios del sistema ya son miembros de este proyecto"
+  },
+  "editProjectModal": {
+    "title": "Editar proyecto"
+  },
+  "editMemberModal": {
+    "title": "Editar rol del miembro",
+    "role": "Rol en el proyecto",
+    "rolePlaceholder": "Ej: Lead Technician"
+  },
+  "errors": {
+    "notFound": "Proyecto no encontrado"
+  },
+  "toast": {
+    "createSuccess": "Proyecto creado con éxito",
+    "createError": "Error al crear proyecto",
+    "updateSuccess": "Proyecto actualizado con éxito",
+    "updateError": "Error al actualizar proyecto",
+    "deleteSuccess": "Proyecto eliminado con éxito",
+    "deleteError": "Error al eliminar proyecto",
+    "turbineCreateSuccess": "Turbina añadida con éxito",
+    "turbineCreateError": "Error al añadir turbina",
+    "turbineUpdateSuccess": "Turbina actualizada con éxito",
+    "turbineUpdateError": "Error al actualizar turbina",
+    "turbineDeleteSuccess": "Turbina eliminada con éxito",
+    "turbineDeleteError": "Error al eliminar turbina",
+    "memberAddSuccess": "Miembro añadido con éxito",
+    "memberAddError": "Error al añadir miembro",
+    "memberUpdateSuccess": "Rol del miembro actualizado con éxito",
+    "memberUpdateError": "Error al actualizar rol del miembro",
+    "memberRemoveSuccess": "Miembro eliminado con éxito",
+    "memberRemoveError": "Error al eliminar miembro",
+    "fileUploadSuccess": "Archivo añadido con éxito",
+    "fileUploadError": "Error al añadir archivo",
+    "fileDeleteSuccess": "Archivo eliminado con éxito",
+    "fileDeleteError": "Error al eliminar archivo"
+  },
+  "files": {
+    "empty": "Ningún archivo asociado a este proyecto",
+    "dropzone": "Arrastre archivos aquí o haga clic para seleccionar",
+    "dropzoneHint": "PDF, Word, Excel, PowerPoint o JPEG hasta 10 MB",
+    "uploading": "Subiendo...",
+    "exceedsLimit": "\"{{name}}\" supera el límite de 10 MB"
+  },
+  "filesTable": {
+    "name": "Nombre",
+    "type": "Tipo",
+    "size": "Tamaño",
+    "date": "Fecha"
+  }
+}
