@@ -1,0 +1,73 @@
+# ============================================================================
+# DOCKER COMPOSE - Windlog (App + PostgreSQL)
+# ============================================================================
+#
+# COMO USAR:
+# ----------
+# docker compose up --build          # Build e start
+# docker compose up -d               # Start em background
+# docker compose down                # Parar e remover containers
+# docker compose down -v             # Parar e remover volumes (apaga dados!)
+# docker compose logs -f             # Ver logs em tempo real
+#
+# ACESSO:
+# -------
+# Frontend:  http://localhost
+# API:       http://localhost/api/v1
+# Swagger:   http://localhost/api/docs
+#
+# UTILIZADORES (senha: 123456):
+# -----------------------------
+# admin@windlog.com   → ADMIN
+# rh@windlog.com      → HR
+# default@windlog.com → STANDARD
+# ============================================================================
+
+services:
+  # ── Aplicação (Nginx + NestJS em um container) ─────────────────────────
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://windlog:windlog_pass@db:5432/windlog
+      - PORT=3000
+      - LISTEN_HOST=127.0.0.1
+      - JWT_SECRET=change-this-to-a-long-random-string-in-production
+      - JWT_EXPIRES_IN=2h
+      - JWT_REFRESH_EXPIRES_IN=30d
+      - CORS_ORIGIN=http://localhost
+      - UPLOAD_DIR=./uploads
+      - MAX_FILE_SIZE=10485760
+      - FILE_TOKEN_TTL=300
+    volumes:
+      - uploads_data:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ── PostgreSQL ─────────────────────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: windlog
+      POSTGRES_PASSWORD: windlog_pass
+      POSTGRES_DB: windlog
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U windlog -d windlog"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  uploads_data:

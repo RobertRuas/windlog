@@ -1,0 +1,54 @@
+# ============================================================================
+# .dockerignore - Ficheiros excluídos do contexto de build Docker
+# ============================================================================
+
+# Dependências (instaladas dentro do container)
+**/node_modules
+
+# Build outputs (feitos dentro do container)
+**/dist
+dist
+
+# Variáveis de ambiente locais
+**/.env
+**/.env.local
+**/.env.production
+
+# Git
+.git
+.gitignore
+
+# IDE e editores
+.vscode
+.idea
+*.swp
+*.swo
+.DS_Store
+
+# Docker (não incluir no contexto)
+Dockerfile
+docker-compose*.yml
+docker/
+
+# Documentação e wiki
+.qoder
+README.md
+**/*.md
+
+# Testes e coverage
+**/coverage
+**/.nyc_output
+
+# SSH keys
+SSH/
+
+# Uploads locais
+API/uploads
+
+# Prisma generated (gerado dentro do container)
+**/prisma/generated
+**/generated
+
+# Logs
+*.log
+logs/
