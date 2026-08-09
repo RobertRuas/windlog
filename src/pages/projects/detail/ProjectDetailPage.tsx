@@ -49,6 +49,9 @@ import { ProjectEditModal } from './components/ProjectEditModal';
 // Hook personalizado
 import { useProjectMutations } from './hooks/useProjectMutations';
 
+// Utilitário de permissões
+import { hasRole } from '@/utils/jwt';
+
 /**
  * Componente ProjectDetailPage - Página de detalhes do projeto.
  */
@@ -56,6 +59,9 @@ export function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation('projects');
+
+  // Apenas ADMIN ou HR podem editar (visualização é liberada a todos)
+  const canEdit = hasRole(['ADMIN', 'HR']);
 
   // Estado de aba
   const [activeTab, setActiveTab] = useState<'info' | 'turbines' | 'members' | 'files'>('info');
@@ -71,10 +77,11 @@ export function ProjectDetailPage() {
   // Buscar contagem de ficheiros do projeto (para o badge da aba)
   // TODO: Reimplementar quando o sistema de ficheiros estiver pronto
 
-  // Buscar usuários disponíveis
+  // Buscar usuários disponíveis (apenas para ADMIN/HR, usados no modal de membros)
   const { data: usersData } = useQuery({
     queryKey: ['users-for-members'],
     queryFn: () => fetchUsers({ limit: 100 }),
+    enabled: canEdit,
   });
 
   // Mutations
@@ -186,13 +193,16 @@ export function ProjectDetailPage() {
             }`}>
               {t(`status.${project.status}`)}
             </span>
-            <button
-              onClick={openEditModal}
-              className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-              title={t('actions.editProject')}
-            >
-              <Edit2 size={18} />
-            </button>
+            {/* Botão de edição apenas para ADMIN/HR */}
+            {canEdit && (
+              <button
+                onClick={openEditModal}
+                className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                title={t('actions.editProject')}
+              >
+                <Edit2 size={18} />
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -251,6 +261,7 @@ export function ProjectDetailPage() {
       {activeTab === 'turbines' && (
         <ProjectTurbinesTab
           project={project}
+          canEdit={canEdit}
           onCreateTurbine={handleCreateTurbine}
           onUpdateTurbine={handleUpdateTurbine}
           onDeleteTurbine={handleDeleteTurbine}
@@ -263,6 +274,7 @@ export function ProjectDetailPage() {
         <ProjectMembersTab
           project={project}
           users={usersData?.data || []}
+          canEdit={canEdit}
           onAddMember={handleAddMember}
           onUpdateMemberRole={handleUpdateMemberRole}
           onRemoveMember={handleRemoveMember}
@@ -274,6 +286,7 @@ export function ProjectDetailPage() {
       {activeTab === 'files' && (
         <ProjectFilesTab
           project={project}
+          canEdit={canEdit}
           onUploadFile={(file, category) => uploadFileMutation.mutate({ file, category })}
           onDeleteFile={(fileId) => deleteFileMutation.mutate(fileId)}
           isUploading={uploadFileMutation.isPending}

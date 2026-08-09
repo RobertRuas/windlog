@@ -30,7 +30,8 @@
  * SEGURANÇA:
  * ----------
  * - Todos os endpoints requerem autenticação (JWT)
- * - Todos os endpoints requerem role ADMIN ou HR (RolesGuard)
+ * - Leitura (GET) liberada a todos os usuários autenticados
+ * - Escrita (POST/PUT/PATCH/DELETE) apenas role ADMIN ou HR (RolesGuard)
  * ============================================================================
  */
 
@@ -88,13 +89,13 @@ import { createMulterConfig } from '../upload/multer.config.js';
  * @ApiBearerAuth() - Indica que requer token JWT
  * @Controller('projects') - Prefixo da rota: /api/v1/projects/*
  * @UseGuards(AuthGuard('jwt'), RolesGuard) - Protege todos os endpoints
- * @Roles(Role.ADMIN, Role.HR) - Apenas ADMIN ou HR podem acessar
+ * Escrita restrita a ADMIN/HR via @Roles() nos métodos; leitura liberada
+ * a todos os autenticados (RolesGuard sem metadado permite acesso).
  */
 @ApiTags('projects')
 @ApiBearerAuth()
 @Controller('projects')
 @UseGuards(AuthGuard('jwt'), RolesGuard)
-@Roles(Role.ADMIN, Role.HR)
 export class ProjectsController {
   constructor(
     private readonly projectsService: ProjectsService,
@@ -158,6 +159,7 @@ export class ProjectsController {
    * Apenas as informações básicas são obrigatórias (name, client, location).
    */
   @Post()
+  @Roles(Role.ADMIN, Role.HR)
   @ApiOperation({
     summary: 'Criar novo projeto',
     description: 'Cria um novo projeto com informações básicas. Outras informações podem ser preenchidas posteriormente.',
@@ -177,6 +179,7 @@ export class ProjectsController {
    * Atualiza os dados de um projeto existente.
    */
   @Put(':id')
+  @Roles(Role.ADMIN, Role.HR)
   @ApiOperation({
     summary: 'Atualizar projeto',
     description: 'Atualiza os dados de um projeto específico. Todos os campos são opcionais.',
@@ -197,6 +200,7 @@ export class ProjectsController {
    * Remove um projeto (soft delete).
    */
   @Delete(':id')
+  @Roles(Role.ADMIN, Role.HR)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Remover projeto',
@@ -236,6 +240,7 @@ export class ProjectsController {
    * Adiciona uma turbina a um projeto.
    */
   @Post(':id/turbines')
+  @Roles(Role.ADMIN, Role.HR)
   @ApiOperation({
     summary: 'Adicionar turbina ao projeto',
     description: 'Adiciona uma nova turbina a um projeto específico.',
@@ -253,6 +258,7 @@ export class ProjectsController {
    * Atualiza uma turbina de um projeto.
    */
   @Put(':id/turbines/:turbineId')
+  @Roles(Role.ADMIN, Role.HR)
   @ApiOperation({
     summary: 'Atualizar turbina',
     description: 'Atualiza os dados de uma turbina específica de um projeto.',
@@ -274,6 +280,7 @@ export class ProjectsController {
    * Remove uma turbina de um projeto (soft delete).
    */
   @Delete(':id/turbines/:turbineId')
+  @Roles(Role.ADMIN, Role.HR)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Remover turbina',
@@ -314,6 +321,7 @@ export class ProjectsController {
    * Adiciona um membro (usuário) a um projeto.
    */
   @Post(':id/members')
+  @Roles(Role.ADMIN, Role.HR)
   @ApiOperation({
     summary: 'Adicionar membro ao projeto',
     description: 'Associa um usuário a um projeto específico.',
@@ -332,6 +340,7 @@ export class ProjectsController {
    * Atualiza a função de um membro no projeto.
    */
   @Patch(':id/members/:memberId')
+  @Roles(Role.ADMIN, Role.HR)
   @ApiOperation({
     summary: 'Atualizar função do membro',
     description: 'Atualiza a função de um membro em um projeto específico.',
@@ -353,6 +362,7 @@ export class ProjectsController {
    * Remove um membro de um projeto.
    */
   @Delete(':id/members/:memberId')
+  @Roles(Role.ADMIN, Role.HR)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Remover membro do projeto',
@@ -378,6 +388,7 @@ export class ProjectsController {
    * Usa UploadService para guardar o ficheiro e ProjectsService para registar no DB.
    */
   @Post(':id/files')
+  @Roles(Role.ADMIN, Role.HR)
   @ApiOperation({
     summary: 'Upload file to project',
     description: 'Faz upload de um ficheiro e associa ao projeto. O ficheiro é guardado em uploads/{userId}/projects/.',
@@ -456,6 +467,7 @@ export class ProjectsController {
    * Remove um ficheiro de projeto (soft delete no DB + delete físico).
    */
   @Delete(':id/files/:fileId')
+  @Roles(Role.ADMIN, Role.HR)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Remover ficheiro do projeto',

@@ -338,6 +338,23 @@ html.dark .form-button-secondary:hover:not(:disabled) {
   box-shadow: 0 0 0 3px rgba(255, 59, 48, 0.12);
 }
 
+/* Remove o indicador nativo de calendário dos inputs de data.
+   O DatePicker usa um ícone próprio (Calendar) posicionado à esquerda;
+   sem esta regra o browser exibe um segundo ícone à direita. */
+input[type='date'] {
+  -webkit-appearance: none;
+  appearance: none;
+}
+input[type='date']::-webkit-calendar-picker-indicator,
+input[type='date']::-webkit-inner-spin-button {
+  display: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+input[type='date']::-webkit-date-and-time-value {
+  text-align: left;
+}
+
 /* Textarea tem altura mínima maior */
 .form-textarea {
   height: auto;

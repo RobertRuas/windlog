@@ -38,6 +38,8 @@ import { SecureFileLink } from '@/components/ui/SecureFileLink';
  */
 interface ProjectFilesTabProps {
   project: ProjectDetail;
+  /** Se false, oculta upload e exclusão (somente leitura) */
+  canEdit: boolean;
   onUploadFile: (file: File, category?: string) => void;
   onDeleteFile: (fileId: string) => void;
   isUploading: boolean;
@@ -88,6 +90,7 @@ function getFileTypeName(mimeType: string): string {
  */
 export function ProjectFilesTab({
   project,
+  canEdit,
   onUploadFile,
   onDeleteFile,
   isUploading,
@@ -215,10 +218,11 @@ export function ProjectFilesTab({
         </span>
       ),
     },
-    {
+    // Coluna de exclusão apenas para ADMIN/HR
+    ...(canEdit ? [{
       header: '',
-      align: 'right',
-      render: (file) => (
+      align: 'right' as const,
+      render: (file: ProjectFile) => (
         <button
           onClick={() => handleDelete(file)}
           className="p-1 text-gray-400 hover:text-red-500 transition-colors"
@@ -227,7 +231,7 @@ export function ProjectFilesTab({
           <Trash2 size={14} />
         </button>
       ),
-    },
+    }] : []),
   ];
 
   return (
@@ -242,29 +246,31 @@ export function ProjectFilesTab({
         className="hidden"
       />
 
-      {/* Zona de upload com drag & drop */}
-      <div
-        onDrop={handleDrop}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onClick={handleSelectFiles}
-        className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors ${
-          isDragOver
-            ? 'border-blue-400 bg-blue-50'
-            : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
-        }`}
-      >
-        <Upload
-          size={40}
-          className={`mx-auto mb-3 ${isDragOver ? 'text-blue-500' : 'text-gray-400'}`}
-        />
-        <p className="text-sm text-gray-600 mb-1">
-          {isUploading ? t('files.uploading') : t('files.dropzone')}
-        </p>
-        <p className="text-xs text-gray-400">
-          {t('files.dropzoneHint')}
-        </p>
-      </div>
+      {/* Zona de upload com drag & drop (apenas ADMIN/HR) */}
+      {canEdit && (
+        <div
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onClick={handleSelectFiles}
+          className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors ${
+            isDragOver
+              ? 'border-blue-400 bg-blue-50'
+              : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
+          }`}
+        >
+          <Upload
+            size={40}
+            className={`mx-auto mb-3 ${isDragOver ? 'text-blue-500' : 'text-gray-400'}`}
+          />
+          <p className="text-sm text-gray-600 mb-1">
+            {isUploading ? t('files.uploading') : t('files.dropzone')}
+          </p>
+          <p className="text-xs text-gray-400">
+            {t('files.dropzoneHint')}
+          </p>
+        </div>
+      )}
 
       {/* Tabela de ficheiros */}
       <DataTable

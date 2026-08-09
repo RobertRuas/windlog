@@ -28,6 +28,8 @@ interface ProjectsTableProps {
     hasNextPage: boolean;
   };
   isLoading: boolean;
+  /** Se false, oculta as ações de editar/excluir (apenas visualização) */
+  canEdit: boolean;
   onEdit: (project: ProjectListItem) => void;
   onDelete: (project: ProjectListItem) => void;
   onViewDetails: (project: ProjectListItem) => void;
@@ -53,6 +55,7 @@ const STATUS_CONFIG: Record<string, { bg: string; dot: string }> = {
 export function ProjectsTable({
   data,
   isLoading,
+  canEdit,
   onEdit,
   onDelete,
   onViewDetails,
@@ -137,20 +140,25 @@ export function ProjectsTable({
           >
             <Eye size={15} />
           </button>
-          <button
-            onClick={() => onEdit(project)}
-            className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-            title={t('actions.edit')}
-          >
-            <Edit2 size={15} />
-          </button>
-          <button
-            onClick={() => onDelete(project)}
-            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-            title={t('actions.delete')}
-          >
-            <Trash2 size={15} />
-          </button>
+          {/* Ações de escrita apenas para ADMIN/HR */}
+          {canEdit && (
+            <>
+              <button
+                onClick={() => onEdit(project)}
+                className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                title={t('actions.edit')}
+              >
+                <Edit2 size={15} />
+              </button>
+              <button
+                onClick={() => onDelete(project)}
+                className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                title={t('actions.delete')}
+              >
+                <Trash2 size={15} />
+              </button>
+            </>
+          )}
         </div>
       ),
     },

@@ -168,3 +168,19 @@ export function getRemainingTime(token?: string): {
 
   return { days, hours, minutes, expired: false };
 }
+
+/**
+ * Verifica se o usuário autenticado possui um dos roles informados.
+ *
+ * @param roles - Lista de roles permitidos (ex.: ['ADMIN', 'HR'])
+ * @returns true se o role do token está na lista
+ */
+export function hasRole(roles: string[]): boolean {
+  const token = localStorage.getItem('accessToken');
+  if (!token) return false;
+
+  const payload = decodeJwtPayload(token);
+  if (!payload) return false;
+
+  return roles.includes(payload.role);
+}

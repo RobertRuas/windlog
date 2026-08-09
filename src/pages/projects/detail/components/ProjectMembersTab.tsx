@@ -22,6 +22,8 @@ import type { ProjectDetail, ProjectMember, AddMemberPayload, UpdateMemberPayloa
 interface ProjectMembersTabProps {
   project: ProjectDetail;
   users: { id: string; firstName: string; lastName: string; email: string; position?: string }[];
+  /** Se false, oculta ações de adicionar/editar/remover (somente leitura) */
+  canEdit: boolean;
   onAddMember: (payload: AddMemberPayload, options?: { onSuccess: () => void }) => void;
   onUpdateMemberRole: (memberId: string, payload: UpdateMemberPayload, options?: { onSuccess: () => void }) => void;
   onRemoveMember: (memberId: string) => void;
@@ -35,6 +37,7 @@ interface ProjectMembersTabProps {
 export function ProjectMembersTab({
   project,
   users,
+  canEdit,
   onAddMember,
   onUpdateMemberRole,
   onRemoveMember,
@@ -179,16 +182,18 @@ export function ProjectMembersTab({
 
   return (
     <>
-      {/* Botão de adicionar membro */}
-      <div className="flex justify-end mb-4">
-        <button
-          onClick={toggleAddPanel}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-        >
-          <Plus size={16} />
-          {t('actions.addMember')}
-        </button>
-      </div>
+      {/* Botão de adicionar membro (apenas ADMIN/HR) */}
+      {canEdit && (
+        <div className="flex justify-end mb-4">
+          <button
+            onClick={toggleAddPanel}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+          >
+            <Plus size={16} />
+            {t('actions.addMember')}
+          </button>
+        </div>
+      )}
 
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         {/* Lista agrupada por função ou estado vazio */}
@@ -225,22 +230,24 @@ export function ProjectMembersTab({
                           </div>
                         </div>
 
-                        {/* Ações */}
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => openEditModal(member)}
-                            className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                            title={t('actions.editMemberRole')}
-                          >
-                            <Edit2 size={14} />
-                          </button>
-                          <button
-                            onClick={() => handleRemove(member)}
-                            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
+                        {/* Ações (apenas ADMIN/HR) */}
+                        {canEdit && (
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => openEditModal(member)}
+                              className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                              title={t('actions.editMemberRole')}
+                            >
+                              <Edit2 size={14} />
+                            </button>
+                            <button
+                              onClick={() => handleRemove(member)}
+                              className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -257,7 +264,7 @@ export function ProjectMembersTab({
       </div>
 
       {/* Modal de Adicionar Membro */}
-      {isAddModalOpen && (
+      {canEdit && isAddModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-sm mx-4">
             {/* Header */}

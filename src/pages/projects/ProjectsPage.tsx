@@ -6,7 +6,8 @@
  * O QUE É ESTA PÁGINA?
  * --------------------
  * Página completa para gerenciar projetos do sistema.
- * Apenas visível para usuários com role ADMIN ou HR.
+ * Visível para todos os usuários autenticados; criação, edição e
+ * exclusão são permitidas apenas para roles ADMIN ou HR.
  *
  * FUNCIONALIDADES:
  * ----------------
@@ -21,8 +22,8 @@
  * SEGURANÇA:
  * ----------
  * - Rota protegida (requer autenticação)
- * - Verificação de role no frontend (ADMIN ou HR)
- * - API também valida as permissões
+ * - Ações de escrita exibidas apenas para ADMIN ou HR (canEdit)
+ * - API também valida as permissões (RolesGuard)
  * ============================================================================
  */
 
@@ -54,6 +55,9 @@ import {
   type ProjectFilters,
 } from '@/services/project.service';
 
+// Utilitário de permissões
+import { hasRole } from '@/utils/jwt';
+
 /**
  * Componente ProjectsPage - Página de gestão de projetos.
  */
@@ -61,6 +65,9 @@ export function ProjectsPage() {
   const { t } = useTranslation('projects');
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+
+  // Apenas ADMIN ou HR podem criar/editar/excluir projetos
+  const canEdit = hasRole(['ADMIN', 'HR']);
 
   // Estados de filtros
   const [search, setSearch] = useState('');
@@ -242,13 +249,15 @@ export function ProjectsPage() {
         title={t('title')}
         subtitle={t('subtitle')}
         actions={
-          <button
-            onClick={openCreateModal}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <Plus size={18} />
-            {t('newProject')}
-          </button>
+          canEdit ? (
+            <button
+              onClick={openCreateModal}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <Plus size={18} />
+              {t('newProject')}
+            </button>
+          ) : undefined
         }
       />
 
@@ -271,6 +280,7 @@ export function ProjectsPage() {
       <ProjectsTable
         data={data}
         isLoading={isLoading}
+        canEdit={canEdit}
         onEdit={openEditModal}
         onDelete={handleDelete}
         onViewDetails={handleViewDetails}

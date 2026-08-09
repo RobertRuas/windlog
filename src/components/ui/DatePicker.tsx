@@ -22,7 +22,7 @@
  * ============================================================================
  */
 
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import { Calendar } from 'lucide-react';
 
 /**
@@ -81,6 +81,7 @@ export function DatePicker({
 }: DatePickerProps) {
   // Converte o valor de DD/MM/YYYY para YYYY-MM-DD (formato do native picker)
   const isoValue = useMemo(() => brToIso(value), [value]);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   /**
    * Handler do change do native picker.
@@ -101,6 +102,7 @@ export function DatePicker({
   return (
     <div className={`relative ${className}`}>
       <input
+        ref={inputRef}
         type="date"
         id={id}
         value={isoValue}
@@ -110,10 +112,15 @@ export function DatePicker({
         max={max}
         className="form-input pl-9 disabled:opacity-60 disabled:cursor-not-allowed appearance-none"
       />
-      {/* Ícone de calendário (decorativo, posicionado à esquerda) */}
+      {/* Ícone de calendário à esquerda — também abre o picker nativo */}
       <Calendar
         size={14}
-        className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+        onClick={() => {
+          if (!disabled) inputRef.current?.showPicker?.();
+        }}
+        className={`absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 ${
+          disabled ? 'pointer-events-none' : 'cursor-pointer'
+        }`}
       />
     </div>
   );

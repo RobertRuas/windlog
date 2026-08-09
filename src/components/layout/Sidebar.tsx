@@ -54,21 +54,13 @@ import {
 } from '@/services/mail.service';
 
 /**
- * Props do componente Sidebar.
- */
-interface SidebarProps {
-  /** Nome do usuário exibido no rodapé do menu */
-  userName?: string;
-}
-
-/**
  * Itens de navegação do menu.
  * Cada item tem: ícone, label de tradução, rota, padrão de match e roles permitidos.
  */
 const NAV_ITEMS = [
   { icon: Home, labelKey: 'nav.home', path: '/', end: true, roles: [] },
   { icon: Users, labelKey: 'nav.users', path: '/users', end: false, roles: ['ADMIN', 'HR'] },
-  { icon: FolderOpen, labelKey: 'nav.projects', path: '/projects', end: false, roles: ['ADMIN', 'HR'] },
+  { icon: FolderOpen, labelKey: 'nav.projects', path: '/projects', end: false, roles: [] },
   { icon: Calendar, labelKey: 'nav.timesheets', path: '/timesheets', end: false, roles: [] },
   { icon: Mail, labelKey: 'nav.mail', path: '/mail', end: false, roles: [] },
   { icon: MessageSquare, labelKey: 'nav.feedbacks', path: '/feedbacks', end: false, roles: ['ADMIN'] },
@@ -308,7 +300,7 @@ function MailAccordion({ onNavigate }: { onNavigate: () => void }) {
  * Desktop: fixo à esquerda (w-60).
  * Mobile: drawer que desliza da esquerda com overlay escuro.
  */
-export function Sidebar({ userName }: SidebarProps) {
+export function Sidebar() {
   const { t } = useTranslation('common');
   const navigate = useNavigate();
   const location = useLocation();
@@ -403,14 +395,8 @@ export function Sidebar({ userName }: SidebarProps) {
           })}
         </nav>
 
-        {/* ── Rodapé: usuário + logout ─────────────────────────── */}
-        <div className="border-t border-gray-200 dark:border-[#38383a] px-3 py-4 space-y-2">
-          {/* Nome do usuário (se disponível) */}
-          {userName && (
-            <div className="px-3 py-1.5 text-xs text-gray-500 dark:text-[#636366] truncate" title={userName}>
-              {userName}
-            </div>
-          )}
+        {/* ── Rodapé: logout ───────────────────────────────────── */}
+        <div className="border-t border-gray-200 dark:border-[#38383a] px-3 py-4">
           {/* Botão de logout */}
           <button
             onClick={handleLogout}

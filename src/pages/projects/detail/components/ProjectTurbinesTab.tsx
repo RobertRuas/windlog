@@ -21,6 +21,8 @@ import { TurbineModal } from './TurbineModal';
  */
 interface ProjectTurbinesTabProps {
   project: ProjectDetail;
+  /** Se false, oculta ações de adicionar/editar/remover (somente leitura) */
+  canEdit: boolean;
   onCreateTurbine: (payload: CreateTurbinePayload, options?: { onSuccess: () => void }) => void;
   onUpdateTurbine: (turbineId: string, payload: UpdateTurbinePayload, options?: { onSuccess: () => void }) => void;
   onDeleteTurbine: (turbineId: string) => void;
@@ -33,6 +35,7 @@ interface ProjectTurbinesTabProps {
  */
 export function ProjectTurbinesTab({
   project,
+  canEdit,
   onCreateTurbine,
   onUpdateTurbine,
   onDeleteTurbine,
@@ -81,16 +84,18 @@ export function ProjectTurbinesTab({
   return (
     <>
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        {/* Header com botão de adicionar */}
-        <div className="p-4 border-b border-gray-200 flex justify-end">
-          <button
-            onClick={openCreateModal}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <Plus size={18} />
-            {t('actions.addTurbine')}
-          </button>
-        </div>
+        {/* Header com botão de adicionar (apenas ADMIN/HR) */}
+        {canEdit && (
+          <div className="p-4 border-b border-gray-200 flex justify-end">
+            <button
+              onClick={openCreateModal}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <Plus size={18} />
+              {t('actions.addTurbine')}
+            </button>
+          </div>
+        )}
 
         {/* Tabela ou estado vazio */}
         {project.turbines?.length ? (
@@ -104,7 +109,9 @@ export function ProjectTurbinesTab({
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('turbineTable.model')}</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('turbineTable.nacelleHeight')}</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('turbineTable.status')}</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">{t('table.actions')}</th>
+                  {canEdit && (
+                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">{t('table.actions')}</th>
+                  )}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -125,22 +132,24 @@ export function ProjectTurbinesTab({
                         {t(`turbineStatus.${turbine.status}`)}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => openEditModal(turbine)}
-                          className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                        >
-                          <Edit2 size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(turbine)}
-                          className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
+                    {canEdit && (
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => openEditModal(turbine)}
+                            className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                          >
+                            <Edit2 size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(turbine)}
+                            className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>

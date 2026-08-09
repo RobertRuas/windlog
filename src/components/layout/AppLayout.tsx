@@ -63,7 +63,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-[#000000]">
       {/* Menu lateral */}
-      <Sidebar userName={userName} />
+      <Sidebar />
 
       {/* Conteúdo principal - offset pela largura do sidebar no desktop */}
       <main className="md:ml-60 min-h-screen">

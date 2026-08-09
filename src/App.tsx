@@ -364,23 +364,23 @@ export default function App() {
             }
           />
 
-          {/* Rota protegida - gestão de projetos (ADMIN ou HR) */}
+          {/* Rota protegida - lista de projetos (todos autenticados; edição só ADMIN/HR) */}
           <Route
             path="/projects"
             element={
-              <AdminOrHRRoute>
+              <ProtectedRoute>
                 <ProjectsPage />
-              </AdminOrHRRoute>
+              </ProtectedRoute>
             }
           />
 
-          {/* Rota protegida - detalhes do projeto (ADMIN ou HR) */}
+          {/* Rota protegida - detalhes do projeto (todos autenticados; edição só ADMIN/HR) */}
           <Route
             path="/projects/:id"
             element={
-              <AdminOrHRRoute>
+              <ProtectedRoute>
                 <ProjectDetailPage />
-              </AdminOrHRRoute>
+              </ProtectedRoute>
             }
           />
 
