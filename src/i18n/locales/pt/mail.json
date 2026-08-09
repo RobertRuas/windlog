@@ -143,6 +143,7 @@
       "no_groups": "Nenhum grupo criado",
       "no_members": "Grupo sem contatos",
       "shared": "Partilhado",
+      "private": "Privado",
       "shared_by": "Criado por {{name}}",
       "member_count_one": "{{count}} contato",
       "member_count_other": "{{count}} contatos",

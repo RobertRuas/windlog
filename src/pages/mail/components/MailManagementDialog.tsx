@@ -18,7 +18,7 @@ import { toast } from 'sonner';
 import {
   X, Plus, Trash2, Pencil, Users, Workflow, Tag, PenLine,
   Moon, Ban, User, Folder, Lock, Inbox, Send, FileText,
-  AlertOctagon, Archive, Globe, ChevronDown,
+  AlertOctagon, Archive, Globe,
 } from 'lucide-react';
 
 // Serviço
@@ -170,7 +170,7 @@ function ContactsTab() {
   const [groupName, setGroupName] = useState('');
   const [creating, setCreating] = useState(false);
   const [newMembers, setNewMembers] = useState<Set<string>>(new Set());
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const { data: contacts = [] } = useQuery({ queryKey: ['mail-contacts'], queryFn: mailService.getMailContacts });
   const { data: groups = [] } = useQuery({ queryKey: ['mail-contact-groups'], queryFn: mailService.getMailContactGroups });
@@ -184,6 +184,9 @@ function ContactsTab() {
 
   /** Apenas o dono do grupo pode editar/excluir. */
   const canManageGroup = (group: MailContactGroup) => group.userId === profile?.id;
+
+  const selectedGroup = groups.find((g) => g.id === selectedId);
+  const selectedMemberIds = new Set(selectedGroup?.members.map((m) => m.contactId) || []);
 
   function invalidate() {
     queryClient.invalidateQueries({ queryKey: ['mail-contacts'] });
@@ -211,16 +214,17 @@ function ContactsTab() {
       }
       return group;
     },
-    onSuccess: () => {
+    onSuccess: (group) => {
       invalidate();
       setGroupName(''); setNewMembers(new Set()); setCreating(false);
+      setSelectedId(group.id);
       toast.success(t('manage.contacts.group_created'));
     },
     onError: (e: Error) => toast.error(e.message),
   });
   const removeGroup = useMutation({
     mutationFn: (id: string) => mailService.deleteMailContactGroup(id),
-    onSuccess: () => { invalidate(); setExpandedId(null); },
+    onSuccess: () => { invalidate(); setSelectedId(null); },
   });
   const addMember = useMutation({
     mutationFn: ({ groupId, contactId }: { groupId: string; contactId: string }) =>
@@ -247,62 +251,34 @@ function ContactsTab() {
   }
 
   return (
-    <div className="grid grid-cols-2 gap-6">
-      {/* ── Coluna: Contatos ─────────────────────────────────────── */}
-      <div>
-        <h3 className="text-sm font-semibold text-gray-800 dark:text-[#f5f5f7] mb-2">{t('manage.tabs.contacts')}</h3>
-
-        {/* Novo contato */}
-        <div className="flex gap-1.5 mb-3">
-          <input className={`${inputClass} flex-1`} placeholder={t('manage.contacts.name_ph')} value={name} onChange={(e) => setName(e.target.value)} />
-          <input className={`${inputClass} flex-1`} placeholder="email@..." type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-          <button onClick={() => email && createContact.mutate()} className="form-button form-button-primary h-9 w-9 p-0 flex items-center justify-center" title={t('manage.contacts.add')}>
-            <Plus size={15} />
-          </button>
-        </div>
-
-        <p className="text-xs text-gray-400 mb-2">{t('manage.contacts.auto_hint')}</p>
-
-        <ul className="space-y-1 max-h-72 overflow-y-auto">
-          {contacts.map((contact: MailContact) => (
-            <li key={contact.id} className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-[#2c2c2e]">
-              <User size={13} className="text-gray-400 flex-shrink-0" />
-              <span className="flex-1 truncate text-sm text-gray-700 dark:text-[#e5e5ea]">
-                {contact.name || contact.email}
-              </span>
-              <span className="text-xs text-gray-400 truncate max-w-[120px]">{contact.email}</span>
-              {contact.isAuto && <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-[#38383a] text-gray-500">{t('manage.contacts.auto')}</span>}
-              <button onClick={() => removeContact.mutate(contact.id)} className="text-gray-300 hover:text-red-500">
-                <Trash2 size={13} />
-              </button>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      {/* ── Coluna: Grupos ───────────────────────────────────────── */}
-      <div>
-        {/* Cabeçalho com ação principal */}
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-semibold text-gray-800 dark:text-[#f5f5f7]">{t('manage.contacts.groups')}</h3>
+    <div className="space-y-8">
+      {/* ══ SEÇÃO 1: GRUPOS ═════════════════════════════════════════ */}
+      <section>
+        {/* Cabeçalho da seção */}
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <div>
+            <h3 className="text-sm font-semibold text-gray-800 dark:text-[#f5f5f7]">{t('manage.contacts.groups')}</h3>
+            {/* Aviso de partilha para ADMIN/HR */}
+            {isManager && (
+              <p className="flex items-center gap-1 mt-0.5 text-xs text-gray-400 dark:text-[#636366]">
+                <Globe size={11} className="flex-shrink-0" /> {t('manage.contacts.shared_create_hint')}
+              </p>
+            )}
+          </div>
           {!creating && (
-            <button onClick={() => setCreating(true)} className="form-button form-button-primary inline-flex items-center gap-1.5 !py-1.5 text-xs">
+            <button
+              onClick={() => { setCreating(true); setSelectedId(null); }}
+              className="form-button form-button-primary inline-flex items-center gap-1.5 !py-1.5 text-xs flex-shrink-0"
+            >
               <Plus size={14} />
               {t('manage.contacts.new_group')}
             </button>
           )}
         </div>
 
-        {/* Aviso de partilha para ADMIN/HR */}
-        {isManager && (
-          <p className="flex items-center gap-1 text-xs text-gray-400 mb-3">
-            <Globe size={11} className="flex-shrink-0" /> {t('manage.contacts.shared_create_hint')}
-          </p>
-        )}
-
         {/* Card de criação: nome + checklist de contatos */}
-        {creating && (
-          <div className="mb-4 p-3 rounded-lg border border-blue-200 dark:border-blue-900/40 bg-blue-50/40 dark:bg-blue-900/10 space-y-2.5">
+        {creating ? (
+          <div className="rounded-xl border border-blue-200 dark:border-blue-900/40 bg-blue-50/40 dark:bg-blue-900/10 p-4 space-y-3">
             <input
               className={`${inputClass} w-full`}
               placeholder={t('manage.contacts.group_ph')}
@@ -313,25 +289,23 @@ function ContactsTab() {
             <p className="text-xs font-medium text-gray-500 dark:text-[#8e8e93]">
               {t('manage.contacts.select_contacts')} ({newMembers.size})
             </p>
-            <ul className="space-y-1 max-h-36 overflow-y-auto pr-1">
+            <div className="grid grid-cols-2 gap-x-6 gap-y-1 max-h-40 overflow-y-auto pr-1">
               {contacts.map((contact) => (
-                <li key={contact.id}>
-                  <label className="flex items-center gap-2 px-2 py-1 rounded-md text-sm text-gray-700 dark:text-[#a1a1a6] cursor-pointer hover:bg-white/60 dark:hover:bg-[#2c2c2e]">
-                    <input
-                      type="checkbox"
-                      checked={newMembers.has(contact.id)}
-                      onChange={() => toggleNewMember(contact.id)}
-                    />
-                    <span className="truncate">{contact.name || contact.email}</span>
-                    <span className="text-xs text-gray-400 truncate max-w-[120px] ml-auto">{contact.email}</span>
-                  </label>
-                </li>
+                <label key={contact.id} className="flex items-center gap-2 px-2 py-1 rounded-md text-sm text-gray-700 dark:text-[#a1a1a6] cursor-pointer hover:bg-white/60 dark:hover:bg-[#2c2c2e]">
+                  <input
+                    type="checkbox"
+                    checked={newMembers.has(contact.id)}
+                    onChange={() => toggleNewMember(contact.id)}
+                  />
+                  <span className="truncate">{contact.name || contact.email}</span>
+                  <span className="text-xs text-gray-400 truncate max-w-[130px] ml-auto">{contact.email}</span>
+                </label>
               ))}
               {contacts.length === 0 && (
-                <li className="px-2 py-1 text-xs text-gray-400">{t('manage.contacts.no_contacts')}</li>
+                <p className="col-span-2 px-2 py-1 text-xs text-gray-400">{t('manage.contacts.no_contacts')}</p>
               )}
-            </ul>
-            <div className="flex justify-end gap-2">
+            </div>
+            <div className="flex justify-end gap-2 pt-1">
               <button
                 onClick={() => { setCreating(false); setGroupName(''); setNewMembers(new Set()); }}
                 className="form-button form-button-secondary text-xs"
@@ -343,113 +317,176 @@ function ContactsTab() {
                 disabled={!groupName.trim() || createGroup.isPending}
                 className="form-button form-button-primary inline-flex items-center gap-1.5 text-xs disabled:opacity-50"
               >
-                {createGroup.isPending ? <Users size={13} /> : <Plus size={13} />}
+                <Plus size={13} />
                 {t('manage.contacts.add_group')}
               </button>
             </div>
           </div>
-        )}
-
-        {/* Lista de grupos em cartões (nome + contagem + partilha) */}
-        {groups.length === 0 && !creating ? (
-          <p className="text-sm text-gray-400 text-center py-6">{t('manage.contacts.no_groups')}</p>
+        ) : groups.length === 0 ? (
+          <p className="text-sm text-gray-400 text-center py-8 rounded-xl border border-dashed border-gray-200 dark:border-[#38383a]">
+            {t('manage.contacts.no_groups')}
+          </p>
         ) : (
-          <ul className="space-y-2 max-h-[32rem] overflow-y-auto pr-0.5">
-            {groups.map((group) => {
-              const owned = canManageGroup(group);
-              const expanded = expandedId === group.id;
-              const memberIds = new Set(group.members.map((m) => m.contactId));
-              return (
-                <li key={group.id} className="rounded-lg border border-gray-200 dark:border-[#38383a] overflow-hidden">
-                  {/* Cabeçalho do cartão */}
-                  <button
-                    onClick={() => setExpandedId(expanded ? null : group.id)}
-                    className="w-full flex items-center gap-2 px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-[#2c2c2e] transition-colors"
+          <>
+            {/* Grade de cartões de grupo */}
+            <div className="grid grid-cols-2 gap-3">
+              {groups.map((group) => {
+                const owned = canManageGroup(group);
+                const selected = selectedId === group.id;
+                const preview = group.members.slice(0, 3);
+                const extra = group.members.length - preview.length;
+                return (
+                  <div
+                    key={group.id}
+                    onClick={() => setSelectedId(selected ? null : group.id)}
+                    className={`cursor-pointer rounded-xl border p-3 transition-colors ${
+                      selected
+                        ? 'border-blue-400 dark:border-blue-600 bg-blue-50/50 dark:bg-blue-900/10'
+                        : 'border-gray-200 dark:border-[#38383a] hover:bg-gray-50 dark:hover:bg-[#2c2c2e]'
+                    }`}
                   >
-                    <Users size={15} className={`flex-shrink-0 ${group.isShared ? 'text-blue-500' : 'text-gray-400'}`} />
-                    <span className="flex-1 min-w-0 truncate text-left text-sm font-medium text-gray-800 dark:text-[#f5f5f7]">
-                      {group.name}
-                    </span>
-                    {/* Indicador de grupo partilhado */}
-                    {group.isShared && (
-                      <span
-                        className="flex-shrink-0 inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
-                        title={group.user ? t('manage.contacts.shared_by', { name: `${group.user.firstName} ${group.user.lastName}` }) : t('manage.contacts.shared_badge')}
-                      >
-                        <Globe size={10} />
-                        {t('manage.contacts.shared')}
+                    {/* Linha principal: ícone + nome + ações */}
+                    <div className="flex items-center gap-2.5 mb-2">
+                      <span className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                        group.isShared ? 'bg-blue-50 dark:bg-blue-900/30' : 'bg-gray-100 dark:bg-[#38383a]'
+                      }`}>
+                        <Users size={15} className={group.isShared ? 'text-blue-500' : 'text-gray-400 dark:text-[#8e8e93]'} />
                       </span>
-                    )}
-                    {/* Contagem de contatos */}
-                    <span className="flex-shrink-0 text-[11px] tabular-nums rounded-full px-2 py-0.5 bg-gray-100 dark:bg-[#38383a] text-gray-500 dark:text-[#a1a1a6]">
-                      {t('manage.contacts.member_count', { count: group.members.length })}
-                    </span>
-                    {/* Apenas o dono pode excluir */}
-                    {owned && (
-                      <span
-                        onClick={(e) => { e.stopPropagation(); removeGroup.mutate(group.id); }}
-                        className="flex-shrink-0 text-gray-300 hover:text-red-500"
-                        title={t('common:buttons.delete')}
-                      >
-                        <Trash2 size={13} />
-                      </span>
-                    )}
-                    <ChevronDown
-                      size={14}
-                      className={`flex-shrink-0 text-gray-400 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}
-                    />
-                  </button>
-
-                  {/* Corpo expandido: membros do grupo */}
-                  {expanded && (
-                    <div className="border-t border-gray-100 dark:border-[#38383a] px-3 py-2.5 bg-gray-50/50 dark:bg-[#161618]">
-                      {owned ? (
-                        <>
-                          <p className="text-xs text-gray-400 mb-2">{t('manage.contacts.members_hint')}</p>
-                          <ul className="space-y-1 max-h-44 overflow-y-auto">
-                            {contacts.map((contact) => (
-                              <li key={contact.id}>
-                                <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-[#a1a1a6] cursor-pointer">
-                                  <input
-                                    type="checkbox"
-                                    checked={memberIds.has(contact.id)}
-                                    onChange={(e) => {
-                                      if (e.target.checked) addMember.mutate({ groupId: group.id, contactId: contact.id });
-                                      else removeMember.mutate({ groupId: group.id, contactId: contact.id });
-                                    }}
-                                  />
-                                  <span className="truncate">{contact.name || contact.email}</span>
-                                  <span className="text-xs text-gray-400 truncate max-w-[120px] ml-auto">{contact.email}</span>
-                                </label>
-                              </li>
-                            ))}
-                          </ul>
-                        </>
-                      ) : group.members.length === 0 ? (
-                        <p className="text-xs text-gray-400">{t('manage.contacts.no_members')}</p>
-                      ) : (
-                        <>
-                          {/* Somente leitura: grupos de outro dono (partilhados) */}
-                          <p className="text-xs text-gray-400 mb-2">{t('manage.contacts.shared_readonly_hint')}</p>
-                          <ul className="space-y-1 max-h-44 overflow-y-auto">
-                            {group.members.map((member) => (
-                              <li key={member.id} className="flex items-center gap-2 text-sm text-gray-700 dark:text-[#a1a1a6]">
-                                <User size={13} className="text-gray-400 flex-shrink-0" />
-                                <span className="truncate">{member.contact.name || member.contact.email}</span>
-                                <span className="text-xs text-gray-400 truncate max-w-[120px] ml-auto">{member.contact.email}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-800 dark:text-[#f5f5f7] truncate">{group.name}</p>
+                        <p className="text-[11px] text-gray-400 dark:text-[#636366] truncate">
+                          {group.isShared
+                            ? (group.user
+                                ? t('manage.contacts.shared_by', { name: `${group.user.firstName} ${group.user.lastName}` })
+                                : t('manage.contacts.shared_badge'))
+                            : t('manage.contacts.private')}
+                        </p>
+                      </div>
+                      {/* Apenas o dono pode excluir */}
+                      {owned && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); removeGroup.mutate(group.id); }}
+                          className="flex-shrink-0 p-1 rounded-md text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
+                          title={t('common:buttons.delete')}
+                        >
+                          <Trash2 size={13} />
+                        </button>
                       )}
                     </div>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
+
+                    {/* Rodapé do cartão: contagem + prévia dos membros */}
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-[11px] tabular-nums rounded-full px-2 py-0.5 bg-gray-100 dark:bg-[#38383a] text-gray-500 dark:text-[#a1a1a6]">
+                        {t('manage.contacts.member_count', { count: group.members.length })}
+                      </span>
+                      {preview.map((member) => (
+                        <span key={member.id} className="text-[11px] px-1.5 py-0.5 rounded bg-gray-50 dark:bg-[#2c2c2e] border border-gray-100 dark:border-[#38383a] text-gray-500 dark:text-[#8e8e93] truncate max-w-[90px]">
+                          {member.contact.name || member.contact.email}
+                        </span>
+                      ))}
+                      {extra > 0 && (
+                        <span className="text-[11px] text-gray-400 dark:text-[#636366]">+{extra}</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Painel de detalhes do grupo selecionado */}
+            {selectedGroup && (
+              <div className="mt-3 rounded-xl border border-gray-200 dark:border-[#38383a] p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-medium text-gray-800 dark:text-[#f5f5f7]">
+                    {selectedGroup.name}
+                    <span className="ml-2 text-xs font-normal text-gray-400">
+                      {t('manage.contacts.member_count', { count: selectedGroup.members.length })}
+                    </span>
+                  </p>
+                  <button onClick={() => setSelectedId(null)} className="p-1 rounded-md text-gray-400 hover:bg-gray-100 dark:hover:bg-[#2c2c2e]">
+                    <X size={15} />
+                  </button>
+                </div>
+
+                {canManageGroup(selectedGroup) ? (
+                  <>
+                    <p className="text-xs text-gray-400 mb-2">{t('manage.contacts.members_hint')}</p>
+                    <div className="grid grid-cols-2 gap-x-6 gap-y-1 max-h-48 overflow-y-auto pr-1">
+                      {contacts.map((contact) => (
+                        <label key={contact.id} className="flex items-center gap-2 text-sm text-gray-700 dark:text-[#a1a1a6] cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={selectedMemberIds.has(contact.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) addMember.mutate({ groupId: selectedGroup.id, contactId: contact.id });
+                              else removeMember.mutate({ groupId: selectedGroup.id, contactId: contact.id });
+                            }}
+                          />
+                          <span className="truncate">{contact.name || contact.email}</span>
+                          <span className="text-xs text-gray-400 truncate max-w-[130px] ml-auto">{contact.email}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </>
+                ) : selectedGroup.members.length === 0 ? (
+                  <p className="text-xs text-gray-400">{t('manage.contacts.no_members')}</p>
+                ) : (
+                  <>
+                    {/* Somente leitura: grupos de outro dono (partilhados) */}
+                    <p className="text-xs text-gray-400 mb-2">{t('manage.contacts.shared_readonly_hint')}</p>
+                    <div className="grid grid-cols-2 gap-x-6 gap-y-1 max-h-48 overflow-y-auto pr-1">
+                      {selectedGroup.members.map((member) => (
+                        <div key={member.id} className="flex items-center gap-2 text-sm text-gray-700 dark:text-[#a1a1a6]">
+                          <User size={13} className="text-gray-400 flex-shrink-0" />
+                          <span className="truncate">{member.contact.name || member.contact.email}</span>
+                          <span className="text-xs text-gray-400 truncate max-w-[130px] ml-auto">{member.contact.email}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </>
         )}
-      </div>
+      </section>
+
+      {/* ══ SEÇÃO 2: CONTATOS ═══════════════════════════════════════ */}
+      <section>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-semibold text-gray-800 dark:text-[#f5f5f7]">{t('manage.tabs.contacts')}</h3>
+          <span className="text-[11px] tabular-nums rounded-full px-2 py-0.5 bg-gray-100 dark:bg-[#38383a] text-gray-500 dark:text-[#a1a1a6]">
+            {contacts.length}
+          </span>
+        </div>
+
+        {/* Novo contato */}
+        <div className="flex gap-1.5 mb-2">
+          <input className={`${inputClass} flex-1`} placeholder={t('manage.contacts.name_ph')} value={name} onChange={(e) => setName(e.target.value)} />
+          <input className={`${inputClass} flex-1`} placeholder="email@..." type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <button onClick={() => email && createContact.mutate()} className="form-button form-button-primary h-9 w-9 p-0 flex items-center justify-center flex-shrink-0" title={t('manage.contacts.add')}>
+            <Plus size={15} />
+          </button>
+        </div>
+
+        <p className="text-xs text-gray-400 dark:text-[#636366] mb-3">{t('manage.contacts.auto_hint')}</p>
+
+        <ul className="grid grid-cols-2 gap-x-6 gap-y-1 max-h-64 overflow-y-auto pr-1">
+          {contacts.map((contact: MailContact) => (
+            <li key={contact.id} className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-[#2c2c2e]">
+              <User size={13} className="text-gray-400 flex-shrink-0" />
+              <span className="flex-1 truncate text-sm text-gray-700 dark:text-[#e5e5ea]">
+                {contact.name || contact.email}
+              </span>
+              <span className="text-xs text-gray-400 truncate max-w-[130px]">{contact.email}</span>
+              {contact.isAuto && <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-[#38383a] text-gray-500">{t('manage.contacts.auto')}</span>}
+              <button onClick={() => removeContact.mutate(contact.id)} className="text-gray-300 hover:text-red-500 flex-shrink-0">
+                <Trash2 size={13} />
+              </button>
+            </li>
+          ))}
+        </ul>
+      </section>
     </div>
   );
 }

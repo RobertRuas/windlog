@@ -143,6 +143,7 @@
       "no_groups": "No groups created",
       "no_members": "Group has no contacts",
       "shared": "Shared",
+      "private": "Private",
       "shared_by": "Created by {{name}}",
       "member_count_one": "{{count}} contact",
       "member_count_other": "{{count}} contacts",
