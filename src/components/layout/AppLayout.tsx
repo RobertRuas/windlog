@@ -22,10 +22,12 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { getProfile } from '@/services/auth.service';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { FeedbackButton } from '@/components/feedback/FeedbackButton';
+import { SecureImage } from '@/components/ui/SecureImage';
 import type { ProfileResponse } from '@/types/user.types';
 
 /**
@@ -42,6 +44,8 @@ interface AppLayoutProps {
  * Busca o perfil do usuário para exibir o nome no sidebar.
  */
 export function AppLayout({ children }: AppLayoutProps) {
+  const navigate = useNavigate();
+
   /**
    * Busca o perfil para obter o nome do usuário.
    * Se falhar, o nome simplesmente não é exibido no sidebar.
@@ -70,11 +74,29 @@ export function AppLayout({ children }: AppLayoutProps) {
               {/* Sino de notificações */}
               <NotificationBell />
 
-              {/* Nome do usuário (desktop) */}
+              {/* Avatar + Nome do usuário (desktop) — clica para ir ao perfil */}
               {userName && (
-                <span className="hidden sm:block ml-3 text-sm text-gray-600 dark:text-[#a1a1a6]">
-                  {userName}
-                </span>
+                <button
+                  type="button"
+                  onClick={() => navigate('/profile')}
+                  className="hidden sm:flex items-center ml-3 gap-2 cursor-pointer rounded-lg px-1.5 py-1 hover:bg-gray-100 dark:hover:bg-[#2c2c2e] transition-colors"
+                >
+                  {/* Avatar com foto ou iniciais */}
+                  {data?.photoUrl ? (
+                    <SecureImage
+                      filePath={data.photoUrl}
+                      alt={userName}
+                      className="w-8 h-8 rounded-full object-cover border border-gray-200 dark:border-[#38383a]"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-xs font-semibold text-blue-700 dark:text-blue-300">
+                      {data?.firstName?.[0]}{data?.lastName?.[0]}
+                    </div>
+                  )}
+                  <span className="text-sm text-gray-600 dark:text-[#a1a1a6]">
+                    {userName}
+                  </span>
+                </button>
               )}
             </div>
           </div>
