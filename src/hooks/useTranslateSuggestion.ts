@@ -1,42 +1,45 @@
 /**
  * ============================================================================
- * USE TRANSLATE SUGGESTION - Hook de Sugestão de Tradução (PT -> EN)
+ * USE TRANSLATE SUGGESTION - Hook de Tradução sob Demanda (PT -> EN)
  * ============================================================================
  *
  * O QUE É ESTE ARQUIVO?
  * ---------------------
- * Hook React reutilizável que observa o texto de um campo e, quando o usuário
- * para de digitar, pede ao backend uma tradução para inglês e a expõe como
- * sugestão.
+ * Hook React reutilizável que oferece tradução para inglês em campos de texto
+ * livre, de forma controlada pelo usuário (sem traduções automáticas em
+ * tempo real):
  *
- * COMO FUNCIONA?
- * --------------
- * 1. Recebe o valor atual do campo (string)
- * 2. Aguarda o usuário pausar a digitação (~800 ms de debounce)
- * 3. Envia o texto ao backend (POST /translation/translate)
- * 4. Expõe a tradução como "suggestion" para o componente exibir
+ *   1. Quando o campo possui texto, o hook sinaliza que o botão
+ *      "Traduzir para inglês" pode ser exibido abaixo dele.
+ *   2. Ao clicar, o texto é enviado ao backend (POST /translation/translate)
+ *      e o resultado substitui o conteúdo do campo.
+ *   3. Após aplicar, o hook guarda o texto original e oferece a opção de
+ *      REVERTER, restaurando o que o usuário havia digitado.
  *
- * POR QUE DEBOUNCE + CONTROLE DE REQUISIÇÃO?
- * ------------------------------------------
- * - Debounce evita traduzir a cada tecla (economia de recursos).
- * - Um contador de requisição descarta respostas "atrasadas" (stale) que
- *   chegarem depois que o usuário já voltou a digitar.
+ * SUPRESSÃO DE TEXTO JÁ EM INGLÊS (custo zero):
+ * ---------------------------------------------
+ * Se o usuário digitar um texto que já está em inglês, o modelo devolve um
+ * resultado praticamente idêntico à entrada. O hook compara a similaridade
+ * entre o texto original e a tradução recebida: se forem quase iguais, a
+ * tradução não é aplicada e o botão deixa de ser oferecido para esse texto.
  *
  * QUANDO FICA INATIVO?
  * --------------------
  * Se o idioma da interface NÃO for português (settings.language !== 'pt'),
- * o hook não faz nenhuma requisição e não exibe sugestão.
+ * o hook não faz nenhuma requisição e não oferece o recurso.
  *
  * EXEMPLO DE USO:
  * ---------------
- * const { suggestion, isLoading, apply, dismiss, enabled } =
- *   useTranslateSuggestion(day.progress);
+ * const translation = useTranslateSuggestion(day.progress, (v) =>
+ *   handleProgressChange(dayIdx, v),
+ * );
  *
  * <TranslateSuggestion
- *   suggestion={suggestion}
- *   isLoading={isLoading}
- *   onApply={() => handleProgressChange(dayIdx, apply())}
- *   onDismiss={dismiss}
+ *   showPrompt={translation.showPrompt}
+ *   isTranslating={translation.isTranslating}
+ *   canRevert={translation.canRevert}
+ *   onTranslate={translation.translate}
+ *   onRevert={translation.revert}
  * />
  * ============================================================================
  */
@@ -45,132 +48,159 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSettings } from '@/contexts/SettingsContext';
 import { translateText } from '@/services/translation.service';
 
-/** Tempo (ms) que o usuário precisa ficar sem digitar antes de traduzir. */
-const DEBOUNCE_MS = 800;
-
 /** Tamanho mínimo do texto para valer a pena traduzir. */
 const MIN_LENGTH = 3;
 
 /**
- * Hook que gera uma sugestão de tradução (PT -> EN) para um campo de texto.
+ * Similaridade (0 a 1) acima da qual consideramos que a tradução é
+ * praticamente idêntica ao original => o texto já estava em inglês.
+ */
+const SIMILARITY_THRESHOLD = 0.85;
+
+/* ==========================================================================
+   Funções auxiliares de comparação de textos
+   ========================================================================== */
+
+/** Normaliza o texto para comparação: minúsculas, sem pontuação, espaços únicos. */
+function normalizeText(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/**
+ * Calcula a similaridade entre dois textos (0 a 1) comparando as palavras.
+ * É uma heurística leve e suficiente para detectar quando o modelo devolveu
+ * praticamente o mesmo texto (sinal de que a entrada já estava em inglês).
+ */
+function textSimilarity(a: string, b: string): number {
+  const wordsA = normalizeText(a).split(' ').filter(Boolean);
+  const wordsB = normalizeText(b).split(' ').filter(Boolean);
+
+  if (wordsA.length === 0 && wordsB.length === 0) return 1;
+  if (wordsA.length === 0 || wordsB.length === 0) return 0;
+
+  const setB = new Set(wordsB);
+  const common = wordsA.filter((word) => setB.has(word)).length;
+  return common / Math.max(wordsA.length, wordsB.length);
+}
+
+/* ==========================================================================
+   Hook
+   ========================================================================== */
+
+/**
+ * Hook que disponibiliza a tradução PT -> EN sob demanda para um campo.
  *
  * @param currentValue - Valor atual do campo observado.
+ * @param onChange     - Função do componente pai para gravar o novo valor
+ *                       no campo (usada para aplicar e para reverter).
  * @returns Objeto com:
- *   - enabled:     se o recurso está ativo (idioma é português)
- *   - suggestion:  texto traduzido sugerido (null se não houver)
- *   - isLoading:   se uma tradução está em andamento
- *   - apply():     retorna a sugestão e evita re-traduzir o texto aplicado
- *   - dismiss():   dispensa a sugestão atual (não reoferece o mesmo texto)
+ *   - enabled:       se o recurso está ativo (idioma é português)
+ *   - showPrompt:    se o botão "Traduzir para inglês" deve ser exibido
+ *   - isTranslating: se uma tradução está em andamento
+ *   - canRevert:     se há texto original guardado para reverter
+ *   - translate():   pede a tradução ao backend e aplica no campo
+ *   - revert():      restaura o texto original digitado pelo usuário
  */
-export function useTranslateSuggestion(currentValue: string) {
+export function useTranslateSuggestion(
+  currentValue: string,
+  onChange: (value: string) => void,
+) {
   const { settings } = useSettings();
 
   /** Recurso ativo apenas quando o idioma da interface é português. */
   const enabled = settings.language === 'pt';
 
-  /** Sugestão de tradução atual (null quando não há). */
-  const [suggestion, setSuggestion] = useState<string | null>(null);
+  /** Se uma tradução está sendo processada no momento. */
+  const [isTranslating, setIsTranslating] = useState(false);
 
-  /** Se uma tradução está sendo processada. */
-  const [isLoading, setIsLoading] = useState(false);
+  /** Texto original (antes da tradução) — null quando não há como reverter. */
+  const [originalText, setOriginalText] = useState<string | null>(null);
+
+  /** Último valor gravado pelo próprio hook (aplicar/reverter). */
+  const appliedTextRef = useRef<string>(currentValue);
 
   /** Contador de requisições — descarta respostas atrasadas (stale). */
   const requestIdRef = useRef(0);
 
-  /** Referência ao timer de debounce para poder cancelá-lo. */
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** Texto cujo botão foi suprimido (já estava em inglês ou a chamada falhou). */
+  const skippedForRef = useRef<string | null>(null);
 
-  /** Último texto que já foi traduzido (evita retraduzir o mesmo texto). */
-  const lastTranslatedRef = useRef<string | null>(null);
-
-  /** Texto cuja sugestão foi dispensada (evita reoferecer a mesma sugestão). */
-  const dismissedForRef = useRef<string | null>(null);
-
+  // Se o usuário editar manualmente o campo após aplicar a tradução, o texto
+  // original deixa de corresponder à realidade — descartamos a possibilidade
+  // de reverter (o conteúdo agora é do usuário, não mais da tradução).
   useEffect(() => {
-    // Sempre que o usuário digita (valor muda), escondemos a sugestão anterior
-    // para que ela não fique "sobrando" com conteúdo desatualizado.
-    setSuggestion(null);
-
-    // Se o recurso não está ativo (idioma diferente de pt), não fazemos nada.
-    if (!enabled) {
-      setIsLoading(false);
-      return;
+    if (originalText !== null && currentValue !== appliedTextRef.current) {
+      setOriginalText(null);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentValue]);
 
+  const trimmed = currentValue.trim();
+
+  /** Há texto original guardado => estamos no estado "traduzido" com revert. */
+  const canRevert = originalText !== null;
+
+  /**
+   * O botão de traduzir aparece quando: recurso ativo, campo preenchido,
+   * sem tradução aplicada no momento e sem supressão prévia para este texto.
+   */
+  const showPrompt =
+    enabled
+    && !canRevert
+    && trimmed.length >= MIN_LENGTH
+    && trimmed !== skippedForRef.current;
+
+  /**
+   * Pede a tradução ao backend e aplica o resultado no campo.
+   * Se a tradução retornar quase idêntica à entrada (texto já em inglês),
+   * nada é aplicado e o botão deixa de ser oferecido para este texto.
+   */
+  const translate = useCallback(async () => {
     const text = currentValue.trim();
+    if (!text || isTranslating) return;
 
-    // Cancela qualquer debounce anterior (o usuário voltou a digitar).
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-      debounceRef.current = null;
-    }
+    const requestId = ++requestIdRef.current;
+    setIsTranslating(true);
 
-    // Texto muito curto: não vale a pena traduzir.
-    if (text.length < MIN_LENGTH) {
-      setIsLoading(false);
-      return;
-    }
+    try {
+      const translated = await translateText(text);
 
-    // Já traduzimos (ou o usuário dispensou) exatamente este texto: não repete.
-    if (text === lastTranslatedRef.current || text === dismissedForRef.current) {
-      setIsLoading(false);
-      return;
-    }
+      // Descarta resposta atrasada (o usuário pode ter agido novamente).
+      if (requestId !== requestIdRef.current) return;
 
-    // Agenda a tradução após a pausa na digitação.
-    debounceRef.current = setTimeout(() => {
-      const requestId = ++requestIdRef.current;
-      setIsLoading(true);
-
-      translateText(text)
-        .then((translated) => {
-          // Aplica apenas se esta ainda for a requisição mais recente.
-          if (requestId === requestIdRef.current) {
-            lastTranslatedRef.current = text;
-            setSuggestion(translated);
-          }
-        })
-        .catch(() => {
-          // Falha silenciosa: o usuário simplesmente não vê a sugestão.
-        })
-        .finally(() => {
-          if (requestId === requestIdRef.current) {
-            setIsLoading(false);
-          }
-        });
-    }, DEBOUNCE_MS);
-
-    // Limpeza: cancela o debounce se o valor mudar ou o componente desmontar.
-    return () => {
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current);
-        debounceRef.current = null;
+      // Supressão: tradução ~= original => o texto já estava em inglês.
+      if (textSimilarity(text, translated) >= SIMILARITY_THRESHOLD) {
+        skippedForRef.current = text;
+        return;
       }
-    };
-  }, [currentValue, enabled]);
 
-  /**
-   * Aplica a sugestão: retorna o texto traduzido para o componente pai gravar
-   * no campo e marca-o como "já tratado" para não re-traduzir o resultado.
-   */
-  const apply = useCallback((): string => {
-    const text = suggestion ?? '';
-    if (text) {
-      // Quando o valor do campo se tornar esta tradução, não a re-traduzimos.
-      lastTranslatedRef.current = text;
+      // Guarda o original (permite reverter) e aplica a tradução no campo.
+      appliedTextRef.current = translated;
+      setOriginalText(currentValue);
+      onChange(translated);
+    } catch {
+      // Falha silenciosa: o botão some para este texto (não insiste).
+      skippedForRef.current = text;
+    } finally {
+      if (requestId === requestIdRef.current) {
+        setIsTranslating(false);
+      }
     }
-    setSuggestion(null);
-    return text;
-  }, [suggestion]);
+  }, [currentValue, isTranslating, onChange]);
 
   /**
-   * Dispensa a sugestão atual e evita reoferecê-la para o mesmo texto.
+   * Reverte o campo para o texto original digitado pelo usuário.
    */
-  const dismiss = useCallback(() => {
-    dismissedForRef.current = lastTranslatedRef.current;
-    setSuggestion(null);
-    setIsLoading(false);
-  }, []);
+  const revert = useCallback(() => {
+    if (originalText === null) return;
+    appliedTextRef.current = originalText;
+    onChange(originalText);
+    setOriginalText(null);
+  }, [originalText, onChange]);
 
-  return { enabled, suggestion, isLoading, apply, dismiss };
+  return { enabled, showPrompt, isTranslating, canRevert, translate, revert };
 }

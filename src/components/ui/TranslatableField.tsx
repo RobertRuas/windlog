@@ -8,7 +8,8 @@
  * Componente reutilizável que envolve um campo de texto (input ou textarea)
  * e adiciona automaticamente o recurso de tradução para inglês:
  *   - Um indicador discreto junto ao label (apenas em português)
- *   - Uma sugestão de tradução abaixo do campo quando o usuário pausa a digitação
+ *   - Um botão "Traduzir para inglês" abaixo do campo quando preenchido,
+ *     com opção de reverter após a tradução ser aplicada
  *
  * POR QUE ESTE COMPONENTE EXISTE?
  * -------------------------------
@@ -75,8 +76,8 @@ export function TranslatableField({
   placeholder,
   fieldClassName,
 }: TranslatableFieldProps) {
-  // Hook que observa o valor e gera a sugestão de tradução (com debounce).
-  const { suggestion, isLoading, apply, dismiss } = useTranslateSuggestion(value);
+  // Hook que traduz sob demanda e guarda o original para permitir reverter.
+  const translation = useTranslateSuggestion(value, onChange);
 
   return (
     <div>
@@ -109,12 +110,14 @@ export function TranslatableField({
         />
       )}
 
-      {/* Barra de sugestão de tradução (aparece apenas quando relevante). */}
+      {/* Área de tradução: botão "Traduzir para inglês" / revert (apenas quando relevante). */}
       <TranslateSuggestion
-        suggestion={suggestion}
-        isLoading={isLoading}
-        onApply={() => onChange(apply())}
-        onDismiss={dismiss}
+        showPrompt={translation.showPrompt}
+        isTranslating={translation.isTranslating}
+        canRevert={translation.canRevert}
+        disabled={disabled}
+        onTranslate={translation.translate}
+        onRevert={translation.revert}
       />
     </div>
   );

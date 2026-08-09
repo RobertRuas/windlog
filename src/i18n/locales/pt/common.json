@@ -43,11 +43,11 @@
     "unavailable": "Ficheiro indisponível"
   },
   "translate": {
-    "fieldHint": "Tradução automática para inglês disponível neste campo",
+    "fieldHint": "Tradução para inglês disponível neste campo",
+    "prompt": "Traduzir para inglês",
     "processing": "Traduzindo...",
-    "suggestionLabel": "Sugestão em inglês",
-    "apply": "Aplicar tradução",
-    "dismiss": "Dispensar"
+    "applied": "Traduzido para inglês",
+    "revert": "Reverter"
   },
   "error": {
     "unknown": "Ocorreu algo inesperado",

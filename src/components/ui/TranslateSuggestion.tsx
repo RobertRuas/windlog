@@ -12,9 +12,11 @@
  *      do campo, avisando que a tradução automática está disponível ali.
  *      Aparece apenas quando o idioma da interface é português.
  *
- *   2. <TranslateSuggestion /> - Barra sutil exibida abaixo do campo com a
- *      sugestão de tradução, permitindo aplicar ou dispensar, além de um
- *      estado de "processando" enquanto a IA traduz.
+ *   2. <TranslateSuggestion /> - Área sutil exibida abaixo do campo com
+ *      três estados possíveis:
+ *        a) Botão "Traduzir para inglês" quando o campo está preenchido
+ *        b) "Traduzindo..." enquanto a IA processa a tradução
+ *        c) Confirmação "Traduzido para inglês" com opção de REVERTER
  *
  * POR QUE REUTILIZÁVEIS?
  * ----------------------
@@ -24,7 +26,7 @@
  */
 
 import { useTranslation } from 'react-i18next';
-import { Languages, Check, X, Loader2 } from 'lucide-react';
+import { Languages, Loader2, Undo2 } from 'lucide-react';
 import { useSettings } from '@/contexts/SettingsContext';
 
 /* ==========================================================================
@@ -68,41 +70,45 @@ export function TranslateFieldHint() {
 
 /* ==========================================================================
    Componente: TranslateSuggestion
-   Barra com a sugestão de tradução (aplicar / dispensar / processando).
+   Botão "Traduzir para inglês" / processando / traduzido com opção de reverter.
    ========================================================================== */
 
 interface TranslateSuggestionProps {
-  /** Texto traduzido sugerido (null quando não há sugestão) */
-  suggestion: string | null;
+  /** Se o botão "Traduzir para inglês" deve ser exibido (campo preenchido) */
+  showPrompt: boolean;
   /** Se uma tradução está em andamento */
-  isLoading: boolean;
-  /** Chamado quando o usuário aceita a sugestão */
-  onApply: () => void;
-  /** Chamado quando o usuário dispensa a sugestão */
-  onDismiss: () => void;
+  isTranslating: boolean;
+  /** Se a tradução já foi aplicada e há como reverter */
+  canRevert: boolean;
+  /** Se as ações devem ficar desabilitadas (ex.: formulário salvando) */
+  disabled?: boolean;
+  /** Chamado quando o usuário clica em "Traduzir para inglês" */
+  onTranslate: () => void;
+  /** Chamado quando o usuário quer desfazer a tradução aplicada */
+  onRevert: () => void;
 }
 
 /**
- * Barra sutil de sugestão de tradução, exibida abaixo do campo.
+ * Área sutil de tradução exibida abaixo do campo.
  *
  * Estados:
- * - isLoading   -> mostra "Traduzindo..." com um pequeno spinner.
- * - suggestion  -> mostra o texto traduzido com botões aplicar/dispensar.
- * - nenhum      -> não renderiza nada.
+ * - isTranslating -> mostra "Traduzindo..." com um pequeno spinner.
+ * - canRevert     -> mostra "Traduzido para inglês" com botão de reverter.
+ * - showPrompt    -> mostra o botão discreto "Traduzir para inglês".
+ * - nenhum        -> não renderiza nada.
  */
 export function TranslateSuggestion({
-  suggestion,
-  isLoading,
-  onApply,
-  onDismiss,
+  showPrompt,
+  isTranslating,
+  canRevert,
+  disabled,
+  onTranslate,
+  onRevert,
 }: TranslateSuggestionProps) {
   const { t } = useTranslation('common');
 
-  // Nada a exibir: nem carregando, nem sugestão disponível.
-  if (!isLoading && !suggestion) return null;
-
   // Estado de processamento: aviso discreto enquanto a IA traduz.
-  if (isLoading && !suggestion) {
+  if (isTranslating) {
     return (
       <div className="mt-1 flex items-center gap-1.5 text-[11px] text-gray-400">
         <Loader2 size={12} className="animate-spin" />
@@ -111,52 +117,46 @@ export function TranslateSuggestion({
     );
   }
 
-  // Sugestão disponível: barra com preview + ações.
-  return (
-    <div
-      className="
-        mt-1.5 flex items-start gap-2 rounded-lg border border-blue-200/60
-        bg-blue-50/60 px-2.5 py-1.5
-      "
-    >
-      {/* Ícone identificando o recurso */}
-      <Languages size={13} className="mt-0.5 shrink-0 text-blue-500" />
-
-      {/* Texto sugerido */}
-      <div className="min-w-0 flex-1">
-        <p className="text-[10px] font-semibold uppercase tracking-wide text-blue-600">
-          {t('translate.suggestionLabel')}
-        </p>
-        <p className="text-[12px] leading-snug text-blue-900 break-words">{suggestion}</p>
-      </div>
-
-      {/* Ações: aplicar e dispensar */}
-      <div className="flex shrink-0 items-center gap-1">
+  // Tradução aplicada: confirmação discreta + opção de reverter.
+  if (canRevert) {
+    return (
+      <div className="mt-1 flex items-center gap-1.5 text-[11px] text-blue-600">
+        <Languages size={12} className="shrink-0" />
+        <span>{t('translate.applied')}</span>
         <button
           type="button"
-          onClick={onApply}
-          title={t('translate.apply')}
-          aria-label={t('translate.apply')}
+          onClick={onRevert}
+          disabled={disabled}
           className="
-            flex h-6 w-6 items-center justify-center rounded-md text-blue-600
-            hover:bg-blue-100 transition-colors
+            ml-1 inline-flex items-center gap-1 font-medium text-gray-500
+            hover:text-blue-600 transition-colors disabled:opacity-50
           "
         >
-          <Check size={14} />
-        </button>
-        <button
-          type="button"
-          onClick={onDismiss}
-          title={t('translate.dismiss')}
-          aria-label={t('translate.dismiss')}
-          className="
-            flex h-6 w-6 items-center justify-center rounded-md text-blue-400
-            hover:bg-blue-100 transition-colors
-          "
-        >
-          <X size={14} />
+          <Undo2 size={11} />
+          {t('translate.revert')}
         </button>
       </div>
-    </div>
-  );
+    );
+  }
+
+  // Campo preenchido: botão discreto para traduzir sob demanda.
+  if (showPrompt) {
+    return (
+      <button
+        type="button"
+        onClick={onTranslate}
+        disabled={disabled}
+        className="
+          mt-1 inline-flex items-center gap-1.5 text-[11px] font-medium
+          text-gray-400 hover:text-blue-600 transition-colors disabled:opacity-50
+        "
+      >
+        <Languages size={12} />
+        {t('translate.prompt')}
+      </button>
+    );
+  }
+
+  // Nenhum estado aplicável: não renderiza nada.
+  return null;
 }

@@ -43,11 +43,11 @@
     "unavailable": "File unavailable"
   },
   "translate": {
-    "fieldHint": "Automatic English translation available for this field",
+    "fieldHint": "English translation available for this field",
+    "prompt": "Translate to English",
     "processing": "Translating...",
-    "suggestionLabel": "English suggestion",
-    "apply": "Apply translation",
-    "dismiss": "Dismiss"
+    "applied": "Translated to English",
+    "revert": "Revert"
   },
   "error": {
     "unknown": "Something unexpected happened",
