@@ -237,10 +237,15 @@ export class UploadService implements OnModuleDestroy {
       throw new BadRequestException('Invalid file path');
     }
 
-    // Valida ownership: o filePath deve começar com {userId}/ (exceto ADMIN)
+    // Valida ownership: o filePath deve começar com {userId}/.
+    // Exceções:
+    // - ADMIN: acede a qualquer ficheiro
+    // - Ficheiros de projeto (pasta 'projects'): visualização liberada
+    //   a todos os usuários autenticados
     if (userRole !== 'ADMIN') {
       const pathParts = normalizedPath.split('/');
-      if (pathParts[0] !== userId) {
+      const isProjectFile = pathParts[1] === 'projects';
+      if (pathParts[0] !== userId && !isProjectFile) {
         throw new ForbiddenException(
           'You can only generate tokens for your own files',
         );
