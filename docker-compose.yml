@@ -1,20 +1,29 @@
 # ============================================================================
-# DOCKER COMPOSE - Windlog (App + PostgreSQL)
+# DOCKER COMPOSE - Windlog (Produção - Servidor windlog.org)
 # ============================================================================
 #
 # COMO USAR:
 # ----------
-# docker compose up --build          # Build e start
-# docker compose up -d               # Start em background
+# docker compose up -d --build       # Build e start em background
 # docker compose down                # Parar e remover containers
-# docker compose down -v             # Parar e remover volumes (apaga dados!)
 # docker compose logs -f             # Ver logs em tempo real
+#
+# ARQUITETURA:
+# ------------
+# Internet → Cloudflare (SSL) → Tunnel → Traefik → Container (Nginx :80)
+#                                                    ├── Frontend estático
+#                                                    └── Proxy /api → NestJS :3000
+#
+# BANCO DE DADOS:
+# ---------------
+# PostgreSQL externo: database.windlog.org:5432
+# (Não roda localmente — usa o servidor central)
 #
 # ACESSO:
 # -------
-# Frontend:  http://localhost
-# API:       http://localhost/api/v1
-# Swagger:   http://localhost/api/docs
+# Frontend:  https://app.windlog.org
+# API:       https://app.windlog.org/api/v1
+# Swagger:   https://app.windlog.org/api/docs (apenas em dev)
 #
 # UTILIZADORES (senha: 123456):
 # -----------------------------
@@ -29,45 +38,33 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    ports:
-      - "80:80"
+    container_name: windlog-app
+    restart: unless-stopped
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=postgresql://windlog:windlog_pass@db:5432/windlog
+      - DATABASE_URL=postgresql://admin:windlog2024@postgres:5432/windlog
       - PORT=3000
       - LISTEN_HOST=127.0.0.1
       - JWT_SECRET=change-this-to-a-long-random-string-in-production
       - JWT_EXPIRES_IN=2h
       - JWT_REFRESH_EXPIRES_IN=30d
-      - CORS_ORIGIN=http://localhost
+      - CORS_ORIGIN=https://app.windlog.org
       - UPLOAD_DIR=./uploads
       - MAX_FILE_SIZE=10485760
       - FILE_TOKEN_TTL=300
     volumes:
       - uploads_data:/app/uploads
-    depends_on:
-      db:
-        condition: service_healthy
-    restart: unless-stopped
+    networks:
+      - proxy-net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.windlog-app.rule=Host(`app.windlog.org`)"
+      - "traefik.http.routers.windlog-app.entrypoints=web"
+      - "traefik.http.services.windlog-app.loadbalancer.server.port=80"
 
-  # ── PostgreSQL ─────────────────────────────────────────────────────────
-  db:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_USER: windlog
-      POSTGRES_PASSWORD: windlog_pass
-      POSTGRES_DB: windlog
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U windlog -d windlog"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-    restart: unless-stopped
+networks:
+  proxy-net:
+    external: true
 
 volumes:
-  postgres_data:
   uploads_data:

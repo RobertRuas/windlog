@@ -46,6 +46,10 @@ FROM node:20-slim AS api-builder
 
 WORKDIR /build
 
+# DATABASE_URL fictício necessário para o Prisma v7 durante o build
+# (prisma.config.ts usa env('DATABASE_URL') que falha se não estiver definida)
+ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
+
 # Copiar package files da API
 COPY API/package.json API/package-lock.json ./
 RUN npm ci
@@ -86,7 +90,7 @@ COPY --from=api-builder /build/prisma/migrations ./prisma/migrations
 COPY --from=api-builder /build/prisma.config.ts ./prisma.config.ts
 
 # ── API: Prisma Client gerado (runtime) ──
-COPY --from=api-builder /build/generated ./generated
+COPY --from=api-builder /build/prisma/generated ./prisma/generated
 
 # ── API: seed script ──
 COPY --from=api-builder /build/prisma/seed.ts ./prisma/seed.ts

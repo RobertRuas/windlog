@@ -1,11 +1,11 @@
 #!/bin/bash
 # ============================================================================
-# DOCKER ENTRYPOINT - Windlog
+# DOCKER ENTRYPOINT - Windlog (Produção)
 # ============================================================================
 #
 # O QUE FAZ?
 # ----------
-# 1. Aguarda o PostgreSQL estar pronto (healthcheck)
+# 1. Aguarda o PostgreSQL externo estar acessível (database.windlog.org:5432)
 # 2. Aplica migrations pendentes (prisma migrate deploy)
 # 3. Executa seed (cria usuários iniciais se não existirem)
 # 4. Inicia nginx em background
@@ -19,12 +19,12 @@
 set -e
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "  🚀 Windlog - Starting container..."
+echo "  🚀 Windlog - Starting production container..."
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-# ── 1. Aguardar PostgreSQL estar pronto ──────────────────────────────────────
+# ── 1. Aguardar PostgreSQL externo estar pronto ─────────────────────────────
 echo ""
-echo "📦 Aguardando PostgreSQL..."
+echo "📦 Aguardando PostgreSQL (database.windlog.org:5432)..."
 
 MAX_RETRIES=30
 RETRY_COUNT=0
@@ -72,9 +72,8 @@ echo "✅ nginx iniciado (porta 80)"
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "  ✅ Windlog pronto!"
-echo "  🌐 Frontend:  http://localhost"
-echo "  🔌 API:       http://localhost/api/v1"
-echo "  📖 Swagger:   http://localhost/api/docs"
+echo "  🌐 Frontend:  https://app.windlog.org"
+echo "  🔌 API:       https://app.windlog.org/api/v1"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 
