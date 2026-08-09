@@ -376,7 +376,7 @@ export function TimesheetFormEditor({
         <div className="px-6 py-4 border-b border-gray-100 bg-gray-50">
           <h2 className="text-base font-semibold text-gray-900">{t('form.metadataTitle')}</h2>
         </div>
-        <div className="p-4 sm:p-6 space-y-4">
+        <div className="p-4 sm:p-6">
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             <div>
               <label className={labelClass}>{t('sheet.jobNumber')}</label>
@@ -390,8 +390,6 @@ export function TimesheetFormEditor({
               <label className={labelClass}>{t('sheet.teamNo')}</label>
               <input type="text" value={form.teamNo} onChange={(e) => handleMetaChange('teamNo', e.target.value)} disabled={isSaving} className={inputClass} />
             </div>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             <div>
               <label className={labelClass}>{t('sheet.jobScope')}</label>
               <input type="text" value={form.jobScope} onChange={(e) => handleMetaChange('jobScope', e.target.value)} disabled={isSaving} className={inputClass} />
