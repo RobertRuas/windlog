@@ -64,6 +64,15 @@ export interface DataTableColumn<T> {
   sortable?: boolean;
   /** Chave usada para ordenação (identificador da coluna) */
   sortKey?: string;
+  /** Opções de exibição apenas na lista mobile (não afetam a tabela PC) */
+  mobile?: {
+    /** Se true, o valor vira subtítulo logo abaixo do título (sem rótulo) */
+    asSubtitle?: boolean;
+    /** Se true, oculta o rótulo na área de detalhes da lista */
+    hideLabel?: boolean;
+    /** Ordem entre subtítulos (menor aparece primeiro; padrão 0) */
+    order?: number;
+  };
 }
 
 /**
