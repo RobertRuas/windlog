@@ -136,7 +136,10 @@
       "group_ph": "Nome do grupo",
       "add_group": "Criar grupo",
       "group_created": "Grupo criado",
-      "members_hint": "Selecione os contatos do grupo (envio para múltiplos destinos)"
+      "members_hint": "Selecione os contatos do grupo (envio para múltiplos destinos)",
+      "shared_badge": "Grupo partilhado com todos os usuários (somente uso)",
+      "shared_create_hint": "Os grupos que criar serão partilhados com todos os usuários (apenas para uso).",
+      "shared_readonly_hint": "Grupo partilhado — somente leitura. Utilize-o nos destinatários ao escrever um e-mail."
     },
     "rules": {
       "created": "Regra criada",

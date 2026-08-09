@@ -479,10 +479,10 @@ export class MailController {
   }
 
   @Post('contact-groups')
-  @ApiOperation({ summary: 'Criar grupo de contatos' })
+  @ApiOperation({ summary: 'Criar grupo de contatos', description: 'Cria um grupo. Grupos criados por ADMIN/HR são partilhados automaticamente com todos os usuários (somente uso).' })
   @ApiResponse({ status: 201, description: 'Grupo criado' })
   createGroup(@CurrentUser() user: JwtPayload, @Body() dto: MailContactGroupDto) {
-    return this.mailService.createGroup(user.sub, dto);
+    return this.mailService.createGroup(user.sub, user.role, dto);
   }
 
   @Put('contact-groups/:id')

@@ -890,24 +890,35 @@ export class MailService {
 
   /**
    * Lista os grupos de contatos com seus membros.
+   * Retorna os grupos do próprio usuário + grupos partilhados (isShared),
+   * criados por ADMIN/HR e disponíveis para todos (apenas uso).
    */
   async listGroups(userId: string) {
     return this.prisma.mailContactGroup.findMany({
-      where: { userId, deletedAt: null },
-      orderBy: { name: 'asc' },
-      include: { members: { include: { contact: true } } },
+      where: { deletedAt: null, OR: [{ userId }, { isShared: true }] },
+      orderBy: [{ isShared: 'asc' }, { name: 'asc' }],
+      include: {
+        members: { include: { contact: true } },
+        user: { select: { id: true, firstName: true, lastName: true } },
+      },
     });
   }
 
   /**
    * Cria um grupo de contatos.
+   * Grupos criados por ADMIN/HR são partilhados automaticamente com todos
+   * os usuários (somente uso). Demais usuários criam grupos privados.
    */
-  async createGroup(userId: string, dto: MailContactGroupDto) {
+  async createGroup(userId: string, role: string, dto: MailContactGroupDto) {
+    const isShared = role === 'ADMIN' || role === 'HR';
     const existing = await this.prisma.mailContactGroup.findFirst({
       where: { userId, name: dto.name, deletedAt: null },
     });
     if (existing) throw new ConflictException('Group already exists');
-    return this.prisma.mailContactGroup.create({ data: { userId, name: dto.name } });
+    return this.prisma.mailContactGroup.create({
+      data: { userId, name: dto.name, isShared },
+      include: { user: { select: { id: true, firstName: true, lastName: true } } },
+    });
   }
 
   /**

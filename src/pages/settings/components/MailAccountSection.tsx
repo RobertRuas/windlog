@@ -16,7 +16,7 @@
  * ============================================================================
  */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -30,6 +30,7 @@ import {
   getMailAccount, getMailConfig, connectMailAccount, updateMailAccount,
   disconnectMailAccount,
 } from '@/services/mail.service';
+import { getProfile } from '@/services/auth.service';
 
 /**
  * Componente MailAccountSection - configuração da conta de e-mail.
@@ -49,6 +50,20 @@ export function MailAccountSection() {
    */
   const { data: account } = useQuery({ queryKey: ['mail-account'], queryFn: getMailAccount });
   const { data: config } = useQuery({ queryKey: ['mail-config'], queryFn: getMailConfig });
+
+  /**
+   * Perfil do usuário atual (para pré-preencher o e-mail da conta).
+   */
+  const { data: profile } = useQuery({ queryKey: ['profile', 'current'], queryFn: getProfile });
+
+  /**
+   * Pré-preenche o campo de e-mail com o e-mail do usuário no sistema.
+   * O campo continua editável — o usuário informa apenas a senha.
+   */
+  useEffect(() => {
+    if (profile?.email && !email && !account) setEmail(profile.email);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile?.email, account]);
 
   /**
    * Invalida o cache da conta após mutações.

@@ -1833,8 +1833,10 @@ model MailContactGroup {
 
   /// Nome do grupo (ex: "Equipa Norte", "Clientes")
   name      String
+  /// Se o grupo é partilhado com todos os usuários (criado por ADMIN/HR)
+  isShared  Boolean  @default(false)
 
-  // Relação com o usuário
+  // Relação com o usuário (dono do grupo; apenas ele pode editar/excluir)
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   members   MailContactGroupMember[]

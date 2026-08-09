@@ -18,11 +18,12 @@ import { toast } from 'sonner';
 import {
   X, Plus, Trash2, Pencil, Users, Workflow, Tag, PenLine,
   Moon, Ban, User, Folder, Lock, Inbox, Send, FileText,
-  AlertOctagon, Archive,
+  AlertOctagon, Archive, Globe,
 } from 'lucide-react';
 
 // Serviço
 import * as mailService from '@/services/mail.service';
+import { getProfile } from '@/services/auth.service';
 import type {
   MailContact, MailContactGroup, MailRule, MailLabel,
   MailSignature, MailBlockedSender, MailFolder, MailFolderType,
@@ -170,6 +171,16 @@ function ContactsTab() {
   const { data: contacts = [] } = useQuery({ queryKey: ['mail-contacts'], queryFn: mailService.getMailContacts });
   const { data: groups = [] } = useQuery({ queryKey: ['mail-contact-groups'], queryFn: mailService.getMailContactGroups });
 
+  /**
+   * Perfil do usuário atual — usado para saber se é ADMIN/HR
+   * (grupos criados são partilhados) e se é dono de cada grupo.
+   */
+  const { data: profile } = useQuery({ queryKey: ['profile', 'current'], queryFn: getProfile });
+  const isManager = profile?.role === 'ADMIN' || profile?.role === 'HR';
+
+  /** Apenas o dono do grupo pode editar/excluir. */
+  const canManageGroup = (group: MailContactGroup) => group.userId === profile?.id;
+
   function invalidate() {
     queryClient.invalidateQueries({ queryKey: ['mail-contacts'] });
     queryClient.invalidateQueries({ queryKey: ['mail-contact-groups'] });
@@ -246,57 +257,94 @@ function ContactsTab() {
       <div>
         <h3 className="text-sm font-semibold text-gray-800 dark:text-[#f5f5f7] mb-2">{t('manage.contacts.groups')}</h3>
 
-        <div className="flex gap-1.5 mb-3">
+        <div className="flex gap-1.5 mb-2">
           <input className={`${inputClass} flex-1`} placeholder={t('manage.contacts.group_ph')} value={groupName} onChange={(e) => setGroupName(e.target.value)} />
           <button onClick={() => groupName && createGroup.mutate()} className="form-button form-button-primary h-9 w-9 p-0 flex items-center justify-center" title={t('manage.contacts.add_group')}>
             <Plus size={15} />
           </button>
         </div>
 
+        {/* Aviso de partilha para ADMIN/HR */}
+        {isManager && (
+          <p className="flex items-center gap-1 text-xs text-gray-400 mb-3">
+            <Globe size={11} className="flex-shrink-0" /> {t('manage.contacts.shared_create_hint')}
+          </p>
+        )}
+
         <div className="flex gap-4">
-          {/* Lista de grupos */}
+          {/* Lista de grupos (próprios + partilhados) */}
           <ul className="w-32 space-y-1 max-h-72 overflow-y-auto">
-            {groups.map((group) => (
-              <li key={group.id}>
-                <button
-                  onClick={() => setSelectedGroupId(group.id === selectedGroupId ? null : group.id)}
-                  className={`w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-sm ${
-                    selectedGroupId === group.id ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400' : 'text-gray-700 dark:text-[#a1a1a6] hover:bg-gray-50 dark:hover:bg-[#2c2c2e]'
-                  }`}
-                >
-                  <span className="truncate">{group.name}</span>
-                  <span onClick={(e) => { e.stopPropagation(); removeGroup.mutate(group.id); }} className="text-gray-300 hover:text-red-500">
-                    <Trash2 size={12} />
-                  </span>
-                </button>
-              </li>
-            ))}
+            {groups.map((group) => {
+              const owned = canManageGroup(group);
+              return (
+                <li key={group.id}>
+                  <button
+                    onClick={() => setSelectedGroupId(group.id === selectedGroupId ? null : group.id)}
+                    className={`w-full flex items-center justify-between gap-1 px-2 py-1.5 rounded-lg text-sm ${
+                      selectedGroupId === group.id ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400' : 'text-gray-700 dark:text-[#a1a1a6] hover:bg-gray-50 dark:hover:bg-[#2c2c2e]'
+                    }`}
+                  >
+                    <span className="truncate">{group.name}</span>
+                    {/* Grupos partilhados: indicador (apenas uso) */}
+                    {group.isShared && (
+                      <span className="flex-shrink-0" title={t('manage.contacts.shared_badge')}>
+                        <Globe size={12} className="text-blue-500" />
+                      </span>
+                    )}
+                    {/* Apenas o dono pode excluir */}
+                    {owned && (
+                      <span onClick={(e) => { e.stopPropagation(); removeGroup.mutate(group.id); }} className="text-gray-300 hover:text-red-500">
+                        <Trash2 size={12} />
+                      </span>
+                    )}
+                  </button>
+                </li>
+              );
+            })}
           </ul>
 
           {/* Membros do grupo selecionado */}
           {selectedGroup && (
             <div className="flex-1 max-h-72 overflow-y-auto">
-              <p className="text-xs text-gray-400 mb-2">{t('manage.contacts.members_hint')}</p>
-              <ul className="space-y-1">
-                {contacts.map((contact) => {
-                  const isMember = memberIds.has(contact.id);
-                  return (
-                    <li key={contact.id}>
-                      <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-[#a1a1a6] cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={isMember}
-                          onChange={(e) => {
-                            if (e.target.checked) addMember.mutate({ groupId: selectedGroup.id, contactId: contact.id });
-                            else removeMember.mutate({ groupId: selectedGroup.id, contactId: contact.id });
-                          }}
-                        />
-                        <span className="truncate">{contact.name || contact.email}</span>
-                      </label>
-                    </li>
-                  );
-                })}
-              </ul>
+              {canManageGroup(selectedGroup) ? (
+                <>
+                  <p className="text-xs text-gray-400 mb-2">{t('manage.contacts.members_hint')}</p>
+                  <ul className="space-y-1">
+                    {contacts.map((contact) => {
+                      const isMember = memberIds.has(contact.id);
+                      return (
+                        <li key={contact.id}>
+                          <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-[#a1a1a6] cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={isMember}
+                              onChange={(e) => {
+                                if (e.target.checked) addMember.mutate({ groupId: selectedGroup.id, contactId: contact.id });
+                                else removeMember.mutate({ groupId: selectedGroup.id, contactId: contact.id });
+                              }}
+                            />
+                            <span className="truncate">{contact.name || contact.email}</span>
+                          </label>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </>
+              ) : (
+                <>
+                  {/* Somente leitura: grupos de outro dono (partilhados) */}
+                  <p className="text-xs text-gray-400 mb-2">{t('manage.contacts.shared_readonly_hint')}</p>
+                  <ul className="space-y-1">
+                    {selectedGroup.members.map((member) => (
+                      <li key={member.id} className="flex items-center gap-2 text-sm text-gray-700 dark:text-[#a1a1a6]">
+                        <User size={13} className="text-gray-400 flex-shrink-0" />
+                        <span className="truncate">{member.contact.name || member.contact.email}</span>
+                        <span className="text-xs text-gray-400 truncate max-w-[120px] ml-auto">{member.contact.email}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
             </div>
           )}
         </div>

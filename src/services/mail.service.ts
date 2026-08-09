@@ -210,6 +210,12 @@ export interface MailContact {
 export interface MailContactGroup {
   id: string;
   name: string;
+  /** Se o grupo é partilhado com todos os usuários (criado por ADMIN/HR) */
+  isShared: boolean;
+  /** ID do dono do grupo (único que pode editar/excluir) */
+  userId: string;
+  /** Dados básicos do dono do grupo */
+  user?: { id: string; firstName: string; lastName: string };
   members: { id: string; contactId: string; contact: MailContact }[];
 }
 
