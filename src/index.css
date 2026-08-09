@@ -511,12 +511,32 @@ input[type='date']::-webkit-date-and-time-value {
   }
 
   /* Ações da lista mobile (MobileListView): garante alvo de toque de
-     40px em cada botão/ação sem alterar o seu tamanho visual */
+     44px em cada botão/ação (medida mínima recomendada pela HIG da Apple)
+     sem alterar o seu tamanho visual */
   .mobile-list-actions > * {
-    min-width: 40px;
-    min-height: 40px;
+    min-width: 44px;
+    min-height: 44px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+  }
+
+  /* Separadores recuados da lista mobile (estilo iOS "grouped list"):
+     a linha divisória começa após o recuo esquerdo, como nas listas
+     nativas do iPhone */
+  .mobile-list-inset > * {
+    position: relative;
+  }
+  .mobile-list-inset > * + *::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 16px;
+    right: 0;
+    height: 1px;
+    background-color: #f3f4f6; /* gray-100 */
+  }
+  html.dark .mobile-list-inset > * + *::before {
+    background-color: #2c2c2e;
   }
 }

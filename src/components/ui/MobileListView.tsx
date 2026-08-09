@@ -218,8 +218,9 @@ export function MobileListView<T>({
             <p className="text-sm font-medium text-gray-900 dark:text-[#f5f5f7]">{emptyMessage}</p>
           </div>
         ) : (
-          /* Lista de itens (estilo nativo: separadores entre itens) */
-          <div className="divide-y divide-gray-100 dark:divide-[#2c2c2e]">
+          /* Lista de itens (estilo nativo: separadores recuados tipo iOS,
+             aplicados pela classe mobile-list-inset no CSS global) */
+          <div className="mobile-list-inset">
             {displayData.map((item, index) => (
               <div
                 key={resolveKey(item, index)}
@@ -230,14 +231,15 @@ export function MobileListView<T>({
                 }`}
                 onClick={onRowClick ? () => onRowClick(item) : undefined}
               >
-                {/* Linha principal: título + ações.
-                 * As ações usam a classe mobile-list-actions para garantir
-                 * alvos de toque de 40px (CSS global) sem crescer visualmente. */}
+                {/* Linha principal: título + ações (+ chevron se a linha navega).
+                 * Tipografia seguindo convenções nativas: título 16px semibold,
+                 * conteúdo secundário 14px e terciário 13px.
+                 * As ações usam mobile-list-actions para alvo de toque de 44px. */}
                 <div className="flex items-center justify-between gap-3">
-                  <div className="min-w-0 flex-1 text-[15px] font-semibold text-gray-900 dark:text-[#f5f5f7]">
+                  <div className="min-w-0 flex-1 text-[16px] font-semibold text-gray-900 dark:text-[#f5f5f7]">
                     {titleCol.render(item)}
                   </div>
-                  {/* Ações (coluna sticky da tabela) à direita, com toque confortável */}
+                  {/* Ações (coluna sticky da tabela) à direita, centradas verticalmente */}
                   {actionCol && (
                     <div
                       className="mobile-list-actions flex items-center shrink-0 -my-2 -mr-2"
@@ -249,6 +251,10 @@ export function MobileListView<T>({
                       {actionCol.render(item)}
                     </div>
                   )}
+                  {/* Chevron de navegação — affordance nativo quando a linha é clicável */}
+                  {onRowClick && (
+                    <ChevronRight size={16} className="shrink-0 text-gray-300 dark:text-[#48484a]" />
+                  )}
                 </div>
 
                 {/* Subtítulos: exibidos logo abaixo do título, sem rótulo
@@ -258,7 +264,7 @@ export function MobileListView<T>({
                     {subtitleCols.map((col, colIndex) => (
                       /* whitespace-normal nos spans internos permite que
                        * valores longos (ex.: e-mail) quebrem em vez de transbordar */
-                      <div key={colIndex} className="text-[13px] text-gray-500 dark:text-[#a1a1a6] [&_span]:whitespace-normal">
+                      <div key={colIndex} className="text-[14px] text-gray-500 dark:text-[#a1a1a6] [&_span]:whitespace-normal">
                         {col.render(item)}
                       </div>
                     ))}
