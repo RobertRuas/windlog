@@ -88,6 +88,11 @@
     "savedSuccessfully": "Assinatura guardada com sucesso!",
     "redoSignature": "Fazer nova assinatura"
   },
+  "mobileGuard": {
+    "title": "Acesso apenas pelo computador ou tablet",
+    "description": "O Windlog foi concebido para ecrãs maiores. Por favor, aceda através de um computador ou tablet para desfrutar da melhor experiência.",
+    "hint": "Dica: use um computador, portátil ou tablet em modo paisagem."
+  },
   "ariaLabels": {
     "openMenu": "Abrir menu",
     "closeMenu": "Fechar menu"

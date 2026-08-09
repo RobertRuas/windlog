@@ -33,6 +33,9 @@ import { Toaster } from 'sonner';
 // Importa a configuração do i18next (deve ser importado antes de usar traduções)
 import '@/i18n';
 
+// Proteção contra acesso em dispositivos móveis (ecrã < 1024px)
+import { MobileGuard } from '@/components/MobileGuard';
+
 // Contexto global de preferências (tema, escala, idioma)
 import { SettingsProvider, useSettings } from '@/contexts/SettingsContext';
 
@@ -253,16 +256,19 @@ function ThemedToaster() {
  */
 export default function App() {
   return (
-    /* QueryClientProvider - disponibiliza o TanStack Query para todos os componentes.
-     * Qualquer componente pode usar useQuery() para buscar dados da API. */
-    <QueryClientProvider client={queryClient}>
-      {/* SettingsProvider - gere preferências globais (tema, escala, idioma) */}
-      <SettingsProvider>
-      {/* Toaster - exibe notificações toast com tema sincronizado */}
-      <ThemedToaster />
-      {/* BrowserRouter - disponibiliza o sistema de rotas.
-       * Permite usar useNavigate(), <Link>, <Routes>, etc. */}
-      <BrowserRouter>
+    /* MobileGuard - bloqueia acesso em ecrãs pequenos (< 1024px).
+     * Se o dispositivo for desktop, renderiza os children normalmente. */
+    <MobileGuard>
+      {/* QueryClientProvider - disponibiliza o TanStack Query para todos os componentes.
+       * Qualquer componente pode usar useQuery() para buscar dados da API. */}
+      <QueryClientProvider client={queryClient}>
+        {/* SettingsProvider - gere preferências globais (tema, escala, idioma) */}
+        <SettingsProvider>
+        {/* Toaster - exibe notificações toast com tema sincronizado */}
+        <ThemedToaster />
+        {/* BrowserRouter - disponibiliza o sistema de rotas.
+         * Permite usar useNavigate(), <Link>, <Routes>, etc. */}
+        <BrowserRouter>
         <Routes>
           {/* Rota pública - página de login */}
           <Route path="/login" element={<LoginPage />} />
@@ -413,8 +419,9 @@ export default function App() {
           {/* Qualquer outra rota redireciona para a página inicial ou login */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </BrowserRouter>
-      </SettingsProvider>
-    </QueryClientProvider>
+        </BrowserRouter>
+        </SettingsProvider>
+      </QueryClientProvider>
+    </MobileGuard>
   );
 }
