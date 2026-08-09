@@ -470,3 +470,43 @@ input[type='date']::-webkit-date-and-time-value {
     padding-bottom: env(safe-area-inset-bottom);
   }
 }
+
+/* ==========================================================================
+   Modo Mobile Nativo — aparência de aplicação nativa em ecrãs pequenos
+   ==========================================================================
+   Regras aplicadas apenas abaixo de 768px (modo mobile). O layout de PC
+   permanece exatamente igual — nenhuma destas regras afeta ecrãs maiores.
+
+   1. Toque nativo: remove o destaque azul de toque do Android e o
+      zoom por duplo toque, dando sensação de aplicação nativa.
+   2. Modais em "bottom sheet": todos os modais do sistema partilham a
+      raiz "fixed inset-0 z-50 flex items-center justify-center".
+      No mobile passam a deslizar da base do ecrã como uma folha nativa
+      (estilo iOS), com cantos superiores arredondados e altura limitada.
+   ========================================================================== */
+
+@media (max-width: 767px) {
+  /* Toque nativo: sem destaque de toque nem zoom por duplo toque */
+  body {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  /* Raiz do modal: ancora o painel à base do ecrã (bottom sheet) */
+  .fixed.inset-0.z-50.flex.items-center.justify-center {
+    align-items: flex-end !important;
+    padding: 0 !important;
+  }
+
+  /* Painel do modal: largura total, cantos superiores arredondados
+     e altura máxima com espaço para o teclado */
+  .fixed.inset-0.z-50.flex.items-center.justify-center > div {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 92dvh !important;
+    overflow-y: auto !important;
+    margin: 0 !important;
+    border-radius: 16px 16px 0 0 !important;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}

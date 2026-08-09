@@ -41,6 +41,9 @@ import { useState, useMemo } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { FolderOpen, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, ArrowUpDown } from 'lucide-react';
 
+import { useIsMobile } from '@/hooks/useIsMobile';
+import { MobileListView } from './MobileListView';
+
 // ─── Tipos ──────────────────────────────────────────────────────────────────
 
 /**
@@ -144,6 +147,10 @@ export function DataTable<T>({
   getKey,
   onRowClick,
 }: DataTableProps<T>) {
+  // Modo mobile → renderiza a lista nativa (MobileListView) em vez da tabela.
+  // A deteção combina dispositivo (User-Agent) + largura mínima do ecrã.
+  const isMobile = useIsMobile();
+
   // Estado para ordenação client-side (quando clientSort = true)
   const [localSort, setLocalSort] = useState<{ key: string; direction: 'asc' | 'desc' }>({
     key: '',
@@ -249,6 +256,25 @@ export function DataTable<T>({
 
   // Dados a exibir (ordenados se clientSort, ou originais)
   const displayData = clientSort ? sortedData : data;
+
+  // ── Modo mobile: lista nativa (a tabela de PC permanece intacta abaixo) ──
+  if (isMobile) {
+    return (
+      <MobileListView
+        columns={columns}
+        data={displayData}
+        isLoading={isLoading}
+        emptyIcon={EmptyIcon}
+        emptyMessage={emptyMessage}
+        loadingMessage={loadingMessage}
+        headerContent={headerContent}
+        pagination={pagination}
+        sort={sort}
+        getKey={getKey}
+        onRowClick={onRowClick}
+      />
+    );
+  }
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
