@@ -65,7 +65,7 @@ export function TimesheetMetadata({
       {/* ── Linha de labels (cabeçalho verde claro) ───────────────────── */}
       <tr className="row-metadata-header">
         <th className="cell-meta-header cell-meta-header-left-top">
-          Nordic Access Job Number
+          Nordic A. Job N.
         </th>
         <th className="cell-meta-header">Week</th>
         <th className="cell-meta-header">Team No.</th>
