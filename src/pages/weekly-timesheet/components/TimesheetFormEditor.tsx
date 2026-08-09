@@ -376,8 +376,8 @@ export function TimesheetFormEditor({
         <div className="px-6 py-4 border-b border-gray-100 bg-gray-50">
           <h2 className="text-base font-semibold text-gray-900">{t('form.metadataTitle')}</h2>
         </div>
-        <div className="p-6 space-y-4">
-          <div className="grid grid-cols-3 gap-4">
+        <div className="p-4 sm:p-6 space-y-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             <div>
               <label className={labelClass}>{t('sheet.jobNumber')}</label>
               <input type="text" value={form.jobNumber} onChange={(e) => handleMetaChange('jobNumber', e.target.value)} disabled={isSaving} className={inputClass} />
@@ -391,15 +391,11 @@ export function TimesheetFormEditor({
               <input type="text" value={form.teamNo} onChange={(e) => handleMetaChange('teamNo', e.target.value)} disabled={isSaving} className={inputClass} />
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-4">
-            <TranslatableField
-              label={t('sheet.jobScope')}
-              labelClassName={labelClass}
-              value={form.jobScope}
-              onChange={(v) => handleMetaChange('jobScope', v)}
-              disabled={isSaving}
-              fieldClassName={inputClass}
-            />
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            <div>
+              <label className={labelClass}>{t('sheet.jobScope')}</label>
+              <input type="text" value={form.jobScope} onChange={(e) => handleMetaChange('jobScope', e.target.value)} disabled={isSaving} className={inputClass} />
+            </div>
             <div>
               <label className={labelClass}>{t('sheet.client')}</label>
               <input type="text" value={form.client} onChange={(e) => handleMetaChange('client', e.target.value)} disabled={isSaving} className={inputClass} />
@@ -467,7 +463,7 @@ export function TimesheetFormEditor({
             </div>
 
             {!isCollapsed && (
-              <div className="p-5 space-y-5">
+              <div className="p-4 sm:p-5 space-y-5">
 
                 {/* ── Informações Comuns ── */}
                 <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-4">
@@ -481,7 +477,7 @@ export function TimesheetFormEditor({
                   </div>
 
                   {/* ── Turbina: dropdown + campos auto-preenchidos ── */}
-                  <div className="grid grid-cols-4 gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     <div>
                       <label className={smallLabel}>{t('sheet.localTurbineNo')}</label>
                       <select
@@ -527,7 +523,7 @@ export function TimesheetFormEditor({
                   </div>
 
                   {/* ── Horas compactas com validação ── */}
-                  <div className="grid grid-cols-4 gap-2 mt-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3">
                     <div>
                       <label className={smallLabel}>{t('sheet.standbyHrs')}</label>
                       <input
@@ -604,7 +600,7 @@ export function TimesheetFormEditor({
                             : 'border-gray-200'
                         }`}
                       >
-                        <div className="flex items-center gap-3 px-3 py-2.5 bg-white">
+                        <div className="flex flex-wrap items-center gap-3 px-3 py-2.5 bg-white sm:flex-nowrap">
                           <span className="text-xs text-gray-400 w-5 text-center font-medium shrink-0">
                             {entryIdx + 1}
                           </span>
@@ -634,7 +630,7 @@ export function TimesheetFormEditor({
                           </div>
 
                           {/* Role: preenchida automaticamente ao selecionar o técnico — somente leitura */}
-                          <div className="w-44 shrink-0">
+                          <div className="w-full sm:w-44 shrink-0 order-last sm:order-none">
                             <input
                               type="text"
                               value={entry.role}
@@ -721,8 +717,8 @@ export function TimesheetFormEditor({
         <div className="px-6 py-4 border-b border-gray-100 bg-gray-50">
           <h2 className="text-base font-semibold text-gray-900">{t('form.signaturesTitle')}</h2>
         </div>
-        <div className="p-6">
-          <div className="grid grid-cols-2 gap-8">
+        <div className="p-4 sm:p-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
             {/* ── Coluna: Team Leader ────────────────────────────────── */}
             <div className="space-y-4">
               <h3 className="text-sm font-semibold text-gray-800 border-b border-gray-200 pb-2">
