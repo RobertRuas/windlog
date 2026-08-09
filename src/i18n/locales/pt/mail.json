@@ -26,6 +26,7 @@
   },
   "folders": {
     "title": "Pastas",
+    "all": "Todas as mensagens",
     "new": "Nova pasta",
     "name_placeholder": "Nome da pasta",
     "created": "Pasta criada",

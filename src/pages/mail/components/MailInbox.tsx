@@ -1,15 +1,16 @@
 /**
  * ============================================================================
- * MAIL INBOX - Caixa de Correio (3 painéis + atalhos de teclado)
+ * MAIL INBOX - Caixa de Correio (lista/leitura + atalhos de teclado)
  * ============================================================================
  *
  * O QUE É ESTE COMPONENTE?
  * ------------------------
  * Layout principal do cliente de e-mail após a conta conectada:
  * - Barra de ferramentas: escrever, sincronizar, gestão, desconectar
- * - Painel esquerdo: pastas e etiquetas (MailFolders)
  * - Área principal: lista de mensagens (MessageList) OU leitura da
  *   mensagem em tela cheia (MessageView), com botão de voltar
+ * - Pastas e etiquetas ficam no submenu em acordeão do menu lateral
+ *   principal (a seleção chega via query string ?folder= / ?label=)
  *
  * ATALHOS DE TECLADO:
  * -------------------
@@ -18,6 +19,7 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -31,7 +33,6 @@ import {
 } from '@/services/mail.service';
 
 // Componentes do módulo
-import { MailFolders } from './MailFolders';
 import { MessageList } from './MessageList';
 import { MessageView } from './MessageView';
 import { ComposeModal, type ComposeMode } from './ComposeModal';
@@ -59,13 +60,23 @@ interface MailInboxProps {
 export function MailInbox({ account }: MailInboxProps) {
   const { t } = useTranslation('mail');
   const queryClient = useQueryClient();
+  const [searchParams] = useSearchParams();
 
-  // Estado de seleção e filtros
-  const [folderId, setFolderId] = useState<string | null>(null);
-  const [labelId, setLabelId] = useState<string | null>(null);
+  // Pasta/etiqueta selecionada vem da query string (submenu do menu lateral)
+  const folderId = searchParams.get('folder');
+  const labelId = searchParams.get('label');
+
+  // Estado de filtros e seleção
   const [filters, setFilters] = useState<MailMessageFilters>({});
   const [selectedMessage, setSelectedMessage] = useState<MailMessageSummary | null>(null);
   const [modals, setModals] = useState<ModalState>({ compose: null, management: null });
+
+  /**
+   * Ao trocar de pasta/etiqueta, fecha a leitura da mensagem atual.
+   */
+  useEffect(() => {
+    setSelectedMessage(null);
+  }, [folderId, labelId]);
 
   /**
    * Filtros efetivos = pasta/etiqueta selecionada + filtros da lista.
@@ -224,19 +235,8 @@ export function MailInbox({ account }: MailInboxProps) {
         </div>
       )}
 
-      {/* ── Corpo: 3 painéis ───────────────────────────────── */}
+      {/* ── Corpo: lista OU leitura em tela cheia ───────────── */}
       <div className="flex h-[calc(100vh-260px)] min-h-[480px]">
-        {/* Pastas e etiquetas */}
-        <div className="p-3">
-          <MailFolders
-            selectedFolderId={folderId}
-            onSelectFolder={(id) => { setFolderId(id); setSelectedMessage(null); }}
-            selectedLabelId={labelId}
-            onSelectLabel={(id) => { setLabelId(id); setSelectedMessage(null); }}
-          />
-        </div>
-
-        {/* Área principal: lista OU leitura em tela cheia (alternância) */}
         {selectedMessage ? (
           <MessageView
             message={selectedMessage}

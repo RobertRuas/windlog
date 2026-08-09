@@ -26,6 +26,7 @@
   },
   "folders": {
     "title": "Folders",
+    "all": "All messages",
     "new": "New folder",
     "name_placeholder": "Folder name",
     "created": "Folder created",
