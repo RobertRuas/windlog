@@ -11,7 +11,7 @@
  * ============================================================================
  */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -50,63 +50,105 @@ const inputClass = 'text-sm px-3 py-2 rounded-lg border border-gray-300 dark:bor
 
 /**
  * Componente MailManagementDialog - gestão dos recursos auxiliares.
+ * Layout estilo painel de sistema: navegação lateral + área de conteúdo.
  */
 export function MailManagementDialog({ initialTab = 'contacts', onClose }: MailManagementDialogProps) {
   const { t } = useTranslation('mail');
   const [tab, setTab] = useState<ManagementTab>(initialTab);
 
   /**
-   * Definição das abas (ícone + label).
+   * Fechamento pela tecla Esc.
    */
-  const tabs: { id: ManagementTab; icon: typeof Users; label: string }[] = [
-    { id: 'contacts', icon: Users, label: t('manage.tabs.contacts') },
-    { id: 'folders', icon: Folder, label: t('manage.tabs.folders') },
-    { id: 'rules', icon: Workflow, label: t('manage.tabs.rules') },
-    { id: 'labels', icon: Tag, label: t('manage.tabs.labels') },
-    { id: 'signatures', icon: PenLine, label: t('manage.tabs.signatures') },
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose();
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  /**
+   * Contadores para a navegação lateral (mesmas chaves de cache das abas).
+   */
+  const { data: contacts = [] } = useQuery({ queryKey: ['mail-contacts'], queryFn: mailService.getMailContacts });
+  const { data: folders = [] } = useQuery({ queryKey: ['mail-folders'], queryFn: mailService.getMailFolders });
+  const { data: rules = [] } = useQuery({ queryKey: ['mail-rules'], queryFn: mailService.getMailRules });
+  const { data: labels = [] } = useQuery({ queryKey: ['mail-labels'], queryFn: mailService.getMailLabels });
+  const { data: signatures = [] } = useQuery({ queryKey: ['mail-signatures'], queryFn: mailService.getMailSignatures });
+  const { data: blocked = [] } = useQuery({ queryKey: ['mail-blocked'], queryFn: mailService.getBlockedSenders });
+
+  /**
+   * Definição das seções (ícone + label + contador).
+   */
+  const tabs: { id: ManagementTab; icon: typeof Users; label: string; count?: number }[] = [
+    { id: 'contacts', icon: Users, label: t('manage.tabs.contacts'), count: contacts.length },
+    { id: 'folders', icon: Folder, label: t('manage.tabs.folders'), count: folders.length },
+    { id: 'rules', icon: Workflow, label: t('manage.tabs.rules'), count: rules.length },
+    { id: 'labels', icon: Tag, label: t('manage.tabs.labels'), count: labels.length },
+    { id: 'signatures', icon: PenLine, label: t('manage.tabs.signatures'), count: signatures.length },
     { id: 'autoreply', icon: Moon, label: t('manage.tabs.autoreply') },
-    { id: 'blocked', icon: Ban, label: t('manage.tabs.blocked') },
+    { id: 'blocked', icon: Ban, label: t('manage.tabs.blocked'), count: blocked.length },
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="bg-white dark:bg-[#1c1c1e] rounded-xl border border-gray-200 dark:border-[#38383a] shadow-xl w-full max-w-3xl max-h-[85vh] flex flex-col">
-        {/* Cabeçalho */}
-        <div className="flex items-center justify-between px-5 py-3 border-b border-gray-200 dark:border-[#38383a]">
-          <h2 className="text-base font-semibold text-gray-900 dark:text-[#f5f5f7]">{t('manage.title')}</h2>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-[#2c2c2e]">
-            <X size={18} />
-          </button>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white dark:bg-[#1c1c1e] rounded-xl border border-gray-200 dark:border-[#38383a] shadow-xl w-full max-w-4xl h-[80vh] flex overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* ── Navegação lateral ─────────────────────────────── */}
+        <div className="w-52 flex-shrink-0 bg-gray-50 dark:bg-[#161618] border-r border-gray-200 dark:border-[#38383a] flex flex-col">
+          <div className="px-4 pt-4 pb-3">
+            <h2 className="text-sm font-semibold text-gray-900 dark:text-[#f5f5f7]">{t('manage.title')}</h2>
+          </div>
+          <nav className="flex-1 overflow-y-auto px-2 pb-3 space-y-0.5">
+            {tabs.map(({ id, icon: Icon, label, count }) => (
+              <button
+                key={id}
+                onClick={() => setTab(id)}
+                className={`
+                  w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors
+                  ${tab === id
+                    ? 'bg-blue-600 text-white'
+                    : 'text-gray-600 dark:text-[#a1a1a6] hover:bg-gray-200/60 dark:hover:bg-[#2c2c2e]'}
+                `}
+              >
+                <Icon size={15} className="flex-shrink-0" />
+                <span className="flex-1 text-left truncate">{label}</span>
+                {count !== undefined && count > 0 && (
+                  <span className={`text-[11px] tabular-nums rounded-full px-1.5 py-px min-w-[18px] text-center ${
+                    tab === id ? 'bg-white/20 text-white' : 'bg-gray-200 dark:bg-[#38383a] text-gray-500 dark:text-[#8e8e93]'
+                  }`}>
+                    {count}
+                  </span>
+                )}
+              </button>
+            ))}
+          </nav>
         </div>
 
-        {/* Abas */}
-        <div className="flex gap-1 px-5 pt-3 border-b border-gray-200 dark:border-[#38383a] overflow-x-auto">
-          {tabs.map(({ id, icon: Icon, label }) => (
-            <button
-              key={id}
-              onClick={() => setTab(id)}
-              className={`
-                flex items-center gap-1.5 px-3 py-2 text-sm rounded-t-lg border-b-2 transition-colors whitespace-nowrap
-                ${tab === id
-                  ? 'border-blue-600 text-blue-700 dark:text-blue-400 font-medium'
-                  : 'border-transparent text-gray-500 dark:text-[#a1a1a6] hover:text-gray-800 dark:hover:text-[#f5f5f7]'}
-              `}
-            >
-              <Icon size={14} />
-              {label}
+        {/* ── Área de conteúdo ──────────────────────────────── */}
+        <div className="flex-1 flex flex-col min-w-0">
+          <div className="flex items-center justify-between px-5 py-3 border-b border-gray-200 dark:border-[#38383a]">
+            <h3 className="text-base font-semibold text-gray-900 dark:text-[#f5f5f7]">
+              {tabs.find(({ id }) => id === tab)?.label}
+            </h3>
+            <button onClick={onClose} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-[#2c2c2e]">
+              <X size={18} />
             </button>
-          ))}
-        </div>
-
-        {/* Conteúdo da aba */}
-        <div className="flex-1 overflow-y-auto px-5 py-4">
-          {tab === 'contacts' && <ContactsTab />}
-          {tab === 'folders' && <FoldersTab />}
-          {tab === 'rules' && <RulesTab />}
-          {tab === 'labels' && <LabelsTab />}
-          {tab === 'signatures' && <SignaturesTab />}
-          {tab === 'autoreply' && <AutoReplyTab />}
-          {tab === 'blocked' && <BlockedTab />}
+          </div>
+          <div className="flex-1 overflow-y-auto px-5 py-4">
+            {tab === 'contacts' && <ContactsTab />}
+            {tab === 'folders' && <FoldersTab />}
+            {tab === 'rules' && <RulesTab />}
+            {tab === 'labels' && <LabelsTab />}
+            {tab === 'signatures' && <SignaturesTab />}
+            {tab === 'autoreply' && <AutoReplyTab />}
+            {tab === 'blocked' && <BlockedTab />}
+          </div>
         </div>
       </div>
     </div>
