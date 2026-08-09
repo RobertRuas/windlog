@@ -7,16 +7,17 @@
  * ------------------------
  * Coluna central da caixa de correio: lista mensagens da pasta selecionada
  * com busca livre, filtros avançados (remetente, destinatário, assunto,
- * conteúdo, data, flags, anexos), paginação e ações rápidas por linha.
+ * conteúdo, data, flags, anexos), carregamento infinito ao rolar e ações
+ * rápidas por linha.
  * ============================================================================
  */
 
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useEffect, useRef, useState } from 'react';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import {
   Star, Paperclip, AlertTriangle, Search, SlidersHorizontal, X,
-  ChevronLeft, ChevronRight, MailOpen, Mail,
+  MailOpen, Mail,
 } from 'lucide-react';
 
 // Serviço
@@ -84,23 +85,49 @@ export function MessageList({
 
   /**
    * Busca mensagens com os filtros ativos (refetch a cada 60s = sync contínua).
+   * Paginação infinita: novas páginas são carregadas ao rolar até ao fim.
    */
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, hasNextPage, isFetchingNextPage, fetchNextPage } = useInfiniteQuery({
     queryKey: ['mail-messages', filters],
-    queryFn: () => getMailMessages({ ...filters, limit: filters.limit || 25 }),
+    queryFn: ({ pageParam = 1 }) =>
+      getMailMessages({ ...filters, page: pageParam, limit: filters.limit || 25 }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.page < lastPage.totalPages ? lastPage.page + 1 : undefined,
     refetchInterval: 60_000,
   });
 
-  const messages = data?.data || [];
-  const page = data?.page || 1;
-  const totalPages = data?.totalPages || 1;
+  /**
+   * Mensagens acumuladas de todas as páginas carregadas.
+   */
+  const messages = data?.pages.flatMap((p) => p.data) || [];
+
+  /**
+   * Observador do elemento sentinela: dispara o carregamento da próxima
+   * página quando o utilizador rola até ao fim da lista.
+   */
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { rootMargin: '200px' },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   /**
    * Aplica a busca livre.
    */
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
-    onFiltersChange({ ...filters, q: search || undefined, page: 1 });
+    onFiltersChange({ ...filters, q: search || undefined });
   }
 
   /**
@@ -119,7 +146,6 @@ export function MessageList({
       flagged: advanced.flagged || undefined,
       important: advanced.important || undefined,
       hasAttachments: advanced.hasAttachments || undefined,
-      page: 1,
     });
   }
 
@@ -136,7 +162,6 @@ export function MessageList({
       from: undefined, to: undefined, subject: undefined, content: undefined,
       startDate: undefined, endDate: undefined,
       unread: undefined, flagged: undefined, important: undefined, hasAttachments: undefined,
-      page: 1,
     });
   }
 
@@ -284,28 +309,16 @@ export function MessageList({
             );
           })
         )}
-      </div>
 
-      {/* ── Paginação ──────────────────────────────────────── */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between px-3 py-2 border-t border-gray-200 dark:border-[#38383a] text-sm text-gray-500 dark:text-[#a1a1a6]">
-          <button
-            disabled={page <= 1}
-            onClick={() => onFiltersChange({ ...filters, page: page - 1 })}
-            className="p-1 rounded hover:bg-gray-100 dark:hover:bg-[#2c2c2e] disabled:opacity-30"
-          >
-            <ChevronLeft size={16} />
-          </button>
-          <span className="text-xs">{t('list.page_of', { page, totalPages })}</span>
-          <button
-            disabled={page >= totalPages}
-            onClick={() => onFiltersChange({ ...filters, page: page + 1 })}
-            className="p-1 rounded hover:bg-gray-100 dark:hover:bg-[#2c2c2e] disabled:opacity-30"
-          >
-            <ChevronRight size={16} />
-          </button>
-        </div>
-      )}
+        {/* Sentinela do scroll infinito: carrega a próxima página ao rolar */}
+        {hasNextPage && (
+          <div ref={sentinelRef} className="p-3 text-center">
+            {isFetchingNextPage && (
+              <span className="text-xs text-gray-400 animate-pulse">{t('common:status.loading')}</span>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Botão limpar filtros ativos (quando há filtros avançados) */}
       {(filters.from || filters.unread || filters.flagged) && (

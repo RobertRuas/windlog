@@ -53,7 +53,6 @@
     "no_subject": "(no subject)",
     "draft": "Draft",
     "suspicious_attachment": "Suspicious attachment",
-    "page_of": "Page {{page}} of {{totalPages}}",
     "filter_from": "From",
     "filter_to": "To",
     "filter_subject": "Subject",
@@ -123,6 +122,7 @@
       "autoreply": "Out of office",
       "blocked": "Blocked"
     },
+    "menu_item": "Email settings",
     "folders": {
       "protected_hint": "Default folders cannot be renamed or deleted."
     },

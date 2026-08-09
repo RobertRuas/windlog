@@ -44,6 +44,7 @@ import {
   Folder as FolderIcon,
   Tag,
   Plus,
+  Settings2,
 } from 'lucide-react';
 
 import { logout } from '@/services/auth.service';
@@ -144,6 +145,15 @@ function MailAccordion({ onNavigate }: { onNavigate: () => void }) {
     next.delete('label');
     if (value) next.set(key, value);
     setSearchParams(next, { replace: true });
+    onNavigate();
+  }
+
+  /**
+   * Abre o diálogo de gestão do e-mail via query string (?manage=1),
+   * tratado pela caixa de correio.
+   */
+  function openManagement() {
+    setSearchParams(new URLSearchParams({ manage: '1' }), { replace: true });
     onNavigate();
   }
 
@@ -277,6 +287,17 @@ function MailAccordion({ onNavigate }: { onNavigate: () => void }) {
           })}
         </>
       )}
+
+      {/* ── Configurações do e-mail (gestão) ───────────────── */}
+      <div className="mt-1.5 pt-1.5 border-t border-gray-100 dark:border-[#2c2c2e]">
+        <button
+          onClick={openManagement}
+          className="w-full flex items-center gap-2 pl-9 pr-2 py-1.5 rounded-lg text-xs text-gray-600 dark:text-[#a1a1a6] hover:bg-gray-100 dark:hover:bg-[#2c2c2e] transition-colors"
+        >
+          <Settings2 size={13} className="text-gray-400 dark:text-[#636366]" />
+          <span className="flex-1 truncate text-left">{t('manage.menu_item')}</span>
+        </button>
+      </div>
     </div>
   );
 }

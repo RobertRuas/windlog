@@ -53,7 +53,6 @@
     "no_subject": "(sem assunto)",
     "draft": "Rascunho",
     "suspicious_attachment": "Anexo suspeito",
-    "page_of": "Página {{page}} de {{totalPages}}",
     "filter_from": "Remetente",
     "filter_to": "Destinatário",
     "filter_subject": "Assunto",
@@ -123,6 +122,7 @@
       "autoreply": "Ausência",
       "blocked": "Bloqueados"
     },
+    "menu_item": "Configurações do e-mail",
     "folders": {
       "protected_hint": "As pastas padrão não podem ser renomeadas nem excluídas."
     },

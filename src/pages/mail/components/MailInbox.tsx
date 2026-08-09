@@ -60,7 +60,7 @@ interface MailInboxProps {
 export function MailInbox({ account }: MailInboxProps) {
   const { t } = useTranslation('mail');
   const queryClient = useQueryClient();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   // Pasta/etiqueta selecionada vem da query string (submenu do menu lateral)
   const folderId = searchParams.get('folder');
@@ -77,6 +77,19 @@ export function MailInbox({ account }: MailInboxProps) {
   useEffect(() => {
     setSelectedMessage(null);
   }, [folderId, labelId]);
+
+  /**
+   * Abre o diálogo de gestão quando a URL contém ?manage=1
+   * (disparado pelo item "Configurações" do submenu no menu lateral).
+   */
+  useEffect(() => {
+    if (searchParams.get('manage') === '1') {
+      setModals((prev) => ({ ...prev, management: {} }));
+      const next = new URLSearchParams(searchParams);
+      next.delete('manage');
+      setSearchParams(next, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   /**
    * Filtros efetivos = pasta/etiqueta selecionada + filtros da lista.
@@ -180,25 +193,23 @@ export function MailInbox({ account }: MailInboxProps) {
     <div className="bg-white dark:bg-[#1c1c1e] rounded-xl border border-gray-200 dark:border-[#38383a] overflow-hidden">
       {/* ── Barra de ferramentas ───────────────────────────── */}
       <div className="flex items-center gap-2 px-4 py-2.5 border-b border-gray-200 dark:border-[#38383a]">
-        {/* Escrever */}
+        {/* Escrever (apenas ícone) */}
         <button
           onClick={() => openCompose('new')}
-          className="form-button form-button-primary inline-flex items-center gap-2"
+          className="form-button form-button-primary"
           title={`${t('toolbar.compose')} (c)`}
         >
           <PenSquare size={15} />
-          {t('toolbar.compose')}
         </button>
 
-        {/* Sincronizar */}
+        {/* Sincronizar (apenas ícone) */}
         <button
           onClick={() => syncMutation.mutate()}
           disabled={syncMutation.isPending}
-          className="form-button form-button-secondary inline-flex items-center gap-2"
+          className="form-button form-button-secondary"
           title={`${t('toolbar.sync')} (r)`}
         >
           <RefreshCw size={15} className={syncMutation.isPending ? 'animate-spin' : ''} />
-          {t('toolbar.sync')}
         </button>
 
         {/* Informações da conta */}
@@ -209,10 +220,11 @@ export function MailInbox({ account }: MailInboxProps) {
           )}
         </span>
 
-        {/* Gestão (regras, contatos, assinaturas...) */}
+        {/* Gestão (regras, contatos, assinaturas...) — agora no menu lateral;
+         * mantém-se o botão como atalho discreto */}
         <button
           onClick={() => setModals({ ...modals, management: {} })}
-          className="ml-auto form-button form-button-secondary inline-flex items-center gap-2"
+          className="ml-auto form-button form-button-secondary"
           title={t('toolbar.manage')}
         >
           <Settings2 size={15} />
