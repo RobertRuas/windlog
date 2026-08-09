@@ -28,6 +28,7 @@
     "confirm": "Confirm",
     "logout": "Log out",
     "login": "Log in",
+    "build_time": "build {{date}}",
     "download": "Download",
     "continue": "Press a button to continue..."
   },

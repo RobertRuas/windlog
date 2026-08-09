@@ -31,6 +31,12 @@ export default defineConfig({
     tailwindcss(),   // Tailwind CSS integrado ao Vite
   ],
 
+  // Constantes injetadas em tempo de build
+  // __BUILD_TIME__: data/hora em que o build foi gerado (exibida no sidebar)
+  define: {
+    __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
+  },
+
   // Configuração do servidor de desenvolvimento
   server: {
     host: '0.0.0.0', // Escuta em todas as interfaces de rede (acesso pela LAN)

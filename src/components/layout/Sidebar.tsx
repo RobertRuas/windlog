@@ -301,10 +301,20 @@ function MailAccordion({ onNavigate }: { onNavigate: () => void }) {
  * Mobile: drawer que desliza da esquerda com overlay escuro.
  */
 export function Sidebar() {
-  const { t } = useTranslation('common');
+  const { t, i18n } = useTranslation('common');
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  /**
+   * Data/hora da última build do Vite (injetada em tempo de build).
+   * Em produção coincide com o horário do deploy no GitHub Actions.
+   * Exibida em UTC, de forma discreta, no rodapé do sidebar.
+   */
+  const buildTime = `${new Date(__BUILD_TIME__).toLocaleString(
+    i18n.language === 'pt' ? 'pt-BR' : 'en-GB',
+    { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'UTC' },
+  )} UTC`;
 
   /**
    * Fecha o drawer mobile.
@@ -397,6 +407,10 @@ export function Sidebar() {
 
         {/* ── Rodapé: logout ───────────────────────────────────── */}
         <div className="border-t border-gray-200 dark:border-[#38383a] px-3 py-4">
+          {/* Data/hora da última build (discreto) */}
+          <p className="text-[10px] text-center text-gray-300 dark:text-[#48484a] select-none mb-1.5" title={buildTime}>
+            {t('buttons.build_time', { date: buildTime })}
+          </p>
           {/* Botão de logout */}
           <button
             onClick={handleLogout}
