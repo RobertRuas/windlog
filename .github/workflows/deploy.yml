@@ -35,12 +35,12 @@ jobs:
 
     steps:
       # Passo 1: Atualizar código no servidor
+      # (sem git clean: a pasta public/ não é versionada e é necessária no build)
       - name: Atualizar repositório
         run: |
           cd /opt/windlog/windlog-app/repo
           git fetch origin
           git reset --hard origin/main
-          git clean -fd
 
       # Passo 2: Rebuild e restart do container
       - name: Rebuild e restart
