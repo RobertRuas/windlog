@@ -35,7 +35,11 @@
     "disconnected": "Conta de e-mail desconectada",
     "open_mailbox": "Abrir caixa de entrada",
     "status_connected": "Conta conectada",
-    "last_sync": "Última sincronização"
+    "last_sync": "Última sincronização",
+    "never_synced": "Ainda não sincronizada",
+    "sync_error": "Erro na última sincronização",
+    "change_password_title": "Trocar senha",
+    "disconnect_hint": "Remove a conexão desta conta. As mensagens sincronizadas permanecem guardadas."
   },
   "preferences": {
     "language": "Idioma",

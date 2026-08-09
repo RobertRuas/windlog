@@ -35,7 +35,11 @@
     "disconnected": "Email account disconnected",
     "open_mailbox": "Open inbox",
     "status_connected": "Account connected",
-    "last_sync": "Last sync"
+    "last_sync": "Last sync",
+    "never_synced": "Not synced yet",
+    "sync_error": "Last sync error",
+    "change_password_title": "Change password",
+    "disconnect_hint": "Removes the connection for this account. Synced messages remain stored."
   },
   "preferences": {
     "language": "Language",
