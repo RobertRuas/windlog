@@ -203,6 +203,9 @@ export class MailSyncService implements OnModuleInit, OnModuleDestroy {
         });
       }
 
+      // 1b. Remove duplicadas vazias de pastas padrão diretamente no servidor
+      await this.dedupeStandardFolders(client, accountId);
+
       // 2. Baixa mensagens novas de cada pasta
       const folders = await this.prisma.mailFolder.findMany({
         where: { accountId, deletedAt: null },
@@ -677,6 +680,44 @@ export class MailSyncService implements OnModuleInit, OnModuleDestroy {
     } catch (error) {
       this.logger.warn(`Falha ao salvar anexo: ${error.message}`);
       return null;
+    }
+  }
+
+  /**
+   * Remove duplicadas vazias de pastas padrão diretamente no servidor IMAP.
+   * Servidores podem ter várias caixas mapeadas para o mesmo tipo
+   * (ex: "Sent" e "Sent Items"). Mantém a pasta principal de cada tipo
+   * (a com mais mensagens; empate → mais antiga) e exclui as duplicadas
+   * vazias no servidor e no banco.
+   */
+  private async dedupeStandardFolders(client: ImapFlow, accountId: string): Promise<void> {
+    const standardTypes = ['INBOX', 'SENT', 'DRAFTS', 'SPAM', 'TRASH', 'ARCHIVE'];
+
+    for (const type of standardTypes) {
+      const folders = await this.prisma.mailFolder.findMany({
+        where: { accountId, type: type as never, deletedAt: null },
+        orderBy: { createdAt: 'asc' },
+        include: { _count: { select: { messages: true } } },
+      });
+      if (folders.length <= 1) continue;
+
+      // Pasta principal: a com mais mensagens (empate → mais antiga)
+      const primary = [...folders].sort((a, b) => b._count.messages - a._count.messages)[0];
+
+      for (const dup of folders.filter((f) => f.id !== primary.id)) {
+        // Apenas pastas vazias (sem uso) são excluídas
+        if (dup._count.messages > 0) continue;
+
+        // Exclui a caixa diretamente no servidor IMAP
+        await client.mailboxDelete(dup.imapPath).catch((e: Error) =>
+          this.logger.warn(`Não foi possível excluir a pasta duplicada ${dup.imapPath}: ${e.message}`),
+        );
+        await this.prisma.mailFolder.update({
+          where: { id: dup.id },
+          data: { deletedAt: new Date() },
+        });
+        this.logger.log(`Pasta duplicada vazia removida do servidor: ${dup.imapPath} (${type})`);
+      }
     }
   }
 
