@@ -598,44 +598,44 @@ export function TimesheetFormEditor({
                             : 'border-gray-200'
                         }`}
                       >
-                        <div className="flex flex-wrap items-center gap-3 px-3 py-2.5 bg-white sm:flex-nowrap">
+                        <div className="flex items-center gap-2 sm:gap-3 px-3 py-2.5 bg-white">
                           <span className="text-xs text-gray-400 w-5 text-center font-medium shrink-0">
                             {entryIdx + 1}
                           </span>
 
-                          {/* Nome com autocomplete */}
-                          <div className="flex-1 min-w-0">
+                          {/* Nome com autocomplete + cargo entre parênteses */}
+                          <div className="flex-1 min-w-0 flex items-center gap-1.5">
                             {entry.isCurrentUser ? (
-                              <div className="flex items-center gap-2 px-2 py-1.5 bg-blue-50 border border-blue-200 rounded text-sm font-medium text-gray-700">
+                              <div className="flex-1 min-w-0 flex items-center gap-2 px-2 py-1.5 bg-blue-50 border border-blue-200 rounded text-sm font-medium text-gray-700">
                                 <UserIcon size={14} className="text-blue-500 shrink-0" />
-                                {entry.technicianName}
+                                <span className="truncate">
+                                  {entry.technicianName}
+                                  {entry.role && <span className="text-gray-400 font-normal"> ({entry.role})</span>}
+                                </span>
                                 <span className="text-xs text-blue-500 ml-auto">{t('form.you')}</span>
                               </div>
                             ) : (
-                              <TechnicianSelect
-                                value={entry.technicianName}
-                                onChange={(v) => handleEntryChange(dayIdx, entryIdx, 'technicianName', v)}
-                                onSelectUser={(user) => handleSelectUser(dayIdx, entryIdx, user)}
-                                users={systemUsers}
-                                excludeNames={day.entries
-                                  .filter((_, i) => i !== entryIdx)
-                                  .map((e) => e.technicianName)
-                                  .filter(Boolean)}
-                                disabled={isSaving}
-                                placeholder={t('sheet.technicianName')}
-                              />
+                              <>
+                                <div className="flex-1 min-w-0">
+                                  <TechnicianSelect
+                                    value={entry.technicianName}
+                                    onChange={(v) => handleEntryChange(dayIdx, entryIdx, 'technicianName', v)}
+                                    onSelectUser={(user) => handleSelectUser(dayIdx, entryIdx, user)}
+                                    users={systemUsers}
+                                    excludeNames={day.entries
+                                      .filter((_, i) => i !== entryIdx)
+                                      .map((e) => e.technicianName)
+                                      .filter(Boolean)}
+                                    disabled={isSaving}
+                                    placeholder={t('sheet.technicianName')}
+                                  />
+                                </div>
+                                {/* Cargo: preenchido automaticamente ao selecionar o técnico */}
+                                {entry.role && (
+                                  <span className="text-xs text-gray-500 shrink-0">({entry.role})</span>
+                                )}
+                              </>
                             )}
-                          </div>
-
-                          {/* Role: preenchida automaticamente ao selecionar o técnico — somente leitura */}
-                          <div className="w-full sm:w-44 shrink-0 order-last sm:order-none">
-                            <input
-                              type="text"
-                              value={entry.role}
-                              readOnly
-                              placeholder={t('sheet.role')}
-                              className="w-full px-2 py-1.5 border border-gray-200 rounded text-sm bg-gray-50 text-gray-600 cursor-default"
-                            />
                           </div>
 
                           {/* Toggle switch: removido — todos usam informações comuns */}
