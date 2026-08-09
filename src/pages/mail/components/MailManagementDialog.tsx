@@ -578,6 +578,12 @@ function FoldersTab() {
               <span className="flex-1 text-sm text-gray-700 dark:text-[#e5e5ea]">
                 {t(`folders.types.${folder.type}`, folder.name)}
               </span>
+              {/* Contador de não lidas */}
+              {folder.unreadCount > 0 && (
+                <span className="text-xs font-semibold bg-blue-600 text-white rounded-full px-1.5 py-0.5 min-w-[20px] text-center">
+                  {folder.unreadCount}
+                </span>
+              )}
               {isCustom ? (
                 <>
                   <button
