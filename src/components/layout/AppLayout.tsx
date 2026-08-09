@@ -74,12 +74,13 @@ export function AppLayout({ children }: AppLayoutProps) {
               {/* Sino de notificações */}
               <NotificationBell />
 
-              {/* Avatar + Nome do usuário (desktop) — clica para ir ao perfil */}
+              {/* Avatar + Nome do usuário — clica para ir ao perfil.
+               * No mobile exibe apenas o avatar (nome escondido) para poupar espaço. */}
               {userName && (
                 <button
                   type="button"
                   onClick={() => navigate('/profile')}
-                  className="hidden sm:flex items-center ml-3 gap-2 cursor-pointer rounded-lg px-1.5 py-1 hover:bg-gray-100 dark:hover:bg-[#2c2c2e] transition-colors"
+                  className="flex items-center ml-3 gap-2 cursor-pointer rounded-lg px-1.5 py-1 hover:bg-gray-100 dark:hover:bg-[#2c2c2e] transition-colors"
                 >
                   {/* Avatar com foto ou iniciais */}
                   {data?.photoUrl ? (
@@ -93,7 +94,8 @@ export function AppLayout({ children }: AppLayoutProps) {
                       {data?.firstName?.[0]}{data?.lastName?.[0]}
                     </div>
                   )}
-                  <span className="text-sm text-gray-600 dark:text-[#a1a1a6]">
+                  {/* Nome visível apenas a partir de sm (tablet/PC) */}
+                  <span className="hidden sm:inline text-sm text-gray-600 dark:text-[#a1a1a6]">
                     {userName}
                   </span>
                 </button>

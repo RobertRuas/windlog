@@ -97,11 +97,6 @@
     "savedSuccessfully": "Signature saved successfully!",
     "redoSignature": "Redo signature"
   },
-  "mobileGuard": {
-    "title": "Computer or tablet access only",
-    "description": "Windlog was designed for larger screens. Please access via a computer or tablet for the best experience.",
-    "hint": "Tip: use a computer, laptop or tablet in landscape mode."
-  },
   "ariaLabels": {
     "openMenu": "Open menu",
     "closeMenu": "Close menu"
