@@ -1,0 +1,56 @@
+# ============================================================================
+# GITHUB ACTIONS - Deploy Automático (Servidor windlog.org)
+# ============================================================================
+#
+# O QUE É ESTE ARQUIVO?
+# ---------------------
+# Faz o deploy automático da aplicação sempre que há push na branch main.
+#
+# COMO FUNCIONA?
+# --------------
+# Usa um self-hosted runner instalado no próprio servidor (porque o
+# servidor está atrás de um IP privado sem port-forward de SSH).
+# O runner:
+#   1. Atualiza o repositório em /opt/windlog/windlog-app/repo
+#   2. Faz rebuild e restart do container via docker compose
+#   3. Verifica se o frontend responde
+# ============================================================================
+
+name: Deploy
+
+# Gatilhos: quando executar o workflow
+on:
+  push:
+    branches: [main]
+
+# Evita deploys em simultâneo
+concurrency:
+  group: deploy-windlog
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    # Runner self-hosted instalado no servidor windlog
+    runs-on: self-hosted
+
+    steps:
+      # Passo 1: Atualizar código no servidor
+      - name: Atualizar repositório
+        run: |
+          cd /opt/windlog/windlog-app/repo
+          git fetch origin
+          git reset --hard origin/main
+          git clean -fd
+
+      # Passo 2: Rebuild e restart do container
+      - name: Rebuild e restart
+        run: |
+          cd /opt/windlog/windlog-app
+          docker compose up -d --build
+
+      # Passo 3: Verificar se a aplicação responde
+      - name: Verificar aplicação
+        run: |
+          sleep 10
+          curl -sf -o /dev/null -H 'Host: app.windlog.org' http://localhost/ \
+            && echo "Frontend OK" || (echo "Frontend indisponível" && exit 1)
