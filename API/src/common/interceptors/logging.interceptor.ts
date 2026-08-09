@@ -353,6 +353,11 @@ export class LoggingInterceptor implements NestInterceptor {
       }
     }
 
+    // Translation (serviço de tradução com IA)
+    if (url.includes('/translation')) {
+      return LogAction.TRANSLATE;
+    }
+
     // Default
     return LogAction.OTHER;
   }

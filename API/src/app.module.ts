@@ -43,6 +43,7 @@ import { NotificationsModule } from './modules/notifications/notification.module
 import { WeeklyTimesheetModule } from './modules/weekly-timesheet/weekly-timesheet.module.js';
 import { FeedbackModule } from './modules/feedback/feedback.module.js';
 import { MailModule } from './modules/mail/mail.module.js';
+import { TranslationModule } from './modules/translation/translation.module.js';
 
 @Module({
   imports: [
@@ -126,6 +127,11 @@ import { MailModule } from './modules/mail/mail.module.js';
     // MAIL MODULE - Cliente de E-mail Integrado (IMAP/SMTP/POP3)
     // -------------------------------------------------------------------------
     MailModule,
+
+    // -------------------------------------------------------------------------
+    // TRANSLATION MODULE - Tradução com IA (Português -> Inglês)
+    // -------------------------------------------------------------------------
+    TranslationModule,
 
     // -------------------------------------------------------------------------
     // PRÓXIMOS MÓDULOS SERÃO ADICIONADOS AQUI

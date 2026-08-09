@@ -707,7 +707,10 @@ enum LogAction {
   FEEDBACK_UPDATE
   FEEDBACK_DELETE
   FEEDBACK_STATUS_CHANGE
-  
+
+  // Tradução (IA)
+  TRANSLATE
+
   // =========================================================================
   // EMAIL MODULE - Ações do módulo de e-mail
   // =========================================================================

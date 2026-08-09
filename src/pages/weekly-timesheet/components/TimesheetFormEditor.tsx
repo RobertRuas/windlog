@@ -42,6 +42,8 @@ import { getProfile, updateSignature } from '@/services/auth.service';
 import { getProjectMembers, getProjectTurbines, type ProjectMember } from '@/services/project.service';
 import { DatePicker } from '@/components/ui/DatePicker';
 import { SignaturePad } from '@/components/ui/SignaturePad';
+import { TranslatableField } from '@/components/ui/TranslatableField';
+import { useTranslationLifecycle } from '@/hooks/useTranslationLifecycle';
 import { TechnicianSelect } from './TechnicianSelect';
 import type {
   TimesheetFormEditorProps,
@@ -67,6 +69,10 @@ export function TimesheetFormEditor({
   isSaving,
 }: TimesheetFormEditorProps) {
   const { t } = useTranslation('timesheet');
+
+  // Aquece o modelo de tradução ao abrir o formulário e o descarrega ao sair.
+  // Atua apenas quando o idioma da interface é português.
+  useTranslationLifecycle();
 
   // ── Busca membros do projeto para o select de técnicos ─────────────
   const { data: projectMembers } = useQuery({
@@ -386,10 +392,14 @@ export function TimesheetFormEditor({
             </div>
           </div>
           <div className="grid grid-cols-3 gap-4">
-            <div>
-              <label className={labelClass}>{t('sheet.jobScope')}</label>
-              <input type="text" value={form.jobScope} onChange={(e) => handleMetaChange('jobScope', e.target.value)} disabled={isSaving} className={inputClass} />
-            </div>
+            <TranslatableField
+              label={t('sheet.jobScope')}
+              labelClassName={labelClass}
+              value={form.jobScope}
+              onChange={(v) => handleMetaChange('jobScope', v)}
+              disabled={isSaving}
+              fieldClassName={inputClass}
+            />
             <div>
               <label className={labelClass}>{t('sheet.client')}</label>
               <input type="text" value={form.client} onChange={(e) => handleMetaChange('client', e.target.value)} disabled={isSaving} className={inputClass} />
@@ -566,13 +576,13 @@ export function TimesheetFormEditor({
 
                   {/* ── Motivo do Stand-by (texto livre) ── */}
                   <div className="mt-2">
-                    <label className={smallLabel}>{t('sheet.standbyReason')}</label>
-                    <input
-                      type="text"
+                    <TranslatableField
+                      label={t('sheet.standbyReason')}
+                      labelClassName={smallLabel}
                       value={day.shared.standbyReason}
-                      onChange={(e) => handleSharedChange(dayIdx, 'standbyReason', e.target.value)}
+                      onChange={(v) => handleSharedChange(dayIdx, 'standbyReason', v)}
                       disabled={isSaving}
-                      className={smallInput}
+                      fieldClassName={smallInput}
                       placeholder=" "
                     />
                   </div>
@@ -681,16 +691,20 @@ export function TimesheetFormEditor({
 
                 {/* Daily Progress (obrigatório) */}
                 <div>
-                  <label className={labelClass}>
-                    {t('sheet.dailyProgress')} <span className="text-red-500">*</span>
-                  </label>
-                  <textarea
+                  <TranslatableField
+                    label={
+                      <>
+                        {t('sheet.dailyProgress')} <span className="text-red-500">*</span>
+                      </>
+                    }
+                    labelClassName={labelClass}
                     value={day.progress}
-                    onChange={(e) => handleProgressChange(dayIdx, e.target.value)}
+                    onChange={(v) => handleProgressChange(dayIdx, v)}
+                    multiline
                     rows={2}
                     disabled={isSaving}
                     placeholder="07:00 Tooling prepare, grinding, lamination... 19:00 demob."
-                    className={`${inputClass} ${hasError ? 'border-red-300 ring-1 ring-red-300' : ''}`}
+                    fieldClassName={`${inputClass} ${hasError ? 'border-red-300 ring-1 ring-red-300' : ''}`}
                   />
                   {hasError && (
                     <p className="text-xs text-red-500 mt-1">{t('form.progressRequired')}</p>

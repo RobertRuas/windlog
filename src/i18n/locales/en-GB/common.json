@@ -42,6 +42,13 @@
     "loading": "Loading...",
     "unavailable": "File unavailable"
   },
+  "translate": {
+    "fieldHint": "Automatic English translation available for this field",
+    "processing": "Translating...",
+    "suggestionLabel": "English suggestion",
+    "apply": "Apply translation",
+    "dismiss": "Dismiss"
+  },
   "error": {
     "unknown": "Something unexpected happened",
     "token_missing": "To continue, you need to log in. Your session has not been started.",

@@ -42,6 +42,13 @@
     "loading": "A carregar...",
     "unavailable": "Ficheiro indisponível"
   },
+  "translate": {
+    "fieldHint": "Tradução automática para inglês disponível neste campo",
+    "processing": "Traduzindo...",
+    "suggestionLabel": "Sugestão em inglês",
+    "apply": "Aplicar tradução",
+    "dismiss": "Dispensar"
+  },
   "error": {
     "unknown": "Ocorreu algo inesperado",
     "token_missing": "Para continuar, precisa de fazer login. A sua sessão não foi iniciada.",
