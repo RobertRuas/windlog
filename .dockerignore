@@ -28,7 +28,6 @@ dist
 # Docker (não incluir no contexto)
 Dockerfile
 docker-compose*.yml
-docker/
 
 # Documentação e wiki
 .qoder
