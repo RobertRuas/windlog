@@ -9,6 +9,7 @@
     "sections_title": "Available sections",
     "step_preferences": "Preferences — adjust the language, theme (light/dark/auto) and interface scale",
     "step_account": "Account — access your profile to view and edit your personal details (name, email, photo, etc.)",
+    "step_mail": "Email — connect your integrated email account (email and password only; servers pre-defined)",
     "step_feedbacks": "My Feedbacks — view the status of bugs, suggestions or improvements you have submitted (collapsible section)",
     "step_admin": "Administration (ADMIN only) — access system logs to view all recorded actions",
     "tip_title": "Tip",
@@ -17,8 +18,24 @@
   "sections": {
     "preferences": "Preferences",
     "account": "Account",
+    "mail": "Email",
     "administration": "Administration",
     "my_feedbacks": "My Feedbacks"
+  },
+  "mail": {
+    "readonly_hint": "Fixed settings — read only. The connection always uses TLS.",
+    "email_label": "Email",
+    "password_label": "Password",
+    "password_placeholder": "New password (leave blank to keep)",
+    "update": "Update password",
+    "save": "Connect",
+    "disconnect": "Disconnect",
+    "connected": "Email account connected successfully!",
+    "updated": "Email account password updated",
+    "disconnected": "Email account disconnected",
+    "open_mailbox": "Open inbox",
+    "status_connected": "Account connected",
+    "last_sync": "Last sync"
   },
   "preferences": {
     "language": "Language",

@@ -1,0 +1,199 @@
+{
+  "title": "E-mail",
+  "subtitle": "Cliente de e-mail integrado (IMAP / SMTP / POP3)",
+  "connect": {
+    "title": "Conectar conta de e-mail",
+    "description": "Informe apenas o seu e-mail e senha. As configurações de servidor já estão definidas.",
+    "servers": "Servidores pré-definidos",
+    "incoming": "Servidor de entrada (IMAP)",
+    "outgoing": "Servidor de saída (SMTP)",
+    "readonly_hint": "Configurações fixas — somente leitura. A conexão usa sempre TLS.",
+    "email_label": "E-mail",
+    "password_label": "Senha",
+    "submit": "Conectar",
+    "success": "Conta de e-mail conectada com sucesso!",
+    "error": "Não foi possível conectar a conta"
+  },
+  "toolbar": {
+    "compose": "Escrever",
+    "sync": "Sincronizar",
+    "synced": "Sincronização concluída ({{count}} novas mensagens)",
+    "last_sync": "Última sincronização",
+    "sync_error": "Erro na última sincronização",
+    "manage": "Contatos, regras, assinaturas e mais",
+    "disconnect": "Desconectar conta",
+    "disconnected": "Conta de e-mail desconectada"
+  },
+  "folders": {
+    "title": "Pastas",
+    "new": "Nova pasta",
+    "name_placeholder": "Nome da pasta",
+    "created": "Pasta criada",
+    "renamed": "Pasta renomeada",
+    "removed": "Pasta removida",
+    "types": {
+      "INBOX": "Caixa de entrada",
+      "SENT": "Enviados",
+      "DRAFTS": "Rascunhos",
+      "SPAM": "Spam",
+      "TRASH": "Lixeira",
+      "ARCHIVE": "Arquivados",
+      "CUSTOM": "Personalizada"
+    }
+  },
+  "labels": {
+    "title": "Etiquetas",
+    "empty": "Sem etiquetas"
+  },
+  "list": {
+    "search_placeholder": "Buscar mensagens...",
+    "advanced_filters": "Filtros avançados",
+    "empty": "Nenhuma mensagem",
+    "no_subject": "(sem assunto)",
+    "draft": "Rascunho",
+    "suspicious_attachment": "Anexo suspeito",
+    "page_of": "Página {{page}} de {{totalPages}}",
+    "filter_from": "Remetente",
+    "filter_to": "Destinatário",
+    "filter_subject": "Assunto",
+    "filter_content": "Conteúdo",
+    "filter_start_date": "Data inicial",
+    "filter_end_date": "Data final",
+    "filter_unread": "Não lidas",
+    "filter_flagged": "Sinalizadas",
+    "filter_important": "Importantes",
+    "filter_attachments": "Com anexos",
+    "apply_filters": "Aplicar",
+    "clear_filters": "Limpar filtros"
+  },
+  "view": {
+    "back": "Voltar",
+    "to": "Para",
+    "cc": "Cc",
+    "attachments": "Anexos",
+    "conversation": "Conversa",
+    "suspicious_warning": "Esta mensagem contém um anexo suspeito. Por segurança, o download está bloqueado.",
+    "suspicious_blocked": "Download bloqueado: anexo suspeito",
+    "download_error": "Erro ao descarregar o anexo"
+  },
+  "actions": {
+    "reply": "Responder",
+    "reply_all": "Responder a todos",
+    "forward": "Encaminhar",
+    "flag": "Sinalizar",
+    "important": "Marcar como importante",
+    "move": "Mover para pasta",
+    "moved": "Mensagem movida para {{folder}}",
+    "archive": "Arquivar",
+    "mark_spam": "Marcar como spam",
+    "delete": "Remover",
+    "deleted": "Mensagem removida",
+    "block_sender": "Bloquear remetente",
+    "sender_blocked": "Remetente bloqueado — mensagens futuras irão para o spam"
+  },
+  "compose": {
+    "titles": {
+      "new": "Nova mensagem",
+      "reply": "Responder",
+      "reply-all": "Responder a todos",
+      "forward": "Encaminhar",
+      "draft": "Editar rascunho"
+    },
+    "to": "Para",
+    "subject_placeholder": "Assunto",
+    "body_placeholder": "Escreva a sua mensagem...",
+    "attach": "Anexar ficheiros",
+    "send": "Enviar",
+    "sent": "E-mail enviado com sucesso!",
+    "send_error": "Erro ao enviar o e-mail",
+    "save_draft": "Salvar rascunho",
+    "draft_saved": "Rascunho salvo",
+    "no_recipients": "Informe pelo menos um destinatário",
+    "add_group": "Adicionar grupo aos destinatários"
+  },
+  "manage": {
+    "title": "Gestão do E-mail",
+    "tabs": {
+      "contacts": "Contatos",
+      "folders": "Pastas",
+      "rules": "Regras",
+      "labels": "Etiquetas",
+      "signatures": "Assinaturas",
+      "autoreply": "Ausência",
+      "blocked": "Bloqueados"
+    },
+    "folders": {
+      "protected_hint": "As pastas padrão não podem ser renomeadas nem excluídas."
+    },
+    "contacts": {
+      "name_ph": "Nome (opcional)",
+      "add": "Adicionar contato",
+      "created": "Contato criado",
+      "auto_hint": "Todos os destinatários dos seus e-mails enviados são adicionados automaticamente.",
+      "auto": "auto",
+      "groups": "Grupos",
+      "group_ph": "Nome do grupo",
+      "add_group": "Criar grupo",
+      "group_created": "Grupo criado",
+      "members_hint": "Selecione os contatos do grupo (envio para múltiplos destinos)"
+    },
+    "rules": {
+      "created": "Regra criada",
+      "empty": "Nenhuma regra automática",
+      "add": "Adicionar regra",
+      "name_ph": "Nome da regra",
+      "condition_value": "Valor da condição",
+      "select_folder": "Selecione a pasta",
+      "select_label": "Selecione a etiqueta",
+      "auto_reply_text": "Texto da resposta automática",
+      "active": "Regra ativa",
+      "cond_FROM": "Remetente contém",
+      "cond_TO": "Destinatário contém",
+      "cond_SUBJECT": "Assunto contém",
+      "cond_CONTAINS": "Mensagem contém",
+      "cond_HAS_ATTACHMENT": "Tem anexo",
+      "act_MOVE_TO_FOLDER": "Mover para pasta",
+      "act_FLAG": "Sinalizar",
+      "act_MARK_IMPORTANT": "Marcar importante",
+      "act_MARK_READ": "Marcar como lida",
+      "act_LABEL": "Aplicar etiqueta",
+      "act_FORWARD": "Encaminhar para",
+      "act_AUTO_REPLY": "Responder automaticamente",
+      "act_MOVE_TO_SPAM": "Mover para spam",
+      "act_DELETE": "Remover"
+    },
+    "labels": {
+      "saved": "Etiqueta salva",
+      "name_ph": "Nome da etiqueta"
+    },
+    "signatures": {
+      "saved": "Assinatura salva",
+      "empty": "Nenhuma assinatura",
+      "name_ph": "Nome da assinatura",
+      "content_ph": "Conteúdo da assinatura",
+      "default": "Padrão"
+    },
+    "autoreply": {
+      "saved": "Resposta automática salva",
+      "enabled": "Ativar resposta automática (mensagem de ausência)",
+      "subject_ph": "Assunto da resposta",
+      "message_ph": "Mensagem enviada automaticamente a quem lhe escrever",
+      "start": "Início do período (opcional)",
+      "end": "Fim do período (opcional)",
+      "once_hint": "Cada remetente recebe a resposta automática apenas uma vez."
+    },
+    "blocked": {
+      "added": "Remetente bloqueado",
+      "add": "Bloquear",
+      "hint": "Bloqueie um endereço (spam@dominio.com) ou um domínio completo (@dominio.com). Mensagens bloqueadas vão para o spam.",
+      "empty": "Nenhum remetente bloqueado",
+      "unblock": "Desbloquear"
+    }
+  },
+  "shortcuts": {
+    "title": "Atalhos de teclado",
+    "compose": "Nova mensagem",
+    "sync": "Sincronizar",
+    "close": "Fechar/selecionar"
+  }
+}

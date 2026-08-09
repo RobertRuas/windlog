@@ -9,6 +9,7 @@
     "sections_title": "Secções disponíveis",
     "step_preferences": "Preferências — ajuste o idioma, tema (claro/escuro/automático) e escala da interface",
     "step_account": "Conta — aceda ao teu perfil para visualizar e editar os teus dados pessoais (nome, email, foto, etc.)",
+    "step_mail": "E-mail — conecte a sua conta de e-mail integrada (apenas e-mail e senha; servidores pré-definidos)",
     "step_feedbacks": "Meus Feedbacks — consulta o estado dos bugs, sugestões ou melhorias que já enviaste (secção colapsável)",
     "step_admin": "Administração (apenas ADMIN) — acede aos logs do sistema para consultar todas as ações registadas",
     "tip_title": "Dica",
@@ -17,8 +18,24 @@
   "sections": {
     "preferences": "Preferências",
     "account": "Conta",
+    "mail": "E-mail",
     "administration": "Administração",
     "my_feedbacks": "Meus Feedbacks"
+  },
+  "mail": {
+    "readonly_hint": "Configurações fixas — somente leitura. A conexão usa sempre TLS.",
+    "email_label": "E-mail",
+    "password_label": "Senha",
+    "password_placeholder": "Nova senha (deixe em branco para manter)",
+    "update": "Atualizar senha",
+    "save": "Conectar",
+    "disconnect": "Desconectar",
+    "connected": "Conta de e-mail conectada com sucesso!",
+    "updated": "Senha da conta de e-mail atualizada",
+    "disconnected": "Conta de e-mail desconectada",
+    "open_mailbox": "Abrir caixa de entrada",
+    "status_connected": "Conta conectada",
+    "last_sync": "Última sincronização"
   },
   "preferences": {
     "language": "Idioma",

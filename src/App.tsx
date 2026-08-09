@@ -55,6 +55,7 @@ import { NotificationDetailPage } from '@/pages/notifications/NotificationDetail
 import { WeeklyTimesheetPage } from '@/pages/weekly-timesheet/WeeklyTimesheetPage';
 import { WeeklyTimesheetDetailPage } from '@/pages/weekly-timesheet/WeeklyTimesheetDetailPage';
 import { FeedbacksPage } from '@/pages/feedbacks/FeedbacksPage';
+import { MailPage } from '@/pages/mail/MailPage';
 import { ErrorPage } from '@/pages/error/ErrorPage';
 
 // Serviço de autenticação
@@ -410,6 +411,16 @@ export default function App() {
               <AdminRoute>
                 <FeedbacksPage />
               </AdminRoute>
+            }
+          />
+
+          {/* Rota protegida - cliente de e-mail integrado (todos autenticados) */}
+          <Route
+            path="/mail"
+            element={
+              <ProtectedRoute>
+                <MailPage />
+              </ProtectedRoute>
             }
           />
 

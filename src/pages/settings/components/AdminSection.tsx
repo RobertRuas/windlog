@@ -14,8 +14,9 @@
  * ============================================================================
  */
 
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileText, Shield, ChevronRight } from 'lucide-react';
+import { FileText, Shield, ChevronRight, ChevronDown } from 'lucide-react';
 
 /**
  * Props do componente AdminSection.
@@ -25,21 +26,33 @@ interface AdminSectionProps {
 }
 
 /**
- * Componente AdminSection - Seção de administração nas configurações.
+ * Componente AdminSection - Seção de administração nas configurações (acordeão).
  */
 export function AdminSection({ t }: AdminSectionProps) {
   const navigate = useNavigate();
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
     <div className="bg-white dark:bg-[#1c1c1e] rounded-xl border border-gray-200 dark:border-[#38383a] overflow-hidden">
-      <div className="px-5 py-4 border-b border-gray-100 dark:border-[#38383a]">
+      {/* Cabeçalho clicável (acordeão) */}
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        aria-expanded={isOpen}
+        className="w-full px-5 py-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-[#2c2c2e] transition-colors"
+      >
         <div className="flex items-center gap-2">
           <Shield size={18} className="text-gray-500 dark:text-[#a1a1a6]" />
           <h2 className="text-sm font-semibold text-gray-700 dark:text-[#f5f5f7]">{t('sections.administration')}</h2>
         </div>
-      </div>
+        <ChevronDown
+          size={16}
+          className={`text-gray-400 dark:text-[#636366] transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+        />
+      </button>
 
-      <div className="divide-y divide-gray-100 dark:divide-[#38383a]">
+      {isOpen && (
+      <div className="divide-y divide-gray-100 dark:divide-[#38383a] border-t border-gray-100 dark:border-[#38383a]">
         {/* Logs do Sistema */}
         <button
           onClick={() => navigate('/logs')}
@@ -59,6 +72,7 @@ export function AdminSection({ t }: AdminSectionProps) {
           <ChevronRight size={16} className="text-gray-400 dark:text-[#636366]" />
         </button>
       </div>
+      )}
     </div>
   );
 }

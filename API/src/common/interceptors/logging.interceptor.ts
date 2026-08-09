@@ -320,6 +320,39 @@ export class LoggingInterceptor implements NestInterceptor {
       if (method === 'DELETE') return LogAction.TECHNICIAN_DELETE;
     }
 
+    // Mail (cliente de e-mail integrado)
+    if (url.includes('/mail/')) {
+      if (url.includes('/mail/account')) {
+        if (method === 'POST') return LogAction.EMAIL_ACCOUNT_CONNECT;
+        if (method === 'PUT' || method === 'PATCH') return LogAction.EMAIL_ACCOUNT_UPDATE;
+        if (method === 'DELETE') return LogAction.EMAIL_ACCOUNT_DISCONNECT;
+      }
+      if (url.includes('/mail/sync')) return LogAction.EMAIL_SYNC;
+      if (url.includes('/mail/messages/send')) return LogAction.EMAIL_SEND;
+      if (url.includes('/mail/folders')) {
+        if (method === 'POST') return LogAction.EMAIL_FOLDER_CREATE;
+        if (method === 'PUT' || method === 'PATCH') return LogAction.EMAIL_FOLDER_UPDATE;
+        if (method === 'DELETE') return LogAction.EMAIL_FOLDER_DELETE;
+      }
+      if (url.includes('/mail/rules')) {
+        if (method === 'POST') return LogAction.EMAIL_RULE_CREATE;
+        if (method === 'PUT' || method === 'PATCH') return LogAction.EMAIL_RULE_UPDATE;
+        if (method === 'DELETE') return LogAction.EMAIL_RULE_DELETE;
+      }
+      if (url.includes('/mail/contacts') || url.includes('/mail/contact-groups')) {
+        if (method === 'POST') return LogAction.EMAIL_CONTACT_CREATE;
+        if (method === 'DELETE') return LogAction.EMAIL_CONTACT_DELETE;
+      }
+      if (url.includes('/mail/blocked-senders')) {
+        if (method === 'POST') return LogAction.EMAIL_BLOCK_SENDER;
+      }
+      if (url.includes('/mail/messages')) {
+        if (method === 'GET') return LogAction.EMAIL_READ;
+        if (method === 'POST') return LogAction.EMAIL_MOVE;
+        if (method === 'DELETE') return LogAction.EMAIL_DELETE;
+      }
+    }
+
     // Default
     return LogAction.OTHER;
   }

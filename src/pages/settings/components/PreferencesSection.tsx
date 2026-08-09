@@ -14,6 +14,7 @@
  * ============================================================================
  */
 
+import { useState } from 'react';
 import { useSettings } from '@/contexts/SettingsContext';
 import { Sun, Moon, Monitor, Languages, ChevronDown } from 'lucide-react';
 import type { Theme, Language } from '@/services/settings.service';
@@ -31,10 +32,6 @@ interface PreferencesSectionProps {
 const LANGUAGE_OPTIONS: { value: Language; flag: string; label: string }[] = [
   { value: 'pt', flag: '🇵🇹', label: 'Português' },
   { value: 'en-GB', flag: '🇬🇧', label: 'English (UK)' },
-  { value: 'es', flag: '🇪🇸', label: 'Español' },
-  { value: 'de', flag: '🇩🇪', label: 'Deutsch' },
-  { value: 'fi', flag: '🇫🇮', label: 'Suomi' },
-  { value: 'lt', flag: '🇱🇹', label: 'Lietuvių' },
 ];
 
 /**
@@ -47,22 +44,33 @@ const THEME_OPTIONS: { value: Theme; icon: typeof Sun; labelKey: string }[] = [
 ];
 
 /**
- * Componente PreferencesSection - Geridor de preferências.
+ * Componente PreferencesSection - Geridor de preferências (acordeão).
  */
 export function PreferencesSection({ t }: PreferencesSectionProps) {
   const { settings, updateSettings } = useSettings();
+  const [isOpen, setIsOpen] = useState(true);
 
   return (
     <div className="bg-white dark:bg-[#1c1c1e] rounded-xl border border-gray-200 dark:border-[#38383a] overflow-hidden">
-      {/* Cabeçalho da seção */}
-      <div className="px-5 py-4 border-b border-gray-100 dark:border-[#38383a]">
+      {/* Cabeçalho clicável (acordeão) */}
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        aria-expanded={isOpen}
+        className="w-full px-5 py-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-[#2c2c2e] transition-colors"
+      >
         <div className="flex items-center gap-2">
           <Languages size={18} className="text-gray-500 dark:text-[#a1a1a6]" />
           <h2 className="text-sm font-semibold text-gray-700 dark:text-[#f5f5f7]">{t('sections.preferences')}</h2>
         </div>
-      </div>
+        <ChevronDown
+          size={16}
+          className={`text-gray-400 dark:text-[#636366] transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+        />
+      </button>
 
-      <div className="divide-y divide-gray-100 dark:divide-[#38383a]">
+      {isOpen && (
+      <div className="divide-y divide-gray-100 dark:divide-[#38383a] border-t border-gray-100 dark:border-[#38383a]">
         {/* Idioma */}
         <div className="px-5 py-4">
           <div className="flex items-center justify-between">
@@ -143,6 +151,7 @@ export function PreferencesSection({ t }: PreferencesSectionProps) {
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 }

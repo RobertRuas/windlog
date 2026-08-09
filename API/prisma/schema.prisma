@@ -239,6 +239,12 @@ model User {
   feedbacks        Feedback[]
   ppes             UserPpe[]
   refreshTokens    RefreshToken[]
+  mailAccount      MailAccount?
+  mailContacts     MailContact[]
+  mailContactGroups MailContactGroup[]
+  mailSignatures   MailSignature[]
+  mailBlockedSenders MailBlockedSender[]
+  mailAutoReply    MailAutoReply?
 }
 // ---------------------------------------------------------------------------
 // MODEL: USER DOCUMENT (Documentos Pessoais do Usuário)
@@ -702,6 +708,27 @@ enum LogAction {
   FEEDBACK_DELETE
   FEEDBACK_STATUS_CHANGE
   
+  // =========================================================================
+  // EMAIL MODULE - Ações do módulo de e-mail
+  // =========================================================================
+  EMAIL_ACCOUNT_CONNECT    // Conta de e-mail conectada
+  EMAIL_ACCOUNT_UPDATE     // Conta de e-mail atualizada
+  EMAIL_ACCOUNT_DISCONNECT // Conta de e-mail desconectada
+  EMAIL_SYNC               // Sincronização de caixa de correio
+  EMAIL_SEND               // E-mail enviado
+  EMAIL_READ               // E-mail marcado como lido/não lido
+  EMAIL_MOVE               // E-mail movido entre pastas
+  EMAIL_DELETE             // E-mail removido
+  EMAIL_FOLDER_CREATE      // Pasta personalizada criada
+  EMAIL_FOLDER_UPDATE      // Pasta personalizada atualizada
+  EMAIL_FOLDER_DELETE      // Pasta personalizada removida
+  EMAIL_RULE_CREATE        // Regra automática criada
+  EMAIL_RULE_UPDATE        // Regra automática atualizada
+  EMAIL_RULE_DELETE        // Regra automática removida
+  EMAIL_CONTACT_CREATE     // Contato de e-mail criado
+  EMAIL_CONTACT_DELETE     // Contato de e-mail removido
+  EMAIL_BLOCK_SENDER       // Remetente bloqueado
+
   // Sistema
   SYSTEM_ERROR
   API_ERROR
@@ -1416,4 +1443,504 @@ model RefreshToken {
   // Índices para performance
   @@index([userId])
   @@index([expiresAt])
+}
+
+// ============================================================================
+// EMAIL MODULE - Módulo de Cliente de E-mail
+// ============================================================================
+// Cliente de e-mail completo integrado ao sistema (IMAP/SMTP/POP3).
+// As configurações de servidor são FIXAS e pré-definidas (imap.one.com,
+// send.one.com). O usuário final informa apenas e-mail + senha.
+//
+// MODELS:
+// -------
+// - MailAccount:          conta de e-mail do usuário (credenciais cifradas)
+// - MailFolder:           pastas padrão + personalizadas
+// - MailMessage:          mensagens sincronizadas
+// - MailAttachment:       anexos das mensagens
+// - MailLabel:            etiquetas personalizadas
+// - MailRule:             regras automáticas (classificar, encaminhar, etc.)
+// - MailContact:          contatos (adicionados automaticamente ao enviar)
+// - MailContactGroup:     grupos de contatos para envios múltiplos
+// - MailSignature:        assinaturas personalizadas
+// - MailBlockedSender:    remetentes bloqueados
+// - MailAutoReply:        respostas automáticas / mensagens de ausência
+// ============================================================================
+
+// ---------------------------------------------------------------------------
+// ENUM: MAIL FOLDER TYPE (Tipo de Pasta de E-mail)
+// ---------------------------------------------------------------------------
+// Classifica as caixas padrão do cliente de e-mail.
+// Pastas CUSTOM são criadas pelo usuário.
+// ---------------------------------------------------------------------------
+enum MailFolderType {
+  INBOX     // Caixa de entrada
+  SENT      // Enviados
+  DRAFTS    // Rascunhos
+  SPAM      // Spam / lixo eletrônico
+  TRASH     // Lixeira
+  ARCHIVE   // Arquivados
+  CUSTOM    // Pasta personalizada do usuário
+}
+
+// ---------------------------------------------------------------------------
+// ENUM: MAIL PROTOCOL (Protocolo de Recebimento)
+// ---------------------------------------------------------------------------
+// Protocolo usado para receber mensagens. IMAP é o padrão (sincronização
+// contínua e pastas). POP3 é suportado como alternativa simples.
+// ---------------------------------------------------------------------------
+enum MailProtocol {
+  IMAP
+  POP3
+}
+
+// ---------------------------------------------------------------------------
+// ENUM: MAIL RULE CONDITION (Condição de Regra Automática)
+// ---------------------------------------------------------------------------
+enum MailRuleCondition {
+  FROM        // Remetente contém
+  TO          // Destinatário contém
+  SUBJECT     // Assunto contém
+  CONTAINS    // Conteúdo contém
+  HAS_ATTACHMENT // Possui anexo
+}
+
+// ---------------------------------------------------------------------------
+// ENUM: MAIL RULE ACTION (Ação de Regra Automática)
+// ---------------------------------------------------------------------------
+enum MailRuleAction {
+  MOVE_TO_FOLDER  // Mover para pasta (actionValue = nome da pasta)
+  FLAG            // Sinalizar mensagem
+  MARK_IMPORTANT  // Marcar como importante
+  MARK_READ       // Marcar como lida
+  LABEL           // Aplicar etiqueta (actionValue = nome da etiqueta)
+  FORWARD         // Encaminhar para (actionValue = e-mail)
+  AUTO_REPLY      // Responder automaticamente (actionValue = texto)
+  MOVE_TO_SPAM    // Enviar para spam
+  DELETE          // Remover mensagem
+}
+
+// ---------------------------------------------------------------------------
+// MODEL: MAIL ACCOUNT (Conta de E-mail do Usuário)
+// ---------------------------------------------------------------------------
+// Cada usuário pode conectar UMA conta de e-mail informando apenas
+// e-mail e senha. A senha é armazenada cifrada (AES-256-GCM).
+// As configurações de servidor são fixas (imap.one.com / send.one.com).
+// ---------------------------------------------------------------------------
+model MailAccount {
+  id        String   @id @default(uuid())
+
+  // Credenciais
+  /// Endereço de e-mail da conta (ex: "nome@empresa.com")
+  email          String
+  /// Senha cifrada (AES-256-GCM, nunca em texto simples)
+  passwordEnc    String
+  /// Protocolo de recebimento (IMAP padrão, POP3 opcional)
+  protocol       MailProtocol @default(IMAP)
+
+  // Estado
+  /// Se a conta está ativa (sincronização habilitada)
+  isActive       Boolean  @default(true)
+  /// Última sincronização bem-sucedida (UTC)
+  lastSyncAt     DateTime?
+  /// Último erro de sincronização (para diagnóstico)
+  lastSyncError  String?
+  /// Se notificações internas de novas mensagens estão habilitadas
+  notifyOnNew    Boolean  @default(true)
+
+  // Relação com o usuário (uma conta por usuário)
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Timestamps
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  deletedAt      DateTime?
+
+  // Relações
+  folders        MailFolder[]
+  messages       MailMessage[]
+  labels         MailLabel[]
+  rules          MailRule[]
+
+  @@index([userId])
+}
+
+// ---------------------------------------------------------------------------
+// MODEL: MAIL FOLDER (Pasta de E-mail)
+// ---------------------------------------------------------------------------
+// Pastas da caixa de correio. As caixas padrão (INBOX, SENT, DRAFTS, SPAM,
+// TRASH, ARCHIVE) são criadas automaticamente na primeira sincronização.
+// O usuário pode criar pastas personalizadas (type = CUSTOM).
+// ---------------------------------------------------------------------------
+model MailFolder {
+  id        String   @id @default(uuid())
+
+  /// Nome de exibição da pasta (ex: "Entrada", "Projetos 2026")
+  name        String
+  /// Tipo da pasta (caixa padrão ou personalizada)
+  type        MailFolderType @default(CUSTOM)
+  /// Caminho da pasta no servidor IMAP (ex: "INBOX", "Arquivo/2026")
+  imapPath    String
+  /// Contador de mensagens não lidas (atualizado na sincronização)
+  unreadCount Int     @default(0)
+  /// Contador total de mensagens (atualizado na sincronização)
+  totalCount  Int     @default(0)
+
+  // Relação com a conta
+  accountId   String
+  account     MailAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  // Timestamps
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+
+  // Relações
+  messages    MailMessage[]
+
+  @@unique([accountId, imapPath])
+  @@index([accountId])
+}
+
+// ---------------------------------------------------------------------------
+// MODEL: MAIL MESSAGE (Mensagem de E-mail)
+// ---------------------------------------------------------------------------
+// Mensagem sincronizada do servidor ou criada localmente (rascunho/envio).
+// O agrupamento por conversa usa conversationId (thread por assunto normalizado
+// ou cabeçalhos References/In-Reply-To).
+// ---------------------------------------------------------------------------
+model MailMessage {
+  id        String   @id @default(uuid())
+
+  // Identificação no servidor
+  /// UID da mensagem no servidor IMAP (null para rascunhos locais)
+  uid           Int?
+  /// Message-ID RFC 822 (ex: "<abc@dominio.com>")
+  messageId     String?
+  /// Message-ID da mensagem respondida (para threading)
+  inReplyTo     String?
+  /// Identificador da conversa para agrupamento (thread)
+  conversationId String?
+
+  // Cabeçalhos
+  /// Remetentes (JSON: [{ "name": "...", "address": "..." }])
+  from          Json?
+  /// Destinatários principais (JSON)
+  to            Json?
+  /// Destinatários em cópia (JSON)
+  cc            Json?
+  /// Destinatários em cópia oculta (JSON)
+  bcc           Json?
+  /// Assunto da mensagem
+  subject       String?
+  /// Pré-visualização do corpo (snippet de ~200 caracteres)
+  preview       String?
+
+  // Corpo
+  /// Corpo em texto simples
+  textBody      String?
+  /// Corpo em HTML (renderizado em iframe sandbox)
+  htmlBody      String?
+
+  // Estado
+  /// Data/hora da mensagem no servidor (UTC)
+  date          DateTime @default(now())
+  /// Se a mensagem foi lida
+  isRead        Boolean  @default(false)
+  /// Se a mensagem está sinalizada (flag/star)
+  isFlagged     Boolean  @default(false)
+  /// Se a mensagem é importante
+  isImportant   Boolean  @default(false)
+  /// Se a mensagem foi classificada como spam
+  isSpam        Boolean  @default(false)
+  /// Se a mensagem possui anexos
+  hasAttachments Boolean @default(false)
+  /// Se é um rascunho local (ainda não enviado)
+  isDraft       Boolean  @default(false)
+  /// Tamanho da mensagem em bytes
+  size          Int      @default(0)
+  /// Se a mensagem contém anexo suspeito detectado
+  hasSuspiciousAttachment Boolean @default(false)
+
+  // Relações
+  accountId     String
+  account       MailAccount  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  folderId      String
+  folder        MailFolder   @relation(fields: [folderId], references: [id], onDelete: Cascade)
+
+  attachments   MailAttachment[]
+  labels        MailMessageLabel[]
+
+  // Timestamps
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  /// Soft delete (data de exclusão, null = ativa)
+  deletedAt     DateTime?
+
+  // Índices para performance
+  @@index([accountId, folderId, date])
+  @@index([accountId, conversationId])
+  @@index([accountId, isRead])
+  @@index([folderId, uid])
+}
+
+// ---------------------------------------------------------------------------
+// MODEL: MAIL ATTACHMENT (Anexo de E-mail)
+// ---------------------------------------------------------------------------
+// Anexo baixado do servidor e armazenado em uploads/{userId}/mail/.
+// Anexos com extensões perigosas são marcados como suspeitos.
+// ---------------------------------------------------------------------------
+model MailAttachment {
+  id        String   @id @default(uuid())
+
+  /// Nome original do ficheiro (ex: "relatorio.pdf")
+  filename    String
+  /// Tipo MIME (ex: "application/pdf")
+  mimeType    String
+  /// Tamanho em bytes
+  size        Int
+  /// Caminho relativo ao diretório uploads/ (null para anexos inline não salvos)
+  filePath    String?
+  /// Content-ID para anexos inline em HTML (ex: "<logo@dominio>")
+  contentId   String?
+  /// Se o anexo foi detectado como suspeito (extensão perigosa)
+  isSuspicious Boolean @default(false)
+
+  // Relação com a mensagem
+  messageId   String
+  message     MailMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+
+  @@index([messageId])
+}
+
+// ---------------------------------------------------------------------------
+// MODEL: MAIL LABEL (Etiqueta de E-mail)
+// ---------------------------------------------------------------------------
+// Etiquetas personalizadas para organizar mensagens.
+// ---------------------------------------------------------------------------
+model MailLabel {
+  id        String   @id @default(uuid())
+
+  /// Nome da etiqueta (ex: "Urgente", "Cliente X")
+  name      String
+  /// Cor da etiqueta em hexadecimal (ex: "#3b82f6")
+  color     String   @default("#3b82f6")
+
+  accountId String
+  account   MailAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  messages  MailMessageLabel[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([accountId, name])
+  @@index([accountId])
+}
+
+// ---------------------------------------------------------------------------
+// MODEL: MAIL MESSAGE LABEL (Associação Mensagem ↔ Etiqueta)
+// ---------------------------------------------------------------------------
+model MailMessageLabel {
+  id        String   @id @default(uuid())
+
+  messageId String
+  message   MailMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  labelId   String
+  label     MailLabel   @relation(fields: [labelId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([messageId, labelId])
+  @@index([labelId])
+}
+
+// ---------------------------------------------------------------------------
+// MODEL: MAIL RULE (Regra Automática de E-mail)
+// ---------------------------------------------------------------------------
+// Regra de automação aplicada às mensagens recebidas na sincronização.
+// Exemplos: mover para pasta, encaminhar, responder, marcar, etiquetar.
+// ---------------------------------------------------------------------------
+model MailRule {
+  id        String   @id @default(uuid())
+
+  /// Nome da regra (ex: "Faturas para pasta Financeiro")
+  name          String
+  /// Se a regra está ativa
+  isActive      Boolean  @default(true)
+  /// Condição de disparo (enum MailRuleCondition)
+  conditionType MailRuleCondition
+  /// Valor da condição (ex: e-mail, texto). Null para HAS_ATTACHMENT.
+  conditionValue String?
+  /// Ação a executar (enum MailRuleAction)
+  actionType    MailRuleAction
+  /// Valor da ação (ex: nome da pasta, e-mail de encaminhamento)
+  actionValue   String?
+  /// Ordem de execução das regras
+  sortOrder     Int      @default(0)
+
+  accountId     String
+  account       MailAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  deletedAt     DateTime?
+
+  @@index([accountId])
+}
+
+// ---------------------------------------------------------------------------
+// MODEL: MAIL CONTACT (Contato de E-mail)
+// ---------------------------------------------------------------------------
+// Lista de contatos do usuário. Contatos são criados automaticamente
+// quando o usuário envia um e-mail (isAuto = true) ou manualmente.
+// ---------------------------------------------------------------------------
+model MailContact {
+  id        String   @id @default(uuid())
+
+  /// Endereço de e-mail do contato
+  email     String
+  /// Nome de exibição (opcional)
+  name      String?
+  /// Empresa/organização (opcional)
+  company   String?
+  /// Se foi criado automaticamente a partir de e-mails enviados
+  isAuto    Boolean  @default(false)
+
+  // Relação com o usuário
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  groups    MailContactGroupMember[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  @@unique([userId, email])
+  @@index([userId])
+}
+
+// ---------------------------------------------------------------------------
+// MODEL: MAIL CONTACT GROUP (Grupo de Contatos)
+// ---------------------------------------------------------------------------
+// Grupo para envio a múltiplos destinos de uma vez.
+// ---------------------------------------------------------------------------
+model MailContactGroup {
+  id        String   @id @default(uuid())
+
+  /// Nome do grupo (ex: "Equipa Norte", "Clientes")
+  name      String
+
+  // Relação com o usuário
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  members   MailContactGroupMember[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  @@unique([userId, name])
+  @@index([userId])
+}
+
+// ---------------------------------------------------------------------------
+// MODEL: MAIL CONTACT GROUP MEMBER (Membro do Grupo)
+// ---------------------------------------------------------------------------
+model MailContactGroupMember {
+  id        String   @id @default(uuid())
+
+  groupId   String
+  group     MailContactGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  contactId String
+  contact   MailContact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([groupId, contactId])
+  @@index([contactId])
+}
+
+// ---------------------------------------------------------------------------
+// MODEL: MAIL SIGNATURE (Assinatura de E-mail)
+// ---------------------------------------------------------------------------
+// Assinaturas personalizadas do usuário. Pode ter múltiplas e uma padrão.
+// ---------------------------------------------------------------------------
+model MailSignature {
+  id        String   @id @default(uuid())
+
+  /// Nome da assinatura (ex: "Trabalho", "Pessoal")
+  name      String
+  /// Conteúdo da assinatura (HTML ou texto)
+  content   String
+  /// Se é a assinatura padrão para novos e-mails
+  isDefault Boolean  @default(false)
+
+  // Relação com o usuário
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  @@index([userId])
+}
+
+// ---------------------------------------------------------------------------
+// MODEL: MAIL BLOCKED SENDER (Remetente Bloqueado)
+// ---------------------------------------------------------------------------
+// Mensagens de remetentes bloqueados vão automaticamente para o spam.
+// ---------------------------------------------------------------------------
+model MailBlockedSender {
+  id        String   @id @default(uuid())
+
+  /// Endereço de e-mail bloqueado (ou domínio com "@dominio.com")
+  email     String
+
+  // Relação com o usuário
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, email])
+  @@index([userId])
+}
+
+// ---------------------------------------------------------------------------
+// MODEL: MAIL AUTO REPLY (Resposta Automática / Ausência)
+// ---------------------------------------------------------------------------
+// Respostas automáticas e mensagens de ausência (out-of-office).
+// Ativas dentro do período opcional startDate → endDate.
+// ---------------------------------------------------------------------------
+model MailAutoReply {
+  id        String   @id @default(uuid())
+
+  /// Se a resposta automática está habilitada
+  enabled   Boolean  @default(false)
+  /// Assunto da resposta automática
+  subject   String
+  /// Corpo da mensagem automática
+  message   String
+  /// Início do período de ausência (null = sempre)
+  startDate DateTime?
+  /// Fim do período de ausência (null = sem fim)
+  endDate   DateTime?
+  /// Se envia apenas uma vez por remetente por período
+  oncePerSender Boolean @default(true)
+
+  // Relação com o usuário (uma configuração por usuário)
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// Remetentes já respondidos no período atual (JSON de e-mails + datas)
+  sentTo    Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }

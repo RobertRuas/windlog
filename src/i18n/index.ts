@@ -33,7 +33,7 @@
  *       common.json <- traduções compartilhadas
  *       login.json  <- traduções da página de login
  *       home.json   <- traduções da página home
- *     en/           <- Inglês (futuro)
+ *     en-GB/        <- Inglês (Reino Unido)
  *       ...
  * ============================================================================
  */
@@ -54,6 +54,7 @@ import ptTimesheet from './locales/pt/timesheet.json';
 import ptOnboarding from './locales/pt/onboarding.json';
 import ptFeedback from './locales/pt/feedback.json';
 import ptNotifications from './locales/pt/notifications.json';
+import ptMail from './locales/pt/mail.json';
 
 // English (UK)
 import enGBCommon from './locales/en-GB/common.json';
@@ -67,58 +68,7 @@ import enGBTimesheet from './locales/en-GB/timesheet.json';
 import enGBOnboarding from './locales/en-GB/onboarding.json';
 import enGBFeedback from './locales/en-GB/feedback.json';
 import enGBNotifications from './locales/en-GB/notifications.json';
-
-// Spanish
-import esCommon from './locales/es/common.json';
-import esLogin from './locales/es/login.json';
-import esHome from './locales/es/home.json';
-import esLogs from './locales/es/logs.json';
-import esSettings from './locales/es/settings.json';
-import esUsers from './locales/es/users.json';
-import esProjects from './locales/es/projects.json';
-import esTimesheet from './locales/es/timesheet.json';
-import esOnboarding from './locales/es/onboarding.json';
-import esFeedback from './locales/es/feedback.json';
-import esNotifications from './locales/es/notifications.json';
-
-// German
-import deCommon from './locales/de/common.json';
-import deLogin from './locales/de/login.json';
-import deHome from './locales/de/home.json';
-import deLogs from './locales/de/logs.json';
-import deSettings from './locales/de/settings.json';
-import deUsers from './locales/de/users.json';
-import deProjects from './locales/de/projects.json';
-import deTimesheet from './locales/de/timesheet.json';
-import deOnboarding from './locales/de/onboarding.json';
-import deFeedback from './locales/de/feedback.json';
-import deNotifications from './locales/de/notifications.json';
-
-// Finnish
-import fiCommon from './locales/fi/common.json';
-import fiLogin from './locales/fi/login.json';
-import fiHome from './locales/fi/home.json';
-import fiLogs from './locales/fi/logs.json';
-import fiSettings from './locales/fi/settings.json';
-import fiUsers from './locales/fi/users.json';
-import fiProjects from './locales/fi/projects.json';
-import fiTimesheet from './locales/fi/timesheet.json';
-import fiOnboarding from './locales/fi/onboarding.json';
-import fiFeedback from './locales/fi/feedback.json';
-import fiNotifications from './locales/fi/notifications.json';
-
-// Lithuanian
-import ltCommon from './locales/lt/common.json';
-import ltLogin from './locales/lt/login.json';
-import ltHome from './locales/lt/home.json';
-import ltLogs from './locales/lt/logs.json';
-import ltSettings from './locales/lt/settings.json';
-import ltUsers from './locales/lt/users.json';
-import ltProjects from './locales/lt/projects.json';
-import ltTimesheet from './locales/lt/timesheet.json';
-import ltOnboarding from './locales/lt/onboarding.json';
-import ltFeedback from './locales/lt/feedback.json';
-import ltNotifications from './locales/lt/notifications.json';
+import enGBMail from './locales/en-GB/mail.json';
 
 /**
  * Inicializa o i18next com as configurações do projeto.
@@ -140,6 +90,7 @@ i18n
         onboarding: ptOnboarding,
         feedback: ptFeedback,
         notifications: ptNotifications,
+        mail: ptMail,
       },
       'en-GB': {
         common: enGBCommon,
@@ -153,58 +104,7 @@ i18n
         onboarding: enGBOnboarding,
         feedback: enGBFeedback,
         notifications: enGBNotifications,
-      },
-      es: {
-        common: esCommon,
-        login: esLogin,
-        home: esHome,
-        logs: esLogs,
-        settings: esSettings,
-        users: esUsers,
-        projects: esProjects,
-        timesheet: esTimesheet,
-        onboarding: esOnboarding,
-        feedback: esFeedback,
-        notifications: esNotifications,
-      },
-      de: {
-        common: deCommon,
-        login: deLogin,
-        home: deHome,
-        logs: deLogs,
-        settings: deSettings,
-        users: deUsers,
-        projects: deProjects,
-        timesheet: deTimesheet,
-        onboarding: deOnboarding,
-        feedback: deFeedback,
-        notifications: deNotifications,
-      },
-      fi: {
-        common: fiCommon,
-        login: fiLogin,
-        home: fiHome,
-        logs: fiLogs,
-        settings: fiSettings,
-        users: fiUsers,
-        projects: fiProjects,
-        timesheet: fiTimesheet,
-        onboarding: fiOnboarding,
-        feedback: fiFeedback,
-        notifications: fiNotifications,
-      },
-      lt: {
-        common: ltCommon,
-        login: ltLogin,
-        home: ltHome,
-        logs: ltLogs,
-        settings: ltSettings,
-        users: ltUsers,
-        projects: ltProjects,
-        timesheet: ltTimesheet,
-        onboarding: ltOnboarding,
-        feedback: ltFeedback,
-        notifications: ltNotifications,
+        mail: enGBMail,
       },
     },
 

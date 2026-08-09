@@ -30,7 +30,7 @@ export class UpdateSettingsDto {
   })
   @IsOptional()
   @IsString()
-  @IsIn(['pt', 'en-GB', 'es', 'de', 'fi', 'lt'], { message: 'Language must be one of: pt, en-GB, es, de, fi, lt' })
+  @IsIn(['pt', 'en-GB'], { message: 'Language must be one of: pt, en-GB' })
   language?: string;
 
   @ApiPropertyOptional({

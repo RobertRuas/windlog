@@ -1,0 +1,199 @@
+{
+  "title": "Email",
+  "subtitle": "Integrated email client (IMAP / SMTP / POP3)",
+  "connect": {
+    "title": "Connect email account",
+    "description": "Enter only your email and password. The server settings are already defined.",
+    "servers": "Pre-defined servers",
+    "incoming": "Incoming server (IMAP)",
+    "outgoing": "Outgoing server (SMTP)",
+    "readonly_hint": "Fixed settings — read only. The connection always uses TLS.",
+    "email_label": "Email",
+    "password_label": "Password",
+    "submit": "Connect",
+    "success": "Email account connected successfully!",
+    "error": "Could not connect the account"
+  },
+  "toolbar": {
+    "compose": "Compose",
+    "sync": "Sync",
+    "synced": "Sync complete ({{count}} new messages)",
+    "last_sync": "Last sync",
+    "sync_error": "Last sync error",
+    "manage": "Contacts, rules, signatures and more",
+    "disconnect": "Disconnect account",
+    "disconnected": "Email account disconnected"
+  },
+  "folders": {
+    "title": "Folders",
+    "new": "New folder",
+    "name_placeholder": "Folder name",
+    "created": "Folder created",
+    "renamed": "Folder renamed",
+    "removed": "Folder removed",
+    "types": {
+      "INBOX": "Inbox",
+      "SENT": "Sent",
+      "DRAFTS": "Drafts",
+      "SPAM": "Spam",
+      "TRASH": "Trash",
+      "ARCHIVE": "Archive",
+      "CUSTOM": "Custom"
+    }
+  },
+  "labels": {
+    "title": "Labels",
+    "empty": "No labels"
+  },
+  "list": {
+    "search_placeholder": "Search messages...",
+    "advanced_filters": "Advanced filters",
+    "empty": "No messages",
+    "no_subject": "(no subject)",
+    "draft": "Draft",
+    "suspicious_attachment": "Suspicious attachment",
+    "page_of": "Page {{page}} of {{totalPages}}",
+    "filter_from": "From",
+    "filter_to": "To",
+    "filter_subject": "Subject",
+    "filter_content": "Content",
+    "filter_start_date": "Start date",
+    "filter_end_date": "End date",
+    "filter_unread": "Unread",
+    "filter_flagged": "Flagged",
+    "filter_important": "Important",
+    "filter_attachments": "With attachments",
+    "apply_filters": "Apply",
+    "clear_filters": "Clear filters"
+  },
+  "view": {
+    "back": "Back",
+    "to": "To",
+    "cc": "Cc",
+    "attachments": "Attachments",
+    "conversation": "Conversation",
+    "suspicious_warning": "This message contains a suspicious attachment. For security, the download is blocked.",
+    "suspicious_blocked": "Download blocked: suspicious attachment",
+    "download_error": "Error downloading the attachment"
+  },
+  "actions": {
+    "reply": "Reply",
+    "reply_all": "Reply all",
+    "forward": "Forward",
+    "flag": "Flag",
+    "important": "Mark as important",
+    "move": "Move to folder",
+    "moved": "Message moved to {{folder}}",
+    "archive": "Archive",
+    "mark_spam": "Mark as spam",
+    "delete": "Delete",
+    "deleted": "Message deleted",
+    "block_sender": "Block sender",
+    "sender_blocked": "Sender blocked — future messages will go to spam"
+  },
+  "compose": {
+    "titles": {
+      "new": "New message",
+      "reply": "Reply",
+      "reply-all": "Reply all",
+      "forward": "Forward",
+      "draft": "Edit draft"
+    },
+    "to": "To",
+    "subject_placeholder": "Subject",
+    "body_placeholder": "Write your message...",
+    "attach": "Attach files",
+    "send": "Send",
+    "sent": "Email sent successfully!",
+    "send_error": "Error sending the email",
+    "save_draft": "Save draft",
+    "draft_saved": "Draft saved",
+    "no_recipients": "Enter at least one recipient",
+    "add_group": "Add group to recipients"
+  },
+  "manage": {
+    "title": "Email Management",
+    "tabs": {
+      "contacts": "Contacts",
+      "folders": "Folders",
+      "rules": "Rules",
+      "labels": "Labels",
+      "signatures": "Signatures",
+      "autoreply": "Out of office",
+      "blocked": "Blocked"
+    },
+    "folders": {
+      "protected_hint": "Default folders cannot be renamed or deleted."
+    },
+    "contacts": {
+      "name_ph": "Name (optional)",
+      "add": "Add contact",
+      "created": "Contact created",
+      "auto_hint": "All recipients of your sent emails are added automatically.",
+      "auto": "auto",
+      "groups": "Groups",
+      "group_ph": "Group name",
+      "add_group": "Create group",
+      "group_created": "Group created",
+      "members_hint": "Select the contacts in the group (multi-destination sending)"
+    },
+    "rules": {
+      "created": "Rule created",
+      "empty": "No automatic rules",
+      "add": "Add rule",
+      "name_ph": "Rule name",
+      "condition_value": "Condition value",
+      "select_folder": "Select folder",
+      "select_label": "Select label",
+      "auto_reply_text": "Auto-reply text",
+      "active": "Rule active",
+      "cond_FROM": "From contains",
+      "cond_TO": "To contains",
+      "cond_SUBJECT": "Subject contains",
+      "cond_CONTAINS": "Message contains",
+      "cond_HAS_ATTACHMENT": "Has attachment",
+      "act_MOVE_TO_FOLDER": "Move to folder",
+      "act_FLAG": "Flag",
+      "act_MARK_IMPORTANT": "Mark important",
+      "act_MARK_READ": "Mark as read",
+      "act_LABEL": "Apply label",
+      "act_FORWARD": "Forward to",
+      "act_AUTO_REPLY": "Auto-reply",
+      "act_MOVE_TO_SPAM": "Move to spam",
+      "act_DELETE": "Delete"
+    },
+    "labels": {
+      "saved": "Label saved",
+      "name_ph": "Label name"
+    },
+    "signatures": {
+      "saved": "Signature saved",
+      "empty": "No signatures",
+      "name_ph": "Signature name",
+      "content_ph": "Signature content",
+      "default": "Default"
+    },
+    "autoreply": {
+      "saved": "Auto-reply saved",
+      "enabled": "Enable auto-reply (out-of-office message)",
+      "subject_ph": "Reply subject",
+      "message_ph": "Message automatically sent to anyone who writes to you",
+      "start": "Period start (optional)",
+      "end": "Period end (optional)",
+      "once_hint": "Each sender receives the auto-reply only once."
+    },
+    "blocked": {
+      "added": "Sender blocked",
+      "add": "Block",
+      "hint": "Block an address (spam@domain.com) or a whole domain (@domain.com). Blocked messages go to spam.",
+      "empty": "No blocked senders",
+      "unblock": "Unblock"
+    }
+  },
+  "shortcuts": {
+    "title": "Keyboard shortcuts",
+    "compose": "New message",
+    "sync": "Sync",
+    "close": "Close/select"
+  }
+}

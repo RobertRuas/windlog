@@ -30,6 +30,7 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { PageHelp } from '@/components/ui/PageHelp';
 import { AccountSection } from './components/AccountSection';
 import { AdminSection } from './components/AdminSection';
+import { MailAccountSection } from './components/MailAccountSection';
 import { MyFeedbacksSection } from './components/MyFeedbacksSection';
 import { PreferencesSection } from './components/PreferencesSection';
 
@@ -68,8 +69,9 @@ export function SettingsPage() {
         </PageHelp.Section>
 
         <PageHelp.Section title={t('help.sections_title')}>
-          <PageHelp.Step>{t('help.step_preferences')}</PageHelp.Step>
           <PageHelp.Step>{t('help.step_account')}</PageHelp.Step>
+          <PageHelp.Step>{t('help.step_preferences')}</PageHelp.Step>
+          <PageHelp.Step>{t('help.step_mail')}</PageHelp.Step>
           <PageHelp.Step>{t('help.step_feedbacks')}</PageHelp.Step>
           <PageHelp.Step>{t('help.step_admin')}</PageHelp.Step>
         </PageHelp.Section>
@@ -79,13 +81,16 @@ export function SettingsPage() {
         </PageHelp.Section>
       </PageHelp>
 
-      {/* Secções */}
+      {/* Secções (acordeões ordenados por relevância) */}
       <div className="space-y-4">
+        {/* Conta (perfil) */}
+        <AccountSection t={t} />
+
         {/* Preferências (idioma, tema, escala) */}
         <PreferencesSection t={t} />
 
-        {/* Conta */}
-        <AccountSection t={t} />
+        {/* E-mail (servidores pré-definidos + e-mail/senha) */}
+        <MailAccountSection />
 
         {/* Secção: Meus Feedbacks (discreta — só aparece se o usuário quiser) */}
         <MyFeedbacksSection t={t} />

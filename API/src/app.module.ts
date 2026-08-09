@@ -42,6 +42,7 @@ import { UploadModule } from './modules/upload/upload.module.js';
 import { NotificationsModule } from './modules/notifications/notification.module.js';
 import { WeeklyTimesheetModule } from './modules/weekly-timesheet/weekly-timesheet.module.js';
 import { FeedbackModule } from './modules/feedback/feedback.module.js';
+import { MailModule } from './modules/mail/mail.module.js';
 
 @Module({
   imports: [
@@ -120,6 +121,11 @@ import { FeedbackModule } from './modules/feedback/feedback.module.js';
     // FEEDBACK MODULE - Gestão de Feedbacks do Sistema
     // -------------------------------------------------------------------------
     FeedbackModule,
+
+    // -------------------------------------------------------------------------
+    // MAIL MODULE - Cliente de E-mail Integrado (IMAP/SMTP/POP3)
+    // -------------------------------------------------------------------------
+    MailModule,
 
     // -------------------------------------------------------------------------
     // PRÓXIMOS MÓDULOS SERÃO ADICIONADOS AQUI
