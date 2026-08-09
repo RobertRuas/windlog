@@ -30,17 +30,18 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import {
   Plus, Trash2, Save, RotateCcw, ChevronDown, ChevronRight,
-  Check, User as UserIcon, ChevronUp,
+  Check, User as UserIcon, ChevronUp, X,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { updateTimesheet } from '@/services/weekly-timesheet.service';
-import { getProfile } from '@/services/auth.service';
+import { getProfile, updateSignature } from '@/services/auth.service';
 import { getProjectMembers, getProjectTurbines, type ProjectMember } from '@/services/project.service';
 import { DatePicker } from '@/components/ui/DatePicker';
+import { SignaturePad } from '@/components/ui/SignaturePad';
 import { TechnicianSelect } from './TechnicianSelect';
 import type {
   TimesheetFormEditorProps,
@@ -98,6 +99,24 @@ export function TimesheetFormEditor({
     : '';
   const currentUserPosition = currentUser?.position || '';
   const currentUserSignature = currentUser?.signatureData || null;
+
+  // ── Modal de configuração de assinatura (abre quando não há assinatura) ──
+  const [signatureModalOpen, setSignatureModalOpen] = useState(false);
+  const queryClient = useQueryClient();
+
+  /**
+   * Salva a assinatura no perfil do usuário e aplica no timesheet.
+   */
+  const saveSignatureMutation = useMutation({
+    mutationFn: (dataUrl: string) => updateSignature(dataUrl),
+    onSuccess: (_data, dataUrl) => {
+      queryClient.invalidateQueries({ queryKey: ['profile', 'current'] });
+      handleMetaChange('technicianSignature', dataUrl);
+      setSignatureModalOpen(false);
+      toast.success(t('common:signature.saved'));
+    },
+    onError: (e: Error) => toast.error(e.message || t('common:signature.error')),
+  });
 
   // ── Estado do formulário ───────────────────────────────────────────
   const [form, setForm] = useState<FormState>(() => timesheetToFormState(timesheet));
@@ -712,6 +731,9 @@ export function TimesheetFormEditor({
                       } else if (currentUserSignature) {
                         // Se está em branco e tem assinatura configurada, aplica
                         handleMetaChange('technicianSignature', currentUserSignature);
+                      } else {
+                        // Sem assinatura configurada → abre modal para configurar
+                        setSignatureModalOpen(true);
                       }
                     }}
                     disabled={isSaving}
@@ -805,6 +827,34 @@ export function TimesheetFormEditor({
           {isSaving ? t('form.saving') : t('form.saveChanges')}
         </button>
       </div>
+
+      {/* ── Modal: configurar assinatura (quando não há assinatura) ───── */}
+      {signatureModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg flex flex-col max-h-[90vh]">
+            <div className="flex items-center justify-between px-5 py-3 border-b border-gray-200">
+              <h2 className="text-base font-semibold text-gray-900">{t('common:signature.configure')}</h2>
+              <button
+                type="button"
+                onClick={() => setSignatureModalOpen(false)}
+                className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div className="p-5 overflow-y-auto">
+              <p className="text-sm text-gray-500 mb-4">{t('common:signature.description')}</p>
+              <SignaturePad
+                initialValue={null}
+                height={160}
+                isSaving={saveSignatureMutation.isPending}
+                onSave={(dataUrl) => saveSignatureMutation.mutate(dataUrl)}
+                onCancel={() => setSignatureModalOpen(false)}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

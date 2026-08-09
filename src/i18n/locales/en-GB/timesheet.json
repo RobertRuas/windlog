@@ -98,7 +98,7 @@
     "clearSignature": "Clear signature",
     "mySignature": "My Signature",
     "leaveBlank": "Leave blank",
-    "noSignatureConfigured": "Configure your signature on the Profile page",
+    "noSignatureConfigured": "No signature configured. Toggle the switch to create one.",
     "clientSignsPdf": "The client signs directly on the printed PDF"
   },
   "days": {
