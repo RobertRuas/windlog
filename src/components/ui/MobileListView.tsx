@@ -221,15 +221,17 @@ export function MobileListView<T>({
                 }`}
                 onClick={onRowClick ? () => onRowClick(item) : undefined}
               >
-                {/* Linha principal: título + ações */}
+                {/* Linha principal: título + ações.
+                 * As ações usam a classe mobile-list-actions para garantir
+                 * alvos de toque de 40px (CSS global) sem crescer visualmente. */}
                 <div className="flex items-center justify-between gap-3">
-                  <div className="min-w-0 flex-1 text-sm font-medium text-gray-900 dark:text-[#f5f5f7]">
+                  <div className="min-w-0 flex-1 text-[15px] font-semibold text-gray-900 dark:text-[#f5f5f7]">
                     {titleCol.render(item)}
                   </div>
-                  {/* Ações (coluna sticky da tabela) à direita */}
+                  {/* Ações (coluna sticky da tabela) à direita, com toque confortável */}
                   {actionCol && (
                     <div
-                      className="flex items-center gap-1 shrink-0"
+                      className="mobile-list-actions flex items-center shrink-0 -my-2 -mr-2"
                       onClick={(e) => {
                         // Impede que ações dispararem o clique do item
                         if (onRowClick) e.stopPropagation();
@@ -240,15 +242,21 @@ export function MobileListView<T>({
                   )}
                 </div>
 
-                {/* Campos secundários: rótulo/valor */}
+                {/* Campos secundários em grelha compacta (2 colunas quando há
+                 * mais de um campo) com rótulo por cima do valor — padrão
+                 * nativo que aproveita melhor a largura do ecrã. */}
                 {detailCols.length > 0 && (
-                  <div className="mt-2 space-y-1.5">
+                  <div className={`mt-2.5 grid gap-x-4 gap-y-2 ${
+                    detailCols.length > 1 ? 'grid-cols-2' : 'grid-cols-1'
+                  }`}>
                     {detailCols.map((col, colIndex) => (
-                      <div key={colIndex} className="flex items-start justify-between gap-3">
-                        <span className="shrink-0 text-xs text-gray-400 dark:text-[#636366] pt-0.5">
+                      <div key={colIndex} className="min-w-0">
+                        {/* Rótulo pequeno em maiúsculas (estilo nativo) */}
+                        <div className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-[#636366] mb-0.5 truncate">
                           {col.header}
-                        </span>
-                        <div className="min-w-0 text-right text-sm text-gray-700 dark:text-[#d1d1d6]">
+                        </div>
+                        {/* Valor */}
+                        <div className="text-[13px] text-gray-800 dark:text-[#e5e5ea] break-words">
                           {col.render(item)}
                         </div>
                       </div>

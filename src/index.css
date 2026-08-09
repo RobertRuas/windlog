@@ -509,4 +509,14 @@ input[type='date']::-webkit-date-and-time-value {
     border-radius: 16px 16px 0 0 !important;
     padding-bottom: env(safe-area-inset-bottom);
   }
+
+  /* Ações da lista mobile (MobileListView): garante alvo de toque de
+     40px em cada botão/ação sem alterar o seu tamanho visual */
+  .mobile-list-actions > * {
+    min-width: 40px;
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
 }
