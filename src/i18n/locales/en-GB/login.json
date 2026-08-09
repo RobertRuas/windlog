@@ -10,12 +10,6 @@
     "placeholder": "Enter your password"
   },
   "submit": "Log in",
-  "devSwitcher": {
-    "label": "Quick login (Dev)",
-    "placeholder": "Select a user...",
-    "logging": "Logging in...",
-    "or": "or log in with email and password"
-  },
   "errors": {
     "invalid_credentials": "Incorrect email or password",
     "required_field": "This field is required",

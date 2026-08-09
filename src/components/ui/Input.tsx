@@ -24,7 +24,7 @@
  * ============================================================================
  */
 
-import type { InputHTMLAttributes } from 'react';
+import type { InputHTMLAttributes, Ref } from 'react';
 import { FormField } from './FormField';
 
 /**
@@ -40,6 +40,8 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   hint?: string;
   /** Se true, exibe asterisco no label */
   required?: boolean;
+  /** Ref encaminhada ao elemento <input> nativo */
+  ref?: Ref<HTMLInputElement>;
 }
 
 /**
@@ -56,12 +58,14 @@ export function Input({
   required,
   className = '',
   id,
+  ref,
   ...rest
 }: InputProps) {
   return (
     <FormField label={label} error={error} hint={hint} required={required}>
       <input
         id={id}
+        ref={ref}
         className={`form-input ${error ? 'error' : ''} ${className}`}
         {...rest}
       />

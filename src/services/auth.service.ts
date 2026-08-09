@@ -68,6 +68,25 @@ export async function login(payload: LoginPayload): Promise<LoginResponse> {
 }
 
 /**
+ * Sugestão de utilizador para o autocomplete da tela de login.
+ */
+export interface LoginSuggestion {
+  /** Nome completo */
+  name: string;
+  /** E-mail de acesso */
+  email: string;
+}
+
+/**
+ * Busca as sugestões de utilizadores para o autocomplete do login.
+ * Endpoint público (não requer token).
+ */
+export async function getLoginSuggestions(): Promise<LoginSuggestion[]> {
+  const response = await api.get<ApiResponse<LoginSuggestion[]>>('/api/v1/auth/login-suggestions');
+  return response.data;
+}
+
+/**
  * Busca o perfil completo do usuário autenticado.
  *
  * Esta função requer que o usuário esteja logado (token JWT válido).

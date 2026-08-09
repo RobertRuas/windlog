@@ -215,6 +215,23 @@ export class AuthController {
     return responseWithoutRefresh as { accessToken: string; user: AuthResponseDataDto['user']; mustChangePassword: boolean; profileComplete: boolean };
   }
 
+  /**
+   * GET /api/v1/auth/login-suggestions
+   *
+   * Sugestões de utilizadores para o autocomplete da tela de login.
+   * Endpoint PÚBLICO com rate limiting — retorna apenas nome e e-mail.
+   */
+  @ApiOperation({
+    summary: 'Login suggestions (public)',
+    description: 'Lista nome e e-mail dos utilizadores ativos para o autocomplete da tela de login.',
+  })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Sugestões retornadas com sucesso' })
+  @Throttle({ default: { ttl: 60_000, limit: 20 } }) // Máximo 20 consultas por minuto
+  @Get('login-suggestions')
+  async getLoginSuggestions(): Promise<{ name: string; email: string }[]> {
+    return this.authService.getLoginSuggestions();
+  }
+
   // ==========================================================================
   // REFRESH E LOGOUT — Gestão de Sessão Persistente
   // ==========================================================================

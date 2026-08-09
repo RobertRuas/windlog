@@ -1285,4 +1285,31 @@ export class AuthService {
 
     this.logger.log(`User logged out: userId=${userId}`);
   }
+
+  // ==========================================================================
+  // SUGESTÕES DE LOGIN — Autocomplete público da tela de login
+  // ==========================================================================
+
+  /**
+   * GET /api/v1/auth/login-suggestions
+   *
+   * Lista mínima de utilizadores para o autocomplete da tela de login.
+   *
+   * SEGURANÇA:
+   * - Endpoint público (pré-autenticação) protegido por rate limiting
+   * - Retorna APENAS nome e e-mail — nenhum dado sensível
+   * - Somente utilizadores ativos e não removidos
+   */
+  async getLoginSuggestions(): Promise<{ name: string; email: string }[]> {
+    const users = await this.prisma.user.findMany({
+      where: { isActive: true, deletedAt: null },
+      select: { firstName: true, lastName: true, email: true },
+      orderBy: { firstName: 'asc' },
+    });
+
+    return users.map((u) => ({
+      name: `${u.firstName} ${u.lastName}`,
+      email: u.email,
+    }));
+  }
 }

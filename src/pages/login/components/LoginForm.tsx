@@ -8,33 +8,31 @@
  * Componente específico da página de login que renderiza o formulário
  * de autenticação (campos de email e senha + botão de submit).
  *
- * POR QUE SEPARAR O FORM DA PÁGINA?
- * ---------------------------------
- * Separar o formulário em um componente próprio facilita:
- * - Reutilização (se necessário em outro lugar)
- * - Testes unitários (testamos apenas o formulário)
- * - Manutenção (cada arquivo tem uma responsabilidade clara)
- *
- * COMO FUNCIONA?
- * --------------
- * 1. Usuário preenche email e senha
- * 2. Ao submeter, chama o serviço de autenticação
- * 3. Se sucesso, redireciona para a página inicial
- * 4. Se erro, exibe mensagem abaixo do formulário
+ * FUNCIONALIDADES:
+ * ----------------
+ * - Autocomplete de utilizadores no campo de e-mail: ao começar a digitar,
+ *   aparecem sugestões (nome + e-mail) vindas da API pública de sugestões
+ * - Ao submeter, chama o serviço de autenticação
+ * - Se sucesso, redireciona conforme o estado do usuário
+ * - Se erro, exibe mensagem abaixo do formulário
  * ============================================================================
  */
 
-import { useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { LogIn } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { LogIn, User } from 'lucide-react';
 
 // Componentes compartilhados reutilizáveis
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 
 // Serviço de autenticação
-import { login } from '@/services/auth.service';
+import { login, getLoginSuggestions } from '@/services/auth.service';
+
+/** Máximo de sugestões exibidas no autocomplete */
+const MAX_SUGGESTIONS = 8;
 
 /**
  * Componente LoginForm - Formulário de autenticação.
@@ -54,22 +52,51 @@ export function LoginForm() {
   const [password, setPassword] = useState(''); // Valor do campo senha
   const [error, setError] = useState('');       // Mensagem de erro
   const [isLoading, setIsLoading] = useState(false); // Estado de carregamento
+  const [showSuggestions, setShowSuggestions] = useState(false); // Dropdown aberto
+  const passwordRef = useRef<HTMLInputElement>(null);
+
+  /**
+   * Sugestões de utilizadores (endpoint público, sem token).
+   */
+  const { data: suggestions = [] } = useQuery({
+    queryKey: ['login-suggestions'],
+    queryFn: getLoginSuggestions,
+    retry: false,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  /**
+   * Filtra as sugestões conforme o texto digitado (nome ou e-mail).
+   * Só há lista a partir do primeiro caractere digitado.
+   */
+  const filtered = useMemo(() => {
+    const query = email.trim().toLowerCase();
+    if (!query) return [];
+    return suggestions
+      .filter(
+        (s) =>
+          s.name.toLowerCase().includes(query) ||
+          s.email.toLowerCase().includes(query),
+      )
+      .slice(0, MAX_SUGGESTIONS);
+  }, [email, suggestions]);
+
+  /**
+   * Seleciona uma sugestão: preenche o e-mail e foca na senha.
+   */
+  function handleSelect(selectedEmail: string) {
+    setEmail(selectedEmail);
+    setShowSuggestions(false);
+    passwordRef.current?.focus();
+  }
 
   /**
    * Função executada ao submeter o formulário.
-   *
-   * FLUXO:
-   * 1. Previne o comportamento padrão do form (recarregar a página)
-   * 2. Limpa erros anteriores
-   * 3. Ativa o estado de loading
-   * 4. Chama o serviço de login
-   * 5. Se sucesso: redireciona para a home
-   * 6. Se erro: exibe mensagem de erro
-   * 7. Desativa o loading
    */
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault(); // Previne reload da página
     setError('');           // Limpa erro anterior
+    setShowSuggestions(false);
     setIsLoading(true);     // Ativa loading
 
     try {
@@ -87,8 +114,7 @@ export function LoginForm() {
         navigate('/');
       }
     } catch {
-      // Exibe mensagem de erro genérica
-      // Em produção, poderíamos tratar diferentes tipos de erro
+      // Exibe mensagem de erro genérica (não revela se o e-mail existe)
       setError(t('errors.invalid_credentials'));
     } finally {
       // Sempre desativa o loading, independente do resultado
@@ -98,16 +124,48 @@ export function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      {/* Campo de e-mail */}
-      <Input
-        label={t('email.label')}
-        type="email"
-        value={email}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
-        placeholder={t('email.placeholder')}
-        required
-        autoComplete="email"
-      />
+      {/* Campo de e-mail com autocomplete */}
+      <div className="relative">
+        <Input
+          label={t('email.label')}
+          type="email"
+          value={email}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+            setEmail(e.target.value);
+            setShowSuggestions(true);
+          }}
+          onFocus={() => setShowSuggestions(true)}
+          onBlur={() => setShowSuggestions(false)}
+          placeholder={t('email.placeholder')}
+          required
+          autoComplete="email"
+        />
+
+        {/* Dropdown de sugestões */}
+        {showSuggestions && filtered.length > 0 && (
+          <ul className="absolute z-10 left-0 right-0 top-full mt-1 bg-white dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#38383a] rounded-lg shadow-lg overflow-hidden max-h-64 overflow-y-auto">
+            {filtered.map((s) => (
+              <li key={s.email}>
+                <button
+                  type="button"
+                  // onMouseDown ocorre antes do blur fechar o dropdown
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    handleSelect(s.email);
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-left hover:bg-gray-50 dark:hover:bg-[#3a3a3c] transition-colors"
+                >
+                  <User size={14} className="text-gray-400 dark:text-[#636366] flex-shrink-0" />
+                  <span className="min-w-0">
+                    <span className="block text-sm text-gray-800 dark:text-[#f5f5f7] truncate">{s.name}</span>
+                    <span className="block text-xs text-gray-400 dark:text-[#8e8e93] truncate">{s.email}</span>
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
 
       {/* Campo de senha */}
       <Input
@@ -118,6 +176,7 @@ export function LoginForm() {
         placeholder={t('password.placeholder')}
         required
         autoComplete="current-password"
+        ref={passwordRef}
       />
 
       {/* Mensagem de erro (exibida apenas quando há erro) */}
