@@ -36,6 +36,7 @@ export function TechnicianSelect({
   excludeNames = [],
   disabled,
   placeholder,
+  suffix,
 }: TechnicianSelectProps) {
   const { t } = useTranslation('timesheet');
   const [isOpen, setIsOpen] = useState(false);
@@ -52,10 +53,11 @@ export function TechnicianSelect({
     if (value) lastValidValue.current = value;
   }, [value]);
 
-  // Calcula a posição do dropdown sempre que abre
+  // Calcula a posição do dropdown sempre que abre (alinhado à caixa inteira)
   useEffect(() => {
-    if (isOpen && inputRef.current) {
-      const rect = inputRef.current.getBoundingClientRect();
+    const anchor = wrapperRef.current || inputRef.current;
+    if (isOpen && anchor) {
+      const rect = anchor.getBoundingClientRect();
       setDropdownPos({ top: rect.bottom + 4, left: rect.left, width: rect.width });
     }
   }, [isOpen]);
@@ -141,8 +143,9 @@ export function TechnicianSelect({
     : null;
 
   return (
-    <div ref={wrapperRef} className="relative">
-      <div className="relative">
+    <div ref={wrapperRef} className="relative w-full">
+      {/* Caixa única: nome editável + sufixo (cargo) + ícones */}
+      <div className="flex items-center gap-1 h-8 border border-gray-200 rounded px-2 bg-white focus-within:ring-1 focus-within:ring-blue-500">
         <input
           ref={inputRef}
           type="text"
@@ -165,9 +168,13 @@ export function TechnicianSelect({
           disabled={disabled}
           placeholder={placeholder}
           autoComplete="off"
-          className="w-full px-2 py-1.5 pr-12 border border-gray-200 rounded text-sm font-medium focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-60"
+          className="flex-1 min-w-0 text-sm font-medium focus:outline-none disabled:opacity-60"
         />
-        <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
+        {/* Cargo exibido junto ao nome, dentro do próprio campo */}
+        {suffix && (
+          <span className="text-xs text-gray-500 shrink-0 whitespace-nowrap">{suffix}</span>
+        )}
+        <div className="flex items-center gap-0.5 shrink-0">
           {query && (
             <button
               type="button"

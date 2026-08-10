@@ -606,7 +606,7 @@ export function TimesheetFormEditor({
                           {/* Nome com autocomplete + cargo entre parênteses */}
                           <div className="flex-1 min-w-0 flex items-center gap-1.5">
                             {entry.isCurrentUser ? (
-                              <div className="flex-1 min-w-0 flex items-center gap-2 px-2 py-1.5 bg-blue-50 border border-blue-200 rounded text-sm font-medium text-gray-700">
+                              <div className="flex-1 min-w-0 flex items-center gap-2 h-8 px-2 bg-blue-50 border border-blue-200 rounded text-sm font-medium text-gray-700">
                                 <UserIcon size={14} className="text-blue-500 shrink-0" />
                                 <span className="truncate">
                                   {entry.technicianName}
@@ -615,26 +615,19 @@ export function TimesheetFormEditor({
                                 <span className="text-xs text-blue-500 ml-auto">{t('form.you')}</span>
                               </div>
                             ) : (
-                              <>
-                                <div className="flex-1 min-w-0">
-                                  <TechnicianSelect
-                                    value={entry.technicianName}
-                                    onChange={(v) => handleEntryChange(dayIdx, entryIdx, 'technicianName', v)}
-                                    onSelectUser={(user) => handleSelectUser(dayIdx, entryIdx, user)}
-                                    users={systemUsers}
-                                    excludeNames={day.entries
-                                      .filter((_, i) => i !== entryIdx)
-                                      .map((e) => e.technicianName)
-                                      .filter(Boolean)}
-                                    disabled={isSaving}
-                                    placeholder={t('sheet.technicianName')}
-                                  />
-                                </div>
-                                {/* Cargo: preenchido automaticamente ao selecionar o técnico */}
-                                {entry.role && (
-                                  <span className="text-xs text-gray-500 shrink-0">({entry.role})</span>
-                                )}
-                              </>
+                              <TechnicianSelect
+                                value={entry.technicianName}
+                                onChange={(v) => handleEntryChange(dayIdx, entryIdx, 'technicianName', v)}
+                                onSelectUser={(user) => handleSelectUser(dayIdx, entryIdx, user)}
+                                users={systemUsers}
+                                excludeNames={day.entries
+                                  .filter((_, i) => i !== entryIdx)
+                                  .map((e) => e.technicianName)
+                                  .filter(Boolean)}
+                                disabled={isSaving}
+                                placeholder={t('sheet.technicianName')}
+                                suffix={entry.role ? `(${entry.role})` : undefined}
+                              />
                             )}
                           </div>
 
