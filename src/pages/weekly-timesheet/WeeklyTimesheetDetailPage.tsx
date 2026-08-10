@@ -165,9 +165,6 @@ export function WeeklyTimesheetDetailPage() {
                   const last = fmt(timesheet.days[timesheet.days.length - 1].date);
                   return ` — ${first} a ${last}`;
                 })()}
-                {' • '}
-                {t('status.' + timesheet.status)} •{' '}
-                {timesheet.creator.firstName} {timesheet.creator.lastName}
               </p>
             </div>
 
