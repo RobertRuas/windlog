@@ -1,20 +1,19 @@
 /**
  * ============================================================================
- * FEEDBACK BUTTON - Botão Flutuante de Feedback
+ * FEEDBACK BUTTON - Botão de Feedback
  * ============================================================================
  *
  * O QUE É ESTE ARQUIVO?
  * ---------------------
- * Botão flutuante fixo no canto inferior direito, presente em TODAS
+ * Botão no header superior, ao lado do avatar do usuário, presente em TODAS
  * as páginas autenticadas. Permite ao usuário abrir o modal de feedback
  * rapidamente para reportar bugs, sugestões, etc.
  *
  * COMPORTAMENTO:
  * --------------
- * - Botão circular flutuante no canto inferior direito
+ * - Botão circular discreto, do mesmo tamanho do avatar (visual apagado)
  * - Ao clicar, abre o FeedbackModal
- * - Visível em todas as páginas (dentro do AppLayout)
- * - Não intrusivo mas sempre acessível
+ * - Visível em todas as páginas (dentro do header do AppLayout)
  * ============================================================================
  */
 
@@ -25,9 +24,9 @@ import { useTranslation } from 'react-i18next';
 import { FeedbackModal } from './FeedbackModal';
 
 /**
- * Componente FeedbackButton - botão flutuante + modal de feedback.
+ * Componente FeedbackButton - botão discreto no header + modal de feedback.
  *
- * Deve ser renderizado dentro do AppLayout para aparecer em todas as páginas.
+ * Deve ser renderizado no header do AppLayout para aparecer em todas as páginas.
  */
 export function FeedbackButton() {
   const { t } = useTranslation('feedback');
@@ -35,35 +34,14 @@ export function FeedbackButton() {
 
   return (
     <>
-      {/* Botão flutuante no canto inferior direito */}
+      {/* Botão circular discreto, mesmo tamanho do avatar */}
       <button
         onClick={() => setIsOpen(true)}
-        className="
-          fixed bottom-6 right-6 z-30
-          w-12 h-12 bg-blue-600 text-white
-          rounded-full shadow-lg
-          flex items-center justify-center
-          hover:bg-blue-700 hover:shadow-xl
-          active:scale-95
-          transition-all duration-200
-          group
-        "
+        className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 dark:text-[#6e6e73] hover:text-gray-600 dark:hover:text-[#a1a1a6] hover:bg-gray-100 dark:hover:bg-[#2c2c2e] transition-colors"
         title={t('button')}
         aria-label={t('button')}
       >
-        <Bug size={20} />
-
-        {/* Tooltip ao hover */}
-        <span className="
-          absolute right-full mr-3 px-3 py-1.5
-          bg-gray-900 text-white text-xs font-medium
-          rounded-lg whitespace-nowrap
-          opacity-0 group-hover:opacity-100
-          pointer-events-none
-          transition-opacity duration-200
-        ">
-          {t('button')}
-        </span>
+        <Bug size={18} />
       </button>
 
       {/* Modal de feedback */}

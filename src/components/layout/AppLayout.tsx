@@ -74,6 +74,11 @@ export function AppLayout({ children }: AppLayoutProps) {
               {/* Sino de notificações */}
               <NotificationBell />
 
+              {/* Botão de feedback — discreto, ao lado do avatar */}
+              <div className="ml-3">
+                <FeedbackButton />
+              </div>
+
               {/* Avatar + Nome do usuário — clica para ir ao perfil.
                * No mobile exibe apenas o avatar (nome escondido) para poupar espaço. */}
               {userName && (
@@ -109,9 +114,6 @@ export function AppLayout({ children }: AppLayoutProps) {
           {children}
         </div>
       </main>
-
-      {/* Botão flutuante de feedback (visível em todas as páginas) */}
-      <FeedbackButton />
     </div>
   );
 }
