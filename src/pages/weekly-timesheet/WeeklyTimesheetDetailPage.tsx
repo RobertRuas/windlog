@@ -147,8 +147,8 @@ export function WeeklyTimesheetDetailPage() {
           </button>
 
           {/* Título + Info */}
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
+            <div className="min-w-0">
               <h1 className="text-2xl font-bold text-gray-900">
                 {timesheet.project.name}
               </h1>
@@ -171,15 +171,8 @@ export function WeeklyTimesheetDetailPage() {
               </p>
             </div>
 
-            {/* Botão Visualização + Status badge */}
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setIsViewModalOpen(true)}
-                className="flex items-center gap-2 px-4 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
-              >
-                <Eye size={16} />
-                {t('detail.viewButton')}
-              </button>
+            {/* Status badge + botão Visualização (apenas ícone, à direita do status) */}
+            <div className="flex items-center gap-2 shrink-0">
               <span
                 className={`px-3 py-1 text-sm font-medium rounded-full ${
                   timesheet.status === 'DRAFT'
@@ -191,6 +184,14 @@ export function WeeklyTimesheetDetailPage() {
               >
                 {t('status.' + timesheet.status)}
               </span>
+              <button
+                onClick={() => setIsViewModalOpen(true)}
+                title={t('detail.viewButton')}
+                aria-label={t('detail.viewButton')}
+                className="flex items-center justify-center w-8 h-8 text-gray-600 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
+              >
+                <Eye size={16} />
+              </button>
             </div>
           </div>
         </div>
