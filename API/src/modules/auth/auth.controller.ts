@@ -230,7 +230,10 @@ export class AuthController {
   @ApiResponse({ status: HttpStatus.OK, description: 'Sugestões retornadas com sucesso' })
   @Throttle({ default: { ttl: 60_000, limit: 20 } }) // Máximo 20 consultas por minuto
   @Get('login-suggestions')
-  async getLoginSuggestions(): Promise<{ name: string; email: string }[]> {
+  async getLoginSuggestions(): Promise<{
+    suggestions: { name: string; email: string }[];
+    devLoginEnabled: boolean;
+  }> {
     return this.authService.getLoginSuggestions();
   }
 

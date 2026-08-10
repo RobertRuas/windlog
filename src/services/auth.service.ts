@@ -100,11 +100,23 @@ export interface LoginSuggestion {
 }
 
 /**
+ * Resposta do endpoint de sugestões de login.
+ * Inclui a flag devLoginEnabled para o frontend saber se o login
+ * automático (temporário) está disponível no ambiente atual.
+ */
+export interface LoginSuggestionsResponse {
+  /** Lista de utilizadores ativos (nome + e-mail) */
+  suggestions: LoginSuggestion[];
+  /** true apenas quando o backend roda em NODE_ENV=development */
+  devLoginEnabled: boolean;
+}
+
+/**
  * Busca as sugestões de utilizadores para o autocomplete do login.
  * Endpoint público (não requer token).
  */
-export async function getLoginSuggestions(): Promise<LoginSuggestion[]> {
-  const response = await api.get<ApiResponse<LoginSuggestion[]>>('/api/v1/auth/login-suggestions');
+export async function getLoginSuggestions(): Promise<LoginSuggestionsResponse> {
+  const response = await api.get<ApiResponse<LoginSuggestionsResponse>>('/api/v1/auth/login-suggestions');
   return response.data;
 }
 

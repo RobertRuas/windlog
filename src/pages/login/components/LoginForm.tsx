@@ -58,13 +58,20 @@ export function LoginForm() {
 
   /**
    * Sugestões de utilizadores (endpoint público, sem token).
+   * A resposta também traz devLoginEnabled — o backend informa se o
+   * login automático está disponível no ambiente atual (apenas quando
+   * o backend roda com NODE_ENV=development).
    */
-  const { data: suggestions = [] } = useQuery({
+  const { data: suggestionsData } = useQuery({
     queryKey: ['login-suggestions'],
     queryFn: getLoginSuggestions,
     retry: false,
     staleTime: 5 * 60 * 1000,
   });
+
+  // Listas de sugestões e disponibilidade do login automático
+  const suggestions = suggestionsData?.suggestions ?? [];
+  const devLoginEnabled = suggestionsData?.devLoginEnabled ?? false;
 
   /**
    * Filtra as sugestões conforme o texto digitado (nome ou e-mail).
@@ -135,8 +142,8 @@ export function LoginForm() {
    *
    * Recebe o e-mail selecionado no dropdown, pede a sessão ao endpoint
    * /auth/dev-login e redireciona exatamente como o login normal.
-   * O dropdown é sempre exibido, mas o endpoint só funciona quando o
-   * backend roda com NODE_ENV=development; em produção retorna 404.
+   * O dropdown só é exibido quando o backend sinaliza devLoginEnabled
+   * (NODE_ENV=development); em produção o endpoint retorna 404.
    */
   async function handleDevLogin(selectedEmail: string) {
     if (!selectedEmail || devLoading) return;
@@ -155,8 +162,9 @@ export function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      {/* Dropdown de login automático — sempre visível; o endpoint backend
-          é quem controla a disponibilidade (apenas NODE_ENV=development) */}
+      {/* Dropdown de login automático — exibido apenas quando o backend
+          confirma a disponibilidade (devLoginEnabled, NODE_ENV=development) */}
+      {devLoginEnabled && (
       <div className="flex flex-col gap-1.5">
         <div className="flex items-center gap-2">
           <span className="text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 border border-amber-200 dark:border-amber-500/30">
@@ -188,6 +196,7 @@ export function LoginForm() {
           ))}
         </select>
       </div>
+      )}
 
       {/* Campo de e-mail com autocomplete */}
       <div className="relative">

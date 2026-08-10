@@ -1372,17 +1372,28 @@ export class AuthService {
    * - Endpoint público (pré-autenticação) protegido por rate limiting
    * - Retorna APENAS nome e e-mail — nenhum dado sensível
    * - Somente utilizadores ativos e não removidos
+   *
+   * O campo devLoginEnabled informa ao frontend se o login automático
+   * (/auth/dev-login) está disponível neste ambiente. Assim o dropdown
+   * de login temporário só é exibido quando realmente funciona
+   * (NODE_ENV=development), evitando uma UI quebrada em produção.
    */
-  async getLoginSuggestions(): Promise<{ name: string; email: string }[]> {
+  async getLoginSuggestions(): Promise<{
+    suggestions: { name: string; email: string }[];
+    devLoginEnabled: boolean;
+  }> {
     const users = await this.prisma.user.findMany({
       where: { isActive: true, deletedAt: null },
       select: { firstName: true, lastName: true, email: true },
       orderBy: { firstName: 'asc' },
     });
 
-    return users.map((u) => ({
-      name: `${u.firstName} ${u.lastName}`,
-      email: u.email,
-    }));
+    return {
+      suggestions: users.map((u) => ({
+        name: `${u.firstName} ${u.lastName}`,
+        email: u.email,
+      })),
+      devLoginEnabled: process.env['NODE_ENV'] === 'development',
+    };
   }
 }
