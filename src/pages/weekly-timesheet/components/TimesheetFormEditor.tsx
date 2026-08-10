@@ -376,8 +376,8 @@ export function TimesheetFormEditor({
         <div className="px-6 py-4 border-b border-gray-100 bg-gray-50">
           <h2 className="text-base font-semibold text-gray-900">{t('form.metadataTitle')}</h2>
         </div>
-        <div className="p-4 sm:p-6">
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+        <div className="p-6 space-y-4">
+          <div className="grid grid-cols-3 gap-4">
             <div>
               <label className={labelClass}>{t('sheet.jobNumber')}</label>
               <input type="text" value={form.jobNumber} onChange={(e) => handleMetaChange('jobNumber', e.target.value)} disabled={isSaving} className={inputClass} />
@@ -390,10 +390,16 @@ export function TimesheetFormEditor({
               <label className={labelClass}>{t('sheet.teamNo')}</label>
               <input type="text" value={form.teamNo} onChange={(e) => handleMetaChange('teamNo', e.target.value)} disabled={isSaving} className={inputClass} />
             </div>
-            <div>
-              <label className={labelClass}>{t('sheet.jobScope')}</label>
-              <input type="text" value={form.jobScope} onChange={(e) => handleMetaChange('jobScope', e.target.value)} disabled={isSaving} className={inputClass} />
-            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-4">
+            <TranslatableField
+              label={t('sheet.jobScope')}
+              labelClassName={labelClass}
+              value={form.jobScope}
+              onChange={(v) => handleMetaChange('jobScope', v)}
+              disabled={isSaving}
+              fieldClassName={inputClass}
+            />
             <div>
               <label className={labelClass}>{t('sheet.client')}</label>
               <input type="text" value={form.client} onChange={(e) => handleMetaChange('client', e.target.value)} disabled={isSaving} className={inputClass} />
@@ -461,7 +467,7 @@ export function TimesheetFormEditor({
             </div>
 
             {!isCollapsed && (
-              <div className="p-4 sm:p-5 space-y-5">
+              <div className="p-5 space-y-5">
 
                 {/* ── Informações Comuns ── */}
                 <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-4">
@@ -475,7 +481,7 @@ export function TimesheetFormEditor({
                   </div>
 
                   {/* ── Turbina: dropdown + campos auto-preenchidos ── */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="grid grid-cols-4 gap-3">
                     <div>
                       <label className={smallLabel}>{t('sheet.localTurbineNo')}</label>
                       <select
@@ -598,20 +604,17 @@ export function TimesheetFormEditor({
                             : 'border-gray-200'
                         }`}
                       >
-                        <div className="flex items-center gap-2 sm:gap-3 px-3 py-2.5 bg-white">
+                        <div className="flex items-center gap-3 px-3 py-2.5 bg-white">
                           <span className="text-xs text-gray-400 w-5 text-center font-medium shrink-0">
                             {entryIdx + 1}
                           </span>
 
-                          {/* Nome com autocomplete + cargo entre parênteses */}
-                          <div className="flex-1 min-w-0 flex items-center gap-1.5">
+                          {/* Nome com autocomplete */}
+                          <div className="flex-1 min-w-0">
                             {entry.isCurrentUser ? (
-                              <div className="flex-1 min-w-0 flex items-center gap-2 h-8 px-2 bg-blue-50 border border-blue-200 rounded text-sm font-medium text-gray-700">
+                              <div className="flex items-center gap-2 px-2 py-1.5 bg-blue-50 border border-blue-200 rounded text-sm font-medium text-gray-700">
                                 <UserIcon size={14} className="text-blue-500 shrink-0" />
-                                <span className="truncate">
-                                  {entry.technicianName}
-                                  {entry.role && <span className="text-gray-400 font-normal"> ({entry.role})</span>}
-                                </span>
+                                {entry.technicianName}
                                 <span className="text-xs text-blue-500 ml-auto">{t('form.you')}</span>
                               </div>
                             ) : (
@@ -626,9 +629,19 @@ export function TimesheetFormEditor({
                                   .filter(Boolean)}
                                 disabled={isSaving}
                                 placeholder={t('sheet.technicianName')}
-                                suffix={entry.role ? `(${entry.role})` : undefined}
                               />
                             )}
+                          </div>
+
+                          {/* Role: preenchida automaticamente ao selecionar o técnico — somente leitura */}
+                          <div className="w-44 shrink-0">
+                            <input
+                              type="text"
+                              value={entry.role}
+                              readOnly
+                              placeholder={t('sheet.role')}
+                              className="w-full px-2 py-1.5 border border-gray-200 rounded text-sm bg-gray-50 text-gray-600 cursor-default"
+                            />
                           </div>
 
                           {/* Toggle switch: removido — todos usam informações comuns */}
@@ -708,8 +721,8 @@ export function TimesheetFormEditor({
         <div className="px-6 py-4 border-b border-gray-100 bg-gray-50">
           <h2 className="text-base font-semibold text-gray-900">{t('form.signaturesTitle')}</h2>
         </div>
-        <div className="p-4 sm:p-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
+        <div className="p-6">
+          <div className="grid grid-cols-2 gap-8">
             {/* ── Coluna: Team Leader ────────────────────────────────── */}
             <div className="space-y-4">
               <h3 className="text-sm font-semibold text-gray-800 border-b border-gray-200 pb-2">

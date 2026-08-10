@@ -68,28 +68,6 @@ export async function login(payload: LoginPayload): Promise<LoginResponse> {
 }
 
 /**
- * Login automático EXCLUSIVO para desenvolvimento (sem senha).
- *
- * ⚠️ SEGURANÇA:
- * Chama o endpoint /auth/dev-login, que só existe quando o backend roda com
- * NODE_ENV=development. Em produção o endpoint retorna 404, então esta função
- * nunca consegue emitir sessão fora do ambiente de desenvolvimento.
- * O dropdown que usa esta função também só é renderizado em desenvolvimento.
- *
- * @param email - E-mail do usuário cadastrado
- * @returns Promise com a resposta do login (token + dados do usuário)
- */
-export async function devLogin(email: string): Promise<LoginResponse> {
-  // A API retorna { data: { accessToken, user }, message, statusCode, timestamp }
-  const response = await api.post<ApiResponse<LoginResponse>>('/api/v1/auth/dev-login', { email });
-
-  // Salva o token JWT no localStorage (mesmo comportamento do login normal)
-  localStorage.setItem('accessToken', response.data.accessToken);
-
-  return response.data;
-}
-
-/**
  * Sugestão de utilizador para o autocomplete da tela de login.
  */
 export interface LoginSuggestion {
@@ -100,23 +78,11 @@ export interface LoginSuggestion {
 }
 
 /**
- * Resposta do endpoint de sugestões de login.
- * Inclui a flag devLoginEnabled para o frontend saber se o login
- * automático (temporário) está disponível no ambiente atual.
- */
-export interface LoginSuggestionsResponse {
-  /** Lista de utilizadores ativos (nome + e-mail) */
-  suggestions: LoginSuggestion[];
-  /** true apenas quando o backend roda em NODE_ENV=development */
-  devLoginEnabled: boolean;
-}
-
-/**
  * Busca as sugestões de utilizadores para o autocomplete do login.
  * Endpoint público (não requer token).
  */
-export async function getLoginSuggestions(): Promise<LoginSuggestionsResponse> {
-  const response = await api.get<ApiResponse<LoginSuggestionsResponse>>('/api/v1/auth/login-suggestions');
+export async function getLoginSuggestions(): Promise<LoginSuggestion[]> {
+  const response = await api.get<ApiResponse<LoginSuggestion[]>>('/api/v1/auth/login-suggestions');
   return response.data;
 }
 

@@ -113,6 +113,4 @@ export interface TechnicianSelectProps {
   excludeNames?: string[];
   disabled?: boolean;
   placeholder?: string;
-  /** Texto exibido dentro do campo, após o nome (ex.: cargo entre parênteses) */
-  suffix?: string;
 }

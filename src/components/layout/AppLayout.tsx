@@ -74,18 +74,12 @@ export function AppLayout({ children }: AppLayoutProps) {
               {/* Sino de notificações */}
               <NotificationBell />
 
-              {/* Botão de feedback — discreto, ao lado do avatar */}
-              <div className="ml-3">
-                <FeedbackButton />
-              </div>
-
-              {/* Avatar + Nome do usuário — clica para ir ao perfil.
-               * No mobile exibe apenas o avatar (nome escondido) para poupar espaço. */}
+              {/* Avatar + Nome do usuário (desktop) — clica para ir ao perfil */}
               {userName && (
                 <button
                   type="button"
                   onClick={() => navigate('/profile')}
-                  className="flex items-center ml-3 gap-2 cursor-pointer rounded-lg px-1.5 py-1 hover:bg-gray-100 dark:hover:bg-[#2c2c2e] transition-colors"
+                  className="hidden sm:flex items-center ml-3 gap-2 cursor-pointer rounded-lg px-1.5 py-1 hover:bg-gray-100 dark:hover:bg-[#2c2c2e] transition-colors"
                 >
                   {/* Avatar com foto ou iniciais */}
                   {data?.photoUrl ? (
@@ -99,8 +93,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                       {data?.firstName?.[0]}{data?.lastName?.[0]}
                     </div>
                   )}
-                  {/* Nome visível apenas a partir de sm (tablet/PC) */}
-                  <span className="hidden sm:inline text-sm text-gray-600 dark:text-[#a1a1a6]">
+                  <span className="text-sm text-gray-600 dark:text-[#a1a1a6]">
                     {userName}
                   </span>
                 </button>
@@ -114,6 +107,9 @@ export function AppLayout({ children }: AppLayoutProps) {
           {children}
         </div>
       </main>
+
+      {/* Botão flutuante de feedback (visível em todas as páginas) */}
+      <FeedbackButton />
     </div>
   );
 }

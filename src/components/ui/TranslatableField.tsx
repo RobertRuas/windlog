@@ -32,7 +32,7 @@
 
 import type { ReactNode } from 'react';
 import { useTranslateSuggestion } from '@/hooks/useTranslateSuggestion';
-import { TranslateSuggestion } from '@/components/ui/TranslateSuggestion';
+import { TranslateFieldHint, TranslateSuggestion } from '@/components/ui/TranslateSuggestion';
 
 /**
  * Props do campo traduzível.
@@ -81,10 +81,11 @@ export function TranslatableField({
 
   return (
     <div>
-      {/* Label do campo. */}
+      {/* Label com o indicador discreto de tradução (apenas em português). */}
       {label !== undefined && (
         <label className={labelClassName}>
           {label}
+          <TranslateFieldHint />
         </label>
       )}
 

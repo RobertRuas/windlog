@@ -73,8 +73,6 @@ export function UsersTable({
       header: t('table.email'),
       sortable: true,
       sortKey: 'email',
-      /* Mobile: e-mail como subtítulo sob o nome, sem rótulo (order 1 = após o cargo) */
-      mobile: { asSubtitle: true, order: 1 },
       render: (user) => (
         <span className="text-sm text-gray-600 whitespace-nowrap">
           {user.email}
@@ -85,8 +83,6 @@ export function UsersTable({
       header: t('table.role'),
       sortable: true,
       sortKey: 'role',
-      /* Mobile: badges de cargo logo à frente do nome, sem rótulo (order 0) */
-      mobile: { asSubtitle: true, order: 0 },
       render: (user) => (
         <div className="flex items-center gap-2">
           <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap ${
@@ -110,8 +106,6 @@ export function UsersTable({
       header: t('table.status'),
       sortable: true,
       sortKey: 'isActive',
-      /* Mobile: badge de status sem rótulo (o badge já é autoexplicativo) */
-      mobile: { hideLabel: true },
       render: (user) => (
         <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap ${
           user.isActive

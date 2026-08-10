@@ -80,8 +80,6 @@ export function ProjectsTable({
       header: t('table.client'),
       sortable: true,
       sortKey: 'client',
-      /* Mobile: cliente como subtítulo sob o nome, sem rótulo */
-      mobile: { asSubtitle: true, order: 0 },
       render: (project) => (
         <span className="text-sm text-gray-600 whitespace-nowrap">
           {project.client}
@@ -90,8 +88,6 @@ export function ProjectsTable({
     },
     {
       header: t('table.location'),
-      /* Mobile: localização como segundo subtítulo (o ícone já a identifica) */
-      mobile: { asSubtitle: true, order: 1 },
       render: (project) => (
         <span className="inline-flex items-center gap-1.5 text-sm text-gray-500 whitespace-nowrap">
           <MapPin size={13} className="text-gray-400 flex-shrink-0" />
@@ -104,8 +100,6 @@ export function ProjectsTable({
       align: 'left',
       sortable: true,
       sortKey: 'status',
-      /* Mobile: badge de status sem rótulo (autoexplicativo) */
-      mobile: { hideLabel: true },
       render: (project) => {
         const statusCfg = STATUS_CONFIG[project.status] || STATUS_CONFIG.PLANNING;
         return (
@@ -119,8 +113,6 @@ export function ProjectsTable({
     {
       header: t('table.resources'),
       align: 'center',
-      /* Mobile: contagens com ícones não precisam de rótulo */
-      mobile: { hideLabel: true },
       render: (project) => (
         <div className="flex items-center justify-center gap-3">
           <span className="inline-flex items-center gap-1 text-sm text-gray-500" title={t('table.turbines')}>

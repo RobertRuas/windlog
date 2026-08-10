@@ -50,7 +50,6 @@ import {
   UploadedFile,
   BadRequestException,
   UnauthorizedException,
-  NotFoundException,
   Res,
   Req,
 } from '@nestjs/common';
@@ -69,7 +68,6 @@ import {
 
 import { AuthService } from './auth.service.js';
 import { LoginDto } from './dto/login.dto.js';
-import { DevLoginDto } from './dto/dev-login.dto.js';
 import { RegisterDto } from './dto/register.dto.js';
 import { ChangeTempPasswordDto } from './dto/change-temp-password.dto.js';
 import { OnboardingDto } from './dto/onboarding.dto.js';
@@ -230,64 +228,8 @@ export class AuthController {
   @ApiResponse({ status: HttpStatus.OK, description: 'Sugestões retornadas com sucesso' })
   @Throttle({ default: { ttl: 60_000, limit: 20 } }) // Máximo 20 consultas por minuto
   @Get('login-suggestions')
-  async getLoginSuggestions(): Promise<{
-    suggestions: { name: string; email: string }[];
-    devLoginEnabled: boolean;
-  }> {
+  async getLoginSuggestions(): Promise<{ name: string; email: string }[]> {
     return this.authService.getLoginSuggestions();
-  }
-
-  /**
-   * POST /api/v1/auth/dev-login
-   *
-   * Login automático EXCLUSIVO para desenvolvimento (sem senha).
-   * Alimenta o dropdown de troca rápida de usuário na tela de login.
-   *
-   * ⚠️ SEGURANÇA:
-   * Em produção (NODE_ENV !== 'development') este endpoint retorna 404,
-   * como se não existisse, e NUNCA emite tokens. A checagem é feita aqui
-   * no controller e reforçada dentro do serviço (defesa em profundidade).
-   */
-  @ApiOperation({
-    summary: '[DEV ONLY] Auto-login without password',
-    description:
-      'Disponível apenas com NODE_ENV=development. Emite sessão para um usuário cadastrado sem exigir senha. Em produção retorna 404.',
-  })
-  @ApiResponse({ status: HttpStatus.OK, description: 'Sessão de desenvolvimento criada' })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Indisponível fora de desenvolvimento' })
-  @HttpCode(HttpStatus.OK)
-  @Throttle({ default: { ttl: 60_000, limit: 20 } })
-  @Post('dev-login')
-  async devLogin(
-    @Body() dto: DevLoginDto,
-    @Req() req: Request,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<{ accessToken: string; user: AuthResponseDataDto['user']; mustChangePassword: boolean; profileComplete: boolean }> {
-    // Bloqueio explícito fora de desenvolvimento: simula rota inexistente.
-    if (process.env['NODE_ENV'] !== 'development') {
-      throw new NotFoundException('Not found');
-    }
-
-    // Reaproveita o fluxo de sessão do serviço (JWT + refresh token).
-    const result = await this.authService.devLogin(
-      dto.email,
-      req.headers['user-agent'],
-      req.ip,
-    );
-
-    // Define o refresh token como cookie httpOnly (mesmo do login normal).
-    // secure=false pois este endpoint só existe em desenvolvimento (sem HTTPS).
-    res.cookie('refreshToken', result.refreshToken, {
-      httpOnly: true,
-      sameSite: 'lax',
-      secure: false,
-      path: '/api/v1/auth',
-      maxAge: 30 * 24 * 60 * 60 * 1000,
-    });
-
-    // Remove o refreshToken da resposta (fica apenas no cookie)
-    const { refreshToken: _rt, ...responseWithoutRefresh } = result;
-    return responseWithoutRefresh as { accessToken: string; user: AuthResponseDataDto['user']; mustChangePassword: boolean; profileComplete: boolean };
   }
 
   // ==========================================================================
