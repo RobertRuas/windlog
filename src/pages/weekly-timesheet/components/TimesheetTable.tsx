@@ -108,6 +108,7 @@ export function TimesheetTable({
     },
     {
       header: t('table.project'),
+      mobile: { asSubtitle: true, order: 0 },
       render: (ts) => <span className="whitespace-nowrap font-medium text-gray-900">{ts.project.name}</span>,
     },
     {
@@ -123,23 +124,26 @@ export function TimesheetTable({
       align: 'center',
       sortable: true,
       sortKey: 'status',
+      mobile: { hideLabel: true },
       render: (ts) => <StatusBadge status={ts.status} label={t(`status.${ts.status}`)} />,
     },
     {
       header: t('table.hoursSummary'),
       align: 'center',
+      mobile: { hideLabel: true },
       render: (ts) => (
-        <div className="flex items-center justify-center gap-3 text-xs text-gray-600 whitespace-nowrap">
-          <span className="flex items-center gap-1" title={t('sheet.workingHrs')}>
-            <Wrench size={13} className="text-blue-500" />
+        <div className="flex items-center justify-center gap-1.5 text-xs text-gray-600 whitespace-nowrap">
+          {/* Largura fixa + números tabulares mantêm tudo alinhado entre as linhas */}
+          <span className="w-9 flex items-center justify-center gap-0.5 tabular-nums" title={t('sheet.workingHrs')}>
+            <Wrench size={12} className="text-blue-500" />
             {formatHours(ts._totals?.workingHrs)}
           </span>
-          <span className="flex items-center gap-1" title={t('sheet.standbyHrs')}>
-            <Clock size={13} className="text-amber-500" />
+          <span className="w-9 flex items-center justify-center gap-0.5 tabular-nums" title={t('sheet.standbyHrs')}>
+            <Clock size={12} className="text-amber-500" />
             {formatHours(ts._totals?.standbyHrs)}
           </span>
-          <span className="flex items-center gap-1" title={t('sheet.travelHrs')}>
-            <Plane size={13} className="text-green-500" />
+          <span className="w-9 flex items-center justify-center gap-0.5 tabular-nums" title={t('sheet.travelHrs')}>
+            <Plane size={12} className="text-green-500" />
             {formatHours(ts._totals?.travelHrs)}
           </span>
         </div>
