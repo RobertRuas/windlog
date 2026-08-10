@@ -104,15 +104,17 @@ export function TimesheetTable({
       align: 'center',
       sortable: true,
       sortKey: 'week',
+      mobile: { asSubtitle: true, order: 0 },
       render: (ts) => <span className="whitespace-nowrap text-gray-600">#{ts.week}</span>,
     },
     {
       header: t('table.project'),
-      mobile: { asSubtitle: true, order: 0 },
+      mobile: { asTitle: true },
       render: (ts) => <span className="whitespace-nowrap font-medium text-gray-900">{ts.project.name}</span>,
     },
     {
       header: t('table.createdBy'),
+      mobile: { asSubtitle: true, order: 1 },
       render: (ts) => (
         <span className="whitespace-nowrap text-gray-600">
           {ts.creator.firstName} {ts.creator.lastName}

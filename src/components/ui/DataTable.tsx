@@ -66,6 +66,8 @@ export interface DataTableColumn<T> {
   sortKey?: string;
   /** Opções de exibição apenas na lista mobile (não afetam a tabela PC) */
   mobile?: {
+    /** Se true, esta coluna vira o título do item (padrão: 1.ª coluna) */
+    asTitle?: boolean;
     /** Se true, o valor vira subtítulo logo abaixo do título (sem rótulo) */
     asSubtitle?: boolean;
     /** Se true, oculta o rótulo na área de detalhes da lista */

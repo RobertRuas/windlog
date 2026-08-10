@@ -12,9 +12,9 @@
  *
  * MAPEAMENTO COLUNAS → LISTA:
  * ---------------------------
- * - 1.ª coluna          → título do item
+ * - Coluna com mobile.asTitle (ou 1.ª coluna) → título do item
  * - Coluna sticky       → ações (exibidas à direita do título)
- * - Restantes colunas   → pares rótulo/valor abaixo do título
+ * - Restantes colunas   → subtítulos ou pares rótulo/valor abaixo do título
  *
  * IMPORTANTE: a versão PC (tabela) permanece exatamente igual — este
  * componente só é usado quando o hook useIsMobile indica modo mobile.
@@ -137,10 +137,11 @@ export function MobileListView<T>({
   const displayData = clientSort ? sortedData : data;
 
   // ── Mapeamento das colunas para o formato de lista nativa ──
-  // 1.ª coluna = título | coluna sticky = ações | restantes = subtítulo ou detalhes
-  const titleCol = columns[0];
+  // Título: coluna marcada com mobile.asTitle ou, por padrão, a 1.ª coluna.
+  // Coluna sticky = ações | restantes = subtítulo ou detalhes
+  const titleCol = columns.find((c) => c.mobile?.asTitle) ?? columns[0];
   const actionCol = columns.find((c) => c.sticky);
-  const restCols = columns.slice(1).filter((c) => !c.sticky);
+  const restCols = columns.filter((c) => c !== titleCol && !c.sticky);
   // Colunas marcadas como subtítulo: exibidas logo abaixo do título, sem rótulo
   // (ordenadas por mobile.order, preservando a ordem das colunas em empate)
   const subtitleCols = restCols
@@ -236,7 +237,7 @@ export function MobileListView<T>({
                  * conteúdo secundário 14px e terciário 13px.
                  * As ações usam mobile-list-actions para alvo de toque de 44px. */}
                 <div className="flex items-center justify-between gap-3">
-                  <div className="min-w-0 flex-1 text-[16px] font-semibold text-gray-900 dark:text-[#f5f5f7]">
+                  <div className="min-w-0 flex-1 text-[16px] font-semibold text-gray-900 dark:text-[#f5f5f7] [&_span]:whitespace-normal">
                     {titleCol.render(item)}
                   </div>
                   {/* Ações (coluna sticky da tabela) à direita, centradas verticalmente */}
