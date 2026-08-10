@@ -68,6 +68,8 @@ export interface DataTableColumn<T> {
   mobile?: {
     /** Se true, esta coluna vira o título do item (padrão: 1.ª coluna) */
     asTitle?: boolean;
+    /** Se true, vira um bloco de destaque à esquerda do item (ex.: nº da semana) */
+    asTile?: boolean;
     /** Se true, o valor vira subtítulo logo abaixo do título (sem rótulo) */
     asSubtitle?: boolean;
     /** Se true, oculta o rótulo na área de detalhes da lista */

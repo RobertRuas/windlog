@@ -104,7 +104,7 @@ export function TimesheetTable({
       align: 'center',
       sortable: true,
       sortKey: 'week',
-      mobile: { asSubtitle: true, order: 0 },
+      mobile: { asTile: true },
       render: (ts) => <span className="whitespace-nowrap text-gray-600">#{ts.week}</span>,
     },
     {

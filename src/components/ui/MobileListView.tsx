@@ -137,11 +137,16 @@ export function MobileListView<T>({
   const displayData = clientSort ? sortedData : data;
 
   // ── Mapeamento das colunas para o formato de lista nativa ──
-  // Título: coluna marcada com mobile.asTitle ou, por padrão, a 1.ª coluna.
-  // Coluna sticky = ações | restantes = subtítulo ou detalhes
-  const titleCol = columns.find((c) => c.mobile?.asTitle) ?? columns[0];
+  // Tile (opcional): coluna marcada com mobile.asTile vira bloco de destaque
+  // à esquerda. Título: coluna com mobile.asTitle ou a 1.ª coluna não-tile.
+  // Coluna sticky = ações | restantes = subtítulos ou detalhes.
+  const tileCol = columns.find((c) => c.mobile?.asTile);
+  const titleCol =
+    columns.find((c) => c.mobile?.asTitle) ??
+    columns.find((c) => c !== tileCol) ??
+    columns[0];
   const actionCol = columns.find((c) => c.sticky);
-  const restCols = columns.filter((c) => c !== titleCol && !c.sticky);
+  const restCols = columns.filter((c) => c !== titleCol && c !== tileCol && !c.sticky);
   // Colunas marcadas como subtítulo: exibidas logo abaixo do título, sem rótulo
   // (ordenadas por mobile.order, preservando a ordem das colunas em empate)
   const subtitleCols = restCols
@@ -149,6 +154,10 @@ export function MobileListView<T>({
     .sort((a, b) => (a.mobile?.order ?? 0) - (b.mobile?.order ?? 0));
   // Demais colunas: área de detalhes (grelha ou linha de badges sem rótulo)
   const detailCols = restCols.filter((c) => !c.mobile?.asSubtitle);
+  // Detalhes sem rótulo (badges/ícones): no modo tile ficam à direita da
+  // linha do autor; no modo padrão, em linha ou grelha conforme o caso
+  const labellessCols = detailCols.filter((c) => c.mobile?.hideLabel);
+  const labeledCols = detailCols.filter((c) => !c.mobile?.hideLabel);
   // Se todos os detalhes dispensam rótulo (ex.: badges), exibir em linha
   const allDetailsLabelless = detailCols.length > 0 && detailCols.every((c) => c.mobile?.hideLabel);
   const sortableCols = columns.filter((c) => c.sortable && c.sortKey);
@@ -232,77 +241,147 @@ export function MobileListView<T>({
                 }`}
                 onClick={onRowClick ? () => onRowClick(item) : undefined}
               >
-                {/* Linha principal: título + ações (+ chevron se a linha navega).
-                 * Tipografia seguindo convenções nativas: título 16px semibold,
-                 * conteúdo secundário 14px e terciário 13px.
-                 * As ações usam mobile-list-actions para alvo de toque de 44px. */}
-                <div className="flex items-center justify-between gap-3">
-                  <div className="min-w-0 flex-1 text-[16px] font-semibold text-gray-900 dark:text-[#f5f5f7] [&_span]:whitespace-normal">
-                    {titleCol.render(item)}
-                  </div>
-                  {/* Ações (coluna sticky da tabela) à direita, centradas verticalmente */}
-                  {actionCol && (
-                    <div
-                      className="mobile-list-actions flex items-center shrink-0 -my-2 -mr-2"
-                      onClick={(e) => {
-                        // Impede que ações dispararem o clique do item
-                        if (onRowClick) e.stopPropagation();
-                      }}
-                    >
-                      {actionCol.render(item)}
+                {tileCol ? (
+                  /* ── Modo tile: bloco de destaque à esquerda (ex.: nº da
+                   * semana) + título/autor no centro + detalhes sem rótulo
+                   * à direita — layout denso de 2 linhas ── */
+                  <div className="flex items-center gap-3">
+                    {/* Tile de destaque */}
+                    <div className="w-12 h-12 shrink-0 rounded-xl bg-gray-100 dark:bg-[#2c2c2e] flex items-center justify-center [&_span]:text-[15px] [&_span]:font-bold [&_span]:text-gray-700 dark:[&_span]:text-[#e5e5ea] [&_span]:whitespace-nowrap">
+                      {tileCol.render(item)}
                     </div>
-                  )}
-                  {/* Chevron de navegação — affordance nativo quando a linha é clicável */}
-                  {onRowClick && (
-                    <ChevronRight size={16} className="shrink-0 text-gray-300 dark:text-[#48484a]" />
-                  )}
-                </div>
-
-                {/* Subtítulos: exibidos logo abaixo do título, sem rótulo
-                 * (ex.: e-mail, cargo) — padrão nativo tipo app de contatos */}
-                {subtitleCols.length > 0 && (
-                  <div className="mt-0.5 space-y-0.5">
-                    {subtitleCols.map((col, colIndex) => (
-                      /* whitespace-normal nos spans internos permite que
-                       * valores longos (ex.: e-mail) quebrem em vez de transbordar */
-                      <div key={colIndex} className="text-[14px] text-gray-500 dark:text-[#a1a1a6] [&_span]:whitespace-normal">
-                        {col.render(item)}
+                    <div className="flex-1 min-w-0">
+                      {/* Linha 1: título + ações */}
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="min-w-0 flex-1 truncate text-[15px] font-semibold text-gray-900 dark:text-[#f5f5f7] [&_span]:whitespace-normal">
+                          {titleCol.render(item)}
+                        </div>
+                        {actionCol && (
+                          <div
+                            className="mobile-list-actions flex items-center shrink-0 -my-2 -mr-2"
+                            onClick={(e) => {
+                              if (onRowClick) e.stopPropagation();
+                            }}
+                          >
+                            {actionCol.render(item)}
+                          </div>
+                        )}
+                        {onRowClick && (
+                          <ChevronRight size={16} className="shrink-0 text-gray-300 dark:text-[#48484a]" />
+                        )}
                       </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Campos secundários. Se todos dispensam rótulo (badges),
-                 * são exibidos em linha para aproveitar melhor o espaço;
-                 * caso contrário, grelha compacta de 2 colunas com rótulo
-                 * por cima do valor. */}
-                {detailCols.length > 0 && (
-                  allDetailsLabelless ? (
-                    <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                      {detailCols.map((col, colIndex) => (
-                        <div key={colIndex}>{col.render(item)}</div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className={`mt-2.5 grid gap-x-4 gap-y-2 ${
-                      detailCols.length > 1 ? 'grid-cols-2' : 'grid-cols-1'
-                    }`}>
-                      {detailCols.map((col, colIndex) => (
-                        <div key={colIndex} className="min-w-0">
-                          {/* Rótulo pequeno em maiúsculas (pode ser ocultado por coluna) */}
-                          {!col.mobile?.hideLabel && (
-                            <div className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-[#636366] mb-0.5 truncate">
-                              {col.header}
+                      {/* Linha 2: subtítulos à esquerda + detalhes sem rótulo à direita */}
+                      {(subtitleCols.length > 0 || labellessCols.length > 0) && (
+                        <div className="mt-1 flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-1.5 min-w-0 overflow-hidden text-[13px] text-gray-500 dark:text-[#a1a1a6]">
+                            {subtitleCols.map((col, colIndex) => (
+                              <span key={colIndex} className="shrink min-w-0 truncate [&_span]:whitespace-normal">
+                                {col.render(item)}
+                              </span>
+                            ))}
+                          </div>
+                          {labellessCols.length > 0 && (
+                            <div className="flex flex-col items-end gap-1 shrink-0">
+                              {labellessCols.map((col, colIndex) => (
+                                <div key={colIndex}>{col.render(item)}</div>
+                              ))}
                             </div>
                           )}
-                          {/* Valor */}
-                          <div className="text-[13px] text-gray-800 dark:text-[#e5e5ea] break-words">
+                        </div>
+                      )}
+                      {/* Detalhes com rótulo (se sobrarem), em grelha abaixo */}
+                      {labeledCols.length > 0 && (
+                        <div className={`mt-2.5 grid gap-x-4 gap-y-2 ${labeledCols.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                          {labeledCols.map((col, colIndex) => (
+                            <div key={colIndex} className="min-w-0">
+                              <div className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-[#636366] mb-0.5 truncate">
+                                {col.header}
+                              </div>
+                              <div className="text-[13px] text-gray-800 dark:text-[#e5e5ea] break-words">
+                                {col.render(item)}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  /* ── Modo padrão ── */
+                  <>
+                    {/* Linha principal: título + ações (+ chevron se a linha navega).
+                     * Tipografia seguindo convenções nativas: título 16px semibold,
+                     * conteúdo secundário 14px e terciário 13px.
+                     * As ações usam mobile-list-actions para alvo de toque de 44px. */}
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0 flex-1 text-[16px] font-semibold text-gray-900 dark:text-[#f5f5f7] [&_span]:whitespace-normal">
+                        {titleCol.render(item)}
+                      </div>
+                      {/* Ações (coluna sticky da tabela) à direita, centradas verticalmente */}
+                      {actionCol && (
+                        <div
+                          className="mobile-list-actions flex items-center shrink-0 -my-2 -mr-2"
+                          onClick={(e) => {
+                            // Impede que ações dispararem o clique do item
+                            if (onRowClick) e.stopPropagation();
+                          }}
+                        >
+                          {actionCol.render(item)}
+                        </div>
+                      )}
+                      {/* Chevron de navegação — affordance nativo quando a linha é clicável */}
+                      {onRowClick && (
+                        <ChevronRight size={16} className="shrink-0 text-gray-300 dark:text-[#48484a]" />
+                      )}
+                    </div>
+
+                    {/* Subtítulos: exibidos logo abaixo do título, sem rótulo
+                     * (ex.: e-mail, cargo) — padrão nativo tipo app de contatos */}
+                    {subtitleCols.length > 0 && (
+                      <div className="mt-0.5 space-y-0.5">
+                        {subtitleCols.map((col, colIndex) => (
+                          /* whitespace-normal nos spans internos permite que
+                           * valores longos (ex.: e-mail) quebrem em vez de transbordar */
+                          <div key={colIndex} className="text-[14px] text-gray-500 dark:text-[#a1a1a6] [&_span]:whitespace-normal">
                             {col.render(item)}
                           </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Campos secundários. Se todos dispensam rótulo (badges),
+                     * são exibidos em linha para aproveitar melhor o espaço;
+                     * caso contrário, grelha compacta de 2 colunas com rótulo
+                     * por cima do valor. */}
+                    {detailCols.length > 0 && (
+                      allDetailsLabelless ? (
+                        <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                          {detailCols.map((col, colIndex) => (
+                            <div key={colIndex}>{col.render(item)}</div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  )
+                      ) : (
+                        <div className={`mt-2.5 grid gap-x-4 gap-y-2 ${
+                          detailCols.length > 1 ? 'grid-cols-2' : 'grid-cols-1'
+                        }`}>
+                          {detailCols.map((col, colIndex) => (
+                            <div key={colIndex} className="min-w-0">
+                              {/* Rótulo pequeno em maiúsculas (pode ser ocultado por coluna) */}
+                              {!col.mobile?.hideLabel && (
+                                <div className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-[#636366] mb-0.5 truncate">
+                                  {col.header}
+                                </div>
+                              )}
+                              {/* Valor */}
+                              <div className="text-[13px] text-gray-800 dark:text-[#e5e5ea] break-words">
+                                {col.render(item)}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )
+                    )}
+                  </>
                 )}
               </div>
             ))}
