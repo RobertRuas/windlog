@@ -27,6 +27,7 @@ import {
   ConflictException,
   Logger,
   BadRequestException,
+  NotFoundException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -212,6 +213,78 @@ export class AuthService {
     return {
       accessToken: token,
       refreshToken, // Enviado ao controller para definir o cookie httpOnly
+      user: {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+      },
+      mustChangePassword: user.mustChangePassword,
+      profileComplete: user.profileComplete,
+    };
+  }
+
+  /**
+   * Login automático EXCLUSIVO para desenvolvimento (sem senha).
+   *
+   * ⚠️ SEGURANÇA:
+   * Este método só executa quando NODE_ENV === 'development'. Em qualquer
+   * outro ambiente ele lança NotFoundException (como se a rota não existisse),
+   * garantindo que nunca seja possível emitir tokens sem senha em produção.
+   *
+   * PASSO A PASSO:
+   * 1. Garante que o ambiente é desenvolvimento
+   * 2. Busca o usuário pelo e-mail (ativo e não removido)
+   * 3. Gera o token JWT + refresh token (mesmo fluxo do login normal)
+   * 4. Retorna o MESMO formato do login(), reaproveitando o fluxo do frontend
+   *
+   * @param email - E-mail do usuário cadastrado
+   * @param userAgent - User-Agent do browser (para auditoria do refresh token)
+   * @param ipAddress - IP do cliente (para auditoria do refresh token)
+   * @returns Token JWT, refresh token e dados do usuário (mesmo do login)
+   * @throws NotFoundException se o ambiente não for desenvolvimento ou usuário não existir
+   */
+  async devLogin(email: string, userAgent?: string, ipAddress?: string) {
+    // PASSO 1: Defesa em profundidade — só permite em desenvolvimento.
+    // (O controller também faz esta checagem; repetimos aqui por segurança.)
+    if (process.env['NODE_ENV'] !== 'development') {
+      throw new NotFoundException('Not found');
+    }
+
+    // PASSO 2: Busca o usuário pelo e-mail
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    // Usuário inexistente, desativado ou removido não pode receber sessão.
+    if (!user || !user.isActive || user.deletedAt !== null) {
+      throw new NotFoundException('User not found');
+    }
+
+    // PASSO 3: Gera o token JWT (idêntico ao login normal)
+    const payload: JwtPayload = {
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+      profileComplete: user.profileComplete,
+    };
+    const token = await this.jwtService.signAsync(payload);
+
+    // Gera o refresh token (armazenado hasheado no DB + cookie httpOnly)
+    const refreshToken = await this.generateRefreshToken(
+      user.id,
+      userAgent,
+      ipAddress,
+    );
+
+    // Registro claro no log para auditoria (é uma sessão de desenvolvimento)
+    this.logger.warn(`[DEV] Auto-login concedido para: ${user.email} (${user.id})`);
+
+    // PASSO 4: Retorna o MESMO formato do login() para reaproveitar o frontend
+    return {
+      accessToken: token,
+      refreshToken,
       user: {
         id: user.id,
         email: user.email,

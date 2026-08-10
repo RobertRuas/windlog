@@ -1,6 +1,11 @@
 {
   "title": "Entrar",
   "subtitle": "Acesse sua conta Windlog",
+  "dev": {
+    "badge": "DEV",
+    "label": "Login automático (somente desenvolvimento)",
+    "placeholder": "Entrar como..."
+  },
   "email": {
     "label": "E-mail",
     "placeholder": "seu@email.com"

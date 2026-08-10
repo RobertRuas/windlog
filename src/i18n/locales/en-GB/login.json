@@ -1,6 +1,11 @@
 {
   "title": "Log in",
   "subtitle": "Access your Windlog account",
+  "dev": {
+    "badge": "DEV",
+    "label": "Auto-login (development only)",
+    "placeholder": "Sign in as..."
+  },
   "email": {
     "label": "Email",
     "placeholder": "your@email.com"

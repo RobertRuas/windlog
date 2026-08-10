@@ -29,7 +29,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 
 // Serviço de autenticação
-import { login, getLoginSuggestions } from '@/services/auth.service';
+import { login, devLogin, getLoginSuggestions } from '@/services/auth.service';
 
 /** Máximo de sugestões exibidas no autocomplete */
 const MAX_SUGGESTIONS = 8;
@@ -52,6 +52,7 @@ export function LoginForm() {
   const [password, setPassword] = useState(''); // Valor do campo senha
   const [error, setError] = useState('');       // Mensagem de erro
   const [isLoading, setIsLoading] = useState(false); // Estado de carregamento
+  const [devLoading, setDevLoading] = useState(false); // Loading do login automático (dev)
   const [showSuggestions, setShowSuggestions] = useState(false); // Dropdown aberto
   const passwordRef = useRef<HTMLInputElement>(null);
 
@@ -91,6 +92,23 @@ export function LoginForm() {
   }
 
   /**
+   * Redireciona o usuário conforme o estado retornado pelo login.
+   * Reutilizado pelo login normal e pelo login automático (dev).
+   */
+  function redirectAfterLogin(response: { mustChangePassword: boolean; profileComplete: boolean }) {
+    // Se o usuário precisa trocar a senha temporária, redireciona para a página de troca
+    if (response.mustChangePassword) {
+      navigate('/change-password');
+    } else if (!response.profileComplete) {
+      // Se o perfil não está completo, redireciona para o onboarding
+      navigate('/onboarding');
+    } else {
+      // Login bem-sucedido: redireciona para a página inicial
+      navigate('/');
+    }
+  }
+
+  /**
    * Função executada ao submeter o formulário.
    */
   async function handleSubmit(event: React.FormEvent) {
@@ -102,17 +120,7 @@ export function LoginForm() {
     try {
       // Chama o serviço de login com email e senha
       const response = await login({ email, password });
-
-      // Se o usuário precisa trocar a senha temporária, redireciona para a página de troca
-      if (response.mustChangePassword) {
-        navigate('/change-password');
-      } else if (!response.profileComplete) {
-        // Se o perfil não está completo, redireciona para o onboarding
-        navigate('/onboarding');
-      } else {
-        // Login bem-sucedido: redireciona para a página inicial
-        navigate('/');
-      }
+      redirectAfterLogin(response);
     } catch {
       // Exibe mensagem de erro genérica (não revela se o e-mail existe)
       setError(t('errors.invalid_credentials'));
@@ -122,8 +130,65 @@ export function LoginForm() {
     }
   }
 
+  /**
+   * Login automático — funcionalidade de desenvolvimento.
+   *
+   * Recebe o e-mail selecionado no dropdown, pede a sessão ao endpoint
+   * /auth/dev-login e redireciona exatamente como o login normal.
+   * O dropdown é sempre exibido, mas o endpoint só funciona quando o
+   * backend roda com NODE_ENV=development; em produção retorna 404.
+   */
+  async function handleDevLogin(selectedEmail: string) {
+    if (!selectedEmail || devLoading) return;
+    setError('');
+    setDevLoading(true);
+
+    try {
+      const response = await devLogin(selectedEmail);
+      redirectAfterLogin(response);
+    } catch {
+      setError(t('errors.generic'));
+    } finally {
+      setDevLoading(false);
+    }
+  }
+
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      {/* Dropdown de login automático — sempre visível; o endpoint backend
+          é quem controla a disponibilidade (apenas NODE_ENV=development) */}
+      <div className="flex flex-col gap-1.5">
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 border border-amber-200 dark:border-amber-500/30">
+            {t('dev.badge')}
+          </span>
+          <span className="text-xs text-gray-400 dark:text-[#8e8e93]">{t('dev.label')}</span>
+        </div>
+
+        {/* Lista todos os usuários cadastrados; selecionar dispara o auto-login */}
+        <select
+          defaultValue=""
+          disabled={devLoading || isLoading}
+          onChange={(e) => handleDevLogin(e.target.value)}
+          className="
+            w-full px-3 py-2 border border-gray-200 dark:border-[#38383a]
+            rounded-lg text-sm bg-white dark:bg-[#2c2c2e]
+            text-gray-800 dark:text-[#f5f5f7]
+            focus:outline-none focus:ring-2 focus:ring-amber-500
+            disabled:opacity-50
+          "
+        >
+          <option value="" disabled>
+            {devLoading ? t('common:status.loading') : t('dev.placeholder')}
+          </option>
+          {suggestions.map((s) => (
+            <option key={s.email} value={s.email}>
+              {s.name} ({s.email})
+            </option>
+          ))}
+        </select>
+      </div>
+
       {/* Campo de e-mail com autocomplete */}
       <div className="relative">
         <Input
