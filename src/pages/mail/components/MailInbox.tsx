@@ -131,8 +131,10 @@ export function MailInbox({ account }: MailInboxProps) {
         const remaining = Math.max(0, SYNC_INTERVAL - elapsed);
         setSyncProgress(remaining);
         if (remaining === 0) {
+          // Verificação silenciosa: invalida pastas, etiquetas e mensagens
           queryClient.invalidateQueries({ queryKey: ['mail-folders'] });
           queryClient.invalidateQueries({ queryKey: ['mail-labels'] });
+          queryClient.invalidateQueries({ queryKey: ['mail-messages'] });
         }
       }
     }, 1000);
