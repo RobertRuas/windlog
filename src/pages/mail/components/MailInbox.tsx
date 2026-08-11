@@ -22,7 +22,6 @@ import { useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { useIsMobile } from '@/hooks/useIsMobile';
 import {
   PenSquare, RefreshCw, Settings2, PlugZap, Search,
   Inbox, Send, FileText, AlertOctagon, Trash2, Archive,
@@ -102,7 +101,7 @@ export function MailInbox({ account }: MailInboxProps) {
   // Contagem regressiva para o próximo refetch (0–60s)
   const SYNC_INTERVAL = 60; // segundos
   const [syncProgress, setSyncProgress] = useState(SYNC_INTERVAL);
-  const isMobile = useIsMobile();
+
 
   /**
    * Busca pastas e etiquetas para a barra de navegação.

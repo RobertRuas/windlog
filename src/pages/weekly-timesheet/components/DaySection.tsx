@@ -10,7 +10,7 @@ import { ChevronRight, ChevronDown, Check, GripVertical, X } from 'lucide-react'
 import { TranslatableField } from '@/components/ui/TranslatableField';
 import { TechnicianSelect } from './TechnicianSelect';
 import { isDayFilled } from '../helpers/timesheet-form.helpers';
-import type { FormState, FormEntry, SystemUser, SharedFieldKey } from '../types/timesheet-form.types';
+import type { FormState, SystemUser, SharedFieldKey } from '../types/timesheet-form.types';
 import type { Turbine } from '@/services/project.service';
 
 // ── Classes de estilo (partilhadas com o editor) ──────────────────────

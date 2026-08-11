@@ -45,7 +45,7 @@ import { SignaturePad } from '@/components/ui/SignaturePad';
 import { SecureImage } from '@/components/ui/SecureImage';
 import { TranslatableField } from '@/components/ui/TranslatableField';
 import { useTranslationLifecycle } from '@/hooks/useTranslationLifecycle';
-import { TechnicianSelect } from './TechnicianSelect';
+// TechnicianSelect usado apenas no DaySection
 import { DaySection } from './DaySection';
 import type {
   TimesheetFormEditorProps,
@@ -211,7 +211,7 @@ export function TimesheetFormEditor({
     });
   }, [currentUserName, currentUserPosition]);
 
-  // Auto-save silencioso com debounce: salva 600ms após a última edição
+  // Auto-save silencioso com debounce: salva 2s após a última edição
   // Não atualiza cache — o refetchOnMount:'always' garante dados frescos no remount
   useEffect(() => {
     const timer = setTimeout(async () => {
@@ -222,7 +222,7 @@ export function TimesheetFormEditor({
           // silencioso — auto-save não mostra erros
         }
       }
-    }, 600);
+    }, 2000);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form]);

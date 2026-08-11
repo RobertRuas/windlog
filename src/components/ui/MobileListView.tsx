@@ -28,7 +28,6 @@
  * ============================================================================
  */
 
-import { useState, useMemo } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { FolderOpen, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, ArrowUpDown, Search, Filter, Plus } from 'lucide-react';
 import type { DataTableToolbar } from './DataTable';
