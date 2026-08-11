@@ -77,7 +77,7 @@ export function TimesheetViewModal({ timesheet, onClose }: TimesheetViewModalPro
 
   // ── Renderização via portal (filho direto do body) ─────────────────
   return createPortal(
-    <div className="ts-view-modal-root fixed inset-0 z-50 flex flex-col">
+    <div className="ts-view-modal-root fixed inset-0 z-50 w-screen h-screen bg-white flex flex-col overflow-hidden">
       {/* ── Header: ícones à esquerda, fechar à direita ────────────── */}
       <div className="ts-no-print flex items-center justify-between px-2 py-1.5 bg-white border-b border-gray-200 flex-shrink-0">
         {/* Esquerda: zoom + PDF */}
@@ -125,7 +125,7 @@ export function TimesheetViewModal({ timesheet, onClose }: TimesheetViewModalPro
       </div>
 
       {/* ── Corpo: planilha 100% horizontal + vertical ─────────────── */}
-      <div className="ts-view-modal-body flex-1 overflow-auto bg-white min-w-0">
+      <div className="ts-view-modal-body flex-1 min-h-0 overflow-auto bg-white w-full">
         <div className="ts-dashboard-container [&]:max-w-none [&]:m-0">
           {/* Planilha read-only em modo de impressão */}
           <TimesheetSheet
