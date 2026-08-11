@@ -307,15 +307,23 @@ export function SignaturePad({
   // ── Funções de recorte ──────────────────────────────────────────────
 
   /**
-   * Obtém coordenadas do rato relativas ao canvas de recorte.
+   * Obtém coordenadas do rato ou toque relativas ao canvas de recorte.
    */
-  const getCropCoords = useCallback((e: React.MouseEvent) => {
+  const getCropCoords = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     const canvas = cropCanvasRef.current;
     if (!canvas) return { x: 0, y: 0 };
 
     const bRect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / bRect.width;
     const scaleY = canvas.height / bRect.height;
+
+    if ('touches' in e) {
+      const touch = e.touches[0] || e.changedTouches[0];
+      return {
+        x: Math.round((touch.clientX - bRect.left) * scaleX),
+        y: Math.round((touch.clientY - bRect.top) * scaleY),
+      };
+    }
 
     return {
       x: Math.round((e.clientX - bRect.left) * scaleX),
@@ -324,7 +332,7 @@ export function SignaturePad({
   }, []);
 
   const startCropDrag = useCallback(
-    (e: React.MouseEvent) => {
+    (e: React.MouseEvent | React.TouchEvent) => {
       e.preventDefault();
       const { x, y } = getCropCoords(e);
       setIsDragging(true);
@@ -335,7 +343,7 @@ export function SignaturePad({
   );
 
   const doCropDrag = useCallback(
-    (e: React.MouseEvent) => {
+    (e: React.MouseEvent | React.TouchEvent) => {
       if (!isDragging || !dragStart) return;
       e.preventDefault();
 
@@ -504,11 +512,14 @@ export function SignaturePad({
         <div className="relative border border-gray-300 rounded-lg overflow-hidden bg-gray-100">
           <canvas
             ref={cropCanvasRef}
-            className="w-full cursor-crosshair block"
+            className="w-full cursor-crosshair touch-none block"
             onMouseDown={startCropDrag}
             onMouseMove={doCropDrag}
             onMouseUp={stopCropDrag}
             onMouseLeave={stopCropDrag}
+            onTouchStart={startCropDrag}
+            onTouchMove={doCropDrag}
+            onTouchEnd={stopCropDrag}
           />
         </div>
 
