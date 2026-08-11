@@ -100,16 +100,19 @@ export function MailInbox({ account }: MailInboxProps) {
 
   /**
    * Busca pastas e etiquetas para a barra de navegação.
+   * Refetch automático a cada 5 minutos para verificar novos e-mails.
    */
-  const { data: folders = [] } = useQuery({
+  const { data: folders = [], dataUpdatedAt: foldersUpdatedAt } = useQuery({
     queryKey: ['mail-folders'],
     queryFn: getMailFolders,
     staleTime: 30_000,
+    refetchInterval: 5 * 60_000, // 5 minutos
   });
   const { data: labels = [] } = useQuery({
     queryKey: ['mail-labels'],
     queryFn: getMailLabels,
     staleTime: 30_000,
+    refetchInterval: 5 * 60_000,
   });
 
   /**
@@ -418,6 +421,13 @@ export function MailInbox({ account }: MailInboxProps) {
           >
             <Plus size={13} />
           </button>
+        )}
+
+        {/* Última atualização (extremamente discreto) */}
+        {foldersUpdatedAt > 0 && (
+          <span className="ml-auto flex-shrink-0 text-[9px] text-gray-300 dark:text-[#48484a] whitespace-nowrap hidden sm:inline" title={t('toolbar.last_sync')}>
+            {new Date(foldersUpdatedAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+          </span>
         )}
       </div>
 
