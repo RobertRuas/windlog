@@ -69,12 +69,10 @@ export function AppLayout({ children }: AppLayoutProps) {
       <main className="md:ml-60 min-h-screen flex flex-col">
         {/* Header superior com sino de notificações */}
         <header className="sticky top-0 z-20 bg-white dark:bg-[#1c1c1e] border-b border-gray-200 dark:border-[#38383a]">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-end h-14">
-              {/* Feedback compacto (apenas mobile) — ao lado do avatar */}
-              <div className="sm:hidden">
-                <FeedbackButton compact />
-              </div>
+              {/* Feedback compacto — ao lado do avatar (todos os dispositivos) */}
+              <FeedbackButton compact />
 
               {/* Sino de notificações */}
               <NotificationBell />
@@ -109,15 +107,11 @@ export function AppLayout({ children }: AppLayoutProps) {
         </header>
 
         {/* Área interna com padding e largura máxima */}
-        <div className="flex-1 max-w-5xl mx-auto px-4 py-6 sm:px-6 lg:px-8 w-full">
+        <div className="flex-1 px-4 py-6 sm:px-6 lg:px-8 w-full">
           {children}
         </div>
       </main>
 
-      {/* Botão flutuante de feedback (apenas desktop — mobile usa versão compacta no header) */}
-      <div className="hidden sm:block">
-        <FeedbackButton />
-      </div>
     </div>
   );
 }

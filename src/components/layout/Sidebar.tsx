@@ -188,7 +188,7 @@ export function Sidebar() {
       {/* ── Botão Hamburger (apenas mobile) ─────────────────────── */}
       <button
         onClick={() => setMobileOpen(true)}
-        className="md:hidden fixed top-4 left-4 z-40 w-10 h-10 bg-white dark:bg-[#1c1c1e] rounded-lg shadow-md flex items-center justify-center text-gray-600 dark:text-[#a1a1a6] hover:text-gray-900 dark:hover:text-[#f5f5f7] transition-colors"
+        className="md:hidden fixed top-5 left-4 z-40 w-10 h-10 bg-white dark:bg-[#1c1c1e] rounded-lg shadow-md flex items-center justify-center text-gray-600 dark:text-[#a1a1a6] hover:text-gray-900 dark:hover:text-[#f5f5f7] transition-colors"
         aria-label={t('ariaLabels.openMenu')}
       >
         <Menu size={20} />
