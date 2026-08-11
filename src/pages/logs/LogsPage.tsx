@@ -149,39 +149,22 @@ export function LogsPage() {
         title={t('title')}
         subtitle={t('subtitle')}
         actions={
-          <div className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-2.5 shadow-sm">
-            <span className="text-sm font-medium text-gray-700">{t('capture.label')}</span>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={captureStatus?.enabled ?? true}
-              disabled={captureMutation.isPending}
-              onClick={handleCaptureToggle}
-              className={[
-                'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent',
-                'transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
-                (captureStatus?.enabled ?? true) ? 'bg-blue-600' : 'bg-gray-300',
-                captureMutation.isPending ? 'opacity-50 cursor-not-allowed' : '',
-              ].join(' ')}
-            >
-              <span
-                className={[
-                  'pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition-transform duration-200 ease-in-out',
-                  (captureStatus?.enabled ?? true) ? 'translate-x-5' : 'translate-x-0',
-                ].join(' ')}
-              />
-            </button>
-            <span
-              className={[
-                'text-xs font-semibold rounded-full px-2 py-0.5',
-                (captureStatus?.enabled ?? true)
-                  ? 'bg-green-100 text-green-700'
-                  : 'bg-amber-100 text-amber-700',
-              ].join(' ')}
-            >
-              {(captureStatus?.enabled ?? true) ? t('capture.enabled') : t('capture.disabled')}
-            </span>
-          </div>
+          <button
+            type="button"
+            onClick={handleCaptureToggle}
+            disabled={captureMutation.isPending}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+              (captureStatus?.enabled ?? true)
+                ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-700 dark:text-green-400'
+                : 'bg-gray-50 dark:bg-[#2c2c2e] border-gray-200 dark:border-[#38383a] text-gray-500 dark:text-[#a1a1a6]'
+            } ${captureMutation.isPending ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:opacity-80'}`}
+            title={captureMutation.isPending ? undefined : (captureStatus?.enabled ? t('capture.toastDisabled') : t('capture.toastEnabled'))}
+          >
+            <span className={`w-2 h-2 rounded-full flex-shrink-0 ${
+              (captureStatus?.enabled ?? true) ? 'bg-green-500 animate-pulse' : 'bg-gray-400'
+            }`} />
+            {(captureStatus?.enabled ?? true) ? t('capture.enabled') : t('capture.disabled')}
+          </button>
         }
       />
 
