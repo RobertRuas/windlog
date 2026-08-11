@@ -110,7 +110,8 @@ export function DatePicker({
         disabled={disabled}
         min={min}
         max={max}
-        className="form-input pl-9 disabled:opacity-60 disabled:cursor-not-allowed appearance-none"
+        className="form-input disabled:opacity-60 disabled:cursor-not-allowed appearance-none"
+        style={{ paddingLeft: '2.25rem' }}
       />
       {/* Ícone de calendário à esquerda — também abre o picker nativo */}
       <Calendar
