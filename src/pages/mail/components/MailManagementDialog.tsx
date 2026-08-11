@@ -219,7 +219,6 @@ export function MailManagementDialog({ initialTab = 'contacts', onClose }: MailM
 function ContactsTab() {
   const { t } = useTranslation('mail');
   const queryClient = useQueryClient();
-  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
 
   // ── Estado dos grupos ─────────────────────────────────────────────
@@ -250,8 +249,8 @@ function ContactsTab() {
   }
 
   const createContact = useMutation({
-    mutationFn: () => mailService.createMailContact({ name: name || undefined, email }),
-    onSuccess: () => { invalidate(); setName(''); setEmail(''); toast.success(t('manage.contacts.created')); },
+    mutationFn: () => mailService.createMailContact({ email }),
+    onSuccess: () => { invalidate(); setEmail(''); toast.success(t('manage.contacts.created')); },
     onError: (e: Error) => toast.error(e.message),
   });
   const removeContact = useMutation({
@@ -488,9 +487,8 @@ function ContactsTab() {
           </span>
         </div>
 
-        {/* Linha inline: nome + email + botão adicionar */}
+        {/* Linha inline: email + botão adicionar */}
         <div className="flex gap-1.5 mb-2">
-          <input className={`${inputClass} w-24 sm:flex-1 flex-shrink text-sm`} placeholder={t('manage.contacts.name_ph')} value={name} onChange={(e) => setName(e.target.value)} />
           <input className={`${inputClass} flex-1 min-w-0 text-sm`} placeholder="email@..." type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
           <button
             onClick={() => email && createContact.mutate()}
