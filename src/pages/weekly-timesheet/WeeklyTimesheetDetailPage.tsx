@@ -134,28 +134,27 @@ export function WeeklyTimesheetDetailPage() {
   // ── Renderização principal ──────────────────────────────────────────
   return (
     <AppLayout>
-      <div className="p-6 max-w-[1600px] mx-auto">
+      <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 max-w-[1600px] mx-auto">
         {/* ── Header ────────────────────────────────────────────────── */}
-        <div className="mb-6 ts-no-print">
+        <div className="mb-4 sm:mb-6 ts-no-print">
           {/* Botão voltar */}
           <button
             onClick={() => navigate('/timesheets')}
-            className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-4"
+            className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-900 mb-3"
           >
             <ArrowLeft size={16} />
-            {t('detail.back')}
+            <span className="hidden sm:inline">{t('detail.back')}</span>
           </button>
 
           {/* Título + Info */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <h1 className="text-lg sm:text-2xl font-bold text-gray-900 truncate">
                 {timesheet.project.name}
               </h1>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-xs sm:text-sm text-gray-500 mt-0.5 sm:mt-1 truncate">
                 {t('sheet.week')} {timesheet.week}
                 {timesheet.days.length > 0 && (() => {
-                  // Extrai range de datas (Seg-Dom) diretamente dos dias do timesheet
                   const fmt = (d: string) => {
                     const pure = d.split('T')[0];
                     const [, m, day] = pure.split('-');
@@ -165,23 +164,26 @@ export function WeeklyTimesheetDetailPage() {
                   const last = fmt(timesheet.days[timesheet.days.length - 1].date);
                   return ` — ${first} a ${last}`;
                 })()}
-                {' • '}
-                {t('status.' + timesheet.status)} •{' '}
-                {timesheet.creator.firstName} {timesheet.creator.lastName}
+                <span className="hidden sm:inline">
+                  {' • '}
+                  {t('status.' + timesheet.status)} •{' '}
+                  {timesheet.creator.firstName} {timesheet.creator.lastName}
+                </span>
               </p>
             </div>
 
-            {/* Botão Visualização + Status badge */}
-            <div className="flex items-center gap-3">
+            {/* Ações: ícones em mobile, ícones + texto em PC */}
+            <div className="flex items-center gap-2 shrink-0">
               <button
                 onClick={() => setIsViewModalOpen(true)}
-                className="flex items-center gap-2 px-4 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
+                className="sm:flex items-center gap-2 px-2.5 sm:px-4 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
+                title={t('detail.viewButton')}
               >
                 <Eye size={16} />
-                {t('detail.viewButton')}
+                <span className="hidden sm:inline">{t('detail.viewButton')}</span>
               </button>
               <span
-                className={`px-3 py-1 text-sm font-medium rounded-full ${
+                className={`hidden sm:inline-block px-3 py-1 text-sm font-medium rounded-full ${
                   timesheet.status === 'DRAFT'
                     ? 'bg-yellow-100 text-yellow-800'
                     : timesheet.status === 'SUBMITTED'

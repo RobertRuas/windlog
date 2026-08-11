@@ -591,89 +591,77 @@ export function TimesheetFormEditor({
 
                 {/* ── Técnicos ── */}
                 <div>
-                  <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
+                  <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">
                     {t('form.technicians')}
                   </h4>
 
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     {day.entries.map((entry, entryIdx) => (
                       <div
                         key={entryIdx}
-                        className={`border rounded-lg overflow-hidden transition-colors ${
+                        className={`flex items-center gap-2 border rounded-lg px-2.5 py-1.5 transition-colors ${
                           entry.isCurrentUser
                             ? 'border-blue-200 bg-blue-50/30'
                             : 'border-gray-200'
                         }`}
                       >
-                        <div className="flex items-center gap-3 px-3 py-2.5 bg-white">
-                          <span className="text-xs text-gray-400 w-5 text-center font-medium shrink-0">
-                            {entryIdx + 1}
-                          </span>
-
-                          {/* Nome com autocomplete */}
-                          <div className="flex-1 min-w-0">
-                            {entry.isCurrentUser ? (
-                              <div className="flex items-center gap-2 px-2 py-1.5 bg-blue-50 border border-blue-200 rounded text-sm font-medium text-gray-700">
-                                <UserIcon size={14} className="text-blue-500 shrink-0" />
-                                {entry.technicianName}
-                                <span className="text-xs text-blue-500 ml-auto">{t('form.you')}</span>
-                              </div>
-                            ) : (
-                              <TechnicianSelect
-                                value={entry.technicianName}
-                                onChange={(v) => handleEntryChange(dayIdx, entryIdx, 'technicianName', v)}
-                                onSelectUser={(user) => handleSelectUser(dayIdx, entryIdx, user)}
-                                users={systemUsers}
-                                excludeNames={day.entries
-                                  .filter((_, i) => i !== entryIdx)
-                                  .map((e) => e.technicianName)
-                                  .filter(Boolean)}
-                                disabled={isSaving}
-                                placeholder={t('sheet.technicianName')}
-                              />
-                            )}
-                          </div>
-
-                          {/* Role: preenchida automaticamente ao selecionar o técnico — somente leitura */}
-                          <div className="w-44 shrink-0">
-                            <input
-                              type="text"
-                              value={entry.role}
-                              readOnly
-                              placeholder={t('sheet.role')}
-                              className="w-full px-2 py-1.5 border border-gray-200 rounded text-sm bg-gray-50 text-gray-600 cursor-default"
-                            />
-                          </div>
-
-                          {/* Toggle switch: removido — todos usam informações comuns */}
-
-                          {/* Botões: Reordenar + Remover */}
-                          <div className="flex items-center gap-0.5 shrink-0">
-                            <button
-                              onClick={() => handleMoveEntry(dayIdx, entryIdx, 'up')}
-                              disabled={isSaving || entryIdx === 0}
-                              className="p-1 text-gray-300 hover:text-gray-600 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                              title={t('sheet.moveUp')}
-                            >
-                              <ChevronUp size={14} />
-                            </button>
-                            <button
-                              onClick={() => handleMoveEntry(dayIdx, entryIdx, 'down')}
-                              disabled={isSaving || entryIdx === day.entries.length - 1}
-                              className="p-1 text-gray-300 hover:text-gray-600 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                              title={t('sheet.moveDown')}
-                            >
-                              <ChevronDown size={14} />
-                            </button>
-                            <button
-                              onClick={() => handleRemoveEntry(dayIdx, entryIdx)}
+                        {/* Nome com autocomplete */}
+                        <div className="flex-1 min-w-0">
+                          {entry.isCurrentUser ? (
+                            <div className="flex items-center gap-1.5 px-1.5 py-1 bg-blue-50 border border-blue-200 rounded text-sm font-medium text-gray-700">
+                              <UserIcon size={13} className="text-blue-500 shrink-0" />
+                              <span className="truncate">{entry.technicianName}</span>
+                              <span className="text-[10px] text-blue-500 shrink-0">{t('form.you')}</span>
+                            </div>
+                          ) : (
+                            <TechnicianSelect
+                              value={entry.technicianName}
+                              onChange={(v) => handleEntryChange(dayIdx, entryIdx, 'technicianName', v)}
+                              onSelectUser={(user) => handleSelectUser(dayIdx, entryIdx, user)}
+                              users={systemUsers}
+                              excludeNames={day.entries
+                                .filter((_, i) => i !== entryIdx)
+                                .map((e) => e.technicianName)
+                                .filter(Boolean)}
                               disabled={isSaving}
-                              className="p-1.5 text-gray-300 hover:text-red-500 transition-colors disabled:opacity-50"
-                              title={t('sheet.removeRow')}
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          </div>
+                              placeholder={t('sheet.technicianName')}
+                            />
+                          )}
+                        </div>
+
+                        {/* Role: auto-preenchida — tamanho justo */}
+                        {entry.role && (
+                          <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded shrink-0 max-w-[140px] truncate">
+                            {entry.role}
+                          </span>
+                        )}
+
+                        {/* Botões: Reordenar + Remover */}
+                        <div className="flex items-center gap-0 shrink-0">
+                          <button
+                            onClick={() => handleMoveEntry(dayIdx, entryIdx, 'up')}
+                            disabled={isSaving || entryIdx === 0}
+                            className="p-0.5 text-gray-300 hover:text-gray-600 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                            title={t('sheet.moveUp')}
+                          >
+                            <ChevronUp size={13} />
+                          </button>
+                          <button
+                            onClick={() => handleMoveEntry(dayIdx, entryIdx, 'down')}
+                            disabled={isSaving || entryIdx === day.entries.length - 1}
+                            className="p-0.5 text-gray-300 hover:text-gray-600 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                            title={t('sheet.moveDown')}
+                          >
+                            <ChevronDown size={13} />
+                          </button>
+                          <button
+                            onClick={() => handleRemoveEntry(dayIdx, entryIdx)}
+                            disabled={isSaving}
+                            className="p-1 text-gray-300 hover:text-red-500 transition-colors disabled:opacity-50"
+                            title={t('sheet.removeRow')}
+                          >
+                            <Trash2 size={13} />
+                          </button>
                         </div>
                       </div>
                     ))}
