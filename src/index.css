@@ -29,6 +29,14 @@
 /* Importa todas as funcionalidades do Tailwind CSS */
 @import "tailwindcss";
 
+/* Utilidade para esconder scrollbar (navegação horizontal nativa) */
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 /* Dark mode baseado em classe (.dark no <html>), não prefers-color-scheme */
 @custom-variant dark (&:where(.dark, .dark *));
 

@@ -253,7 +253,7 @@ export function MailInbox({ account }: MailInboxProps) {
   return (
     <div className="bg-white dark:bg-[#1c1c1e] rounded-xl border border-gray-200 dark:border-[#38383a] overflow-hidden">
       {/* ── Barra de ferramentas ───────────────────────────── */}
-      <div className="flex items-center gap-2 px-4 py-2.5 border-b border-gray-200 dark:border-[#38383a]">
+      <div className="flex items-center gap-2 px-3 sm:px-4 py-2.5 border-b border-gray-200 dark:border-[#38383a]">
         {/* Escrever (apenas ícone) */}
         <button
           onClick={() => openCompose('new')}
@@ -273,8 +273,8 @@ export function MailInbox({ account }: MailInboxProps) {
           <RefreshCw size={15} className={syncMutation.isPending ? 'animate-spin' : ''} />
         </button>
 
-        {/* Informações da conta */}
-        <span className="ml-2 text-xs text-gray-400 dark:text-[#636366] truncate" title={account.email}>
+        {/* Informações da conta (oculto no telemóvel para poupar espaço) */}
+        <span className="hidden sm:inline ml-2 text-xs text-gray-400 dark:text-[#636366] truncate" title={account.email}>
           {account.email} · {account.protocol}
           {account.lastSyncAt && (
             <> · {t('toolbar.last_sync')}: {new Date(account.lastSyncAt).toLocaleTimeString()}</>
@@ -284,16 +284,16 @@ export function MailInbox({ account }: MailInboxProps) {
         {/* Gestão (regras, contatos, assinaturas...) */}
         <button
           onClick={() => setModals({ ...modals, management: {} })}
-          className="ml-auto form-button form-button-secondary"
+          className="ml-auto sm:ml-0 form-button form-button-secondary"
           title={t('toolbar.manage')}
         >
           <Settings2 size={15} />
         </button>
 
-        {/* Desconectar */}
+        {/* Desconectar (oculto no telemóvel — acessível via Gestão) */}
         <button
           onClick={() => disconnectMutation.mutate()}
-          className="form-button form-button-secondary inline-flex items-center gap-2 !text-red-600"
+          className="hidden sm:inline-flex form-button form-button-secondary inline-flex items-center gap-2 !text-red-600"
           title={t('toolbar.disconnect')}
         >
           <PlugZap size={15} />
@@ -308,12 +308,12 @@ export function MailInbox({ account }: MailInboxProps) {
       )}
 
       {/* ── Barra de navegação: pastas e etiquetas ─────────── */}
-      <div className="flex items-center gap-1.5 px-4 py-2 border-b border-gray-200 dark:border-[#38383a] overflow-x-auto">
+      <div className="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 border-b border-gray-200 dark:border-[#38383a] overflow-x-auto scrollbar-none snap-x snap-mandatory">
         {/* Todas as mensagens (padrão quando nada selecionado) */}
         <button
           onClick={() => selectFolder('folder', null)}
           className={`
-            inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium whitespace-nowrap transition-colors
+            inline-flex items-center gap-1.5 px-2.5 py-1.5 sm:py-1 rounded-md text-xs font-medium whitespace-nowrap transition-colors snap-start flex-shrink-0
             ${!folderId && !labelId
               ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
               : 'text-gray-500 dark:text-[#a1a1a6] hover:bg-gray-100 dark:hover:bg-[#2c2c2e]'}
@@ -335,7 +335,7 @@ export function MailInbox({ account }: MailInboxProps) {
               key={folder.id}
               onClick={() => selectFolder('folder', folder.id)}
               className={`
-                inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium whitespace-nowrap transition-colors
+                inline-flex items-center gap-1.5 px-2.5 py-1.5 sm:py-1 rounded-md text-xs font-medium whitespace-nowrap transition-colors snap-start flex-shrink-0
                 ${active
                   ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
                   : 'text-gray-500 dark:text-[#a1a1a6] hover:bg-gray-100 dark:hover:bg-[#2c2c2e]'}
@@ -361,7 +361,7 @@ export function MailInbox({ account }: MailInboxProps) {
               key={label.id}
               onClick={() => selectFolder('label', active ? null : label.id)}
               className={`
-                inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium whitespace-nowrap transition-colors
+                inline-flex items-center gap-1.5 px-2.5 py-1.5 sm:py-1 rounded-md text-xs font-medium whitespace-nowrap transition-colors snap-start flex-shrink-0
                 ${active
                   ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
                   : 'text-gray-500 dark:text-[#a1a1a6] hover:bg-gray-100 dark:hover:bg-[#2c2c2e]'}
@@ -409,7 +409,7 @@ export function MailInbox({ account }: MailInboxProps) {
       </div>
 
       {/* ── Corpo: lista OU leitura em tela cheia ───────────── */}
-      <div className="flex h-[calc(100vh-260px)] min-h-[480px]">
+      <div className="flex h-[calc(100vh-300px)] min-h-[400px]">
         {selectedMessage ? (
           <MessageView
             message={selectedMessage}
