@@ -139,8 +139,8 @@ export function TimesheetFormEditor({
     () => new Set(form.days.map((_, i) => i)),
   );
 
-  // Metadata: recolhido por padrão
-  const [metadataOpen, setMetadataOpen] = useState(false);
+  // Metadata: aberto por padrão
+  const [metadataOpen, setMetadataOpen] = useState(true);
 
   // Refs para scroll automático ao abrir um dia
   const dayHeaderRefs = useRef<Record<number, HTMLDivElement | null>>({});
