@@ -30,7 +30,8 @@
 
 import { useState, useMemo } from 'react';
 import type { LucideIcon } from 'lucide-react';
-import { FolderOpen, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, ArrowUpDown } from 'lucide-react';
+import { FolderOpen, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, ArrowUpDown, Search, Filter, Plus } from 'lucide-react';
+import type { DataTableToolbar } from './DataTable';
 
 // ─── Tipos ──────────────────────────────────────────────────────────────────
 
@@ -113,6 +114,8 @@ interface MobileListViewProps<T> {
   sortableColumns?: { key: string; label: string }[];
   /** Função para gerar key */
   getKey?: (item: T) => string;
+  /** Toolbar integrada (pesquisa + filtros + adicionar) */
+  toolbar?: DataTableToolbar;
 }
 
 // ─── Componente ─────────────────────────────────────────────────────────────
@@ -136,6 +139,7 @@ export function MobileListView<T>({
   sort,
   sortableColumns,
   getKey,
+  toolbar,
 }: MobileListViewProps<T>) {
   /**
    * Obtém o valor de um campo de um item.
@@ -173,6 +177,60 @@ export function MobileListView<T>({
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+      {/* ── Toolbar integrada (pesquisa + filtros + adicionar) ── */}
+      {toolbar && (
+        <div className="px-4 pt-4 pb-3 space-y-3">
+          {/* Linha principal: pesquisa + filtro + adicionar */}
+          <div className="flex items-center gap-2">
+            {/* Campo de pesquisa com ícone de filtro */}
+            <div className="relative flex-1 h-10">
+              <Search size={15} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+              <input
+                type="text"
+                value={toolbar.searchValue}
+                onChange={(e) => toolbar.onSearchChange(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && toolbar.onSearch?.()}
+                placeholder={toolbar.searchPlaceholder}
+                className="w-full h-full text-sm pl-8 pr-10 rounded-lg border border-gray-300 dark:border-[#38383a] bg-white dark:bg-[#2c2c2e] text-gray-900 dark:text-[#f5f5f7] focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              {toolbar.filters && (
+                <button
+                  type="button"
+                  onClick={toolbar.onToggleFilters}
+                  className={`absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 flex items-center justify-center rounded-md transition-colors ${
+                    toolbar.showFilters || toolbar.hasActiveFilters
+                      ? 'text-blue-600 dark:text-blue-400'
+                      : 'text-gray-400 hover:text-gray-600 dark:hover:text-[#a1a1a6]'
+                  }`}
+                >
+                  <Filter size={15} />
+                </button>
+              )}
+            </div>
+
+            {/* Botão adicionar (apenas se onAdd definido) */}
+            {toolbar.onAdd && toolbar.addLabel && (
+              <button
+                type="button"
+                onClick={toolbar.onAdd}
+                className="h-10 w-10 flex items-center justify-center rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors flex-shrink-0"
+                title={toolbar.addLabel}
+                aria-label={toolbar.addLabel}
+              >
+                <Plus size={18} />
+              </button>
+            )}
+          </div>
+
+          {/* Painel de filtros (quando aberto) */}
+          {toolbar.showFilters && toolbar.filters && (
+            <div className="flex flex-wrap gap-3 pt-3 border-t border-gray-100 dark:border-[#38383a]">
+              {toolbar.filters}
+            </div>
+          )}
+        </div>
+      )}
+
       {isLoading ? (
         /* Estado de carregamento */
         <div className="p-12 text-center">

@@ -22,7 +22,7 @@
 import { Eye, Pencil, Trash2, Wrench, Clock, Plane } from 'lucide-react';
 import type { TimesheetListItem } from '@/services/weekly-timesheet.service';
 import type { ProfileResponse } from '@/types/user.types';
-import { DataTable, type DataTableColumn } from '@/components/ui/DataTable';
+import { DataTable, type DataTableColumn, type DataTableToolbar } from '@/components/ui/DataTable';
 
 /**
  * Props do componente TimesheetTable.
@@ -42,6 +42,8 @@ interface TimesheetTableProps {
   };
   onPageChange: (page: number) => void;
   t: (key: string, options?: Record<string, unknown>) => string;
+  /** Toolbar integrada (pesquisa + filtros + adicionar) */
+  toolbar?: DataTableToolbar;
 }
 
 /**
@@ -82,6 +84,7 @@ export function TimesheetTable({
   meta,
   onPageChange,
   t,
+  toolbar,
 }: TimesheetTableProps) {
   /**
    * Verifica se o usuário atual pode editar/excluir um timesheet.
@@ -213,6 +216,7 @@ export function TimesheetTable({
       emptyMessage={t('table.empty')}
       loadingMessage={t('table.loading')}
       pagination={pagination}
+      toolbar={toolbar}
     />
   );
 }

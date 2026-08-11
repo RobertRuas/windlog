@@ -23,7 +23,6 @@ import { useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { AppLayout } from '@/components/layout/AppLayout';
@@ -57,6 +56,8 @@ export function WeeklyTimesheetPage() {
   // ── Estado local ────────────────────────────────────────────────────
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [page, setPage] = useState(1);
+  const [searchValue, setSearchValue] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
   const [statusFilter, setStatusFilter] = useState('');
   const [weekFilter, setWeekFilter] = useState('');
   const [projectFilter, setProjectFilter] = useState('');
@@ -150,72 +151,20 @@ export function WeeklyTimesheetPage() {
     navigate(`/timesheets/${timesheetId}`);
   }
 
+  // ── Verifica se existem filtros ativos ──────────────────────────────
+  const hasActiveFilters = !!(statusFilter || weekFilter || projectFilter || authorFilter);
+
+  // ── Permissão para criar timesheet ──────────────────────────────────
+  const canCreate = currentUser?.role !== 'STANDARD' || currentUser?.isTeamLeader;
+
   return (
     <AppLayout>
       <PageHeader
         title={t('title')}
         subtitle={t('subtitle')}
-        actions={
-          (currentUser?.role !== 'STANDARD' || currentUser?.isTeamLeader) ? (
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              <Plus size={18} />
-              {t('newTimesheet')}
-            </button>
-          ) : undefined
-        }
       />
 
-      {/* Filtros */}
-      <div className="flex flex-wrap items-center gap-2 mb-4">
-        <select
-          value={statusFilter}
-          onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-          className="form-select !w-auto shrink"
-        >
-          <option value="">{t('filters.allStatuses')}</option>
-          <option value="DRAFT">{t('status.DRAFT')}</option>
-          <option value="SUBMITTED">{t('status.SUBMITTED')}</option>
-          <option value="APPROVED">{t('status.APPROVED')}</option>
-        </select>
-
-        <select
-          value={weekFilter}
-          onChange={(e) => { setWeekFilter(e.target.value); setPage(1); }}
-          className="form-select !w-auto shrink"
-        >
-          <option value="">{t('filters.allWeeks')}</option>
-          {filterWeeks.map((w) => (
-            <option key={w} value={w}>{t('filters.weekLabel')} {w}</option>
-          ))}
-        </select>
-
-        <select
-          value={projectFilter}
-          onChange={(e) => { setProjectFilter(e.target.value); setPage(1); }}
-          className="form-select !w-auto shrink"
-        >
-          <option value="">{t('filters.allProjects')}</option>
-          {filterProjects.map((p) => (
-            <option key={p.id} value={p.id}>{p.name}</option>
-          ))}
-        </select>
-
-        <select
-          value={authorFilter}
-          onChange={(e) => { setAuthorFilter(e.target.value); setPage(1); }}
-          className="form-select !w-auto shrink"
-        >
-          <option value="">{t('filters.allAuthors')}</option>
-          {filterAuthors.map((a) => (
-            <option key={a.id} value={a.id}>{a.name}</option>
-          ))}
-        </select>
-      </div>
-
-      {/* Tabela */}
+      {/* Tabela com toolbar integrada */}
       <TimesheetTable
         timesheets={timesheets}
         isLoading={isLoading}
@@ -226,6 +175,65 @@ export function WeeklyTimesheetPage() {
         meta={meta}
         onPageChange={setPage}
         t={t}
+        toolbar={{
+          searchValue,
+          onSearchChange: setSearchValue,
+          searchPlaceholder: t('filters.searchPlaceholder'),
+          showFilters,
+          onToggleFilters: () => setShowFilters(!showFilters),
+          hasActiveFilters,
+          filters: (
+            <>
+              <select
+                value={statusFilter}
+                onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
+                className="form-select !w-auto shrink"
+              >
+                <option value="">{t('filters.allStatuses')}</option>
+                <option value="DRAFT">{t('status.DRAFT')}</option>
+                <option value="SUBMITTED">{t('status.SUBMITTED')}</option>
+                <option value="APPROVED">{t('status.APPROVED')}</option>
+              </select>
+
+              <select
+                value={weekFilter}
+                onChange={(e) => { setWeekFilter(e.target.value); setPage(1); }}
+                className="form-select !w-auto shrink"
+              >
+                <option value="">{t('filters.allWeeks')}</option>
+                {filterWeeks.map((w) => (
+                  <option key={w} value={w}>{t('filters.weekLabel')} {w}</option>
+                ))}
+              </select>
+
+              <select
+                value={projectFilter}
+                onChange={(e) => { setProjectFilter(e.target.value); setPage(1); }}
+                className="form-select !w-auto shrink"
+              >
+                <option value="">{t('filters.allProjects')}</option>
+                {filterProjects.map((p) => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </select>
+
+              <select
+                value={authorFilter}
+                onChange={(e) => { setAuthorFilter(e.target.value); setPage(1); }}
+                className="form-select !w-auto shrink"
+              >
+                <option value="">{t('filters.allAuthors')}</option>
+                {filterAuthors.map((a) => (
+                  <option key={a.id} value={a.id}>{a.name}</option>
+                ))}
+              </select>
+            </>
+          ),
+          ...(canCreate ? {
+            addLabel: t('newTimesheet'),
+            onAdd: () => setShowCreateModal(true),
+          } : {}),
+        }}
       />
 
       {/* ── Modal de criação ────────────────────────────────────────── */}
