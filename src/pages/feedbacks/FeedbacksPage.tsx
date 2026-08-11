@@ -23,8 +23,6 @@ import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import {
-  Search,
-  Filter,
   Trash2,
   Eye,
   AlertCircle,
@@ -95,7 +93,6 @@ export function FeedbacksPage() {
   const [filters, setFilters] = useState<FeedbackFilters>({ page: 1, limit: 10 });
   const [searchInput, setSearchInput] = useState('');
   const [showFilters, setShowFilters] = useState(false);
-  const [showSearch, setShowSearch] = useState(false);
 
   // Estado do modal de detalhes
   const [selectedFeedback, setSelectedFeedback] = useState<Feedback | null>(null);
@@ -271,97 +268,7 @@ export function FeedbacksPage() {
         </div>
       )}
 
-      {/* Busca e filtros */}
-      <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6">
-        <div className="flex items-center gap-2">
-          {/* Botão busca (toggle campo) */}
-          {!showSearch ? (
-            <button
-              onClick={() => setShowSearch(true)}
-              className="form-button form-button-secondary"
-              title={t('filters.search_placeholder')}
-            >
-              <Search size={15} />
-            </button>
-          ) : (
-            <div className="relative flex-1 h-10">
-              <Search size={15} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-              <input
-                autoFocus
-                type="text"
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                placeholder={t('filters.search_placeholder')}
-                className="w-full h-full text-sm pl-8 pr-10 rounded-lg border border-gray-300 dark:border-[#38383a] bg-white dark:bg-[#2c2c2e] text-gray-900 dark:text-[#f5f5f7] focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <button
-                type="button"
-                onClick={() => setShowFilters(!showFilters)}
-                className={`absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 flex items-center justify-center rounded-md transition-colors ${
-                  showFilters
-                    ? 'text-blue-600 dark:text-blue-400'
-                    : 'text-gray-400 hover:text-gray-600 dark:hover:text-[#a1a1a6]'
-                }`}
-                title={t('filters.toggle')}
-              >
-                <Filter size={15} />
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Filtros expandidos */}
-        {showFilters && (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-4 pt-4 border-t border-gray-100">
-            {/* Filtro por status */}
-            <select
-              value={filters.status || ''}
-              onChange={(e) => setFilters((prev) => ({ ...prev, status: (e.target.value || undefined) as FeedbackStatus | undefined, page: 1 }))}
-              className="form-select"
-            >
-              <option value="">{t('filters.all_statuses')}</option>
-              {(['NEW', 'TRIAGED', 'IN_PROGRESS', 'RESOLVED', 'CLOSED'] as FeedbackStatus[]).map((s) => (
-                <option key={s} value={s}>{t(`statuses.${s}`)}</option>
-              ))}
-            </select>
-
-            {/* Filtro por categoria */}
-            <select
-              value={filters.category || ''}
-              onChange={(e) => setFilters((prev) => ({ ...prev, category: (e.target.value || undefined) as FeedbackCategory | undefined, page: 1 }))}
-              className="form-select"
-            >
-              <option value="">{t('filters.all_categories')}</option>
-              {(['BUG', 'UI_ISSUE', 'FEATURE', 'INCONSISTENCY', 'PERFORMANCE', 'OTHER'] as FeedbackCategory[]).map((c) => (
-                <option key={c} value={c}>{t(`categories.${c}`)}</option>
-              ))}
-            </select>
-
-            {/* Filtro por prioridade */}
-            <select
-              value={filters.priority || ''}
-              onChange={(e) => setFilters((prev) => ({ ...prev, priority: (e.target.value || undefined) as FeedbackPriority | undefined, page: 1 }))}
-              className="form-select"
-            >
-              <option value="">{t('filters.all_priorities')}</option>
-              {(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] as FeedbackPriority[]).map((p) => (
-                <option key={p} value={p}>{t(`priorities.${p}`)}</option>
-              ))}
-            </select>
-
-            {/* Limpar filtros */}
-            <button
-              onClick={handleClearFilters}
-              className="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors"
-            >
-              {t('table.clear')}
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Tabela de feedbacks */}
+      {/* Tabela de feedbacks com toolbar integrada */}
       <DataTable
         columns={feedbackColumns}
         data={feedbacks}
@@ -370,6 +277,58 @@ export function FeedbacksPage() {
         emptyIcon={AlertCircle}
         emptyMessage={t('list.empty')}
         loadingMessage={t('status.loading', { ns: 'common' })}
+        toolbar={{
+          searchValue: searchInput,
+          onSearchChange: setSearchInput,
+          searchPlaceholder: t('filters.search_placeholder'),
+          onSearch: handleSearch,
+          showFilters,
+          onToggleFilters: () => setShowFilters(!showFilters),
+          hasActiveFilters: !!(filters.status || filters.category || filters.priority),
+          filters: (
+            <>
+              <select
+                value={filters.status || ''}
+                onChange={(e) => setFilters((prev) => ({ ...prev, status: (e.target.value || undefined) as FeedbackStatus | undefined, page: 1 }))}
+                className="form-select !w-auto shrink"
+              >
+                <option value="">{t('filters.all_statuses')}</option>
+                {(['NEW', 'TRIAGED', 'IN_PROGRESS', 'RESOLVED', 'CLOSED'] as FeedbackStatus[]).map((s) => (
+                  <option key={s} value={s}>{t(`statuses.${s}`)}</option>
+                ))}
+              </select>
+
+              <select
+                value={filters.category || ''}
+                onChange={(e) => setFilters((prev) => ({ ...prev, category: (e.target.value || undefined) as FeedbackCategory | undefined, page: 1 }))}
+                className="form-select !w-auto shrink"
+              >
+                <option value="">{t('filters.all_categories')}</option>
+                {(['BUG', 'UI_ISSUE', 'FEATURE', 'INCONSISTENCY', 'PERFORMANCE', 'OTHER'] as FeedbackCategory[]).map((c) => (
+                  <option key={c} value={c}>{t(`categories.${c}`)}</option>
+                ))}
+              </select>
+
+              <select
+                value={filters.priority || ''}
+                onChange={(e) => setFilters((prev) => ({ ...prev, priority: (e.target.value || undefined) as FeedbackPriority | undefined, page: 1 }))}
+                className="form-select !w-auto shrink"
+              >
+                <option value="">{t('filters.all_priorities')}</option>
+                {(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] as FeedbackPriority[]).map((p) => (
+                  <option key={p} value={p}>{t(`priorities.${p}`)}</option>
+                ))}
+              </select>
+
+              <button
+                onClick={handleClearFilters}
+                className="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                {t('table.clear')}
+              </button>
+            </>
+          ),
+        }}
         pagination={meta && meta.totalPages > 1 ? {
           page: meta.page,
           totalPages: meta.totalPages,

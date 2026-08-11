@@ -13,7 +13,7 @@
 
 import { MapPin, Wind, Users as UsersIcon, Eye, Edit2, Trash2 } from 'lucide-react';
 import type { ProjectListItem } from '@/services/project.service';
-import { DataTable, type DataTableColumn } from '@/components/ui/DataTable';
+import { DataTable, type DataTableColumn, type DataTableToolbar } from '@/components/ui/DataTable';
 
 /**
  * Props do componente ProjectsTable.
@@ -35,6 +35,8 @@ interface ProjectsTableProps {
   onViewDetails: (project: ProjectListItem) => void;
   onPageChange: (page: number) => void;
   t: (key: string, options?: Record<string, unknown>) => string;
+  /** Toolbar integrada (pesquisa + filtros + adicionar) */
+  toolbar?: DataTableToolbar;
 }
 
 /**
@@ -61,6 +63,7 @@ export function ProjectsTable({
   onViewDetails,
   onPageChange,
   t,
+  toolbar,
 }: ProjectsTableProps) {
   /**
    * Colunas da tabela de projetos.
@@ -172,6 +175,7 @@ export function ProjectsTable({
       clientSort
       emptyMessage={t('table.empty')}
       loadingMessage={t('table.loading')}
+      toolbar={toolbar}
       mobileOptions={{
         titleField: 'name',
         subtitleField: 'client',

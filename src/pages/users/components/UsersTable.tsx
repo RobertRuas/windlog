@@ -20,7 +20,7 @@
 
 import { Edit2, Trash2, KeyRound } from 'lucide-react';
 import type { UserListItem } from '@/services/user.service';
-import { DataTable, type DataTableColumn } from '@/components/ui/DataTable';
+import { DataTable, type DataTableColumn, type DataTableToolbar } from '@/components/ui/DataTable';
 
 /**
  * Props do componente UsersTable.
@@ -40,6 +40,8 @@ interface UsersTableProps {
   onResetPassword: (user: UserListItem) => void;
   onPageChange: (page: number) => void;
   t: (key: string, options?: Record<string, unknown>) => string;
+  /** Toolbar integrada (pesquisa + filtros + adicionar) */
+  toolbar?: DataTableToolbar;
 }
 
 /**
@@ -54,6 +56,7 @@ export function UsersTable({
   onResetPassword,
   onPageChange,
   t,
+  toolbar,
 }: UsersTableProps) {
   /**
    * Colunas da tabela de usuários.
@@ -157,6 +160,7 @@ export function UsersTable({
       clientSort
       emptyMessage={t('table.empty')}
       loadingMessage={t('table.loading')}
+      toolbar={toolbar}
       mobileOptions={{
         titleField: 'firstName',
         subtitleField: 'email',

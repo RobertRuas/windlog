@@ -30,14 +30,12 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { Plus } from 'lucide-react';
 
 // Layout
 import { AppLayout } from '@/components/layout/AppLayout';
 import { PageHeader } from '@/components/ui/PageHeader';
 
 // Componentes
-import { UsersFilters } from './components/UsersFilters';
 import { UsersTable } from './components/UsersTable';
 import { UserModal } from './components/UserModal';
 
@@ -63,6 +61,7 @@ export function UsersPage() {
 
   // Estados de filtros
   const [search, setSearch] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
   const [roleFilter, setRoleFilter] = useState<string>('');
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -250,33 +249,9 @@ export function UsersPage() {
       <PageHeader
         title={t('title')}
         subtitle={t('subtitle')}
-        actions={
-          <button
-            onClick={openCreateModal}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <Plus size={18} />
-            {t('newUser')}
-          </button>
-        }
       />
 
-      {/* Filtros */}
-      <UsersFilters
-        search={search}
-        onSearchChange={(value) => {
-          setSearch(value);
-          setCurrentPage(1);
-        }}
-        roleFilter={roleFilter}
-        onRoleChange={(role) => {
-          setRoleFilter(role);
-          setCurrentPage(1);
-        }}
-        t={t}
-      />
-
-      {/* Tabela de usuários */}
+      {/* Tabela de usuários com toolbar integrada */}
       <UsersTable
         data={data}
         isLoading={isLoading}
@@ -285,6 +260,28 @@ export function UsersPage() {
         onResetPassword={handleResetPassword}
         onPageChange={setCurrentPage}
         t={t}
+        toolbar={{
+          searchValue: search,
+          onSearchChange: (value) => { setSearch(value); setCurrentPage(1); },
+          searchPlaceholder: t('search.placeholder'),
+          showFilters,
+          onToggleFilters: () => setShowFilters(!showFilters),
+          hasActiveFilters: !!roleFilter,
+          filters: (
+            <select
+              value={roleFilter}
+              onChange={(e) => { setRoleFilter(e.target.value); setCurrentPage(1); }}
+              className="form-select !w-auto shrink"
+            >
+              <option value="">{t('filter.allRoles')}</option>
+              <option value="ADMIN">{t('roles.ADMIN')}</option>
+              <option value="HR">{t('roles.HR')}</option>
+              <option value="STANDARD">{t('roles.STANDARD')}</option>
+            </select>
+          ),
+          addLabel: t('newUser'),
+          onAdd: openCreateModal,
+        }}
       />
 
       {/* Modal de criação/edição (também exibe senha temporária) */}

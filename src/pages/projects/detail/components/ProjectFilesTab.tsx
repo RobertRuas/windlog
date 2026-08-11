@@ -18,7 +18,7 @@
  * ============================================================================
  */
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Upload,
@@ -98,9 +98,15 @@ export function ProjectFilesTab({
   const { t } = useTranslation('projects');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [searchInput, setSearchInput] = useState('');
 
-  // Ficheiros do projeto (vem da query do projeto)
+  // Ficheiros do projeto (vem da query do projeto) — filtrados por pesquisa
   const files = project.files || [];
+  const filteredFiles = useMemo(() => {
+    if (!searchInput.trim()) return files;
+    const q = searchInput.toLowerCase();
+    return files.filter((f) => f.originalName.toLowerCase().includes(q));
+  }, [files, searchInput]);
 
   /**
    * Abre o seletor de ficheiros.
@@ -275,12 +281,21 @@ export function ProjectFilesTab({
       {/* Tabela de ficheiros */}
       <DataTable
         columns={columns}
-        data={files}
+        data={filteredFiles}
         isLoading={false}
         clientSort
         emptyIcon={Paperclip}
         emptyMessage={t('files.empty')}
         loadingMessage={t('table.loading')}
+        toolbar={{
+          searchValue: searchInput,
+          onSearchChange: setSearchInput,
+          searchPlaceholder: t('files.searchPlaceholder'),
+          ...(canEdit ? {
+            addLabel: t('files.uploadFile'),
+            onAdd: handleSelectFiles,
+          } : {}),
+        }}
       />
     </div>
   );

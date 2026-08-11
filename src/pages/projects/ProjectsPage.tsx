@@ -32,14 +32,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Plus } from 'lucide-react';
 
 // Layout
 import { AppLayout } from '@/components/layout/AppLayout';
 import { PageHeader } from '@/components/ui/PageHeader';
 
 // Componentes
-import { ProjectsFilters } from './components/ProjectsFilters';
 import { ProjectsTable } from './components/ProjectsTable';
 import { ProjectModal } from './components/ProjectModal';
 
@@ -71,6 +69,7 @@ export function ProjectsPage() {
 
   // Estados de filtros
   const [search, setSearch] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -248,35 +247,9 @@ export function ProjectsPage() {
       <PageHeader
         title={t('title')}
         subtitle={t('subtitle')}
-        actions={
-          canEdit ? (
-            <button
-              onClick={openCreateModal}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              <Plus size={18} />
-              {t('newProject')}
-            </button>
-          ) : undefined
-        }
       />
 
-      {/* Filtros */}
-      <ProjectsFilters
-        search={search}
-        onSearchChange={(value) => {
-          setSearch(value);
-          setCurrentPage(1);
-        }}
-        statusFilter={statusFilter}
-        onStatusChange={(status) => {
-          setStatusFilter(status);
-          setCurrentPage(1);
-        }}
-        t={t}
-      />
-
-      {/* Tabela de projetos */}
+      {/* Tabela de projetos com toolbar integrada */}
       <ProjectsTable
         data={data}
         isLoading={isLoading}
@@ -286,6 +259,32 @@ export function ProjectsPage() {
         onViewDetails={handleViewDetails}
         onPageChange={setCurrentPage}
         t={t}
+        toolbar={{
+          searchValue: search,
+          onSearchChange: (value) => { setSearch(value); setCurrentPage(1); },
+          searchPlaceholder: t('search.placeholder'),
+          showFilters,
+          onToggleFilters: () => setShowFilters(!showFilters),
+          hasActiveFilters: !!statusFilter,
+          filters: (
+            <select
+              value={statusFilter}
+              onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
+              className="form-select !w-auto shrink"
+            >
+              <option value="">{t('filter.allStatuses')}</option>
+              <option value="PLANNING">{t('status.PLANNING')}</option>
+              <option value="IN_PROGRESS">{t('status.IN_PROGRESS')}</option>
+              <option value="ON_HOLD">{t('status.ON_HOLD')}</option>
+              <option value="COMPLETED">{t('status.COMPLETED')}</option>
+              <option value="CANCELLED">{t('status.CANCELLED')}</option>
+            </select>
+          ),
+          ...(canEdit ? {
+            addLabel: t('newProject'),
+            onAdd: openCreateModal,
+          } : {}),
+        }}
       />
 
       {/* Modal de criação/edição */}

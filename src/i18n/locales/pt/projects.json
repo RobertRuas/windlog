@@ -152,7 +152,9 @@
     "dropzone": "Arraste ficheiros para aqui ou clique para selecionar",
     "dropzoneHint": "PDF, Word, Excel, PowerPoint ou JPEG até 10 MB",
     "uploading": "A enviar...",
-    "exceedsLimit": "\"{{name}}\" excede o limite de 10 MB"
+    "exceedsLimit": "\"{{name}}\" excede o limite de 10 MB",
+    "searchPlaceholder": "Pesquisar ficheiro...",
+    "uploadFile": "Adicionar ficheiro"
   },
   "filesTable": {
     "name": "Nome",
