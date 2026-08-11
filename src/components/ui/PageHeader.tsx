@@ -25,16 +25,16 @@ interface PageHeaderProps {
 export function PageHeader({ title, subtitle, actions, showSeparator = true }: PageHeaderProps) {
   return (
     <>
-      {/* Cabeçalho */}
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
+      {/* Cabeçalho — flex-wrap para botões não sobre saírem em mobile */}
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">{title}</h1>
           {subtitle && (
-            <p className="text-sm text-gray-500 mt-1">{subtitle}</p>
+            <p className="text-sm text-gray-500 mt-1 truncate">{subtitle}</p>
           )}
         </div>
         {actions && (
-          <div className="flex items-center gap-1">{actions}</div>
+          <div className="flex items-center gap-1 flex-shrink-0">{actions}</div>
         )}
       </div>
 

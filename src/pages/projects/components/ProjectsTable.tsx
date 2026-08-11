@@ -172,6 +172,26 @@ export function ProjectsTable({
       clientSort
       emptyMessage={t('table.empty')}
       loadingMessage={t('table.loading')}
+      mobileOptions={{
+        titleField: 'name',
+        subtitleField: 'client',
+        fields: [
+          { key: 'location', label: t('table.location') },
+          { key: 'status', label: t('table.status') },
+        ],
+        actions: [
+          { icon: Eye, label: t('actions.viewDetails'), color: 'text-blue-600', onPress: onViewDetails },
+          ...(canEdit ? [
+            { icon: Edit2, label: t('actions.edit'), color: 'text-blue-600', onPress: onEdit },
+            { icon: Trash2, label: t('actions.delete'), color: 'text-red-600', onPress: onDelete },
+          ] : []),
+        ],
+        sortableColumns: [
+          { key: 'name', label: t('table.name') },
+          { key: 'client', label: t('table.client') },
+          { key: 'status', label: t('table.status') },
+        ],
+      }}
       pagination={data && data.totalPages > 1 ? {
         page: data.page,
         totalPages: data.totalPages,

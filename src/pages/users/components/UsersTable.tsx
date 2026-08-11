@@ -157,6 +157,23 @@ export function UsersTable({
       clientSort
       emptyMessage={t('table.empty')}
       loadingMessage={t('table.loading')}
+      mobileOptions={{
+        titleField: 'firstName',
+        subtitleField: 'email',
+        fields: [
+          { key: 'role', label: t('table.role') },
+        ],
+        actions: [
+          { icon: Edit2, label: t('actions.edit'), color: 'text-blue-600', onPress: onEdit },
+          { icon: KeyRound, label: t('actions.resetPassword'), color: 'text-amber-600', onPress: onResetPassword },
+          { icon: Trash2, label: t('actions.deactivate'), color: 'text-red-600', onPress: onDelete },
+        ],
+        sortableColumns: [
+          { key: 'firstName', label: t('table.name') },
+          { key: 'email', label: t('table.email') },
+          { key: 'role', label: t('table.role') },
+        ],
+      }}
       pagination={data && data.totalPages > 1 ? {
         page: data.page,
         totalPages: data.totalPages,

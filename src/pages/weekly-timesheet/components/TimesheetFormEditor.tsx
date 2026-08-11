@@ -377,7 +377,7 @@ export function TimesheetFormEditor({
           <h2 className="text-base font-semibold text-gray-900">{t('form.metadataTitle')}</h2>
         </div>
         <div className="p-6 space-y-4">
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className={labelClass}>{t('sheet.jobNumber')}</label>
               <input type="text" value={form.jobNumber} onChange={(e) => handleMetaChange('jobNumber', e.target.value)} disabled={isSaving} className={inputClass} />
@@ -391,7 +391,7 @@ export function TimesheetFormEditor({
               <input type="text" value={form.teamNo} onChange={(e) => handleMetaChange('teamNo', e.target.value)} disabled={isSaving} className={inputClass} />
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <TranslatableField
               label={t('sheet.jobScope')}
               labelClassName={labelClass}
@@ -481,7 +481,7 @@ export function TimesheetFormEditor({
                   </div>
 
                   {/* ── Turbina: dropdown + campos auto-preenchidos ── */}
-                  <div className="grid grid-cols-4 gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     <div>
                       <label className={smallLabel}>{t('sheet.localTurbineNo')}</label>
                       <select
@@ -527,7 +527,7 @@ export function TimesheetFormEditor({
                   </div>
 
                   {/* ── Horas compactas com validação ── */}
-                  <div className="grid grid-cols-4 gap-2 mt-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3">
                     <div>
                       <label className={smallLabel}>{t('sheet.standbyHrs')}</label>
                       <input
@@ -722,7 +722,7 @@ export function TimesheetFormEditor({
           <h2 className="text-base font-semibold text-gray-900">{t('form.signaturesTitle')}</h2>
         </div>
         <div className="p-6">
-          <div className="grid grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
             {/* ── Coluna: Team Leader ────────────────────────────────── */}
             <div className="space-y-4">
               <h3 className="text-sm font-semibold text-gray-800 border-b border-gray-200 pb-2">

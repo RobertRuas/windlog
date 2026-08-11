@@ -205,7 +205,7 @@ export function MessageList({
             <input className={fieldClass} placeholder={t('list.filter_to')} value={advanced.to} onChange={(e) => setAdvanced({ ...advanced, to: e.target.value })} />
             <input className={fieldClass} placeholder={t('list.filter_subject')} value={advanced.subject} onChange={(e) => setAdvanced({ ...advanced, subject: e.target.value })} />
             <input className={fieldClass} placeholder={t('list.filter_content')} value={advanced.content} onChange={(e) => setAdvanced({ ...advanced, content: e.target.value })} />
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <input type="date" className={fieldClass} value={advanced.startDate} onChange={(e) => setAdvanced({ ...advanced, startDate: e.target.value })} title={t('list.filter_start_date')} />
               <input type="date" className={fieldClass} value={advanced.endDate} onChange={(e) => setAdvanced({ ...advanced, endDate: e.target.value })} title={t('list.filter_end_date')} />
             </div>

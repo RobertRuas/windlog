@@ -33,9 +33,6 @@ import { Toaster } from 'sonner';
 // Importa a configuração do i18next (deve ser importado antes de usar traduções)
 import '@/i18n';
 
-// Proteção contra acesso em dispositivos móveis (ecrã < 1024px)
-import { MobileGuard } from '@/components/MobileGuard';
-
 // Contexto global de preferências (tema, escala, idioma)
 import { SettingsProvider, useSettings } from '@/contexts/SettingsContext';
 
@@ -257,9 +254,7 @@ function ThemedToaster() {
  */
 export default function App() {
   return (
-    /* MobileGuard - bloqueia acesso em ecrãs pequenos (< 1024px).
-     * Se o dispositivo for desktop, renderiza os children normalmente. */
-    <MobileGuard>
+    <>
       {/* QueryClientProvider - disponibiliza o TanStack Query para todos os componentes.
        * Qualquer componente pode usar useQuery() para buscar dados da API. */}
       <QueryClientProvider client={queryClient}>
@@ -433,6 +428,6 @@ export default function App() {
         </BrowserRouter>
         </SettingsProvider>
       </QueryClientProvider>
-    </MobileGuard>
+    </>
   );
 }

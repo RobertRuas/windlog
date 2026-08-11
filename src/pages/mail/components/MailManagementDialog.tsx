@@ -289,7 +289,7 @@ function ContactsTab() {
             <p className="text-xs font-medium text-gray-500 dark:text-[#8e8e93]">
               {t('manage.contacts.select_contacts')} ({newMembers.size})
             </p>
-            <div className="grid grid-cols-2 gap-x-6 gap-y-1 max-h-40 overflow-y-auto pr-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 max-h-40 overflow-y-auto pr-1">
               {contacts.map((contact) => (
                 <label key={contact.id} className="flex items-center gap-2 px-2 py-1 rounded-md text-sm text-gray-700 dark:text-[#a1a1a6] cursor-pointer hover:bg-white/60 dark:hover:bg-[#2c2c2e]">
                   <input
@@ -329,7 +329,7 @@ function ContactsTab() {
         ) : (
           <>
             {/* Grade de cartões de grupo */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {groups.map((group) => {
                 const owned = canManageGroup(group);
                 const selected = selectedId === group.id;
@@ -411,7 +411,7 @@ function ContactsTab() {
                 {canManageGroup(selectedGroup) ? (
                   <>
                     <p className="text-xs text-gray-400 mb-2">{t('manage.contacts.members_hint')}</p>
-                    <div className="grid grid-cols-2 gap-x-6 gap-y-1 max-h-48 overflow-y-auto pr-1">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 max-h-48 overflow-y-auto pr-1">
                       {contacts.map((contact) => (
                         <label key={contact.id} className="flex items-center gap-2 text-sm text-gray-700 dark:text-[#a1a1a6] cursor-pointer">
                           <input
@@ -434,7 +434,7 @@ function ContactsTab() {
                   <>
                     {/* Somente leitura: grupos de outro dono (partilhados) */}
                     <p className="text-xs text-gray-400 mb-2">{t('manage.contacts.shared_readonly_hint')}</p>
-                    <div className="grid grid-cols-2 gap-x-6 gap-y-1 max-h-48 overflow-y-auto pr-1">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 max-h-48 overflow-y-auto pr-1">
                       {selectedGroup.members.map((member) => (
                         <div key={member.id} className="flex items-center gap-2 text-sm text-gray-700 dark:text-[#a1a1a6]">
                           <User size={13} className="text-gray-400 flex-shrink-0" />

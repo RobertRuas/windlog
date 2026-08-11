@@ -40,6 +40,8 @@
 import { useState, useMemo } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { FolderOpen, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, ArrowUpDown } from 'lucide-react';
+import { useIsMobile } from '@/hooks/useIsMobile';
+import { MobileListView, type MobileListField, type MobileListAction } from './MobileListView';
 
 // ─── Tipos ──────────────────────────────────────────────────────────────────
 
@@ -123,6 +125,23 @@ interface DataTableProps<T> {
   getKey?: (item: T) => string;
   /** Callback ao clicar numa linha (opcional) */
   onRowClick?: (item: T) => void;
+  /**
+   * Configuração mobile — quando definida, em ecrãs pequenos a tabela
+   * é substituída por uma lista estilo iOS (MobileListView).
+   * Se não definida, a tabela mantém o comportamento normal (scroll).
+   */
+  mobileOptions?: {
+    /** Campo usado como título principal na lista */
+    titleField: string;
+    /** Campo usado como subtítulo */
+    subtitleField?: string;
+    /** Campos secundários (label/valor) */
+    fields?: MobileListField<T>[];
+    /** Ações por item (botões touch) */
+    actions?: MobileListAction<T>[];
+    /** Colunas ordenáveis (chips) */
+    sortableColumns?: { key: string; label: string }[];
+  };
 }
 
 // ─── Componente ─────────────────────────────────────────────────────────────
@@ -143,7 +162,11 @@ export function DataTable<T>({
   clientSort = false,
   getKey,
   onRowClick,
+  mobileOptions,
 }: DataTableProps<T>) {
+  // Detecta se está em mobile (para delegar ao MobileListView)
+  const isMobile = useIsMobile();
+
   // Estado para ordenação client-side (quando clientSort = true)
   const [localSort, setLocalSort] = useState<{ key: string; direction: 'asc' | 'desc' }>({
     key: '',
@@ -249,6 +272,29 @@ export function DataTable<T>({
 
   // Dados a exibir (ordenados se clientSort, ou originais)
   const displayData = clientSort ? sortedData : data;
+
+  // Se mobile e mobileOptions definido, delega para o MobileListView (lista iOS)
+  if (isMobile && mobileOptions) {
+    return (
+      <MobileListView
+        data={displayData}
+        titleField={mobileOptions.titleField}
+        subtitleField={mobileOptions.subtitleField}
+        fields={mobileOptions.fields}
+        actions={mobileOptions.actions}
+        onItemPress={onRowClick}
+        isLoading={isLoading}
+        emptyIcon={EmptyIcon}
+        emptyMessage={emptyMessage}
+        loadingMessage={loadingMessage}
+        headerContent={headerContent}
+        pagination={pagination}
+        sort={sort ? { key: sort.key ?? '', direction: sort.direction, onSort: sort.onSort } : undefined}
+        sortableColumns={mobileOptions.sortableColumns}
+        getKey={getKey}
+      />
+    );
+  }
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
