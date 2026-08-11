@@ -33,7 +33,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import {
-  Trash2, Save, RotateCcw, ChevronDown, ChevronRight,
+  Trash2, Save, RotateCcw, ChevronDown, ChevronRight, ChevronUp,
   Check, X, GripVertical,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -135,6 +135,9 @@ export function TimesheetFormEditor({
   const [collapsedDays, setCollapsedDays] = useState<Set<number>>(
     () => new Set(form.days.map((_, i) => i)),
   );
+
+  // Metadata: recolhido por padrão
+  const [metadataOpen, setMetadataOpen] = useState(false);
 
   // Refs para scroll automático ao abrir um dia
   const dayHeaderRefs = useRef<Record<number, HTMLDivElement | null>>({});
@@ -418,45 +421,52 @@ export function TimesheetFormEditor({
 
   return (
     <div className="space-y-4 max-w-5xl">
-      {/* ── Seção: Metadata ──────────────────────────────────────────── */}
+      {/* ── Seção: Metadata (acordeão recolhido) ─────────────────────── */}
       <section className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100 bg-gray-50">
-          <h2 className="text-base font-semibold text-gray-900">{t('form.metadataTitle')}</h2>
-        </div>
-        <div className="p-6 space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <label className={labelClass}>{t('sheet.jobNumber')}</label>
-              <input type="text" value={form.jobNumber} onChange={(e) => handleMetaChange('jobNumber', e.target.value)} disabled={isSaving} className={inputClass} />
+        <button
+          type="button"
+          onClick={() => setMetadataOpen(!metadataOpen)}
+          className="w-full px-6 py-3 border-b border-gray-100 bg-gray-50 flex items-center justify-between cursor-pointer hover:bg-gray-100/60 transition-colors"
+        >
+          <h2 className="text-sm font-semibold text-gray-900">{t('form.metadataTitle')}</h2>
+          {metadataOpen ? <ChevronUp size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
+        </button>
+        {metadataOpen && (
+          <div className="p-6 space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className={labelClass}>{t('sheet.jobNumber')}</label>
+                <input type="text" value={form.jobNumber} onChange={(e) => handleMetaChange('jobNumber', e.target.value)} disabled={isSaving} className={inputClass} />
+              </div>
+              <div>
+                <label className={labelClass}>{t('sheet.week')}</label>
+                <input type="text" value={form.week} disabled className={inputClass + ' bg-gray-50'} />
+              </div>
+              <div>
+                <label className={labelClass}>{t('sheet.teamNo')}</label>
+                <input type="text" value={form.teamNo} onChange={(e) => handleMetaChange('teamNo', e.target.value)} disabled={isSaving} className={inputClass} />
+              </div>
             </div>
-            <div>
-              <label className={labelClass}>{t('sheet.week')}</label>
-              <input type="text" value={form.week} disabled className={inputClass + ' bg-gray-50'} />
-            </div>
-            <div>
-              <label className={labelClass}>{t('sheet.teamNo')}</label>
-              <input type="text" value={form.teamNo} onChange={(e) => handleMetaChange('teamNo', e.target.value)} disabled={isSaving} className={inputClass} />
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <TranslatableField
+                label={t('sheet.jobScope')}
+                labelClassName={labelClass}
+                value={form.jobScope}
+                onChange={(v) => handleMetaChange('jobScope', v)}
+                disabled={isSaving}
+                fieldClassName={inputClass}
+              />
+              <div>
+                <label className={labelClass}>{t('sheet.client')}</label>
+                <input type="text" value={form.client} onChange={(e) => handleMetaChange('client', e.target.value)} disabled={isSaving} className={inputClass} />
+              </div>
+              <div>
+                <label className={labelClass}>{t('sheet.siteName')}</label>
+                <input type="text" value={form.siteName} onChange={(e) => handleMetaChange('siteName', e.target.value)} disabled={isSaving} className={inputClass} />
+              </div>
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <TranslatableField
-              label={t('sheet.jobScope')}
-              labelClassName={labelClass}
-              value={form.jobScope}
-              onChange={(v) => handleMetaChange('jobScope', v)}
-              disabled={isSaving}
-              fieldClassName={inputClass}
-            />
-            <div>
-              <label className={labelClass}>{t('sheet.client')}</label>
-              <input type="text" value={form.client} onChange={(e) => handleMetaChange('client', e.target.value)} disabled={isSaving} className={inputClass} />
-            </div>
-            <div>
-              <label className={labelClass}>{t('sheet.siteName')}</label>
-              <input type="text" value={form.siteName} onChange={(e) => handleMetaChange('siteName', e.target.value)} disabled={isSaving} className={inputClass} />
-            </div>
-          </div>
-        </div>
+        )}
       </section>
 
       {/* ── Seção: Dias da Semana ────────────────────────────────────── */}
