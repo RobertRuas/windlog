@@ -176,10 +176,10 @@ export function WeeklyTimesheetDetailPage() {
             <div className="flex items-center gap-2 shrink-0">
               <button
                 onClick={() => setIsViewModalOpen(true)}
-                className="sm:flex items-center gap-2 px-2.5 sm:px-4 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
+                className="flex items-center justify-center gap-2 px-2.5 sm:px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
                 title={t('detail.viewButton')}
               >
-                <Eye size={16} />
+                <Eye size={17} className="shrink-0" />
                 <span className="hidden sm:inline">{t('detail.viewButton')}</span>
               </button>
               <span
