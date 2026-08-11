@@ -101,7 +101,7 @@ export function timesheetToFormState(ts: WeeklyTimesheet): FormState {
     siteName: ts.siteName || '',
     technicianName: ts.technicianName || '',
     technicianSignature: ts.technicianSignature || '',
-    technicianDate: formatDateBR(ts.technicianDate),
+    technicianDate: formatDateBR(ts.technicianDate) || formatDateBR(new Date().toISOString()),
     clientName: ts.clientName || '',
     clientSignature: ts.clientSignature || '',
     clientDate: formatDateBR(ts.clientDate),
