@@ -57,12 +57,17 @@ export function TimesheetViewModal({ timesheet, onClose }: TimesheetViewModalPro
   useEffect(() => {
     document.body.classList.add('ts-print-view-open');
 
+    // Guarda o zoom da aplicação e neutraliza-o para o modal cobrir 100% do ecrã
+    const rootZoom = document.documentElement.style.zoom;
+    document.documentElement.style.zoom = '1';
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
     };
     window.addEventListener('keydown', handleKeyDown);
 
     return () => {
+      document.documentElement.style.zoom = rootZoom;
       document.body.classList.remove('ts-print-view-open');
       window.removeEventListener('keydown', handleKeyDown);
     };
