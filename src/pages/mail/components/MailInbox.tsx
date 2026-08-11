@@ -7,10 +7,9 @@
  * ------------------------
  * Layout principal do cliente de e-mail após a conta conectada:
  * - Barra de ferramentas: escrever, sincronizar, gestão, desconectar
+ * - Barra de navegação discreta: pastas e etiquetas (seleção via query string)
  * - Área principal: lista de mensagens (MessageList) OU leitura da
  *   mensagem em tela cheia (MessageView), com botão de voltar
- * - Pastas e etiquetas ficam no submenu em acordeão do menu lateral
- *   principal (a seleção chega via query string ?folder= / ?label=)
  *
  * ATALHOS DE TECLADO:
  * -------------------
@@ -20,15 +19,21 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { PenSquare, RefreshCw, Settings2, PlugZap } from 'lucide-react';
+import {
+  PenSquare, RefreshCw, Settings2, PlugZap,
+  Inbox, Send, FileText, AlertOctagon, Trash2, Archive,
+  Folder as FolderIcon, Tag, Plus,
+} from 'lucide-react';
 
 // Serviço
 import {
   syncMail, disconnectMailAccount, updateMessageFlags,
-  type MailAccount, type MailMessageFilters, type MailMessageSummary,
+  getMailFolders, getMailLabels, createMailFolder,
+  type MailAccount, type MailFolder, type MailFolderType, type MailLabel,
+  type MailMessageFilters, type MailMessageSummary,
   type MailMessageDetail,
 } from '@/services/mail.service';
 
@@ -37,6 +42,19 @@ import { MessageList } from './MessageList';
 import { MessageView } from './MessageView';
 import { ComposeModal, type ComposeMode } from './ComposeModal';
 import { MailManagementDialog } from './MailManagementDialog';
+
+/**
+ * Ícone de cada tipo de pasta.
+ */
+const FOLDER_ICONS: Record<MailFolderType, typeof Inbox> = {
+  INBOX: Inbox,
+  SENT: Send,
+  DRAFTS: FileText,
+  SPAM: AlertOctagon,
+  TRASH: Trash2,
+  ARCHIVE: Archive,
+  CUSTOM: FolderIcon,
+};
 
 /**
  * Estado dos modais abertos.
@@ -62,7 +80,7 @@ export function MailInbox({ account }: MailInboxProps) {
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // Pasta/etiqueta selecionada vem da query string (submenu do menu lateral)
+  // Pasta/etiqueta selecionada vem da query string
   const folderId = searchParams.get('folder');
   const labelId = searchParams.get('label');
 
@@ -70,6 +88,49 @@ export function MailInbox({ account }: MailInboxProps) {
   const [filters, setFilters] = useState<MailMessageFilters>({});
   const [selectedMessage, setSelectedMessage] = useState<MailMessageSummary | null>(null);
   const [modals, setModals] = useState<ModalState>({ compose: null, management: null });
+
+  // Estado para criação inline de pasta
+  const [isAddingFolder, setIsAddingFolder] = useState(false);
+  const [newFolderName, setNewFolderName] = useState('');
+
+  /**
+   * Busca pastas e etiquetas para a barra de navegação.
+   */
+  const { data: folders = [] } = useQuery({
+    queryKey: ['mail-folders'],
+    queryFn: getMailFolders,
+    staleTime: 30_000,
+  });
+  const { data: labels = [] } = useQuery({
+    queryKey: ['mail-labels'],
+    queryFn: getMailLabels,
+    staleTime: 30_000,
+  });
+
+  /**
+   * Aplica a seleção (pasta ou etiqueta) na query string.
+   */
+  function selectFolder(key: 'folder' | 'label', value: string | null) {
+    const next = new URLSearchParams(searchParams);
+    next.delete('folder');
+    next.delete('label');
+    if (value) next.set(key, value);
+    setSearchParams(next, { replace: true });
+  }
+
+  /**
+   * Cria uma pasta personalizada.
+   */
+  const createFolderMutation = useMutation({
+    mutationFn: (name: string) => createMailFolder(name),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['mail-folders'] });
+      setIsAddingFolder(false);
+      setNewFolderName('');
+      toast.success(t('folders.created'));
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   /**
    * Ao trocar de pasta/etiqueta, fecha a leitura da mensagem atual.
@@ -220,8 +281,7 @@ export function MailInbox({ account }: MailInboxProps) {
           )}
         </span>
 
-        {/* Gestão (regras, contatos, assinaturas...) — agora no menu lateral;
-         * mantém-se o botão como atalho discreto */}
+        {/* Gestão (regras, contatos, assinaturas...) */}
         <button
           onClick={() => setModals({ ...modals, management: {} })}
           className="ml-auto form-button form-button-secondary"
@@ -246,6 +306,107 @@ export function MailInbox({ account }: MailInboxProps) {
           {t('toolbar.sync_error')}: {account.lastSyncError}
         </div>
       )}
+
+      {/* ── Barra de navegação: pastas e etiquetas ─────────── */}
+      <div className="flex items-center gap-1.5 px-4 py-2 border-b border-gray-200 dark:border-[#38383a] overflow-x-auto">
+        {/* Todas as mensagens (padrão quando nada selecionado) */}
+        <button
+          onClick={() => selectFolder('folder', null)}
+          className={`
+            inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium whitespace-nowrap transition-colors
+            ${!folderId && !labelId
+              ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
+              : 'text-gray-500 dark:text-[#a1a1a6] hover:bg-gray-100 dark:hover:bg-[#2c2c2e]'}
+          `}
+        >
+          <Inbox size={13} />
+          {t('folders.all')}
+        </button>
+
+        {/* Separador visual */}
+        <span className="w-px h-4 bg-gray-200 dark:bg-[#38383a] flex-shrink-0" />
+
+        {/* Pastas */}
+        {folders.map((folder: MailFolder) => {
+          const Icon = FOLDER_ICONS[folder.type] || FolderIcon;
+          const active = folderId === folder.id;
+          return (
+            <button
+              key={folder.id}
+              onClick={() => selectFolder('folder', folder.id)}
+              className={`
+                inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium whitespace-nowrap transition-colors
+                ${active
+                  ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
+                  : 'text-gray-500 dark:text-[#a1a1a6] hover:bg-gray-100 dark:hover:bg-[#2c2c2e]'}
+              `}
+            >
+              <Icon size={13} />
+              {t(`folders.types.${folder.type}`, folder.name)}
+              {folder.unreadCount > 0 && (
+                <span className="text-[10px] font-semibold bg-blue-600 text-white rounded-full px-1.5 py-px min-w-[16px] text-center leading-none">
+                  {folder.unreadCount}
+                </span>
+              )}
+            </button>
+          );
+        })}
+
+        {/* Etiquetas (se existirem) */}
+        {labels.length > 0 && <span className="w-px h-4 bg-gray-200 dark:bg-[#38383a] flex-shrink-0" />}
+        {labels.map((label: MailLabel) => {
+          const active = labelId === label.id;
+          return (
+            <button
+              key={label.id}
+              onClick={() => selectFolder('label', active ? null : label.id)}
+              className={`
+                inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium whitespace-nowrap transition-colors
+                ${active
+                  ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
+                  : 'text-gray-500 dark:text-[#a1a1a6] hover:bg-gray-100 dark:hover:bg-[#2c2c2e]'}
+              `}
+            >
+              <Tag size={12} style={{ color: label.color || '#6b7280' }} />
+              {label.name}
+            </button>
+          );
+        })}
+
+        {/* Nova pasta (inline) */}
+        {isAddingFolder ? (
+          <div className="inline-flex items-center gap-1">
+            <input
+              autoFocus
+              value={newFolderName}
+              onChange={(e) => setNewFolderName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && newFolderName.trim()) {
+                  createFolderMutation.mutate(newFolderName.trim());
+                }
+                if (e.key === 'Escape') { setIsAddingFolder(false); setNewFolderName(''); }
+              }}
+              placeholder={t('folders.name_placeholder')}
+              className="w-28 text-xs px-2 py-1 rounded border border-gray-300 dark:border-[#38383a] bg-white dark:bg-[#2c2c2e] text-gray-900 dark:text-[#f5f5f7]"
+            />
+            <button
+              onClick={() => newFolderName.trim() && createFolderMutation.mutate(newFolderName.trim())}
+              className="p-0.5 text-blue-600 hover:text-blue-700"
+              title={t('common:buttons.save')}
+            >
+              <Plus size={14} />
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => { setIsAddingFolder(true); setNewFolderName(''); }}
+            className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs text-gray-400 dark:text-[#636366] hover:text-blue-600 hover:bg-gray-100 dark:hover:bg-[#2c2c2e] transition-colors"
+            title={t('folders.new')}
+          >
+            <Plus size={13} />
+          </button>
+        )}
+      </div>
 
       {/* ── Corpo: lista OU leitura em tela cheia ───────────── */}
       <div className="flex h-[calc(100vh-260px)] min-h-[480px]">
