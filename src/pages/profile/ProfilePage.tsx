@@ -438,7 +438,7 @@ export function ProfilePage() {
                   {t('signatureSection.description')}
                 </p>
                 <SignaturePad
-                  initialValue={data?.signatureData}
+                  signatureFilePath={data?.signatureData}
                   height={160}
                   isSaving={signatureMutation.isPending}
                   onSave={(dataUrl) => {
