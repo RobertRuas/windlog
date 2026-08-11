@@ -87,8 +87,6 @@ export function TimesheetViewModal({ timesheet, onClose }: TimesheetViewModalPro
         position: 'fixed',
         top: 0,
         left: 0,
-        right: 0,
-        bottom: 0,
         width: '100%',
         height: '100%',
         zIndex: 9999,
@@ -156,7 +154,7 @@ export function TimesheetViewModal({ timesheet, onClose }: TimesheetViewModalPro
           width: '100%',
         }}
       >
-        <div className="ts-dashboard-container [&]:max-w-none [&]:m-0">
+        <div className="ts-dashboard-container" style={{ maxWidth: 'none', margin: 0 }}>
           {/* Planilha read-only em modo de impressão */}
           <TimesheetSheet
             timesheet={timesheet}
