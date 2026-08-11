@@ -42,6 +42,7 @@ import { getProfile, updateSignature } from '@/services/auth.service';
 import { getProjectMembers, getProjectTurbines, type ProjectMember } from '@/services/project.service';
 import { DatePicker } from '@/components/ui/DatePicker';
 import { SignaturePad } from '@/components/ui/SignaturePad';
+import { SecureImage } from '@/components/ui/SecureImage';
 import { TranslatableField } from '@/components/ui/TranslatableField';
 import { useTranslationLifecycle } from '@/hooks/useTranslationLifecycle';
 import { TechnicianSelect } from './TechnicianSelect';
@@ -766,14 +767,22 @@ export function TimesheetFormEditor({
                   </span>
                 </div>
                 {/* Preview da assinatura quando ativa */}
-                {form.technicianSignature && form.technicianSignature.startsWith('data:image') && (
+                {form.technicianSignature && (
                   <div className="mt-2 p-3 bg-gray-50 rounded-lg border border-gray-200 flex items-center gap-3">
-                    <img
-                      src={form.technicianSignature}
-                      alt="Your signature"
-                      className="w-auto object-contain"
-                      style={{ maxHeight: '60px', mixBlendMode: 'multiply' }}
-                    />
+                    {form.technicianSignature.startsWith('data:image') ? (
+                      <img
+                        src={form.technicianSignature}
+                        alt="Your signature"
+                        className="w-auto object-contain"
+                        style={{ maxHeight: '60px', mixBlendMode: 'multiply' }}
+                      />
+                    ) : (
+                      <SecureImage
+                        filePath={form.technicianSignature}
+                        alt="Your signature"
+                        className="w-auto object-contain"
+                        />
+                    )}
                     {/* Botão para limpar assinatura */}
                     <button
                       type="button"

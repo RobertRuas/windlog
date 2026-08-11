@@ -102,9 +102,12 @@ export function SignaturePad({
 
   /**
    * Desenha a imagem existente no canvas quando currentImage muda.
-   * A imagem é escalada para caber no canvas mantendo a proporção.
+   * Apenas em modo readOnly — no modo edição, a assinatura guardada
+   * aparece na secção de preview abaixo, evitando duplicação.
    */
   useEffect(() => {
+    if (!readOnly) return; // Em edição, o preview mostra a imagem
+
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -116,7 +119,6 @@ export function SignaturePad({
     if (currentImage) {
       const img = new Image();
       img.onload = () => {
-        // Escala a imagem para caber no canvas
         const scale = Math.min(canvas.width / img.width, canvas.height / img.height, 1);
         const w = img.width * scale;
         const h = img.height * scale;
@@ -126,7 +128,7 @@ export function SignaturePad({
       };
       img.src = currentImage;
     }
-  }, [currentImage]);
+  }, [currentImage, readOnly]);
 
   // ── Funções de desenho no canvas ────────────────────────────────────
 

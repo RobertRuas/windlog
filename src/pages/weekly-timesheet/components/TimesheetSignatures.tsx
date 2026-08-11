@@ -19,6 +19,7 @@
  */
 
 import type { WeeklyTimesheet } from '@/services/weekly-timesheet.service';
+import { SecureImage } from '@/components/ui/SecureImage';
 
 /**
  * Props do componente TimesheetSignatures.
@@ -89,6 +90,12 @@ export function TimesheetSignatures({
               className="w-auto object-contain"
               style={{ maxHeight: '60px', mixBlendMode: 'multiply' }}
             />
+          ) : timesheet.technicianSignature && !timesheet.technicianSignature.startsWith('data:image') && timesheet.technicianSignature.includes('/') ? (
+            <SecureImage
+              filePath={timesheet.technicianSignature}
+              alt="Technician Signature"
+              className="w-auto object-contain"
+            />
           ) : (
             timesheet.technicianSignature || ''
           )}
@@ -111,6 +118,12 @@ export function TimesheetSignatures({
               alt="Client Signature"
               className="w-auto object-contain"
               style={{ maxHeight: '60px', mixBlendMode: 'multiply' }}
+            />
+          ) : timesheet.clientSignature && !timesheet.clientSignature.startsWith('data:image') && timesheet.clientSignature.includes('/') ? (
+            <SecureImage
+              filePath={timesheet.clientSignature}
+              alt="Client Signature"
+              className="w-auto object-contain"
             />
           ) : (
             timesheet.clientSignature || ''
