@@ -169,7 +169,7 @@ export function WeeklyTimesheetPage() {
       />
 
       {/* Filtros */}
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex flex-wrap items-center gap-2 mb-4">
         <select
           value={statusFilter}
           onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}

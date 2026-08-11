@@ -208,8 +208,8 @@ export function ProjectDetailPage() {
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200 mb-6">
-        <nav className="flex gap-6">
+      <div className="border-b border-gray-200 mb-6 overflow-x-auto scrollbar-none">
+        <nav className="flex gap-4 sm:gap-6 min-w-max">
           <button
             onClick={() => setActiveTab('info')}
             className={`pb-3 text-sm font-medium border-b-2 transition-colors ${

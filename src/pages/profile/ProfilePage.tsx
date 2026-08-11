@@ -286,17 +286,17 @@ export function ProfilePage() {
   return (
     <AppLayout>
       {/* Cabeçalho com Avatar + Nome */}
-      <div className="flex items-center gap-4 mb-6">
+      <div className="flex items-center gap-3 sm:gap-4 mb-6">
         <AvatarUpload
           currentPhotoUrl={data?.photoUrl}
           onSuccess={() => queryClient.invalidateQueries({ queryKey: ['profile'] })}
           compact
         />
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">
             {t('title')}, {data!.firstName}!
           </h1>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <p className="text-xs sm:text-sm text-gray-500 mt-0.5 truncate">
             {data?.position || data?.department || t('sections.personal.description')}
             {data?.isTeamLeader && (
               <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
