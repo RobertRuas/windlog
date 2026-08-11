@@ -33,8 +33,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import {
-  Plus, Trash2, Save, RotateCcw, ChevronDown, ChevronRight,
-  Check, User as UserIcon, ChevronUp, X,
+  Trash2, Save, RotateCcw, ChevronDown, ChevronRight,
+  Check, X, GripVertical,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { updateTimesheet } from '@/services/weekly-timesheet.service';
@@ -141,6 +141,11 @@ export function TimesheetFormEditor({
 
   // Erros de validação
   const [validationErrors, setValidationErrors] = useState<Set<number>>(new Set());
+
+  // ── Drag-and-drop para reordenar técnicos ──────────────────────────
+  const [dragInfo, setDragInfo] = useState<{ dayIdx: number; fromIdx: number; toIdx: number } | null>(null);
+  const dragRowRefs = useRef<Record<number, HTMLDivElement | null>>({});
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Painéis de personalização recolhidos — removido (personalização descontinuada)
 
@@ -347,6 +352,29 @@ export function TimesheetFormEditor({
     }
   }
 
+
+  // ── Drag-and-drop helpers (reordenar técnicos) ────────────────────
+
+  /** Encontra o índice de destino com base na posição Y do toque/arrasto. */
+  function findDropIndex(dayIdx: number, clientY: number, excludeIdx: number) {
+    const entries = form.days[dayIdx].entries;
+    for (let i = 0; i < entries.length; i++) {
+      if (i === excludeIdx) continue;
+      const el = dragRowRefs.current[i];
+      if (!el) continue;
+      const rect = el.getBoundingClientRect();
+      if (clientY < rect.top + rect.height / 2) return i;
+    }
+    return entries.length - 1;
+  }
+
+  /** Cancela long-press pendente. */
+  function cancelLongPress() {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  }
 
   // ── Save / Cancel ─────────────────────────────────────────────────
 
@@ -589,93 +617,130 @@ export function TimesheetFormEditor({
                   </div>
                 </div>
 
-                {/* ── Técnicos ── */}
+                {/* ── Técnicos (lista simples + drag para reordenar) ── */}
                 <div>
-                  <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">
+                  <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">
                     {t('form.technicians')}
                   </h4>
 
-                  <div className="space-y-1">
-                    {day.entries.map((entry, entryIdx) => (
-                      <div
-                        key={entryIdx}
-                        className={`flex items-center gap-2 border rounded-lg px-2.5 py-1.5 transition-colors ${
-                          entry.isCurrentUser
-                            ? 'border-blue-200 bg-blue-50/30'
-                            : 'border-gray-200'
-                        }`}
-                      >
-                        {/* Nome com autocomplete */}
-                        <div className="flex-1 min-w-0">
-                          {entry.isCurrentUser ? (
-                            <div className="flex items-center gap-1.5 px-1.5 py-1 bg-blue-50 border border-blue-200 rounded text-sm font-medium text-gray-700">
-                              <UserIcon size={13} className="text-blue-500 shrink-0" />
-                              <span className="truncate">{entry.technicianName}</span>
-                              <span className="text-[10px] text-blue-500 shrink-0">{t('form.you')}</span>
-                            </div>
-                          ) : (
-                            <TechnicianSelect
-                              value={entry.technicianName}
-                              onChange={(v) => handleEntryChange(dayIdx, entryIdx, 'technicianName', v)}
-                              onSelectUser={(user) => handleSelectUser(dayIdx, entryIdx, user)}
-                              users={systemUsers}
-                              excludeNames={day.entries
-                                .filter((_, i) => i !== entryIdx)
-                                .map((e) => e.technicianName)
-                                .filter(Boolean)}
-                              disabled={isSaving}
-                              placeholder={t('sheet.technicianName')}
-                            />
-                          )}
-                        </div>
+                  <div className="space-y-0.5">
+                    {day.entries.map((entry, entryIdx) => {
+                      const isDragging = dragInfo?.dayIdx === dayIdx && dragInfo.fromIdx === entryIdx;
+                      const isDropTarget = dragInfo?.dayIdx === dayIdx && dragInfo.toIdx === entryIdx && dragInfo.toIdx !== dragInfo.fromIdx;
 
-                        {/* Role: auto-preenchida — tamanho justo */}
-                        {entry.role && (
-                          <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded shrink-0 max-w-[140px] truncate">
-                            {entry.role}
+                      return (
+                        <div
+                          key={entryIdx}
+                          ref={(el) => { dragRowRefs.current[entryIdx] = el; }}
+                          draggable
+                          onDragStart={(e) => {
+                            e.dataTransfer.effectAllowed = 'move';
+                            setDragInfo({ dayIdx, fromIdx: entryIdx, toIdx: entryIdx });
+                          }}
+                          onDragOver={(e) => {
+                            e.preventDefault();
+                            const toIdx = findDropIndex(dayIdx, e.clientY, entryIdx);
+                            setDragInfo((prev) => prev ? { ...prev, toIdx } : null);
+                          }}
+                          onDragEnd={() => {
+                            if (dragInfo && dragInfo.fromIdx !== dragInfo.toIdx) {
+                              const diff = dragInfo.toIdx - dragInfo.fromIdx;
+                              for (let i = 0; i < Math.abs(diff); i++) {
+                                handleMoveEntry(dayIdx, dragInfo.fromIdx, diff > 0 ? 'down' : 'up');
+                              }
+                            }
+                            setDragInfo(null);
+                          }}
+                          onTouchStart={(e) => {
+                            if (e.target instanceof HTMLButtonElement) return;
+                            cancelLongPress();
+                            longPressTimer.current = setTimeout(() => {
+                              setDragInfo({ dayIdx, fromIdx: entryIdx, toIdx: entryIdx });
+                            }, 400);
+                          }}
+                          onTouchMove={(e) => {
+                            if (!dragInfo || dragInfo.dayIdx !== dayIdx || dragInfo.fromIdx !== entryIdx) return;
+                            const toIdx = findDropIndex(dayIdx, e.touches[0].clientY, entryIdx);
+                            setDragInfo((prev) => prev ? { ...prev, toIdx } : null);
+                          }}
+                          onTouchEnd={() => {
+                            if (dragInfo && dragInfo.dayIdx === dayIdx && dragInfo.fromIdx === entryIdx) {
+                              if (dragInfo.fromIdx !== dragInfo.toIdx) {
+                                const diff = dragInfo.toIdx - dragInfo.fromIdx;
+                                for (let i = 0; i < Math.abs(diff); i++) {
+                                  handleMoveEntry(dayIdx, dragInfo.fromIdx, diff > 0 ? 'down' : 'up');
+                                }
+                              }
+                              setDragInfo(null);
+                            }
+                            cancelLongPress();
+                          }}
+                          onTouchCancel={() => cancelLongPress()}
+                          className={`flex items-center gap-2 px-2 py-1.5 rounded-md transition-all select-none ${
+                            isDragging ? 'opacity-30' : ''
+                          } ${isDropTarget ? 'bg-blue-50 ring-1 ring-blue-300' : ''} ${
+                            entry.isCurrentUser ? 'border-l-2 border-blue-400' : ''
+                          }`}
+                        >
+                          {/* Grip handle */}
+                          <GripVertical size={14} className="text-gray-300 shrink-0 cursor-grab active:cursor-grabbing touch-none" />
+
+                          {/* Nome como texto simples */}
+                          <span className={`text-sm flex-1 min-w-0 truncate ${
+                            entry.isCurrentUser ? 'font-medium text-blue-700' : 'text-gray-800'
+                          }`}>
+                            {entry.technicianName || '—'}
                           </span>
-                        )}
 
-                        {/* Botões: Reordenar + Remover */}
-                        <div className="flex items-center gap-0 shrink-0">
-                          <button
-                            onClick={() => handleMoveEntry(dayIdx, entryIdx, 'up')}
-                            disabled={isSaving || entryIdx === 0}
-                            className="p-0.5 text-gray-300 hover:text-gray-600 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                            title={t('sheet.moveUp')}
-                          >
-                            <ChevronUp size={13} />
-                          </button>
-                          <button
-                            onClick={() => handleMoveEntry(dayIdx, entryIdx, 'down')}
-                            disabled={isSaving || entryIdx === day.entries.length - 1}
-                            className="p-0.5 text-gray-300 hover:text-gray-600 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                            title={t('sheet.moveDown')}
-                          >
-                            <ChevronDown size={13} />
-                          </button>
+                          {/* Role como badge discreto */}
+                          {entry.role && (
+                            <span className="text-[10px] text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded shrink-0 max-w-[100px] truncate">
+                              {entry.role}
+                            </span>
+                          )}
+
+                          {/* "Você" indicator */}
+                          {entry.isCurrentUser && (
+                            <span className="text-[10px] text-blue-400 shrink-0">{t('form.you')}</span>
+                          )}
+
+                          {/* Remover */}
                           <button
                             onClick={() => handleRemoveEntry(dayIdx, entryIdx)}
                             disabled={isSaving}
-                            className="p-1 text-gray-300 hover:text-red-500 transition-colors disabled:opacity-50"
+                            className="p-0.5 text-gray-300 hover:text-red-500 transition-colors disabled:opacity-50 shrink-0"
                             title={t('sheet.removeRow')}
                           >
-                            <Trash2 size={13} />
+                            <X size={13} />
                           </button>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
 
-                  {/* Botão adicionar técnico */}
-                  <button
-                    onClick={() => handleAddEntry(dayIdx)}
-                    disabled={isSaving}
-                    className="mt-3 flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors disabled:opacity-50"
-                  >
-                    <Plus size={14} />
-                    {t('sheet.addRow')}
-                  </button>
+                  {/* Adicionar técnico — inline e discreto */}
+                  <div className="mt-1.5">
+                    <TechnicianSelect
+                      value=""
+                      onChange={(v) => {
+                        if (v) {
+                          handleAddEntry(dayIdx);
+                          const newIdx = day.entries.length;
+                          handleEntryChange(dayIdx, newIdx, 'technicianName', v);
+                        }
+                      }}
+                      onSelectUser={(user) => {
+                        handleAddEntry(dayIdx);
+                        const newIdx = day.entries.length;
+                        handleEntryChange(dayIdx, newIdx, 'technicianName', user.fullName);
+                        handleSelectUser(dayIdx, newIdx, user);
+                      }}
+                      users={systemUsers}
+                      excludeNames={day.entries.map((e) => e.technicianName).filter(Boolean)}
+                      disabled={isSaving}
+                      placeholder={`+ ${t('sheet.addRow')}`}
+                    />
+                  </div>
                 </div>
 
                 {/* Daily Progress (obrigatório) */}
