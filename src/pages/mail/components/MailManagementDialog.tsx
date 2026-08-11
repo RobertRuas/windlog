@@ -489,7 +489,7 @@ function ContactsTab() {
 
         {/* Linha inline: email + botão adicionar */}
         <div className="flex gap-1.5 mb-2">
-          <input className={`${inputClass} flex-1 min-w-0 text-sm`} placeholder="email@..." type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <input className={`${inputClass} flex-1 min-w-0 text-sm`} placeholder="robert.silva@empresa.com" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
           <button
             onClick={() => email && createContact.mutate()}
             disabled={!email}
