@@ -6,13 +6,13 @@
  * O QUE É ESTE ARQUIVO?
  * ---------------------
  * Dropdown com pesquisa para selecionar técnico no timesheet.
- * É um componente restritivo: o usuário DEVE selecionar da lista.
+ * Suporta membros do projeto E técnicos externos (digitando o nome).
  *
  * COMPORTAMENTO:
  * --------------
  * - Clique abre dropdown com todos os membros do projeto (filtrável por nome)
- * - Se digitar algo que não corresponde a nenhum membro, reverte ao último valor válido
- * - Ao fechar sem seleção válida, limpa se não havia valor anterior
+ * - Se digitar um nome que não corresponde a nenhum membro, aparece a opção
+ *   "Adicionar como técnico externo" para criar entry com nome livre
  * - Dropdown renderizado via portal (fora do container overflow-hidden do accordion)
  * - Exclui técnicos já adicionados neste dia (para evitar duplicidade)
  * ============================================================================
@@ -60,7 +60,7 @@ export function TechnicianSelect({
     }
   }, [isOpen]);
 
-  // Fecha dropdown ao clicar fora (input OU dropdown são considerados "dentro")
+  // Fecha dropdown ao clicar fora — aceita nome customizado se não houver match
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       const target = e.target as Node;
@@ -68,15 +68,16 @@ export function TechnicianSelect({
       const isInsideDropdown = dropdownRef.current?.contains(target);
       if (!isInsideWrapper && !isInsideDropdown) {
         setIsOpen(false);
-        const matchedUser = users.find((u) => u.fullName === query);
-        if (!matchedUser) {
-          setQuery(lastValidValue.current);
+        // Se digitou um nome que não é membro do projeto, aceita como externo
+        if (query.trim() && !users.find((u) => u.fullName === query.trim())) {
+          lastValidValue.current = query.trim();
+          onChange(query.trim());
         }
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [query, users]);
+  }, [query, users, onChange]);
 
   // Filtra: exclui técnicos já adicionados neste dia (exceto o valor atual)
   const availableUsers = users.filter(
@@ -87,12 +88,37 @@ export function TechnicianSelect({
     ? availableUsers.filter((u) => u.fullName.toLowerCase().includes(query.toLowerCase()))
     : availableUsers;
 
+  // Verifica se o nome digitado corresponde exatamente a algum membro (para não mostrar "externo")
+  const exactMatch = query.trim().length > 0
+    && availableUsers.some((u) => u.fullName.toLowerCase() === query.trim().toLowerCase());
+
+  // Verifica se o nome já está em uso neste dia
+  const nameAlreadyUsed = query.trim().length > 0
+    && excludeNames.includes(query.trim());
+
+  const showAddExternal = !exactMatch && !nameAlreadyUsed && query.trim().length > 0;
+
   function handleSelect(user: SystemUser) {
     setQuery(user.fullName);
     lastValidValue.current = user.fullName;
     onChange(user.fullName);
     onSelectUser(user);
     setIsOpen(false);
+  }
+
+  /** Cria técnico externo a partir do nome digitado. */
+  function handleAddExternal() {
+    const name = query.trim();
+    if (!name) return;
+    const parts = name.split(/\s+/);
+    const externalUser: SystemUser = {
+      id: `external-${Date.now()}`,
+      firstName: parts[0] || name,
+      lastName: parts.slice(1).join(' ') || '',
+      fullName: name,
+      position: '',
+    };
+    handleSelect(externalUser);
   }
 
   function handleClear() {
@@ -111,28 +137,40 @@ export function TechnicianSelect({
           className="fixed z-[9999] bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden max-h-48 overflow-y-auto"
           style={{ top: dropdownPos.top, left: dropdownPos.left, width: dropdownPos.width }}
         >
-          {filtered.length > 0 ? (
-            filtered.map((user) => (
-              <button
-                key={user.id}
-                type="button"
-                onClick={() => handleSelect(user)}
-                className={`w-full text-left px-3 py-2 text-sm hover:bg-blue-50 flex items-center gap-2 transition-colors ${
-                  value === user.fullName ? 'bg-blue-50' : ''
-                }`}
-              >
-                <UserIcon size={14} className="text-gray-400 shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <span className="font-medium text-gray-900">{user.fullName}</span>
-                  {user.position && (
-                    <span className="ml-2 text-xs text-gray-500">{user.position}</span>
-                  )}
-                </div>
-              </button>
-            ))
-          ) : (
+          {filtered.length > 0 && filtered.map((user) => (
+            <button
+              key={user.id}
+              type="button"
+              onClick={() => handleSelect(user)}
+              className={`w-full text-left px-3 py-2 text-sm hover:bg-blue-50 flex items-center gap-2 transition-colors ${
+                value === user.fullName ? 'bg-blue-50' : ''
+              }`}
+            >
+              <UserIcon size={14} className="text-gray-400 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <span className="font-medium text-gray-900">{user.fullName}</span>
+                {user.position && (
+                  <span className="ml-2 text-xs text-gray-500">{user.position}</span>
+                )}
+              </div>
+            </button>
+          ))}
+          {showAddExternal && (
+            <button
+              type="button"
+              onClick={handleAddExternal}
+              className="w-full text-left px-3 py-2 text-sm hover:bg-emerald-50 flex items-center gap-2 transition-colors border-t border-gray-100"
+            >
+              <span className="w-3.5 h-3.5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0 text-[10px] font-bold">+</span>
+              <div className="flex-1 min-w-0">
+                <span className="font-medium text-emerald-700">{t('form.addExternal')}</span>
+                <span className="ml-1 text-xs text-gray-500">"{query.trim()}"</span>
+              </div>
+            </button>
+          )}
+          {filtered.length === 0 && !showAddExternal && (
             <div className="p-3 text-center text-xs text-gray-400">
-              {t('form.noMemberFound')}
+              {nameAlreadyUsed ? t('form.alreadyAdded') : t('form.noMemberFound')}
             </div>
           )}
         </div>,

@@ -136,6 +136,8 @@
     "pending": "Pendente",
     "you": "Você",
     "noMemberFound": "Nenhum membro encontrado",
+    "addExternal": "Adicionar técnico externo",
+    "alreadyAdded": "Técnico já adicionado neste dia",
     "progressRequired": "Preencha o Progresso Diário"
   },
   "actions": {

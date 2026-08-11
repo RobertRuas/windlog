@@ -120,8 +120,9 @@ export function DatePicker({
           if (!disabled) inputRef.current?.showPicker?.();
         }}
         className={`absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 ${
-          disabled ? 'pointer-events-none' : 'cursor-pointer'
+          disabled ? 'pointer-events-none opacity-50' : 'cursor-pointer'
         }`}
+        style={{ zIndex: 1 }}
       />
     </div>
   );
