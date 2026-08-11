@@ -517,17 +517,19 @@ function ContactsTab() {
         </div>
 
         {/* Novo contato */}
-        <div className="flex gap-1.5 mb-2">
-          <input className={`${inputClass} flex-1`} placeholder={t('manage.contacts.name_ph')} value={name} onChange={(e) => setName(e.target.value)} />
-          <input className={`${inputClass} flex-1`} placeholder="email@..." type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-          <button onClick={() => email && createContact.mutate()} className="form-button form-button-primary h-9 w-9 p-0 flex items-center justify-center flex-shrink-0" title={t('manage.contacts.add')}>
+        <div className="flex flex-col sm:flex-row gap-1.5 mb-2">
+          <div className="flex gap-1.5">
+            <input className={`${inputClass} flex-1`} placeholder={t('manage.contacts.name_ph')} value={name} onChange={(e) => setName(e.target.value)} />
+            <input className={`${inputClass} flex-1`} placeholder="email@..." type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          </div>
+          <button onClick={() => email && createContact.mutate()} className="form-button form-button-primary h-9 w-9 sm:h-10 sm:w-auto sm:px-4 p-0 flex items-center justify-center flex-shrink-0" title={t('manage.contacts.add')}>
             <Plus size={15} />
           </button>
         </div>
 
         <p className="text-xs text-gray-400 dark:text-[#636366] mb-3">{t('manage.contacts.auto_hint')}</p>
 
-        <ul className="grid grid-cols-2 gap-x-6 gap-y-1 max-h-64 overflow-y-auto pr-1">
+        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 max-h-64 overflow-y-auto pr-1">
           {contacts.map((contact: MailContact) => (
             <li key={contact.id} className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-[#2c2c2e]">
               <User size={13} className="text-gray-400 flex-shrink-0" />
@@ -630,7 +632,7 @@ function RulesTab() {
   return (
     <div>
       {/* Formulário de nova regra */}
-      <div className="grid grid-cols-2 gap-2 mb-4 p-3 bg-gray-50 dark:bg-[#2c2c2e] rounded-lg">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4 p-3 bg-gray-50 dark:bg-[#2c2c2e] rounded-lg">
         <input className={inputClass} placeholder={t('manage.rules.name_ph')} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
         <select className={inputClass} value={form.conditionType} onChange={(e) => setForm({ ...form, conditionType: e.target.value })}>
           <option value="FROM">{t('manage.rules.cond_FROM')}</option>
@@ -1047,7 +1049,7 @@ function AutoReplyTab() {
       </label>
       <input className={`${inputClass} w-full`} placeholder={t('manage.autoreply.subject_ph')} value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} />
       <textarea className={`${inputClass} w-full resize-y`} rows={5} placeholder={t('manage.autoreply.message_ph')} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} />
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div>
           <label className="block text-xs text-gray-500 mb-1">{t('manage.autoreply.start')}</label>
           <input type="date" className={`${inputClass} w-full`} value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} />
