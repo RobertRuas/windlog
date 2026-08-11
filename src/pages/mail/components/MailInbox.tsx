@@ -272,7 +272,7 @@ export function MailInbox({ account }: MailInboxProps) {
   }, [modals, selectedMessage]);
 
   return (
-    <div className="bg-white dark:bg-[#1c1c1e] rounded-xl border border-gray-200 dark:border-[#38383a] overflow-hidden">
+    <div className="bg-white dark:bg-[#1c1c1e] rounded-xl border border-gray-200 dark:border-[#38383a] overflow-hidden flex flex-col flex-1 min-h-0">
       {/* ── Barra de ferramentas ───────────────────────────── */}
       <div className="flex items-center gap-2 px-3 sm:px-4 py-2.5 border-b border-gray-200 dark:border-[#38383a]">
         {/* Escrever (apenas ícone) */}
@@ -422,7 +422,7 @@ export function MailInbox({ account }: MailInboxProps) {
       </div>
 
       {/* ── Corpo: lista OU leitura em tela cheia ───────────── */}
-      <div className="flex h-[calc(100vh-300px)] min-h-[400px]">
+      <div className="flex flex-1 min-h-0">
         {selectedMessage ? (
           <MessageView
             message={selectedMessage}

@@ -66,7 +66,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       <Sidebar />
 
       {/* Conteúdo principal - offset pela largura do sidebar no desktop */}
-      <main className="md:ml-60 min-h-screen">
+      <main className="md:ml-60 min-h-screen flex flex-col">
         {/* Header superior com sino de notificações */}
         <header className="sticky top-0 z-20 bg-white dark:bg-[#1c1c1e] border-b border-gray-200 dark:border-[#38383a]">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -109,7 +109,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         </header>
 
         {/* Área interna com padding e largura máxima */}
-        <div className="max-w-5xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+        <div className="flex-1 max-w-5xl mx-auto px-4 py-6 sm:px-6 lg:px-8 w-full">
           {children}
         </div>
       </main>

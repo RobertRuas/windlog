@@ -178,29 +178,29 @@ export function MessageList({
       {/* ── Barra de busca (aparece quando showSearch=true) ── */}
       {showSearch && (
         <div className="p-3 border-b border-gray-200 dark:border-[#38383a] space-y-2">
-          <form onSubmit={handleSearch} className="flex items-stretch gap-1.5">
-            <div className="relative flex-1 h-10">
-              <Search size={15} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
+          <form onSubmit={handleSearch}>
+            <div className="relative h-10">
+              <Search size={15} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
               <input
                 autoFocus
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder={t('list.search_placeholder')}
-                className="w-full h-full text-sm pl-8 pr-3 rounded-lg border border-gray-300 dark:border-[#38383a] bg-white dark:bg-[#2c2c2e] text-gray-900 dark:text-[#f5f5f7] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full h-full text-sm pl-8 pr-10 rounded-lg border border-gray-300 dark:border-[#38383a] bg-white dark:bg-[#2c2c2e] text-gray-900 dark:text-[#f5f5f7] focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
+              <button
+                type="button"
+                onClick={() => setShowAdvanced(!showAdvanced)}
+                className={`absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 flex items-center justify-center rounded-md transition-colors ${
+                  showAdvanced
+                    ? 'text-blue-600 dark:text-blue-400'
+                    : 'text-gray-400 hover:text-gray-600 dark:hover:text-[#a1a1a6]'
+                }`}
+                title={t('list.advanced_filters')}
+              >
+                <SlidersHorizontal size={15} />
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => setShowAdvanced(!showAdvanced)}
-              className={`h-10 w-10 flex-shrink-0 flex items-center justify-center rounded-lg border transition-colors ${
-                showAdvanced
-                  ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-300 text-blue-600'
-                  : 'border-gray-300 dark:border-[#38383a] text-gray-400 hover:text-gray-600 dark:hover:text-[#a1a1a6]'
-              }`}
-              title={t('list.advanced_filters')}
-            >
-              <SlidersHorizontal size={15} />
-            </button>
           </form>
 
           {/* ── Filtros avançados ─────────────────────────────── */}
