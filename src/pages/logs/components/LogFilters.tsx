@@ -23,6 +23,7 @@
  * ============================================================================
  */
 
+import { useState } from 'react';
 import { Search, Filter, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import type { LogFilters } from '@/services/system-log.service';
@@ -61,44 +62,61 @@ export function LogFilters({
   stats,
   t,
 }: LogFiltersProps) {
+  /** Estado local: campo de busca visível */
+  const [showSearch, setShowSearch] = useState(false);
+
   /** Verifica se há filtros ativos. */
   const hasActiveFilters = !!(
     filters.search || filters.action || filters.severity || filters.startDate || filters.endDate
   );
 
-  /** Contador de filtros ativos. */
-  const activeFilterCount = [filters.action, filters.severity, filters.startDate, filters.endDate].filter(Boolean).length;
-
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6">
       <div className="flex items-center gap-2">
-        <div className="relative flex-1 max-w-sm">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input
-            type="text"
-            placeholder={t('search.placeholder')}
-            value={searchInput}
-            onChange={(e) => onSearchChange(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && onSearch()}
-            className="form-input text-sm w-full pl-9"
-          />
-        </div>
-        <Button onClick={onSearch} variant="primary" size="sm">
-          {t('search.button')}
-        </Button>
-        <Button
-          onClick={onToggleFilters}
-          variant="secondary"
-          size="sm"
-        >
-          <Filter size={14} className="mr-1.5" />
-          {t('search.filters')}
-          {activeFilterCount > 0 && (
-            <span className="ml-1.5 w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] flex items-center justify-center font-semibold">
-              {activeFilterCount}
-            </span>
-          )}
-        </Button>
+        {/* Botão busca (toggle campo) */}
+        {!showSearch ? (
+          <button
+            onClick={() => setShowSearch(true)}
+            className="form-button form-button-secondary"
+            title={t('search.placeholder')}
+          >
+            <Search size={15} />
+          </button>
+        ) : (
+          <div className="relative flex-1 h-10 max-w-sm">
+            <Search size={15} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+            <input
+              autoFocus
+              type="text"
+              placeholder={t('search.placeholder')}
+              value={searchInput}
+              onChange={(e) => onSearchChange(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && onSearch()}
+              className="w-full h-full text-sm pl-8 pr-10 rounded-lg border border-gray-300 dark:border-[#38383a] bg-white dark:bg-[#2c2c2e] text-gray-900 dark:text-[#f5f5f7] focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <button
+              type="button"
+              onClick={onToggleFilters}
+              className={`absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 flex items-center justify-center rounded-md transition-colors ${
+                showFilters
+                  ? 'text-blue-600 dark:text-blue-400'
+                  : 'text-gray-400 hover:text-gray-600 dark:hover:text-[#a1a1a6]'
+              }`}
+              title={t('search.filters')}
+            >
+              <Filter size={15} />
+            </button>
+          </div>
+        )}
+
+        {/* Botão buscar (quando campo visível) */}
+        {showSearch && (
+          <Button onClick={onSearch} variant="primary" size="sm">
+            {t('search.button')}
+          </Button>
+        )}
+
+        {/* Limpar filtros */}
         {hasActiveFilters && (
           <Button onClick={onClearFilters} variant="secondary" size="sm">
             <RefreshCw size={14} className="mr-1" />

@@ -25,7 +25,6 @@ import { toast } from 'sonner';
 import {
   Search,
   Filter,
-  ChevronDown,
   Trash2,
   Eye,
   AlertCircle,
@@ -96,6 +95,7 @@ export function FeedbacksPage() {
   const [filters, setFilters] = useState<FeedbackFilters>({ page: 1, limit: 10 });
   const [searchInput, setSearchInput] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
 
   // Estado do modal de detalhes
   const [selectedFeedback, setSelectedFeedback] = useState<Feedback | null>(null);
@@ -273,30 +273,42 @@ export function FeedbacksPage() {
 
       {/* Busca e filtros */}
       <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6">
-        <div className="flex items-center gap-3">
-          {/* Busca */}
-          <div className="flex-1 relative">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              placeholder={t('filters.search_placeholder')}
-              className="form-input w-full !pl-9"
-            />
-          </div>
-
-          {/* Toggle filtros */}
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className={`flex items-center gap-2 form-button-secondary !h-[40px] ${
-              showFilters ? '!border-blue-500 !bg-blue-50 !text-blue-700 dark:!bg-blue-900/20 dark:!text-blue-400' : '!border-gray-200 !text-gray-600 hover:!bg-gray-50 dark:!border-[#38383a] dark:!text-[#a1a1a6] dark:hover:!bg-[#2c2c2e]'
-            }`}
-          >
-            <Filter size={16} />
-            <ChevronDown size={14} className={`transition-transform ${showFilters ? 'rotate-180' : ''}`} />
-          </button>
+        <div className="flex items-center gap-2">
+          {/* Botão busca (toggle campo) */}
+          {!showSearch ? (
+            <button
+              onClick={() => setShowSearch(true)}
+              className="form-button form-button-secondary"
+              title={t('filters.search_placeholder')}
+            >
+              <Search size={15} />
+            </button>
+          ) : (
+            <div className="relative flex-1 h-10">
+              <Search size={15} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+              <input
+                autoFocus
+                type="text"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                placeholder={t('filters.search_placeholder')}
+                className="w-full h-full text-sm pl-8 pr-10 rounded-lg border border-gray-300 dark:border-[#38383a] bg-white dark:bg-[#2c2c2e] text-gray-900 dark:text-[#f5f5f7] focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <button
+                type="button"
+                onClick={() => setShowFilters(!showFilters)}
+                className={`absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 flex items-center justify-center rounded-md transition-colors ${
+                  showFilters
+                    ? 'text-blue-600 dark:text-blue-400'
+                    : 'text-gray-400 hover:text-gray-600 dark:hover:text-[#a1a1a6]'
+                }`}
+                title={t('filters.toggle')}
+              >
+                <Filter size={15} />
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Filtros expandidos */}

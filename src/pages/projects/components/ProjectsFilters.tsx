@@ -36,15 +36,15 @@ export function ProjectsFilters({
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-4 mb-4">
       <div className="flex flex-col sm:flex-row gap-3">
-        {/* Busca */}
-        <div className="flex-1 relative">
-          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        {/* Busca (sempre visível) */}
+        <div className="flex-1 relative h-10">
+          <Search size={15} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
           <input
             type="text"
             placeholder={t('search.placeholder')}
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full h-full text-sm pl-8 rounded-lg border border-gray-300 dark:border-[#38383a] bg-white dark:bg-[#2c2c2e] text-gray-900 dark:text-[#f5f5f7] focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
