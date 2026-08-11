@@ -422,14 +422,19 @@ export function TimesheetFormEditor({
   return (
     <div className="space-y-4 max-w-5xl">
       {/* ── Seção: Metadata (acordeão recolhido) ─────────────────────── */}
-      <section className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <section className="bg-white rounded-xl border-2 border-blue-200 overflow-hidden shadow-sm">
         <button
           type="button"
           onClick={() => setMetadataOpen(!metadataOpen)}
-          className="w-full px-6 py-3 border-b border-gray-100 bg-gray-50 flex items-center justify-between cursor-pointer hover:bg-gray-100/60 transition-colors"
+          className="w-full px-6 py-3.5 border-b border-blue-100 bg-blue-50/70 flex items-center justify-between cursor-pointer hover:bg-blue-50 transition-colors"
         >
-          <h2 className="text-sm font-semibold text-gray-900">{t('form.metadataTitle')}</h2>
-          {metadataOpen ? <ChevronUp size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
+          <div className="flex items-center gap-2.5">
+            <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
+              <Check size={12} className="text-blue-600" />
+            </div>
+            <h2 className="text-sm font-bold text-blue-900">{t('form.metadataTitle')}</h2>
+          </div>
+          {metadataOpen ? <ChevronUp size={16} className="text-blue-400" /> : <ChevronDown size={16} className="text-blue-400" />}
         </button>
         {metadataOpen && (
           <div className="p-6 space-y-4">
