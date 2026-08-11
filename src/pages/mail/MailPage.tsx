@@ -42,7 +42,7 @@ export function MailPage() {
 
   return (
     <AppLayout>
-      <PageHeader title={t('title')} subtitle={t('subtitle')} />
+      <PageHeader title={t('title')} />
 
       {isLoading ? (
         /* Estado de carregamento */

@@ -22,6 +22,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { useIsMobile } from '@/hooks/useIsMobile';
 import {
   PenSquare, RefreshCw, Settings2, PlugZap, Search,
   Inbox, Send, FileText, AlertOctagon, Trash2, Archive,
@@ -98,22 +99,45 @@ export function MailInbox({ account }: MailInboxProps) {
   // Estado da busca (mostrar/esconder campo)
   const [showSearch, setShowSearch] = useState(false);
 
+  // Contagem regressiva para o próximo refetch (0–60s)
+  const SYNC_INTERVAL = 60; // segundos
+  const [syncProgress, setSyncProgress] = useState(SYNC_INTERVAL);
+  const isMobile = useIsMobile();
+
   /**
    * Busca pastas e etiquetas para a barra de navegação.
-   * Refetch automático a cada 5 minutos para verificar novos e-mails.
+   * Refetch automático a cada 1 minuto para verificar novos e-mails.
    */
   const { data: folders = [], dataUpdatedAt: foldersUpdatedAt } = useQuery({
     queryKey: ['mail-folders'],
     queryFn: getMailFolders,
     staleTime: 30_000,
-    refetchInterval: 5 * 60_000, // 5 minutos
+    refetchInterval: 60_000, // 1 minuto
   });
   const { data: labels = [] } = useQuery({
     queryKey: ['mail-labels'],
     queryFn: getMailLabels,
     staleTime: 30_000,
-    refetchInterval: 5 * 60_000,
+    refetchInterval: 60_000,
   });
+
+  /**
+   * Timer: atualiza o progresso circular e invalida queries quando chega a 0.
+   */
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (foldersUpdatedAt > 0) {
+        const elapsed = Math.floor((Date.now() - foldersUpdatedAt) / 1000);
+        const remaining = Math.max(0, SYNC_INTERVAL - elapsed);
+        setSyncProgress(remaining);
+        if (remaining === 0) {
+          queryClient.invalidateQueries({ queryKey: ['mail-folders'] });
+          queryClient.invalidateQueries({ queryKey: ['mail-labels'] });
+        }
+      }
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [foldersUpdatedAt, queryClient]);
 
   /**
    * Aplica a seleção (pasta ou etiqueta) na query string.
@@ -287,15 +311,33 @@ export function MailInbox({ account }: MailInboxProps) {
           <PenSquare size={15} />
         </button>
 
-        {/* Sincronizar (apenas ícone) */}
-        <button
-          onClick={() => syncMutation.mutate()}
-          disabled={syncMutation.isPending}
-          className="form-button form-button-secondary"
-          title={`${t('toolbar.sync')} (r)`}
-        >
-          <RefreshCw size={15} className={syncMutation.isPending ? 'animate-spin' : ''} />
-        </button>
+        {/* Sincronizar com progresso circular (countdown até próximo refetch) */}
+        {(() => {
+          const radius = 9;
+          const circumference = 2 * Math.PI * radius;
+          const progress = foldersUpdatedAt > 0 ? syncProgress / SYNC_INTERVAL : 1;
+          const offset = circumference * (1 - progress);
+          return (
+            <button
+              onClick={() => syncMutation.mutate()}
+              disabled={syncMutation.isPending}
+              className="relative h-9 w-9 flex items-center justify-center rounded-lg border border-gray-300 dark:border-[#48484a] bg-white dark:bg-[#2c2c2e] hover:bg-gray-50 dark:hover:bg-[#3a3a3c] transition-colors flex-shrink-0"
+              title={`${t('toolbar.sync')} (r)${foldersUpdatedAt > 0 ? ` — ${syncProgress}s` : ''}`}
+            >
+              <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 20 20">
+                <circle cx="10" cy="10" r={radius} fill="none" strokeWidth="1.5" className="stroke-gray-200 dark:stroke-[#38383a]" />
+                <circle
+                  cx="10" cy="10" r={radius} fill="none" strokeWidth="1.5"
+                  strokeDasharray={circumference}
+                  strokeDashoffset={offset}
+                  strokeLinecap="round"
+                  className="stroke-blue-400 dark:stroke-blue-500 transition-[stroke-dashoffset] duration-1000 linear"
+                />
+              </svg>
+              <RefreshCw size={13} className={`relative z-10 text-gray-500 dark:text-[#a1a1a6] ${syncMutation.isPending ? 'animate-spin' : ''}`} />
+            </button>
+          );
+        })()}
 
         {/* Buscar (mostra/esconde campo de busca) */}
         <button
