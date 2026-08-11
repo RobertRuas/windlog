@@ -21,6 +21,9 @@ import {
   AlertOctagon, Archive, Globe,
 } from 'lucide-react';
 
+// Hook
+import { useIsMobile } from '@/hooks/useIsMobile';
+
 // Serviço
 import * as mailService from '@/services/mail.service';
 import { getProfile } from '@/services/auth.service';
@@ -56,6 +59,7 @@ const inputClass = 'text-sm px-3 py-2 rounded-lg border border-gray-300 dark:bor
 export function MailManagementDialog({ initialTab = 'contacts', onClose }: MailManagementDialogProps) {
   const { t } = useTranslation('mail');
   const [tab, setTab] = useState<ManagementTab>(initialTab);
+  const isMobile = useIsMobile();
 
   /**
    * Fechamento pela tecla Esc.
@@ -91,36 +95,37 @@ export function MailManagementDialog({ initialTab = 'contacts', onClose }: MailM
     { id: 'blocked', icon: Ban, label: t('manage.tabs.blocked'), count: blocked.length },
   ];
 
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-      onClick={onClose}
-    >
-      <div
-        className="bg-white dark:bg-[#1c1c1e] rounded-xl border border-gray-200 dark:border-[#38383a] shadow-xl w-full max-w-4xl h-[80vh] flex overflow-hidden"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* ── Navegação lateral ─────────────────────────────── */}
-        <div className="w-52 flex-shrink-0 bg-gray-50 dark:bg-[#161618] border-r border-gray-200 dark:border-[#38383a] flex flex-col">
-          <div className="px-4 pt-4 pb-3">
+  /**
+   * Renderiza a navegação (sidebar no desktop, tab bar horizontal no mobile).
+   */
+  function renderNav() {
+    if (isMobile) {
+      return (
+        <div className="flex-shrink-0 border-b border-gray-200 dark:border-[#38383a]">
+          {/* Header com título e botão fechar */}
+          <div className="flex items-center justify-between px-4 py-3">
             <h2 className="text-sm font-semibold text-gray-900 dark:text-[#f5f5f7]">{t('manage.title')}</h2>
+            <button onClick={onClose} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-[#2c2c2e]">
+              <X size={18} />
+            </button>
           </div>
-          <nav className="flex-1 overflow-y-auto px-2 pb-3 space-y-0.5">
+          {/* Tabs horizontais com scroll */}
+          <div className="flex overflow-x-auto scrollbar-none px-3 pb-2 gap-1">
             {tabs.map(({ id, icon: Icon, label, count }) => (
               <button
                 key={id}
                 onClick={() => setTab(id)}
                 className={`
-                  w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors
+                  inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap flex-shrink-0 transition-colors
                   ${tab === id
                     ? 'bg-blue-600 text-white'
-                    : 'text-gray-600 dark:text-[#a1a1a6] hover:bg-gray-200/60 dark:hover:bg-[#2c2c2e]'}
+                    : 'text-gray-500 dark:text-[#a1a1a6] bg-gray-100 dark:bg-[#2c2c2e]'}
                 `}
               >
-                <Icon size={15} className="flex-shrink-0" />
-                <span className="flex-1 text-left truncate">{label}</span>
+                <Icon size={14} className="flex-shrink-0" />
+                <span>{label}</span>
                 {count !== undefined && count > 0 && (
-                  <span className={`text-[11px] tabular-nums rounded-full px-1.5 py-px min-w-[18px] text-center ${
+                  <span className={`text-[10px] tabular-nums rounded-full px-1 min-w-[16px] text-center ${
                     tab === id ? 'bg-white/20 text-white' : 'bg-gray-200 dark:bg-[#38383a] text-gray-500 dark:text-[#8e8e93]'
                   }`}>
                     {count}
@@ -128,20 +133,71 @@ export function MailManagementDialog({ initialTab = 'contacts', onClose }: MailM
                 )}
               </button>
             ))}
-          </nav>
+          </div>
         </div>
+      );
+    }
+    return (
+      <div className="w-52 flex-shrink-0 bg-gray-50 dark:bg-[#161618] border-r border-gray-200 dark:border-[#38383a] flex flex-col">
+        <div className="px-4 pt-4 pb-3">
+          <h2 className="text-sm font-semibold text-gray-900 dark:text-[#f5f5f7]">{t('manage.title')}</h2>
+        </div>
+        <nav className="flex-1 overflow-y-auto px-2 pb-3 space-y-0.5">
+          {tabs.map(({ id, icon: Icon, label, count }) => (
+            <button
+              key={id}
+              onClick={() => setTab(id)}
+              className={`
+                w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors
+                ${tab === id
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-600 dark:text-[#a1a1a6] hover:bg-gray-200/60 dark:hover:bg-[#2c2c2e]'}
+              `}
+            >
+              <Icon size={15} className="flex-shrink-0" />
+              <span className="flex-1 text-left truncate">{label}</span>
+              {count !== undefined && count > 0 && (
+                <span className={`text-[11px] tabular-nums rounded-full px-1.5 py-px min-w-[18px] text-center ${
+                  tab === id ? 'bg-white/20 text-white' : 'bg-gray-200 dark:bg-[#38383a] text-gray-500 dark:text-[#8e8e93]'
+                }`}>
+                  {count}
+                </span>
+              )}
+            </button>
+          ))}
+        </nav>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      onClick={onClose}
+    >
+      <div
+        className={`bg-white dark:bg-[#1c1c1e] rounded-xl border border-gray-200 dark:border-[#38383a] shadow-xl flex overflow-hidden ${
+          isMobile ? 'w-full max-w-full h-[92vh] flex-col' : 'max-w-4xl w-full h-[80vh]'
+        }`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Navegação (sidebar no desktop, tab bar no mobile) */}
+        {renderNav()}
 
         {/* ── Área de conteúdo ──────────────────────────────── */}
         <div className="flex-1 flex flex-col min-w-0">
-          <div className="flex items-center justify-between px-5 py-3 border-b border-gray-200 dark:border-[#38383a]">
-            <h3 className="text-base font-semibold text-gray-900 dark:text-[#f5f5f7]">
-              {tabs.find(({ id }) => id === tab)?.label}
-            </h3>
-            <button onClick={onClose} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-[#2c2c2e]">
-              <X size={18} />
-            </button>
-          </div>
-          <div className="flex-1 overflow-y-auto px-5 py-4">
+          {/* Header da área de conteúdo (apenas no desktop — mobile já tem título acima) */}
+          {!isMobile && (
+            <div className="flex items-center justify-between px-5 py-3 border-b border-gray-200 dark:border-[#38383a]">
+              <h3 className="text-base font-semibold text-gray-900 dark:text-[#f5f5f7]">
+                {tabs.find(({ id }) => id === tab)?.label}
+              </h3>
+              <button onClick={onClose} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-[#2c2c2e]">
+                <X size={18} />
+              </button>
+            </div>
+          )}
+          <div className="flex-1 overflow-y-auto px-4 sm:px-5 py-4">
             {tab === 'contacts' && <ContactsTab />}
             {tab === 'folders' && <FoldersTab />}
             {tab === 'rules' && <RulesTab />}
