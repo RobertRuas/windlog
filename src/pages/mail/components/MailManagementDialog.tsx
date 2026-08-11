@@ -310,21 +310,21 @@ function ContactsTab() {
     <div className="space-y-6">
       {/* ══ SEÇÃO 1: GRUPOS ═════════════════════════════════════════ */}
       <section>
-        <div className="flex items-center justify-between mb-2">
+        <div className="mb-2">
           <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-[#636366]">
             {t('manage.contacts.groups')}
           </h3>
           {isManager && (
-            <span className="flex items-center gap-1 text-[10px] text-gray-400 dark:text-[#636366]">
-              <Globe size={10} /> {t('manage.contacts.shared_create_hint')}
-            </span>
+            <p className="flex items-center gap-1 mt-0.5 text-[10px] text-gray-400 dark:text-[#636366]">
+              <Globe size={10} className="flex-shrink-0" /> {t('manage.contacts.shared_create_hint')}
+            </p>
           )}
         </div>
 
         {/* Linha inline: input + botão adicionar */}
         <div className="flex gap-1.5 mb-2">
           <input
-            className={`${inputClass} flex-1 text-sm`}
+            className={`${inputClass} flex-1 min-w-0 text-sm`}
             placeholder={t('manage.contacts.group_ph')}
             value={groupName}
             onChange={(e) => setGroupName(e.target.value)}
@@ -344,7 +344,7 @@ function ContactsTab() {
               }
             }}
             disabled={!groupName.trim()}
-            className="form-button form-button-primary h-9 w-9 p-0 flex items-center justify-center flex-shrink-0 disabled:opacity-50"
+            className="h-9 w-9 flex-shrink-0 flex items-center justify-center rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
             title={t('manage.contacts.new_group')}
           >
             <Plus size={15} />
@@ -490,12 +490,12 @@ function ContactsTab() {
 
         {/* Linha inline: nome + email + botão adicionar */}
         <div className="flex gap-1.5 mb-2">
-          <input className={`${inputClass} flex-1 text-sm`} placeholder={t('manage.contacts.name_ph')} value={name} onChange={(e) => setName(e.target.value)} />
-          <input className={`${inputClass} flex-1 text-sm`} placeholder="email@..." type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <input className={`${inputClass} w-24 sm:flex-1 flex-shrink text-sm`} placeholder={t('manage.contacts.name_ph')} value={name} onChange={(e) => setName(e.target.value)} />
+          <input className={`${inputClass} flex-1 min-w-0 text-sm`} placeholder="email@..." type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
           <button
             onClick={() => email && createContact.mutate()}
             disabled={!email}
-            className="form-button form-button-primary h-9 w-9 p-0 flex items-center justify-center flex-shrink-0 disabled:opacity-50"
+            className="h-9 w-9 flex-shrink-0 flex items-center justify-center rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
             title={t('manage.contacts.add')}
           >
             <Plus size={15} />
