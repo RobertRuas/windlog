@@ -25,14 +25,42 @@ import { useTranslation } from 'react-i18next';
 import { FeedbackModal } from './FeedbackModal';
 
 /**
+ * Props do FeedbackButton.
+ */
+interface FeedbackButtonProps {
+  /** Quando true, renderiza como ícone subtil (usado no header mobile) */
+  compact?: boolean;
+}
+
+/**
  * Componente FeedbackButton - botão flutuante + modal de feedback.
  *
  * Deve ser renderizado dentro do AppLayout para aparecer em todas as páginas.
+ * No desktop: botão circular flutuante no canto inferior direito.
+ * No mobile (compact): ícone discreto colocado no header.
  */
-export function FeedbackButton() {
+export function FeedbackButton({ compact = false }: FeedbackButtonProps) {
   const { t } = useTranslation('feedback');
   const [isOpen, setIsOpen] = useState(false);
 
+  /* ── Variante compacta (header mobile) ─────────────────────────── */
+  if (compact) {
+    return (
+      <>
+        <button
+          onClick={() => setIsOpen(true)}
+          className="p-2 rounded-lg text-gray-400 dark:text-[#636366] opacity-60 hover:opacity-100 hover:bg-gray-100 dark:hover:bg-[#2c2c2e] transition-all duration-150"
+          title={t('button')}
+          aria-label={t('button')}
+        >
+          <Bug size={18} />
+        </button>
+        <FeedbackModal isOpen={isOpen} onClose={() => setIsOpen(false)} />
+      </>
+    );
+  }
+
+  /* ── Variante flutuante (desktop) ──────────────────────────────── */
   return (
     <>
       {/* Botão flutuante no canto inferior direito */}

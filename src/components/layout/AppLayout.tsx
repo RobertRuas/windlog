@@ -71,15 +71,20 @@ export function AppLayout({ children }: AppLayoutProps) {
         <header className="sticky top-0 z-20 bg-white dark:bg-[#1c1c1e] border-b border-gray-200 dark:border-[#38383a]">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-end h-14">
+              {/* Feedback compacto (apenas mobile) — ao lado do avatar */}
+              <div className="sm:hidden">
+                <FeedbackButton compact />
+              </div>
+
               {/* Sino de notificações */}
               <NotificationBell />
 
-              {/* Avatar + Nome do usuário (desktop) — clica para ir ao perfil */}
+              {/* Avatar + Nome do usuário — clica para ir ao perfil */}
               {userName && (
                 <button
                   type="button"
                   onClick={() => navigate('/profile')}
-                  className="hidden sm:flex items-center ml-3 gap-2 cursor-pointer rounded-lg px-1.5 py-1 hover:bg-gray-100 dark:hover:bg-[#2c2c2e] transition-colors"
+                  className="flex items-center ml-3 gap-2 cursor-pointer rounded-lg px-1.5 py-1 hover:bg-gray-100 dark:hover:bg-[#2c2c2e] transition-colors"
                 >
                   {/* Avatar com foto ou iniciais */}
                   {data?.photoUrl ? (
@@ -93,7 +98,8 @@ export function AppLayout({ children }: AppLayoutProps) {
                       {data?.firstName?.[0]}{data?.lastName?.[0]}
                     </div>
                   )}
-                  <span className="text-sm text-gray-600 dark:text-[#a1a1a6]">
+                  {/* Nome visível apenas no desktop */}
+                  <span className="hidden sm:inline text-sm text-gray-600 dark:text-[#a1a1a6]">
                     {userName}
                   </span>
                 </button>
@@ -108,8 +114,10 @@ export function AppLayout({ children }: AppLayoutProps) {
         </div>
       </main>
 
-      {/* Botão flutuante de feedback (visível em todas as páginas) */}
-      <FeedbackButton />
+      {/* Botão flutuante de feedback (apenas desktop — mobile usa versão compacta no header) */}
+      <div className="hidden sm:block">
+        <FeedbackButton />
+      </div>
     </div>
   );
 }
