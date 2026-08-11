@@ -147,6 +147,9 @@ export function TimesheetFormEditor({
   const dragRowRefs = useRef<Record<number, HTMLDivElement | null>>({});
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Key para resetar o TechnicianSelect "adicionar" após cada seleção
+  const [addSelectKey, setAddSelectKey] = useState(0);
+
   // Painéis de personalização recolhidos — removido (personalização descontinuada)
 
   // Inicializa form apenas na primeira carga do componente
@@ -305,6 +308,21 @@ export function TimesheetFormEditor({
     setForm((prev) => {
       const days = [...prev.days];
       days[dayIdx] = { ...days[dayIdx], entries: [...days[dayIdx].entries, createEmptyEntry()] };
+      return { ...prev, days };
+    });
+  }
+
+  /** Adiciona entry já preenchido com nome e role do técnico (evita entry vazio temporário). */
+  function handleAddEntryWithUser(dayIdx: number, user: SystemUser) {
+    setForm((prev) => {
+      const days = [...prev.days];
+      const newEntry: FormEntry = {
+        ...createEmptyEntry(),
+        technicianName: user.fullName,
+        role: user.position || '',
+        userId: user.id,
+      };
+      days[dayIdx] = { ...days[dayIdx], entries: [...days[dayIdx].entries, newEntry] };
       return { ...prev, days };
     });
   }
@@ -721,19 +739,14 @@ export function TimesheetFormEditor({
                   {/* Adicionar técnico — inline e discreto */}
                   <div className="mt-1.5">
                     <TechnicianSelect
+                      key={addSelectKey}
                       value=""
-                      onChange={(v) => {
-                        if (v) {
-                          handleAddEntry(dayIdx);
-                          const newIdx = day.entries.length;
-                          handleEntryChange(dayIdx, newIdx, 'technicianName', v);
-                        }
+                      onChange={() => {
+                        /* ignora texto livre — usa apenas seleção da lista */
                       }}
                       onSelectUser={(user) => {
-                        handleAddEntry(dayIdx);
-                        const newIdx = day.entries.length;
-                        handleEntryChange(dayIdx, newIdx, 'technicianName', user.fullName);
-                        handleSelectUser(dayIdx, newIdx, user);
+                        handleAddEntryWithUser(dayIdx, user);
+                        setAddSelectKey((k) => k + 1); // remount → limpa o dropdown
                       }}
                       users={systemUsers}
                       excludeNames={day.entries.map((e) => e.technicianName).filter(Boolean)}
