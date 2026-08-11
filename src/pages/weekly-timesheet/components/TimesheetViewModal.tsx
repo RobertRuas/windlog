@@ -77,53 +77,56 @@ export function TimesheetViewModal({ timesheet, onClose }: TimesheetViewModalPro
 
   // ── Renderização via portal (filho direto do body) ─────────────────
   return createPortal(
-    <div className="ts-view-modal-root fixed inset-0 z-50 bg-gray-900/80 flex flex-col">
-      {/* ── Header minimalista ──────────────────────────────────────── */}
-      <div className="ts-no-print flex items-center justify-between px-3 sm:px-5 py-2 bg-white border-b border-gray-200 flex-shrink-0">
-        {/* Zoom controls */}
-        <div className="flex items-center gap-0.5 bg-gray-100 rounded-lg p-0.5">
-          <button
-            onClick={zoomOut}
-            className="p-1.5 text-gray-500 hover:text-gray-800 hover:bg-white rounded transition-colors"
-            title={t('detail.zoomOut')}
-          >
-            <Minus size={14} />
-          </button>
-          <span className="text-xs font-medium text-gray-600 w-9 text-center tabular-nums">
-            {zoomPercent}
-          </span>
-          <button
-            onClick={zoomIn}
-            className="p-1.5 text-gray-500 hover:text-gray-800 hover:bg-white rounded transition-colors"
-            title={t('detail.zoomIn')}
-          >
-            <Plus size={14} />
-          </button>
-        </div>
+    <div className="ts-view-modal-root fixed inset-0 z-50 flex flex-col">
+      {/* ── Header: ícones à esquerda, fechar à direita ────────────── */}
+      <div className="ts-no-print flex items-center justify-between px-2 py-1.5 bg-white border-b border-gray-200 flex-shrink-0">
+        {/* Esquerda: zoom + PDF */}
+        <div className="flex items-center">
+          {/* Zoom controls (sem cantos arredondados) */}
+          <div className="flex items-center border-r border-gray-200 pr-2 mr-2">
+            <button
+              onClick={zoomOut}
+              className="p-1.5 text-gray-500 hover:text-gray-800 hover:bg-gray-100 transition-colors"
+              title={t('detail.zoomOut')}
+            >
+              <Minus size={15} />
+            </button>
+            <span className="text-xs font-medium text-gray-600 w-10 text-center tabular-nums select-none">
+              {zoomPercent}
+            </span>
+            <button
+              onClick={zoomIn}
+              className="p-1.5 text-gray-500 hover:text-gray-800 hover:bg-gray-100 transition-colors"
+              title={t('detail.zoomIn')}
+            >
+              <Plus size={15} />
+            </button>
+          </div>
 
-        {/* Ações: PDF + Fechar */}
-        <div className="flex items-center gap-1.5">
+          {/* PDF */}
           <button
             onClick={handlePrint}
-            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
             title={t('detail.print')}
           >
             <Printer size={15} />
             <span className="hidden sm:inline">{t('detail.print')}</span>
           </button>
-          <button
-            onClick={onClose}
-            className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-            title={t('detail.close', { defaultValue: 'Fechar' })}
-          >
-            <X size={18} />
-          </button>
         </div>
+
+        {/* Direita: apenas fechar */}
+        <button
+          onClick={onClose}
+          className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+          title={t('detail.close', { defaultValue: 'Fechar' })}
+        >
+          <X size={18} />
+        </button>
       </div>
 
-      {/* ── Corpo: planilha ocupa 100% da tela ─────────────────────── */}
-      <div className="ts-view-modal-body flex-1 overflow-auto bg-white">
-        <div className="ts-dashboard-container">
+      {/* ── Corpo: planilha 100% horizontal + vertical ─────────────── */}
+      <div className="ts-view-modal-body flex-1 overflow-auto bg-white min-w-0">
+        <div className="ts-dashboard-container [&]:max-w-none [&]:m-0">
           {/* Planilha read-only em modo de impressão */}
           <TimesheetSheet
             timesheet={timesheet}
