@@ -313,7 +313,7 @@ export function FeedbacksPage() {
 
         {/* Filtros expandidos */}
         {showFilters && (
-          <div className="flex flex-wrap gap-3 mt-4 pt-4 border-t border-gray-100">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-4 pt-4 border-t border-gray-100">
             {/* Filtro por status */}
             <select
               value={filters.status || ''}
