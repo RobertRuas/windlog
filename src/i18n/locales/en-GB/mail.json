@@ -46,6 +46,10 @@
     "title": "Labels",
     "empty": "No labels"
   },
+  "inbox": {
+    "unread": "Unread",
+    "all": "All"
+  },
   "list": {
     "search_placeholder": "Search messages...",
     "advanced_filters": "Advanced filters",

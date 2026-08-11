@@ -46,6 +46,10 @@
     "title": "Etiquetas",
     "empty": "Sem etiquetas"
   },
+  "inbox": {
+    "unread": "Não lidas",
+    "all": "Todas"
+  },
   "list": {
     "search_placeholder": "Buscar mensagens...",
     "advanced_filters": "Filtros avançados",
