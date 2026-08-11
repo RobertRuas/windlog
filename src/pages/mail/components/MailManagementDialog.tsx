@@ -307,242 +307,226 @@ function ContactsTab() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* ══ SEÇÃO 1: GRUPOS ═════════════════════════════════════════ */}
       <section>
-        {/* Cabeçalho da seção */}
-        <div className="flex items-start justify-between gap-3 mb-3">
-          <div>
-            <h3 className="text-sm font-semibold text-gray-800 dark:text-[#f5f5f7]">{t('manage.contacts.groups')}</h3>
-            {/* Aviso de partilha para ADMIN/HR */}
-            {isManager && (
-              <p className="flex items-center gap-1 mt-0.5 text-xs text-gray-400 dark:text-[#636366]">
-                <Globe size={11} className="flex-shrink-0" /> {t('manage.contacts.shared_create_hint')}
-              </p>
-            )}
-          </div>
-          {!creating && (
-            <button
-              onClick={() => { setCreating(true); setSelectedId(null); }}
-              className="form-button form-button-primary inline-flex items-center gap-1.5 !py-1.5 text-xs flex-shrink-0"
-            >
-              <Plus size={14} />
-              {t('manage.contacts.new_group')}
-            </button>
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-[#636366]">
+            {t('manage.contacts.groups')}
+          </h3>
+          {isManager && (
+            <span className="flex items-center gap-1 text-[10px] text-gray-400 dark:text-[#636366]">
+              <Globe size={10} /> {t('manage.contacts.shared_create_hint')}
+            </span>
           )}
         </div>
 
-        {/* Card de criação: nome + checklist de contatos */}
-        {creating ? (
-          <div className="rounded-xl border border-blue-200 dark:border-blue-900/40 bg-blue-50/40 dark:bg-blue-900/10 p-4 space-y-3">
-            <input
-              className={`${inputClass} w-full`}
-              placeholder={t('manage.contacts.group_ph')}
-              value={groupName}
-              onChange={(e) => setGroupName(e.target.value)}
-              autoFocus
-            />
+        {/* Linha inline: input + botão adicionar */}
+        <div className="flex gap-1.5 mb-2">
+          <input
+            className={`${inputClass} flex-1 text-sm`}
+            placeholder={t('manage.contacts.group_ph')}
+            value={groupName}
+            onChange={(e) => setGroupName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && groupName.trim()) {
+                setCreating(true);
+              }
+            }}
+          />
+          <button
+            onClick={() => {
+              if (!groupName.trim()) return;
+              if (contacts.length > 0) {
+                setCreating(true);
+              } else {
+                createGroup.mutate();
+              }
+            }}
+            disabled={!groupName.trim()}
+            className="form-button form-button-primary h-9 w-9 p-0 flex items-center justify-center flex-shrink-0 disabled:opacity-50"
+            title={t('manage.contacts.new_group')}
+          >
+            <Plus size={15} />
+          </button>
+        </div>
+
+        {/* Checklist de membros (aparece quando há contatos e o utilizador quer criar) */}
+        {creating && (
+          <div className="rounded-lg border border-blue-200 dark:border-blue-900/40 bg-blue-50/40 dark:bg-blue-900/10 p-3 mb-2 space-y-2">
             <p className="text-xs font-medium text-gray-500 dark:text-[#8e8e93]">
               {t('manage.contacts.select_contacts')} ({newMembers.size})
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 max-h-40 overflow-y-auto pr-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-0.5 max-h-32 overflow-y-auto pr-1">
               {contacts.map((contact) => (
-                <label key={contact.id} className="flex items-center gap-2 px-2 py-1 rounded-md text-sm text-gray-700 dark:text-[#a1a1a6] cursor-pointer hover:bg-white/60 dark:hover:bg-[#2c2c2e]">
+                <label key={contact.id} className="flex items-center gap-2 px-2 py-1 rounded-md text-xs text-gray-700 dark:text-[#a1a1a6] cursor-pointer hover:bg-white/60 dark:hover:bg-[#2c2c2e]">
                   <input
                     type="checkbox"
                     checked={newMembers.has(contact.id)}
                     onChange={() => toggleNewMember(contact.id)}
                   />
                   <span className="truncate">{contact.name || contact.email}</span>
-                  <span className="text-xs text-gray-400 truncate max-w-[130px] ml-auto">{contact.email}</span>
                 </label>
               ))}
               {contacts.length === 0 && (
                 <p className="col-span-2 px-2 py-1 text-xs text-gray-400">{t('manage.contacts.no_contacts')}</p>
               )}
             </div>
-            <div className="flex justify-end gap-2 pt-1">
+            <div className="flex justify-end gap-1.5">
               <button
                 onClick={() => { setCreating(false); setGroupName(''); setNewMembers(new Set()); }}
-                className="form-button form-button-secondary text-xs"
+                className="form-button form-button-secondary text-xs !py-1"
               >
                 {t('common:buttons.cancel')}
               </button>
               <button
                 onClick={() => groupName.trim() && createGroup.mutate()}
                 disabled={!groupName.trim() || createGroup.isPending}
-                className="form-button form-button-primary inline-flex items-center gap-1.5 text-xs disabled:opacity-50"
+                className="form-button form-button-primary text-xs !py-1 inline-flex items-center gap-1 disabled:opacity-50"
               >
-                <Plus size={13} />
+                <Plus size={12} />
                 {t('manage.contacts.add_group')}
               </button>
             </div>
           </div>
-        ) : groups.length === 0 ? (
-          <p className="text-sm text-gray-400 text-center py-8 rounded-xl border border-dashed border-gray-200 dark:border-[#38383a]">
-            {t('manage.contacts.no_groups')}
-          </p>
-        ) : (
-          <>
-            {/* Grade de cartões de grupo */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {groups.map((group) => {
-                const owned = canManageGroup(group);
-                const selected = selectedId === group.id;
-                const preview = group.members.slice(0, 3);
-                const extra = group.members.length - preview.length;
-                return (
+        )}
+
+        {/* Lista inline de grupos */}
+        <ul className="divide-y divide-gray-100 dark:divide-[#2c2c2e] rounded-lg border border-gray-200 dark:border-[#38383a] overflow-hidden">
+          {groups.length === 0 ? (
+            <li className="px-3 py-4 text-xs text-gray-400 text-center">
+              {t('manage.contacts.no_groups')}
+            </li>
+          ) : (
+            groups.map((group) => {
+              const owned = canManageGroup(group);
+              const isSelected = selectedId === group.id;
+              return (
+                <li key={group.id}>
+                  {/* Linha do grupo */}
                   <div
-                    key={group.id}
-                    onClick={() => setSelectedId(selected ? null : group.id)}
-                    className={`cursor-pointer rounded-xl border p-3 transition-colors ${
-                      selected
-                        ? 'border-blue-400 dark:border-blue-600 bg-blue-50/50 dark:bg-blue-900/10'
-                        : 'border-gray-200 dark:border-[#38383a] hover:bg-gray-50 dark:hover:bg-[#2c2c2e]'
+                    onClick={() => setSelectedId(isSelected ? null : group.id)}
+                    className={`flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors ${
+                      isSelected
+                        ? 'bg-blue-50 dark:bg-blue-900/10'
+                        : 'hover:bg-gray-50 dark:hover:bg-[#2c2c2e]'
                     }`}
                   >
-                    {/* Linha principal: ícone + nome + ações */}
-                    <div className="flex items-center gap-2.5 mb-2">
-                      <span className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                        group.isShared ? 'bg-blue-50 dark:bg-blue-900/30' : 'bg-gray-100 dark:bg-[#38383a]'
-                      }`}>
-                        <Users size={15} className={group.isShared ? 'text-blue-500' : 'text-gray-400 dark:text-[#8e8e93]'} />
-                      </span>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-800 dark:text-[#f5f5f7] truncate">{group.name}</p>
-                        <p className="text-[11px] text-gray-400 dark:text-[#636366] truncate">
-                          {group.isShared
-                            ? (group.user
-                                ? t('manage.contacts.shared_by', { name: `${group.user.firstName} ${group.user.lastName}` })
-                                : t('manage.contacts.shared_badge'))
-                            : t('manage.contacts.private')}
-                        </p>
-                      </div>
-                      {/* Apenas o dono pode excluir */}
-                      {owned && (
-                        <button
-                          onClick={(e) => { e.stopPropagation(); removeGroup.mutate(group.id); }}
-                          className="flex-shrink-0 p-1 rounded-md text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
-                          title={t('common:buttons.delete')}
-                        >
-                          <Trash2 size={13} />
-                        </button>
-                      )}
-                    </div>
-
-                    {/* Rodapé do cartão: contagem + prévia dos membros */}
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-[11px] tabular-nums rounded-full px-2 py-0.5 bg-gray-100 dark:bg-[#38383a] text-gray-500 dark:text-[#a1a1a6]">
-                        {t('manage.contacts.member_count', { count: group.members.length })}
-                      </span>
-                      {preview.map((member) => (
-                        <span key={member.id} className="text-[11px] px-1.5 py-0.5 rounded bg-gray-50 dark:bg-[#2c2c2e] border border-gray-100 dark:border-[#38383a] text-gray-500 dark:text-[#8e8e93] truncate max-w-[90px]">
-                          {member.contact.name || member.contact.email}
-                        </span>
-                      ))}
-                      {extra > 0 && (
-                        <span className="text-[11px] text-gray-400 dark:text-[#636366]">+{extra}</span>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Painel de detalhes do grupo selecionado */}
-            {selectedGroup && (
-              <div className="mt-3 rounded-xl border border-gray-200 dark:border-[#38383a] p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm font-medium text-gray-800 dark:text-[#f5f5f7]">
-                    {selectedGroup.name}
-                    <span className="ml-2 text-xs font-normal text-gray-400">
-                      {t('manage.contacts.member_count', { count: selectedGroup.members.length })}
+                    <Users size={14} className={`flex-shrink-0 ${group.isShared ? 'text-blue-500' : 'text-gray-400 dark:text-[#8e8e93]'}`} />
+                    <span className="flex-1 text-sm text-gray-800 dark:text-[#f5f5f7] truncate min-w-0">{group.name}</span>
+                    <span className="text-[10px] tabular-nums rounded-full px-1.5 py-0.5 bg-gray-100 dark:bg-[#38383a] text-gray-500 dark:text-[#a1a1a6] flex-shrink-0">
+                      {group.members.length}
                     </span>
-                  </p>
-                  <button onClick={() => setSelectedId(null)} className="p-1 rounded-md text-gray-400 hover:bg-gray-100 dark:hover:bg-[#2c2c2e]">
-                    <X size={15} />
-                  </button>
-                </div>
+                    {group.isShared && (
+                      <Globe size={11} className="text-blue-400 flex-shrink-0" />
+                    )}
+                    {owned && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); removeGroup.mutate(group.id); }}
+                        className="text-gray-300 hover:text-red-500 flex-shrink-0"
+                        title={t('common:buttons.delete')}
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    )}
+                  </div>
 
-                {canManageGroup(selectedGroup) ? (
-                  <>
-                    <p className="text-xs text-gray-400 mb-2">{t('manage.contacts.members_hint')}</p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 max-h-48 overflow-y-auto pr-1">
-                      {contacts.map((contact) => (
-                        <label key={contact.id} className="flex items-center gap-2 text-sm text-gray-700 dark:text-[#a1a1a6] cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={selectedMemberIds.has(contact.id)}
-                            onChange={(e) => {
-                              if (e.target.checked) addMember.mutate({ groupId: selectedGroup.id, contactId: contact.id });
-                              else removeMember.mutate({ groupId: selectedGroup.id, contactId: contact.id });
-                            }}
-                          />
-                          <span className="truncate">{contact.name || contact.email}</span>
-                          <span className="text-xs text-gray-400 truncate max-w-[130px] ml-auto">{contact.email}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </>
-                ) : selectedGroup.members.length === 0 ? (
-                  <p className="text-xs text-gray-400">{t('manage.contacts.no_members')}</p>
-                ) : (
-                  <>
-                    {/* Somente leitura: grupos de outro dono (partilhados) */}
-                    <p className="text-xs text-gray-400 mb-2">{t('manage.contacts.shared_readonly_hint')}</p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 max-h-48 overflow-y-auto pr-1">
-                      {selectedGroup.members.map((member) => (
-                        <div key={member.id} className="flex items-center gap-2 text-sm text-gray-700 dark:text-[#a1a1a6]">
-                          <User size={13} className="text-gray-400 flex-shrink-0" />
-                          <span className="truncate">{member.contact.name || member.contact.email}</span>
-                          <span className="text-xs text-gray-400 truncate max-w-[130px] ml-auto">{member.contact.email}</span>
+                  {/* Painel de membros (expande ao clicar) */}
+                  {isSelected && (
+                    <div className="px-3 pb-2 pt-1 bg-gray-50/50 dark:bg-[#161618]/50 border-t border-gray-100 dark:border-[#2c2c2e]">
+                      {canManageGroup(group) ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-0.5 max-h-36 overflow-y-auto pr-1">
+                          {contacts.map((contact) => {
+                            const isMember = selectedMemberIds.has(contact.id);
+                            return (
+                              <label key={contact.id} className="flex items-center gap-2 px-2 py-1 rounded-md text-xs text-gray-700 dark:text-[#a1a1a6] cursor-pointer hover:bg-white/60 dark:hover:bg-[#2c2c2e]">
+                                <input
+                                  type="checkbox"
+                                  checked={isMember}
+                                  onChange={(e) => {
+                                    if (e.target.checked) addMember.mutate({ groupId: group.id, contactId: contact.id });
+                                    else removeMember.mutate({ groupId: group.id, contactId: contact.id });
+                                  }}
+                                />
+                                <span className="truncate">{contact.name || contact.email}</span>
+                              </label>
+                            );
+                          })}
                         </div>
-                      ))}
+                      ) : group.members.length === 0 ? (
+                        <p className="text-xs text-gray-400 py-1">{t('manage.contacts.no_members')}</p>
+                      ) : (
+                        <>
+                          <p className="text-[10px] text-gray-400 mb-1">{t('manage.contacts.shared_readonly_hint')}</p>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-0.5 max-h-36 overflow-y-auto pr-1">
+                            {group.members.map((member) => (
+                              <div key={member.id} className="flex items-center gap-2 px-2 py-1 text-xs text-gray-700 dark:text-[#a1a1a6]">
+                                <User size={11} className="text-gray-400 flex-shrink-0" />
+                                <span className="truncate">{member.contact.name || member.contact.email}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </>
+                      )}
                     </div>
-                  </>
-                )}
-              </div>
-            )}
-          </>
-        )}
+                  )}
+                </li>
+              );
+            })
+          )}
+        </ul>
       </section>
 
       {/* ══ SEÇÃO 2: CONTATOS ═══════════════════════════════════════ */}
       <section>
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-semibold text-gray-800 dark:text-[#f5f5f7]">{t('manage.tabs.contacts')}</h3>
-          <span className="text-[11px] tabular-nums rounded-full px-2 py-0.5 bg-gray-100 dark:bg-[#38383a] text-gray-500 dark:text-[#a1a1a6]">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-[#636366]">
+            {t('manage.tabs.contacts')}
+          </h3>
+          <span className="text-[10px] tabular-nums rounded-full px-1.5 py-0.5 bg-gray-100 dark:bg-[#38383a] text-gray-500 dark:text-[#a1a1a6]">
             {contacts.length}
           </span>
         </div>
 
-        {/* Novo contato */}
-        <div className="flex flex-col sm:flex-row gap-1.5 mb-2">
-          <div className="flex gap-1.5">
-            <input className={`${inputClass} flex-1`} placeholder={t('manage.contacts.name_ph')} value={name} onChange={(e) => setName(e.target.value)} />
-            <input className={`${inputClass} flex-1`} placeholder="email@..." type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-          </div>
-          <button onClick={() => email && createContact.mutate()} className="form-button form-button-primary h-9 w-9 sm:h-10 sm:w-auto sm:px-4 p-0 flex items-center justify-center flex-shrink-0" title={t('manage.contacts.add')}>
+        {/* Linha inline: nome + email + botão adicionar */}
+        <div className="flex gap-1.5 mb-2">
+          <input className={`${inputClass} flex-1 text-sm`} placeholder={t('manage.contacts.name_ph')} value={name} onChange={(e) => setName(e.target.value)} />
+          <input className={`${inputClass} flex-1 text-sm`} placeholder="email@..." type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <button
+            onClick={() => email && createContact.mutate()}
+            disabled={!email}
+            className="form-button form-button-primary h-9 w-9 p-0 flex items-center justify-center flex-shrink-0 disabled:opacity-50"
+            title={t('manage.contacts.add')}
+          >
             <Plus size={15} />
           </button>
         </div>
 
-        <p className="text-xs text-gray-400 dark:text-[#636366] mb-3">{t('manage.contacts.auto_hint')}</p>
+        <p className="text-[10px] text-gray-400 dark:text-[#636366] mb-2">{t('manage.contacts.auto_hint')}</p>
 
-        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 max-h-64 overflow-y-auto pr-1">
-          {contacts.map((contact: MailContact) => (
-            <li key={contact.id} className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-[#2c2c2e]">
-              <User size={13} className="text-gray-400 flex-shrink-0" />
-              <span className="flex-1 truncate text-sm text-gray-700 dark:text-[#e5e5ea]">
-                {contact.name || contact.email}
-              </span>
-              <span className="text-xs text-gray-400 truncate max-w-[130px]">{contact.email}</span>
-              {contact.isAuto && <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-[#38383a] text-gray-500">{t('manage.contacts.auto')}</span>}
-              <button onClick={() => removeContact.mutate(contact.id)} className="text-gray-300 hover:text-red-500 flex-shrink-0">
-                <Trash2 size={13} />
-              </button>
+        {/* Lista inline de contatos */}
+        <ul className="divide-y divide-gray-100 dark:divide-[#2c2c2e] rounded-lg border border-gray-200 dark:border-[#38383a] overflow-hidden max-h-52 overflow-y-auto">
+          {contacts.length === 0 ? (
+            <li className="px-3 py-4 text-xs text-gray-400 text-center">
+              {t('manage.contacts.no_contacts')}
             </li>
-          ))}
+          ) : (
+            contacts.map((contact: MailContact) => (
+              <li key={contact.id} className="flex items-center gap-2 px-3 py-1.5 hover:bg-gray-50 dark:hover:bg-[#2c2c2e]">
+                <User size={13} className="text-gray-400 flex-shrink-0" />
+                <span className="flex-1 truncate text-sm text-gray-700 dark:text-[#e5e5ea] min-w-0">
+                  {contact.name || contact.email}
+                </span>
+                <span className="text-[11px] text-gray-400 truncate max-w-[120px] flex-shrink-0">{contact.email}</span>
+                {contact.isAuto && (
+                  <span className="text-[9px] px-1 py-px rounded bg-gray-100 dark:bg-[#38383a] text-gray-500 flex-shrink-0">{t('manage.contacts.auto')}</span>
+                )}
+                <button onClick={() => removeContact.mutate(contact.id)} className="text-gray-300 hover:text-red-500 flex-shrink-0">
+                  <Trash2 size={13} />
+                </button>
+              </li>
+            ))
+          )}
         </ul>
       </section>
     </div>
