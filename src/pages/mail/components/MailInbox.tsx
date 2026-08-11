@@ -25,7 +25,7 @@ import { toast } from 'sonner';
 import {
   PenSquare, RefreshCw, Settings2, PlugZap,
   Inbox, Send, FileText, AlertOctagon, Trash2, Archive,
-  Folder as FolderIcon, Tag, Plus, ChevronDown,
+  Folder as FolderIcon, Tag, Plus,
 } from 'lucide-react';
 
 // Serviço
@@ -94,9 +94,6 @@ export function MailInbox({ account }: MailInboxProps) {
   // Estado para criação inline de pasta
   const [isAddingFolder, setIsAddingFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
-
-  // Acordeão da caixa de entrada (expandido/recolhido)
-  const [inboxExpanded, setInboxExpanded] = useState(false);
 
   /**
    * Busca pastas e etiquetas para a barra de navegação.
@@ -329,100 +326,82 @@ export function MailInbox({ account }: MailInboxProps) {
       )}
 
       {/* ── Barra de navegação: pastas e etiquetas ─────────── */}
-      <div className="px-3 sm:px-4 py-1.5 border-b border-gray-200 dark:border-[#38383a]">
-        {/* Linha superior: pastas e etiquetas (scroll horizontal) */}
-        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none snap-x snap-mandatory">
-          {/* Pastas */}
-          {folders.map((folder: MailFolder) => {
-            const Icon = FOLDER_ICONS[folder.type] || FolderIcon;
-            const active = folderId === folder.id;
-            const isInbox = folder.type === 'INBOX';
-            return (
-              <div key={folder.id} className="snap-start flex-shrink-0">
-                <button
-                  onClick={() => {
-                    if (isInbox) {
-                      // Caixa de entrada: expande/recolhe o acordeão
-                      setInboxExpanded(!inboxExpanded);
-                      if (!active) {
-                        selectFolder('folder', folder.id);
-                      }
-                    } else {
-                      setInboxExpanded(false);
-                      selectFolder('folder', folder.id);
-                    }
-                  }}
-                  className={`
-                    inline-flex items-center gap-1.5 px-2.5 py-1.5 sm:py-1 rounded-md text-xs font-medium whitespace-nowrap transition-colors
-                    ${active
-                      ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
-                      : 'text-gray-500 dark:text-[#a1a1a6] hover:bg-gray-100 dark:hover:bg-[#2c2c2e]'}
-                  `}
-                >
-                  <Icon size={13} />
-                  {t(`folders.types.${folder.type}`, folder.name)}
-                  {folder.unreadCount > 0 && (
-                    <span className="text-[10px] font-semibold bg-blue-600 text-white rounded-full px-1.5 py-px min-w-[16px] text-center leading-none">
-                      {folder.unreadCount}
-                    </span>
-                  )}
-                  {isInbox && (
-                    <ChevronDown size={12} className={`transition-transform ${inboxExpanded ? 'rotate-180' : ''}`} />
-                  )}
-                </button>
-
-                {/* Acordeão da Caixa de Entrada: Não lidas / Todas */}
-                {isInbox && inboxExpanded && active && (
-                  <div className="flex items-center gap-1 mt-1 ml-2">
-                    <button
-                      onClick={() => selectInboxView('unread')}
-                      className={`
-                        inline-flex items-center gap-1 px-2 py-1 rounded text-[11px] font-medium transition-colors
-                        ${inboxView === 'unread'
-                          ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
-                          : 'text-gray-500 dark:text-[#a1a1a6] hover:bg-gray-100 dark:hover:bg-[#2c2c2e]'}
-                      `}
-                    >
-                      {t('inbox.unread')}
-                    </button>
-                    <button
-                      onClick={() => selectInboxView('all')}
-                      className={`
-                        inline-flex items-center gap-1 px-2 py-1 rounded text-[11px] font-medium transition-colors
-                        ${inboxView === 'all'
-                          ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
-                          : 'text-gray-500 dark:text-[#a1a1a6] hover:bg-gray-100 dark:hover:bg-[#2c2c2e]'}
-                      `}
-                    >
-                      {t('inbox.all')}
-                    </button>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-
-          {/* Etiquetas (se existirem) */}
-          {labels.length > 0 && <span className="w-px h-4 bg-gray-200 dark:bg-[#38383a] flex-shrink-0" />}
-          {labels.map((label: MailLabel) => {
-            const active = labelId === label.id;
-            return (
+      <div className="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 border-b border-gray-200 dark:border-[#38383a] overflow-x-auto scrollbar-none snap-x snap-mandatory">
+        {/* Pastas */}
+        {folders.map((folder: MailFolder) => {
+          const Icon = FOLDER_ICONS[folder.type] || FolderIcon;
+          const active = folderId === folder.id;
+          const isInbox = folder.type === 'INBOX';
+          return (
+            <div key={folder.id} className="inline-flex items-center snap-start flex-shrink-0">
               <button
-                key={label.id}
-                onClick={() => { setInboxExpanded(false); selectFolder('label', active ? null : label.id); }}
+                onClick={() => selectFolder('folder', folder.id)}
                 className={`
-                  inline-flex items-center gap-1.5 px-2.5 py-1.5 sm:py-1 rounded-md text-xs font-medium whitespace-nowrap transition-colors snap-start flex-shrink-0
+                  inline-flex items-center gap-1.5 px-2.5 py-1.5 sm:py-1 rounded-md text-xs font-medium whitespace-nowrap transition-colors
                   ${active
                     ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
                     : 'text-gray-500 dark:text-[#a1a1a6] hover:bg-gray-100 dark:hover:bg-[#2c2c2e]'}
                 `}
               >
-                <Tag size={12} style={{ color: label.color || '#6b7280' }} />
-                {label.name}
+                <Icon size={13} />
+                {t(`folders.types.${folder.type}`, folder.name)}
+                {folder.unreadCount > 0 && (
+                  <span className="text-[10px] font-semibold bg-blue-600 text-white rounded-full px-1.5 py-px min-w-[16px] text-center leading-none">
+                    {folder.unreadCount}
+                  </span>
+                )}
               </button>
-            );
-          })}
-        </div>
+
+              {/* Filtro discreto: Não lidas | Todas (apenas quando inbox está ativa) */}
+              {isInbox && active && (
+                <span className="inline-flex items-center ml-0.5 text-[11px]">
+                  <button
+                    onClick={() => selectInboxView('unread')}
+                    className={`px-1.5 py-0.5 rounded transition-colors ${
+                      inboxView === 'unread'
+                        ? 'text-blue-600 dark:text-blue-400 font-medium'
+                        : 'text-gray-400 dark:text-[#636366] hover:text-gray-600 dark:hover:text-[#a1a1a6]'
+                    }`}
+                  >
+                    {t('inbox.unread')}
+                  </button>
+                  <span className="text-gray-300 dark:text-[#38383a]">|</span>
+                  <button
+                    onClick={() => selectInboxView('all')}
+                    className={`px-1.5 py-0.5 rounded transition-colors ${
+                      inboxView === 'all'
+                        ? 'text-blue-600 dark:text-blue-400 font-medium'
+                        : 'text-gray-400 dark:text-[#636366] hover:text-gray-600 dark:hover:text-[#a1a1a6]'
+                    }`}
+                  >
+                    {t('inbox.all')}
+                  </button>
+                </span>
+              )}
+            </div>
+          );
+        })}
+
+        {/* Etiquetas (se existirem) */}
+        {labels.length > 0 && <span className="w-px h-4 bg-gray-200 dark:bg-[#38383a] flex-shrink-0" />}
+        {labels.map((label: MailLabel) => {
+          const active = labelId === label.id;
+          return (
+            <button
+              key={label.id}
+              onClick={() => selectFolder('label', active ? null : label.id)}
+              className={`
+                inline-flex items-center gap-1.5 px-2.5 py-1.5 sm:py-1 rounded-md text-xs font-medium whitespace-nowrap transition-colors snap-start flex-shrink-0
+                ${active
+                  ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
+                  : 'text-gray-500 dark:text-[#a1a1a6] hover:bg-gray-100 dark:hover:bg-[#2c2c2e]'}
+              `}
+            >
+              <Tag size={12} style={{ color: label.color || '#6b7280' }} />
+              {label.name}
+            </button>
+          );
+        })}
 
         {/* Nova pasta (inline) */}
         {isAddingFolder ? (
