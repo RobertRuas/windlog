@@ -23,7 +23,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import {
-  PenSquare, RefreshCw, Settings2, PlugZap,
+  PenSquare, RefreshCw, Settings2, PlugZap, Search,
   Inbox, Send, FileText, AlertOctagon, Trash2, Archive,
   Folder as FolderIcon, Tag, Plus,
 } from 'lucide-react';
@@ -94,6 +94,9 @@ export function MailInbox({ account }: MailInboxProps) {
   // Estado para criação inline de pasta
   const [isAddingFolder, setIsAddingFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
+
+  // Estado da busca (mostrar/esconder campo)
+  const [showSearch, setShowSearch] = useState(false);
 
   /**
    * Busca pastas e etiquetas para a barra de navegação.
@@ -291,6 +294,15 @@ export function MailInbox({ account }: MailInboxProps) {
           <RefreshCw size={15} className={syncMutation.isPending ? 'animate-spin' : ''} />
         </button>
 
+        {/* Buscar (mostra/esconde campo de busca) */}
+        <button
+          onClick={() => setShowSearch(!showSearch)}
+          className={`form-button form-button-secondary ${showSearch ? '!bg-blue-50 dark:!bg-blue-900/20 !text-blue-600 dark:!text-blue-400' : ''}`}
+          title={t('toolbar.search')}
+        >
+          <Search size={15} />
+        </button>
+
         {/* Informações da conta (oculto no telemóvel para poupar espaço) */}
         <span className="hidden sm:inline ml-2 text-xs text-gray-400 dark:text-[#636366] truncate" title={account.email}>
           {account.email} · {account.protocol}
@@ -331,54 +343,25 @@ export function MailInbox({ account }: MailInboxProps) {
         {folders.map((folder: MailFolder) => {
           const Icon = FOLDER_ICONS[folder.type] || FolderIcon;
           const active = folderId === folder.id;
-          const isInbox = folder.type === 'INBOX';
           return (
-            <div key={folder.id} className="inline-flex items-center snap-start flex-shrink-0">
-              <button
-                onClick={() => selectFolder('folder', folder.id)}
-                className={`
-                  inline-flex items-center gap-1.5 px-2.5 py-1.5 sm:py-1 rounded-md text-xs font-medium whitespace-nowrap transition-colors
-                  ${active
-                    ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
-                    : 'text-gray-500 dark:text-[#a1a1a6] hover:bg-gray-100 dark:hover:bg-[#2c2c2e]'}
-                `}
-              >
-                <Icon size={13} />
-                {t(`folders.types.${folder.type}`, folder.name)}
-                {folder.unreadCount > 0 && (
-                  <span className="text-[10px] font-semibold bg-blue-600 text-white rounded-full px-1.5 py-px min-w-[16px] text-center leading-none">
-                    {folder.unreadCount}
-                  </span>
-                )}
-              </button>
-
-              {/* Filtro discreto: Não lidas | Todas (apenas quando inbox está ativa) */}
-              {isInbox && active && (
-                <span className="inline-flex items-center ml-0.5 text-[11px]">
-                  <button
-                    onClick={() => selectInboxView('unread')}
-                    className={`px-1.5 py-0.5 rounded transition-colors ${
-                      inboxView === 'unread'
-                        ? 'text-blue-600 dark:text-blue-400 font-medium'
-                        : 'text-gray-400 dark:text-[#636366] hover:text-gray-600 dark:hover:text-[#a1a1a6]'
-                    }`}
-                  >
-                    {t('inbox.unread')}
-                  </button>
-                  <span className="text-gray-300 dark:text-[#38383a]">|</span>
-                  <button
-                    onClick={() => selectInboxView('all')}
-                    className={`px-1.5 py-0.5 rounded transition-colors ${
-                      inboxView === 'all'
-                        ? 'text-blue-600 dark:text-blue-400 font-medium'
-                        : 'text-gray-400 dark:text-[#636366] hover:text-gray-600 dark:hover:text-[#a1a1a6]'
-                    }`}
-                  >
-                    {t('inbox.all')}
-                  </button>
+            <button
+              key={folder.id}
+              onClick={() => selectFolder('folder', folder.id)}
+              className={`
+                inline-flex items-center gap-1.5 px-2.5 py-1.5 sm:py-1 rounded-md text-xs font-medium whitespace-nowrap transition-colors snap-start flex-shrink-0
+                ${active
+                  ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
+                  : 'text-gray-500 dark:text-[#a1a1a6] hover:bg-gray-100 dark:hover:bg-[#2c2c2e]'}
+              `}
+            >
+              <Icon size={13} />
+              {t(`folders.types.${folder.type}`, folder.name)}
+              {folder.unreadCount > 0 && (
+                <span className="text-[10px] font-semibold bg-blue-600 text-white rounded-full px-1.5 py-px min-w-[16px] text-center leading-none">
+                  {folder.unreadCount}
                 </span>
               )}
-            </div>
+            </button>
           );
         })}
 
@@ -448,13 +431,42 @@ export function MailInbox({ account }: MailInboxProps) {
             onChanged={() => { setSelectedMessage(null); invalidateAll(); }}
           />
         ) : (
-          <MessageList
-            filters={effectiveFilters}
-            onFiltersChange={(next) => setFilters({ ...next, folderId: undefined, labelId: undefined })}
-            selectedMessageId={null}
-            onSelectMessage={setSelectedMessage}
-            onToggleFlag={handleToggleFlag}
-          />
+          <div className="flex-1 min-w-0 flex flex-col">
+            {/* Filtro rápido da caixa de entrada: Não lidas / Todas */}
+            {folderId && folders.find((f) => f.id === folderId)?.type === 'INBOX' && (
+              <div className="flex items-center gap-1.5 px-3 py-1 text-[11px]">
+                <button
+                  onClick={() => selectInboxView('unread')}
+                  className={`transition-colors ${
+                    inboxView === 'unread'
+                      ? 'text-blue-600 dark:text-blue-400 font-medium'
+                      : 'text-gray-400 dark:text-[#636366] hover:text-gray-600 dark:hover:text-[#a1a1a6]'
+                  }`}
+                >
+                  {t('inbox.unread')}
+                </button>
+                <span className="text-gray-300 dark:text-[#38383a]">·</span>
+                <button
+                  onClick={() => selectInboxView('all')}
+                  className={`transition-colors ${
+                    inboxView === 'all'
+                      ? 'text-blue-600 dark:text-blue-400 font-medium'
+                      : 'text-gray-400 dark:text-[#636366] hover:text-gray-600 dark:hover:text-[#a1a1a6]'
+                  }`}
+                >
+                  {t('inbox.all')}
+                </button>
+              </div>
+            )}
+            <MessageList
+              filters={effectiveFilters}
+              onFiltersChange={(next) => setFilters({ ...next, folderId: undefined, labelId: undefined })}
+              selectedMessageId={null}
+              onSelectMessage={setSelectedMessage}
+              onToggleFlag={handleToggleFlag}
+              showSearch={showSearch}
+            />
+          </div>
         )}
       </div>
 

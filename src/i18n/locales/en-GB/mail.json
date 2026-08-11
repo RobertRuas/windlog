@@ -22,7 +22,8 @@
     "sync_error": "Last sync error",
     "manage": "Contacts, rules, signatures and more",
     "disconnect": "Disconnect account",
-    "disconnected": "Email account disconnected"
+    "disconnected": "Email account disconnected",
+    "search": "Search messages"
   },
   "folders": {
     "title": "Folders",

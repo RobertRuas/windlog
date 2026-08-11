@@ -61,6 +61,8 @@ interface MessageListProps {
   onSelectMessage: (message: MailMessageSummary) => void;
   /** Callback para atualizar flags inline (sinalizar) */
   onToggleFlag: (message: MailMessageSummary) => void;
+  /** Mostrar campo de busca (controlado pelo pai) */
+  showSearch: boolean;
 }
 
 /**
@@ -72,6 +74,7 @@ export function MessageList({
   selectedMessageId,
   onSelectMessage,
   onToggleFlag,
+  showSearch,
 }: MessageListProps) {
   const { t } = useTranslation('mail');
 
@@ -172,72 +175,75 @@ export function MessageList({
 
   return (
     <div className="flex-1 min-w-0 border-r border-gray-200 dark:border-[#38383a] flex flex-col">
-      {/* ── Barra de busca ─────────────────────────────────── */}
-      <div className="p-3 border-b border-gray-200 dark:border-[#38383a] space-y-2">
-        <form onSubmit={handleSearch} className="flex gap-1.5">
-          <div className="relative flex-1">
-            <Search size={15} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder={t('list.search_placeholder')}
-              className="w-full text-sm pl-8 pr-3 py-2 rounded-lg border border-gray-300 dark:border-[#38383a] bg-white dark:bg-[#2c2c2e] text-gray-900 dark:text-[#f5f5f7] focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <button
-            type="button"
-            onClick={() => setShowAdvanced(!showAdvanced)}
-            className={`p-2 rounded-lg border transition-colors ${
-              showAdvanced
-                ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-300 text-blue-600'
-                : 'border-gray-300 dark:border-[#38383a] text-gray-400 hover:text-gray-600 dark:hover:text-[#a1a1a6]'
-            }`}
-            title={t('list.advanced_filters')}
-          >
-            <SlidersHorizontal size={15} />
-          </button>
-        </form>
+      {/* ── Barra de busca (aparece quando showSearch=true) ── */}
+      {showSearch && (
+        <div className="p-3 border-b border-gray-200 dark:border-[#38383a] space-y-2">
+          <form onSubmit={handleSearch} className="flex gap-1.5">
+            <div className="relative flex-1">
+              <Search size={15} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                autoFocus
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder={t('list.search_placeholder')}
+                className="w-full text-sm pl-8 pr-3 py-2 rounded-lg border border-gray-300 dark:border-[#38383a] bg-white dark:bg-[#2c2c2e] text-gray-900 dark:text-[#f5f5f7] focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowAdvanced(!showAdvanced)}
+              className={`p-2 rounded-lg border transition-colors ${
+                showAdvanced
+                  ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-300 text-blue-600'
+                  : 'border-gray-300 dark:border-[#38383a] text-gray-400 hover:text-gray-600 dark:hover:text-[#a1a1a6]'
+              }`}
+              title={t('list.advanced_filters')}
+            >
+              <SlidersHorizontal size={15} />
+            </button>
+          </form>
 
-        {/* ── Filtros avançados ─────────────────────────────── */}
-        {showAdvanced && (
-          <div className="space-y-2 p-3 bg-gray-50 dark:bg-[#2c2c2e] rounded-lg">
-            <input className={fieldClass} placeholder={t('list.filter_from')} value={advanced.from} onChange={(e) => setAdvanced({ ...advanced, from: e.target.value })} />
-            <input className={fieldClass} placeholder={t('list.filter_to')} value={advanced.to} onChange={(e) => setAdvanced({ ...advanced, to: e.target.value })} />
-            <input className={fieldClass} placeholder={t('list.filter_subject')} value={advanced.subject} onChange={(e) => setAdvanced({ ...advanced, subject: e.target.value })} />
-            <input className={fieldClass} placeholder={t('list.filter_content')} value={advanced.content} onChange={(e) => setAdvanced({ ...advanced, content: e.target.value })} />
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <input type="date" className={fieldClass} value={advanced.startDate} onChange={(e) => setAdvanced({ ...advanced, startDate: e.target.value })} title={t('list.filter_start_date')} />
-              <input type="date" className={fieldClass} value={advanced.endDate} onChange={(e) => setAdvanced({ ...advanced, endDate: e.target.value })} title={t('list.filter_end_date')} />
+          {/* ── Filtros avançados ─────────────────────────────── */}
+          {showAdvanced && (
+            <div className="space-y-2 p-3 bg-gray-50 dark:bg-[#2c2c2e] rounded-lg">
+              <input className={fieldClass} placeholder={t('list.filter_from')} value={advanced.from} onChange={(e) => setAdvanced({ ...advanced, from: e.target.value })} />
+              <input className={fieldClass} placeholder={t('list.filter_to')} value={advanced.to} onChange={(e) => setAdvanced({ ...advanced, to: e.target.value })} />
+              <input className={fieldClass} placeholder={t('list.filter_subject')} value={advanced.subject} onChange={(e) => setAdvanced({ ...advanced, subject: e.target.value })} />
+              <input className={fieldClass} placeholder={t('list.filter_content')} value={advanced.content} onChange={(e) => setAdvanced({ ...advanced, content: e.target.value })} />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <input type="date" className={fieldClass} value={advanced.startDate} onChange={(e) => setAdvanced({ ...advanced, startDate: e.target.value })} title={t('list.filter_start_date')} />
+                <input type="date" className={fieldClass} value={advanced.endDate} onChange={(e) => setAdvanced({ ...advanced, endDate: e.target.value })} title={t('list.filter_end_date')} />
+              </div>
+              <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-sm text-gray-600 dark:text-[#a1a1a6]">
+                <label className="flex items-center gap-1.5 cursor-pointer">
+                  <input type="checkbox" checked={advanced.unread} onChange={(e) => setAdvanced({ ...advanced, unread: e.target.checked })} />
+                  {t('list.filter_unread')}
+                </label>
+                <label className="flex items-center gap-1.5 cursor-pointer">
+                  <input type="checkbox" checked={advanced.flagged} onChange={(e) => setAdvanced({ ...advanced, flagged: e.target.checked })} />
+                  {t('list.filter_flagged')}
+                </label>
+                <label className="flex items-center gap-1.5 cursor-pointer">
+                  <input type="checkbox" checked={advanced.important} onChange={(e) => setAdvanced({ ...advanced, important: e.target.checked })} />
+                  {t('list.filter_important')}
+                </label>
+                <label className="flex items-center gap-1.5 cursor-pointer">
+                  <input type="checkbox" checked={advanced.hasAttachments} onChange={(e) => setAdvanced({ ...advanced, hasAttachments: e.target.checked })} />
+                  {t('list.filter_attachments')}
+                </label>
+              </div>
+              <div className="flex gap-2 pt-1">
+                <button onClick={applyAdvanced} className="form-button form-button-primary text-xs h-8 px-3">
+                  {t('list.apply_filters')}
+                </button>
+                <button onClick={clearAdvanced} className="form-button form-button-secondary text-xs h-8 px-3">
+                  {t('list.clear_filters')}
+                </button>
+              </div>
             </div>
-            <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-sm text-gray-600 dark:text-[#a1a1a6]">
-              <label className="flex items-center gap-1.5 cursor-pointer">
-                <input type="checkbox" checked={advanced.unread} onChange={(e) => setAdvanced({ ...advanced, unread: e.target.checked })} />
-                {t('list.filter_unread')}
-              </label>
-              <label className="flex items-center gap-1.5 cursor-pointer">
-                <input type="checkbox" checked={advanced.flagged} onChange={(e) => setAdvanced({ ...advanced, flagged: e.target.checked })} />
-                {t('list.filter_flagged')}
-              </label>
-              <label className="flex items-center gap-1.5 cursor-pointer">
-                <input type="checkbox" checked={advanced.important} onChange={(e) => setAdvanced({ ...advanced, important: e.target.checked })} />
-                {t('list.filter_important')}
-              </label>
-              <label className="flex items-center gap-1.5 cursor-pointer">
-                <input type="checkbox" checked={advanced.hasAttachments} onChange={(e) => setAdvanced({ ...advanced, hasAttachments: e.target.checked })} />
-                {t('list.filter_attachments')}
-              </label>
-            </div>
-            <div className="flex gap-2 pt-1">
-              <button onClick={applyAdvanced} className="form-button form-button-primary text-xs h-8 px-3">
-                {t('list.apply_filters')}
-              </button>
-              <button onClick={clearAdvanced} className="form-button form-button-secondary text-xs h-8 px-3">
-                {t('list.clear_filters')}
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
 
       {/* ── Lista de mensagens ─────────────────────────────── */}
       <div className="flex-1 overflow-y-auto">

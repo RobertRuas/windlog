@@ -22,7 +22,8 @@
     "sync_error": "Erro na última sincronização",
     "manage": "Contatos, regras, assinaturas e mais",
     "disconnect": "Desconectar conta",
-    "disconnected": "Conta de e-mail desconectada"
+    "disconnected": "Conta de e-mail desconectada",
+    "search": "Buscar mensagens"
   },
   "folders": {
     "title": "Pastas",
