@@ -107,12 +107,12 @@ export const DaySection = memo(function DaySection({
         className={`px-5 py-3 border-b ${borderColor} ${headerBg} flex items-center justify-between cursor-pointer hover:opacity-90 transition-all`}
         onClick={() => toggleDay(dayIdx)}
       >
-        <div className="flex items-center gap-3">
-          {isCollapsed ? <ChevronRight size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
-          <h3 className="text-sm font-semibold text-gray-900">{t('days.' + day.dayName)}</h3>
-          <span className="text-xs text-gray-500">{day.date}</span>
+        <div className="flex items-center gap-3 flex-nowrap min-w-0">
+          {isCollapsed ? <ChevronRight size={16} className="text-gray-400 shrink-0" /> : <ChevronDown size={16} className="text-gray-400 shrink-0" />}
+          <h3 className="text-sm font-semibold text-gray-900 whitespace-nowrap">{t('days.' + day.dayName)}</h3>
+          <span className="text-xs text-gray-500 whitespace-nowrap">{day.date}</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-nowrap shrink-0">
           {filled ? (
             <span className="text-xs font-medium text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full">
               {t('form.filled')}
@@ -282,25 +282,25 @@ export const DaySection = memo(function DaySection({
                       cancelLongPress();
                     }}
                     onTouchCancel={() => cancelLongPress()}
-                    className={`flex items-center gap-2 px-2 py-1.5 rounded-md transition-all select-none ${
+                    className={`flex items-center gap-2 px-2 py-1.5 rounded-md transition-all select-none flex-nowrap ${
                       isDragging ? 'opacity-30' : ''
                     } ${isDropTarget ? 'bg-blue-50 ring-1 ring-blue-300' : ''} ${
                       entry.isCurrentUser ? 'border-l-2 border-blue-400' : ''
                     }`}
                   >
                     <GripVertical size={14} className="text-gray-300 shrink-0 cursor-grab active:cursor-grabbing touch-none" />
-                    <span className={`text-sm flex-1 min-w-0 truncate ${
+                    <span className={`text-sm flex-1 min-w-0 truncate whitespace-nowrap ${
                       entry.isCurrentUser ? 'font-medium text-blue-700' : 'text-gray-800'
                     }`}>
                       {entry.technicianName || '—'}
                     </span>
                     {entry.role && (
-                      <span className="text-[10px] text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded shrink-0 max-w-[100px] truncate">
+                      <span className="text-[10px] text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded shrink-0 max-w-[100px] truncate whitespace-nowrap">
                         {entry.role}
                       </span>
                     )}
                     {entry.isCurrentUser && (
-                      <span className="text-[10px] text-blue-400 shrink-0">{t('form.you')}</span>
+                      <span className="text-[10px] text-blue-400 shrink-0 whitespace-nowrap">{t('form.you')}</span>
                     )}
                     <button
                       onClick={() => handleRemoveEntry(dayIdx, entryIdx)}
