@@ -108,6 +108,21 @@ export class DocumentsController {
     res.type('text/html').send(html);
   }
 
+  @Get('templates/:templateId/form-html')
+  @ApiOperation({ summary: 'Obter HTML do formulário de entrada de dados' })
+  @ApiResponse({ status: 200, description: 'HTML do formulário' })
+  @ApiResponse({ status: 404, description: 'Formulário não encontrado' })
+  async getFormHtml(
+    @Param('templateId') templateId: string,
+    @Res() res: any,
+  ) {
+    const html = await this.documentsService.getFormHtml(templateId);
+    if (!html) {
+      throw new NotFoundException('Form template not found');
+    }
+    res.type('text/html').send(html);
+  }
+
   // =========================================================================
   // LISTAGEM - GET /documents
   // =========================================================================

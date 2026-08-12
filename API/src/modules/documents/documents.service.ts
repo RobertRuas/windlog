@@ -371,6 +371,33 @@ export class DocumentsService {
     }
   }
 
+  /**
+   * Lê o arquivo HTML do formulário de entrada de dados.
+   * Usado pelo frontend para renderizar o formulário num iframe.
+   *
+   * @param templateId - ID do template
+   * @returns Conteúdo HTML do formulário ou null se não encontrado
+   */
+  async getFormHtml(templateId: string): Promise<string | null> {
+    const fileMap: Record<string, string> = {
+      invoice: 'invoice-form.html',
+      'car-daily-report': 'car-daily-report-form.html',
+      'toolbox-talk': 'toolbox-talk-form.html',
+    };
+
+    const fileName = fileMap[templateId];
+    if (!fileName) return null;
+
+    const templatePath = path.join(process.cwd(), 'src/modules/documents/templates', fileName);
+
+    try {
+      return fs.readFileSync(templatePath, 'utf-8');
+    } catch {
+      this.logger.warn(`Form template file not found: ${templatePath}`);
+      return null;
+    }
+  }
+
   // =========================================================================
   // HELPERS - Funções auxiliares internas
   // =========================================================================

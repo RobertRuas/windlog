@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toolbox Talk Form - NORD-FRM-012</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #8dc63f;
+            --primary-dark: #76a832;
+            --primary-light: #f4faf0;
+            --text-dark: #2d3748;
+            --text-muted: #718096;
+            --bg-body: #f7fafc;
+            --bg-card: #ffffff;
+            --border-color: #e2e8f0;
+            --success: #38a169;
+            --success-light: #f0fff4;
+            --danger: #e53e3e;
+            --neutral: #4a5568;
+            --neutral-light: #edf2f7;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-dark);
+            line-height: 1.5;
+            padding: 20px 10px;
+        }
+
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+            background: var(--bg-card);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Header Style */
+        header {
+            background-color: #ffffff;
+            padding: 30px;
+            border-bottom: 3px solid var(--primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .logo-area {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .company-name {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-dark);
+            letter-spacing: -0.5px;
+        }
+
+        .company-name span {
+            color: var(--primary);
+        }
+
+        .doc-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
+        .meta-box {
+            background-color: var(--primary-light);
+            border: 1px solid rgba(141, 198, 63, 0.2);
+            border-radius: 8px;
+            padding: 15px;
+            font-size: 12px;
+            color: var(--text-dark);
+            min-width: 250px;
+        }
+
+        .meta-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .meta-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .meta-label {
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .meta-value {
+            text-align: right;
+        }
+
+        /* Form Content */
+        form {
+            padding: 30px;
+        }
+
+        .instructions {
+            background-color: #f7fafc;
+            border: 1px dashed var(--border-color);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .instructions ol {
+            padding-left: 20px;
+            margin-top: 5px;
+        }
+
+        .instructions li {
+            margin-bottom: 4px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-dark);
+            border-left: 4px solid var(--primary);
+            padding-left: 10px;
+            margin: 30px 0 15px 0;
+        }
+
+        .section-title:first-of-type {
+            margin-top: 0;
+        }
+
+        /* Details Grid */
+        .grid-inputs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-dark);
+            margin-bottom: 6px;
+        }
+
+        .form-control {
+            font-family: inherit;
+            font-size: 14px;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-dark);
+            background-color: #ffffff;
+            transition: border-color 0.2s;
+            width: 100%;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(141, 198, 63, 0.15);
+        }
+
+        /* Checklist Cards and Layout */
+        .checklist-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .checklist-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .card-header {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            gap: 10px;
+            cursor: pointer;
+            padding: 6px 8px;
+            border-radius: 6px;
+            transition: background-color 0.15s;
+        }
+
+        .checklist-item:hover {
+            background-color: var(--primary-light);
+        }
+
+        .checklist-item input[type="checkbox"] {
+            margin-top: 4px;
+            width: 16px;
+            height: 16px;
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+
+        .checklist-item label {
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            user-select: none;
+            color: var(--text-dark);
+            transition: color 0.15s, text-decoration 0.15s;
+        }
+
+        .checklist-item input[type="checkbox"]:checked + label {
+            color: var(--text-muted);
+            text-decoration: line-through;
+        }
+
+        /* Attendees Table */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            text-align: left;
+            min-width: 600px;
+        }
+
+        th {
+            background-color: #f8fafc;
+            color: var(--text-muted);
+            font-weight: 600;
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 10px 15px;
+            border-bottom: 1px solid var(--border-color);
+            background-color: #ffffff;
+            vertical-align: middle;
+        }
+
+        table input.table-input {
+            width: 100%;
+            border: 1px solid transparent;
+            padding: 6px 8px;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 13px;
+            background-color: transparent;
+            transition: border-color 0.2s, background-color 0.2s;
+        }
+
+        table input.table-input:focus, table input.table-input:hover {
+            border-color: var(--border-color);
+            background-color: #f8fafc;
+            outline: none;
+        }
+
+        .sig-canvas-cell {
+            position: relative;
+            width: 220px;
+            height: 60px;
+            background-color: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+
+        .sig-canvas-cell canvas {
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+        }
+
+        .btn-clear-sig {
+            background: none;
+            border: none;
+            color: var(--danger);
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: underline;
+            margin-top: 2px;
+            display: inline-block;
+        }
+
+        .btn-table-action {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--danger);
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .btn-table-action:hover {
+            text-decoration: underline;
+        }
+
+        .btn-add-row {
+            background-color: var(--primary-light);
+            color: var(--primary-dark);
+            border: 1px dashed var(--primary);
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            text-align: center;
+            margin-bottom: 25px;
+            transition: all 0.2s;
+        }
+
+        .btn-add-row:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        /* Action Buttons */
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 35px;
+            padding-top: 25px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .btn {
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 12px 24px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: #ffffff;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background-color: var(--neutral-light);
+            color: var(--text-dark);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: #e2e8f0;
+        }
+
+        footer {
+            background-color: #fafbfc;
+            padding: 20px 30px;
+            font-size: 11px;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        /* Print styles */
+        @media print {
+            body {
+                background-color: white;
+                padding: 0;
+            }
+            .container {
+                box-shadow: none;
+                border: none;
+            }
+            .form-actions, .btn-clear-sig, .btn-add-row, .btn-table-action {
+                display: none !important;
+            }
+            .checklist-card {
+                box-shadow: none !important;
+                border: 1px solid #ccc !important;
+                page-break-inside: avoid;
+            }
+            input, select, textarea {
+                border: none !important;
+                background-color: transparent !important;
+                padding: 0 !important;
+                box-shadow: none !important;
+            }
+            table input.table-input {
+                border: none !important;
+                background-color: transparent !important;
+            }
+            th {
+                background-color: #eee !important;
+                border-bottom: 2px solid #ccc !important;
+                color: #000 !important;
+            }
+            td {
+                border-bottom: 1px solid #ccc !important;
+            }
+            .checklist-item input[type="checkbox"]:not(:checked) {
+                visibility: hidden;
+            }
+            .checklist-item input[type="checkbox"]:checked + label {
+                text-decoration: none !important;
+                color: #000 !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div class="logo-area">
+            <div class="company-name">NORDIC <span>ACCESS</span></div>
+            <div class="doc-title">Toolbox Talk Form</div>
+        </div>
+        <div class="meta-box">
+            <div class="meta-row">
+                <span class="meta-label">Document No:</span>
+                <span class="meta-value">NORD-FRM-012</span>
+            </div>
+            <div class="meta-row">
+                <span class="meta-label">Revision:</span>
+                <span class="meta-value">1.2</span>
+            </div>
+            <div class="meta-row">
+                <span class="meta-label">Revision Date:</span>
+                <span class="meta-value">29/12/2020</span>
+            </div>
+            <div class="meta-row">
+                <span class="meta-label">Approved by:</span>
+                <span class="meta-value">Jonathan Brundle</span>
+            </div>
+        </div>
+    </header>
+
+    <form id="toolbox-form" onsubmit="event.preventDefault();">
+        <div class="instructions">
+            <strong>Toolbox Talk Guidelines:</strong>
+            <ol>
+                <li>All personnel involved in the work activity MUST participate in the Daily Toolbox Talk and sign at the end of the trip as evidence of attendance.</li>
+                <li>Supervisors/Team Leaders/Level 3 Safety Supervisors should cover all aspects of the job and encourage active participation in the safety discussion.</li>
+            </ol>
+        </div>
+
+        <div class="section-title">Briefing Details</div>
+        
+        <div class="grid-inputs">
+            <div class="form-group">
+                <label for="project-no">Project No.</label>
+                <input type="text" id="project-no" class="form-control" placeholder="e.g. SCOPE 0522" required>
+            </div>
+            <div class="form-group">
+                <label for="location">Location</label>
+                <input type="text" id="location" class="form-control" placeholder="e.g. Germany Offshore" required>
+            </div>
+            <div class="form-group">
+                <label for="service-type">Type of Service</label>
+                <input type="text" id="service-type" class="form-control" placeholder="e.g. Blade Inspection" required>
+            </div>
+            <div class="form-group">
+                <label for="start-date">Start Date</label>
+                <input type="date" id="start-date" class="form-control" required>
+            </div>
+        </div>
+
+        <div class="section-title">Safety checklist items discussed</div>
+        <p class="instructions" style="background-color: var(--primary-light); border-color: rgba(141, 198, 63, 0.2); color: var(--text-dark);">
+            Note: The following checklist is designed to provide guidance only. Check each item as completed once discussed and understood by all team members.
+        </p>
+
+        <div class="checklist-grid">
+            <!-- Section 1 -->
+            <div class="checklist-card">
+                <div class="card-header">Section 1 – General Overview</div>
+                
+                <div class="checklist-item">
+                    <input type="checkbox" id="sec1-1">
+                    <label for="sec1-1">Equipment/Safety buddy checks completed</label>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" id="sec1-2">
+                    <label for="sec1-2">Explain general job details – daily work plan</label>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" id="sec1-3">
+                    <label for="sec1-3">Access/Egress – method, rigging, sharp edges, rope protection, exclusion zones</label>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" id="sec1-4">
+                    <label for="sec1-4">Team and individual responsibilities – new personnel, Level 1’s</label>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" id="sec1-5">
+                    <label for="sec1-5">Other operations in vicinity</label>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" id="sec1-6">
+                    <label for="sec1-6">Environmental – sea state, wind speed, severe or adverse weather</label>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" id="sec1-7">
+                    <label for="sec1-7">Environmental – lighting, venting, low/high temp, hot/cold surfaces</label>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" id="sec1-8">
+                    <label for="sec1-8">Environmental – location monitoring, confined spaces, gas build-up etc.</label>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" id="sec1-9">
+                    <label for="sec1-9">Risk Assessment completed</label>
+                </div>
+            </div>
+
+            <!-- Sections 2, 3, 4 wrapper -->
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+                <!-- Section 2 -->
+                <div class="checklist-card">
+                    <div class="card-header">Section 2 – Permit</div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="sec2-1">
+                        <label for="sec2-1">Explain permit type, limitations/restrictions</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="sec2-2">
+                        <label for="sec2-2">Pre-job checks</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="sec2-3">
+                        <label for="sec2-3">Notification of work commencing</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="sec2-4">
+                        <label for="sec2-4">Understood by all personnel?</label>
+                    </div>
+                </div>
+
+                <!-- Section 3 -->
+                <div class="checklist-card">
+                    <div class="card-header">Section 3 – Safety & Emergency</div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="sec3-1">
+                        <label for="sec3-1">Rescue System – locations, deployment, limitations</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="sec3-2">
+                        <label for="sec3-2">Communications – telephone, alarms, radios</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="sec3-3">
+                        <label for="sec3-3">Escape routes and evacuation procedures</label>
+                    </div>
+                </div>
+
+                <!-- Section 4 -->
+                <div class="checklist-card">
+                    <div class="card-header">Section 4 – Materials & Equipment</div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="sec4-1">
+                        <label for="sec4-1">OH&S considerations – dust, fumes, noise etc.</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="sec4-2">
+                        <label for="sec4-2">Explain equipment to be used</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="sec4-3">
+                        <label for="sec4-3">Certification in place and correct</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="sec4-4">
+                        <label for="sec4-4">Discuss platform supply (Crane/Lifting reqs)</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-title">General Comments & Observations</div>
+        <div class="form-group" style="margin-bottom: 25px;">
+            <textarea id="comments" rows="3" class="form-control" placeholder="Identify any comments or specific actions discussed during the toolbox talk..."></textarea>
+        </div>
+
+        <div class="section-title">Attendance & Sign-Off</div>
+        <div class="table-responsive">
+            <table id="attendees-table">
+                <thead>
+                    <tr>
+                        <th>Technician Name</th>
+                        <th style="width: 180px;">Company / Role</th>
+                        <th style="width: 240px;">Signature</th>
+                        <th style="width: 140px;">Date</th>
+                        <th style="width: 50px;"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Table rows added dynamically. Worker 1 rendered as initial. -->
+                </tbody>
+            </table>
+        </div>
+        <button type="button" class="btn-add-row" onclick="addAttendeeRow()">+ Add Attendee</button>
+
+        <div class="form-actions">
+            <button type="button" class="btn btn-secondary" onclick="window.print()">Print / Export PDF</button>
+            <button type="submit" class="btn btn-primary" onclick="submitTalk()">Submit Briefing</button>
+        </div>
+    </form>
+
+    <footer>
+        Registered Address: Torpparintie 26, 03300 Otalampi, Finland | Tel: +358 (0)40 021 5981<br>
+        Web: <a href="https://www.nordicaccess.fi" target="_blank">www.nordicaccess.fi</a> | Email: info@nordicaccess.fi
+    </footer>
+</div>
+
+<script>
+    let attendeeCount = 0;
+
+    // Set today's date
+    document.addEventListener("DOMContentLoaded", () => {
+        document.getElementById("start-date").value = new Date().toISOString().split('T')[0];
+        // Add initial row
+        addAttendeeRow();
+    });
+
+    // Add attendee row
+    function addAttendeeRow() {
+        const tbody = document.querySelector("#attendees-table tbody");
+        const idx = attendeeCount++;
+        const today = new Date().toISOString().split('T')[0];
+        
+        const rowHtml = `
+            <tr id="attendee-row-${idx}">
+                <td><input type="text" class="table-input" placeholder="Enter Full Name" required></td>
+                <td><input type="text" class="table-input" placeholder="e.g. Nordic Access / L3" required></td>
+                <td>
+                    <div class="sig-canvas-cell">
+                        <canvas id="sig-pad-${idx}" width="220" height="60"></canvas>
+                    </div>
+                    <button type="button" class="btn-clear-sig" onclick="clearCanvas(${idx})">Clear</button>
+                </td>
+                <td><input type="date" class="table-input" value="${today}" required></td>
+                <td>
+                    ${idx > 0 ? `<button type="button" class="btn-table-action" onclick="deleteAttendee(${idx})">Remove</button>` : ''}
+                </td>
+            </tr>
+        `;
+        
+        tbody.insertAdjacentHTML('beforeend', rowHtml);
+        
+        // Let layout adjust, then initialize signature pad on this canvas
+        setTimeout(() => {
+            const canvas = document.getElementById(`sig-pad-${idx}`);
+            if (canvas) {
+                initSignaturePad(canvas);
+            }
+        }, 50);
+    }
+
+    function deleteAttendee(idx) {
+        const row = document.getElementById(`attendee-row-${idx}`);
+        if (row) {
+            row.remove();
+        }
+    }
+
+    function clearCanvas(idx) {
+        const canvas = document.getElementById(`sig-pad-${idx}`);
+        if (canvas) {
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+    }
+
+    // Dynamic signature pad drawer function
+    function initSignaturePad(canvas) {
+        const ctx = canvas.getContext('2d');
+        let drawing = false;
+
+        ctx.strokeStyle = "#1a202c";
+        ctx.lineWidth = 1.8;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+
+        function getPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            // Map client mouse coordinates properly to canvas attributes
+            return {
+                x: (clientX - rect.left) * (canvas.width / rect.width),
+                y: (clientY - rect.top) * (canvas.height / rect.height)
+            };
+        }
+
+        function start(e) {
+            drawing = true;
+            const pos = getPos(e);
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+            e.preventDefault();
+        }
+
+        function draw(e) {
+            if (!drawing) return;
+            const pos = getPos(e);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+            e.preventDefault();
+        }
+
+        function stop() {
+            drawing = false;
+        }
+
+        canvas.addEventListener('mousedown', start);
+        canvas.addEventListener('mousemove', draw);
+        window.addEventListener('mouseup', stop);
+
+        canvas.addEventListener('touchstart', start, { passive: false });
+        canvas.addEventListener('touchmove', draw, { passive: false });
+        window.addEventListener('touchend', stop);
+    }
+
+    function submitTalk() {
+        const form = document.getElementById('toolbox-form');
+        if (form.checkValidity()) {
+            alert("Toolbox Talk safety briefing details registered successfully!");
+        } else {
+            form.reportValidity();
+        }
+    }
+</script>
+</body>
+</html>

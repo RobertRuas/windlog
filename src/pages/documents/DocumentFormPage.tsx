@@ -1,34 +1,25 @@
 /**
  * ============================================================================
- * DOCUMENT FORM PAGE - Página de Formulário de Documento
+ * DOCUMENT FORM PAGE - Página de Formulário de Documento (iframe HTML)
  * ============================================================================
  *
  * O QUE É ESTE ARQUIVO?
  * ---------------------
  * Página para criar ou editar um documento gerado a partir de template.
- *
- * FUNCIONALIDADES:
- * ----------------
- * - MODO CRIAÇÃO: seleciona template via query param (?template=xxx),
- *   preenche formulário dinâmico e gera o documento
- * - MODO EDIÇÃO: carrega documento existente pelo ID na URL,
- *   preenche formulário com dados atuais e salva (cria nova versão)
- * - Formulário específico por template: cada template tem seus próprios campos
- *   definidos em template-form-configs.ts (invoice, car-daily-report, toolbox-talk)
- * - Inclui checklists com opções Y/X/N/A para inspeções
- * - Ao salvar em modo edição, cria nova versão automaticamente
+ * Usa os formulários HTML completos (servidos pelo backend) renderizados
+ * num iframe, mantendo o layout e funcionalidades originais (tabelas
+ * dinâmicas, signature pads, checklists, cálculos automáticos).
  *
  * COMO FUNCIONA?
  * --------------
- * 1. Detecta se é criação (rota /documents/new) ou edição (/documents/:id/edit)
- * 2. Em criação: busca template pelo query param e exibe formulário
- * 3. Em edição: busca documento existente e preenche formulário
- * 4. Ao salvar: chama createDocument ou updateDocument conforme o modo
- * 5. Após salvar: redireciona para a página de visualização
+ * 1. Seleciona template → busca form HTML via API
+ * 2. Renderiza o form HTML num iframe (isolamento de estilos)
+ * 3. Ao salvar: extrai dados do iframe e envia ao backend
+ * 4. Após salvar: redireciona para a página de visualização
  * ============================================================================
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -43,93 +34,68 @@ import {
   updateDocument,
   type DocumentTemplate,
 } from '@/services/document.service';
-import {
-  getTemplateFormConfig,
-  type TemplateFormConfig,
-  type FormField,
-  type FormSection,
-} from './template-form-configs';
 
 /**
- * Dados fictícios para teste de cada template.
- * TODO: Remover após testes iniciais — usar dados reais do formulário.
+ * Extrai dados de um formulário dentro de um iframe.
+ * Lê todos os inputs nomeados e retorna um objeto plano.
  */
-function getDummyData(templateId: string): Record<string, any> {
-  const today = new Date().toISOString().split('T')[0];
-  const now = new Date().toISOString().slice(0, 16);
+function extractFormData(iframe: HTMLIFrameElement): Record<string, any> {
+  const doc = iframe.contentDocument;
+  if (!doc) return {};
 
-  const dummyData: Record<string, Record<string, any>> = {
-    invoice: {
-      technicianName: 'Robert Ruas',
-      companyName: 'Nordic Access',
-      email: 'robert@nordicaccess.com',
-      address: 'Rua da Tecnologia 42, 1000-001 Lisboa',
-      vat: '295 293 713',
-      telephone: '+351 961 308 344',
-      ibanName: 'Robert Ruas',
-      iban: 'LT52 3250 0546 9342 3137',
-      swiftBic: 'REVOLT21',
-      currency: 'EUR',
-      invoiceNumber: '001',
-      invoiceDate: today,
-      paymentTerms: 'Net 30',
-      billingPeriodStart: today,
-      billingPeriodEnd: today,
-      clientName: 'Vestas Portugal',
-      clientAddress: 'Parque Empresarial, Porto',
-      clientContact: 'João Silva',
-      projectName: 'Turbina V110 - Manutenção',
-      projectLocation: 'Parque Eólico do Norte',
-      serviceDescription: 'Manutenção preventiva trimestral',
-      unitPrice: '85.00',
-      unit: 'hour',
-      quantity: '40',
-      subtotal: '3400.00',
-      taxRate: '23',
-      taxAmount: '782.00',
-      totalAmount: '4182.00',
-      bankName: 'Revolut Bank',
-      paymentMethod: 'Transferência bancária',
-      notes: 'Obrigado pelo negócio!',
-    },
-    'car-daily-report': {
-      date: now,
-      vehicle: 'Viatura-01',
-      plantNo: 'PL-001',
-      registration: 'AA-00-00',
-      mileage: '125000',
-      division: 'Norte',
-      nextServiceDue: '130000',
-      trailerNo: 'TR-01',
-      technicianComments: 'Veículo em bom estado geral.',
-      inspectionLeft: {
-        visualCheck: 'Y', brakes: 'Y', engineOil: 'Y', coolantLevels: 'Y',
-        tyresAndWheels: 'Y', spareWheel: 'Y', bodywork: 'Y', hydraulics: 'Y',
-      },
-      inspectionRight: {
-        mirrorsCctv: 'Y', tidinessOfInterior: 'Y', drivingAndSteeringControls: 'Y',
-        fireExtinguisher: 'Y', firstAidKit: 'Y', spillKit: 'Y', towBarHitch: 'Y', trailer: 'Y',
-      },
-      technicianName: 'Robert Ruas',
-    },
-    'toolbox-talk': {
-      date: today,
-      location: 'Parque Eólico do Norte',
-      supervisorName: 'Robert Ruas',
-      topic: 'Segurança em altura - Procedimentos de evacuação',
-      workers: 'João Silva, Maria Santos, Pedro Costa, Ana Ferreira',
-      discussion: 'Revisão dos procedimentos de evacuação em caso de emergência.\nVerificação dos equipamentos de proteção individual.\nTeste de comunicação por rádio.',
-      actionItems: 'Substituir cabo de segurança do trabalhador #3.\nAgendar treino de resgate para próxima semana.',
-      followUpDate: today,
-      signatures: 'João Silva, Maria Santos, Pedro Costa, Ana Ferreira',
-    },
-  };
+  const data: Record<string, any> = {};
+  const form = doc.querySelector('form');
+  if (!form) return {};
 
-  return dummyData[templateId] || {};
+  // Inputs nomeados (text, email, date, datetime-local, number, hidden)
+  form.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>(
+    'input[name], select[name], textarea[name]'
+  ).forEach((el) => {
+    const name = el.name;
+    if (!name) return;
+
+    if (el instanceof HTMLInputElement) {
+      if (el.type === 'radio') {
+        if (el.checked) data[name] = el.value;
+      } else if (el.type === 'checkbox') {
+        // Agrupa checkboxes por name
+        if (!data[name]) data[name] = [];
+        if (el.checked) (data[name] as string[]).push(el.value);
+      } else {
+        data[name] = el.value;
+      }
+    } else {
+      data[name] = el.value;
+    }
+  });
+
+  // Checkboxes sem name (ex: toolbox-talk) — usa id como key
+  form.querySelectorAll<HTMLInputElement>('input[type="checkbox"]:not([name])').forEach((el) => {
+    if (el.id && el.checked) {
+      data[`check_${el.id}`] = true;
+    }
+  });
+
+  // Tabelas dinâmicas — extrai rows como arrays
+  const tables = form.querySelectorAll<HTMLTableElement>('table[id]');
+  tables.forEach((table) => {
+    const tableId = table.id;
+    const rows: Record<string, string>[] = [];
+    table.querySelectorAll<HTMLTableRowElement>('tbody tr').forEach((tr) => {
+      const rowData: Record<string, string> = {};
+      tr.querySelectorAll<HTMLInputElement>('input').forEach((input, idx) => {
+        rowData[`col${idx}`] = input.value;
+      });
+      if (Object.keys(rowData).length > 0) rows.push(rowData);
+    });
+    if (rows.length > 0) data[`table_${tableId}`] = rows;
+  });
+
+  return data;
 }
 
 /**
- * Página DocumentFormPage - formulário de criação/edição de documento.
+ * Página DocumentFormPage — formulário HTML em iframe.
  */
 export function DocumentFormPage() {
   const { t } = useTranslation('documents');
@@ -137,14 +103,13 @@ export function DocumentFormPage() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
 
-  // Detecta se é modo edição (tem ID na URL)
   const isEditing = !!id;
   const templateParam = searchParams.get('template') || '';
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
-  // Estado do formulário
+  // Estado
   const [title, setTitle] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState(templateParam);
-  const [formData, setFormData] = useState<Record<string, any>>({});
 
   // Busca templates disponíveis
   const { data: templatesData } = useQuery({
@@ -159,23 +124,50 @@ export function DocumentFormPage() {
     enabled: isEditing && !!id,
   });
 
-  // Preenche formulário com dados do documento existente
+  // Busca o HTML do formulário correspondente ao template
+  const { data: formHtml } = useQuery({
+    queryKey: ['document-form-html', selectedTemplate],
+    queryFn: async () => {
+      if (!selectedTemplate) return null;
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(`/api/v1/documents/templates/${selectedTemplate}/form-html`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        credentials: 'include',
+      });
+      if (!response.ok) return null;
+      return await response.text();
+    },
+    enabled: !!selectedTemplate,
+  });
+
+  // Preenche com dados do documento existente (edição)
   useEffect(() => {
     if (documentData?.data) {
       const doc = documentData.data;
       setTitle(doc.title);
       setSelectedTemplate(doc.templateId);
-      setFormData(doc.formData || {});
     }
   }, [documentData]);
 
-  // Preenche com dados fictícios para teste (apenas em modo criação)
+  // Injeta o HTML do formulário no iframe
   useEffect(() => {
-    if (!isEditing && selectedTemplate) {
-      setTitle(`Teste - ${selectedTemplate}`);
-      setFormData(getDummyData(selectedTemplate));
+    if (iframeRef.current && formHtml) {
+      const iframeDoc = iframeRef.current.contentDocument;
+      if (iframeDoc) {
+        // Injeta CSS para esconder botões do form (usamos os nossos próprios)
+        const styleOverride = `
+          <style id="windlog-override">
+            .form-actions { display: none !important; }
+            body { padding: 10px !important; }
+          </style>
+        `;
+        const htmlWithOverride = formHtml.replace('</head>', `${styleOverride}</head>`);
+        iframeDoc.open();
+        iframeDoc.write(htmlWithOverride);
+        iframeDoc.close();
+      }
     }
-  }, [selectedTemplate, isEditing]);
+  }, [formHtml]);
 
   // Mutation para criar documento
   const createMutation = useMutation({
@@ -203,76 +195,54 @@ export function DocumentFormPage() {
   });
 
   const templates = templatesData?.data || [];
-  const currentTemplate = templates.find(
-    (tpl: DocumentTemplate) => tpl.id === selectedTemplate,
-  );
+  const currentTemplate = templates.find((tpl: DocumentTemplate) => tpl.id === selectedTemplate);
   const document = documentData?.data;
-
-  // Configuração do formulário para o template selecionado
-  const formConfig = selectedTemplate ? getTemplateFormConfig(selectedTemplate) : null;
-
-  /**
-   * Atualiza um campo do formulário.
-   */
-  function handleFieldChange(fieldId: string, value: string) {
-    setFormData((prev) => ({ ...prev, [fieldId]: value }));
-  }
-
-  /**
-   * Atualiza um item de checklist (Y/X/N/A).
-   */
-  function handleChecklistChange(fieldKey: string, itemKey: string, value: string) {
-    setFormData((prev) => ({
-      ...prev,
-      [fieldKey]: { ...(prev[fieldKey] || {}), [itemKey]: value },
-    }));
-  }
-
-  /**
-   * Submete o formulário (criar ou atualizar).
-   */
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-
-    if (!title.trim()) {
-      toast.error(t('form.titleRequired'));
-      return;
-    }
-
-    if (!selectedTemplate) {
-      toast.error(t('form.selectTemplate'));
-      return;
-    }
-
-    if (isEditing) {
-      updateMutation.mutate({ title: title.trim(), formData });
-    } else {
-      createMutation.mutate({
-        templateId: selectedTemplate,
-        title: title.trim(),
-        formData,
-      });
-    }
-  }
-
-  /**
-   * Volta para a página de listagem.
-   */
-  function handleBack() {
-    navigate('/documents');
-  }
-
   const isSubmitting = createMutation.isPending || updateMutation.isPending;
+
+  /**
+   * Extrai dados do iframe e submete.
+   */
+  const handleSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+
+      if (!title.trim()) {
+        toast.error(t('form.titleRequired'));
+        return;
+      }
+      if (!selectedTemplate) {
+        toast.error(t('form.selectTemplate'));
+        return;
+      }
+
+      // Extrai dados do formulário no iframe
+      if (iframeRef.current) {
+        const extracted = extractFormData(iframeRef.current);
+
+        if (isEditing) {
+          updateMutation.mutate({ title: title.trim(), formData: extracted });
+        } else {
+          createMutation.mutate({
+            templateId: selectedTemplate,
+            title: title.trim(),
+            formData: extracted,
+          });
+        }
+      }
+    },
+    [title, selectedTemplate, isEditing, t, createMutation, updateMutation],
+  );
+
+  const handleBack = () => navigate('/documents');
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-[#1c1c1e]">
       <Sidebar />
 
-      {/* Conteúdo principal */}
       <main className="flex-1 md:ml-60 overflow-y-auto">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* ── Cabeçalho ─────────────────────────────────────────── */}
-          <div className="flex items-center gap-4 mb-8">
+          <div className="flex items-center gap-4 mb-6">
             <button
               onClick={handleBack}
               className="p-2 text-gray-500 dark:text-[#a1a1a6] hover:text-gray-900 dark:hover:text-[#f5f5f7] hover:bg-gray-100 dark:hover:bg-[#2c2c2e] rounded-lg transition-colors"
@@ -286,9 +256,7 @@ export function DocumentFormPage() {
               </h1>
               {isEditing && document && (
                 <p className="text-sm text-gray-500 dark:text-[#a1a1a6] mt-1">
-                  {t('form.versionNotice', {
-                    version: document.version + 1,
-                  })}
+                  {t('form.versionNotice', { version: document.version + 1 })}
                 </p>
               )}
             </div>
@@ -300,85 +268,89 @@ export function DocumentFormPage() {
               {t('loading')}
             </div>
           ) : (
-            /* ── Formulário ────────────────────────────────────────── */
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Seleção de template (apenas em modo criação) */}
-              {!isEditing && (
-                <div className="bg-white dark:bg-[#2c2c2e] rounded-xl border border-gray-200 dark:border-[#38383a] p-6">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-[#a1a1a6] mb-2">
-                    {t('form.template')} *
-                  </label>
-                  <select
-                    value={selectedTemplate}
-                    onChange={(e) => setSelectedTemplate(e.target.value)}
-                    className="w-full px-3 py-2.5 border border-gray-200 dark:border-[#38383a] rounded-lg bg-white dark:bg-[#1c1c1e] text-gray-900 dark:text-[#f5f5f7] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="">{t('form.selectTemplate')}</option>
-                    {templates.map((tpl: DocumentTemplate) => (
-                      <option key={tpl.id} value={tpl.id}>
-                        {tpl.name} ({tpl.code}) — {tpl.description}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
-              {/* Informação do template selecionado */}
-              {currentTemplate && (
-                <div className="flex items-center gap-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
-                  <FileText size={20} className="text-blue-600 dark:text-blue-400 flex-shrink-0" />
+            <div className="space-y-6">
+              {/* ── Controles: template + título ────────────────────── */}
+              <div className="bg-white dark:bg-[#2c2c2e] rounded-xl border border-gray-200 dark:border-[#38383a] p-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Template */}
                   <div>
-                    <p className="text-sm font-medium text-blue-900 dark:text-blue-300">
-                      {currentTemplate.name}
-                    </p>
-                    <p className="text-xs text-blue-700 dark:text-blue-400">
-                      {currentTemplate.code} — {currentTemplate.description}
-                    </p>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-[#a1a1a6] mb-1.5">
+                      {t('form.template')} *
+                    </label>
+                    <select
+                      value={selectedTemplate}
+                      onChange={(e) => setSelectedTemplate(e.target.value)}
+                      disabled={isEditing}
+                      className="w-full px-3 py-2.5 border border-gray-200 dark:border-[#38383a] rounded-lg bg-white dark:bg-[#1c1c1e] text-gray-900 dark:text-[#f5f5f7] focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm disabled:opacity-60"
+                    >
+                      <option value="">{t('form.selectTemplate')}</option>
+                      {templates.map((tpl: DocumentTemplate) => (
+                        <option key={tpl.id} value={tpl.id}>
+                          {tpl.name} ({tpl.code})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Título */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-[#a1a1a6] mb-1.5">
+                      {t('form.title')} *
+                    </label>
+                    <input
+                      type="text"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      placeholder={t('form.titlePlaceholder')}
+                      className="w-full px-3 py-2.5 border border-gray-200 dark:border-[#38383a] rounded-lg bg-white dark:bg-[#1c1c1e] text-gray-900 dark:text-[#f5f5f7] placeholder-gray-400 dark:placeholder-[#636366] focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                      required
+                    />
                   </div>
                 </div>
-              )}
 
-              {/* Título do documento */}
-              <div className="bg-white dark:bg-[#2c2c2e] rounded-xl border border-gray-200 dark:border-[#38383a] p-6">
-                <label className="block text-sm font-medium text-gray-700 dark:text-[#a1a1a6] mb-2">
-                  {t('form.title')} *
-                </label>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder={t('form.titlePlaceholder')}
-                  className="w-full px-3 py-2.5 border border-gray-200 dark:border-[#38383a] rounded-lg bg-white dark:bg-[#1c1c1e] text-gray-900 dark:text-[#f5f5f7] placeholder-gray-400 dark:placeholder-[#636366] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                />
+                {/* Info do template */}
+                {currentTemplate && (
+                  <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-100 dark:border-[#38383a]">
+                    <FileText size={16} className="text-blue-500 flex-shrink-0" />
+                    <p className="text-xs text-gray-500 dark:text-[#a1a1a6]">
+                      {currentTemplate.description}
+                    </p>
+                  </div>
+                )}
               </div>
 
-              {/* Campos específicos do template selecionado */}
-              {selectedTemplate && formConfig && (
-                <TemplateSpecificForm
-                  config={formConfig}
-                  formData={formData}
-                  onChange={handleFieldChange}
-                  onChecklistChange={handleChecklistChange}
-                  t={t}
-                />
-              )}
-
-              {/* Sem template selecionado */}
-              {!selectedTemplate && !isEditing && (
-                <div className="p-8 text-center bg-white dark:bg-[#2c2c2e] rounded-xl border border-gray-200 dark:border-[#38383a]">
-                  <FileText
-                    size={48}
-                    className="mx-auto text-gray-300 dark:text-[#48484a] mb-4"
+              {/* ── Iframe do formulário HTML ───────────────────────── */}
+              {selectedTemplate && formHtml ? (
+                <div className="bg-white dark:bg-[#2c2c2e] rounded-xl border border-gray-200 dark:border-[#38383a] overflow-hidden">
+                  <iframe
+                    ref={iframeRef}
+                    title={`Form: ${selectedTemplate}`}
+                    style={{
+                      width: '100%',
+                      minHeight: '800px',
+                      border: 'none',
+                      display: 'block',
+                    }}
                   />
+                </div>
+              ) : selectedTemplate ? (
+                <div className="p-8 text-center bg-white dark:bg-[#2c2c2e] rounded-xl border border-gray-200 dark:border-[#38383a]">
+                  <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-3" />
+                  <p className="text-sm text-gray-500 dark:text-[#a1a1a6]">
+                    {t('loading')}
+                  </p>
+                </div>
+              ) : (
+                <div className="p-8 text-center bg-white dark:bg-[#2c2c2e] rounded-xl border border-gray-200 dark:border-[#38383a]">
+                  <FileText size={48} className="mx-auto text-gray-300 dark:text-[#48484a] mb-4" />
                   <p className="text-gray-500 dark:text-[#a1a1a6]">
                     {t('form.selectTemplate')}
                   </p>
                 </div>
               )}
 
-              {/* Botões de ação */}
-              <div className="flex items-center justify-end gap-3 pt-4">
+              {/* ── Botões de ação ──────────────────────────────────── */}
+              <div className="flex items-center justify-end gap-3 pt-2">
                 <button
                   type="button"
                   onClick={handleBack}
@@ -387,7 +359,8 @@ export function DocumentFormPage() {
                   {t('form.cancel')}
                 </button>
                 <button
-                  type="submit"
+                  type="button"
+                  onClick={handleSubmit}
                   disabled={isSubmitting || !selectedTemplate || !title.trim()}
                   className="inline-flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
@@ -401,288 +374,10 @@ export function DocumentFormPage() {
                       : t('form.generate')}
                 </button>
               </div>
-            </form>
+            </div>
           )}
         </div>
       </main>
-    </div>
-  );
-}
-
-// =========================================================================
-// COMPONENTES AUXILIARES - Formulário Específico por Template
-// =========================================================================
-
-/** Props do formulário específico do template */
-interface TemplateSpecificFormProps {
-  config: TemplateFormConfig;
-  formData: Record<string, any>;
-  onChange: (fieldId: string, value: string) => void;
-  onChecklistChange: (fieldKey: string, itemKey: string, value: string) => void;
-  t: (key: string) => string;
-}
-
-/**
- * Renderiza o formulário específico para o template selecionado.
- * Cada seção é exibida como um card com os campos agrupados.
- */
-function TemplateSpecificForm({ config, formData, onChange, onChecklistChange, t }: TemplateSpecificFormProps) {
-  return (
-    <div className="space-y-6">
-      {config.sections.map((section, idx) => (
-        <FormSectionCard
-          key={idx}
-          section={section}
-          formData={formData}
-          onChange={onChange}
-          onChecklistChange={onChecklistChange}
-          t={t}
-        />
-      ))}
-    </div>
-  );
-}
-
-/**
- * Card de seção do formulário com título e campos.
- */
-function FormSectionCard({
-  section,
-  formData,
-  onChange,
-  onChecklistChange,
-  t,
-}: {
-  section: FormSection;
-  formData: Record<string, any>;
-  onChange: (fieldId: string, value: string) => void;
-  onChecklistChange: (fieldKey: string, itemKey: string, value: string) => void;
-  t: (key: string) => string;
-}) {
-  return (
-    <div className="bg-white dark:bg-[#2c2c2e] rounded-xl border border-gray-200 dark:border-[#38383a] p-6">
-      <h3 className="text-sm font-semibold text-gray-800 dark:text-[#f5f5f7] mb-4">
-        {t(section.titleKey)}
-      </h3>
-      <div className="space-y-4">
-        {section.fields.map((field) => (
-          <FormFieldRenderer
-            key={field.key}
-            field={field}
-            formData={formData}
-            onChange={onChange}
-            onChecklistChange={onChecklistChange}
-            t={t}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/**
- * Renderiza um campo de formulário conforme o tipo (text, date, datetime-local, select, checklist).
- */
-function FormFieldRenderer({
-  field,
-  formData,
-  onChange,
-  onChecklistChange,
-  t,
-}: {
-  field: FormField;
-  formData: Record<string, any>;
-  onChange: (fieldId: string, value: string) => void;
-  onChecklistChange: (fieldKey: string, itemKey: string, value: string) => void;
-  t: (key: string) => string;
-}) {
-  const value = formData[field.key] ?? '';
-
-  const inputClasses =
-    'w-full px-3 py-2 border border-gray-200 dark:border-[#38383a] rounded-lg bg-white dark:bg-[#1c1c1e] text-gray-900 dark:text-[#f5f5f7] placeholder-gray-400 dark:placeholder-[#636366] focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm';
-
-  const labelClasses = 'block text-sm font-medium text-gray-700 dark:text-[#a1a1a6] mb-1.5';
-
-  switch (field.type) {
-    case 'text':
-      return (
-        <div>
-          <label className={labelClasses}>
-            {t(field.labelKey)}
-            {field.required && <span className="text-red-500 ml-0.5">*</span>}
-          </label>
-          <input
-            type="text"
-            value={value}
-            onChange={(e) => onChange(field.key, e.target.value)}
-            placeholder={field.placeholderKey ? t(field.placeholderKey) : undefined}
-            className={inputClasses}
-            required={field.required}
-          />
-        </div>
-      );
-
-    case 'date':
-      return (
-        <div>
-          <label className={labelClasses}>
-            {t(field.labelKey)}
-            {field.required && <span className="text-red-500 ml-0.5">*</span>}
-          </label>
-          <input
-            type="date"
-            value={value}
-            onChange={(e) => onChange(field.key, e.target.value)}
-            className={inputClasses}
-            required={field.required}
-          />
-        </div>
-      );
-
-    case 'datetime-local':
-      return (
-        <div>
-          <label className={labelClasses}>
-            {t(field.labelKey)}
-            {field.required && <span className="text-red-500 ml-0.5">*</span>}
-          </label>
-          <input
-            type="datetime-local"
-            value={value}
-            onChange={(e) => onChange(field.key, e.target.value)}
-            className={inputClasses}
-            required={field.required}
-          />
-        </div>
-      );
-
-    case 'select':
-      return (
-        <div>
-          <label className={labelClasses}>
-            {t(field.labelKey)}
-            {field.required && <span className="text-red-500 ml-0.5">*</span>}
-          </label>
-          <select
-            value={value}
-            onChange={(e) => onChange(field.key, e.target.value)}
-            className={inputClasses}
-            required={field.required}
-          >
-            <option value="">—</option>
-            {field.options?.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        </div>
-      );
-
-    case 'checklist':
-      return (
-        <ChecklistField
-          field={field}
-          formData={formData}
-          onChecklistChange={onChecklistChange}
-          t={t}
-        />
-      );
-
-    default:
-      return null;
-  }
-}
-
-/**
- * Campo de checklist com itens e opções Y (Satisfatório) / X (Defeituoso) / N/A.
- * Exibido como tabela com cada item e radio buttons.
- */
-function ChecklistField({
-  field,
-  formData,
-  onChecklistChange,
-  t,
-}: {
-  field: FormField;
-  formData: Record<string, any>;
-  onChecklistChange: (fieldKey: string, itemKey: string, value: string) => void;
-  t: (key: string) => string;
-}) {
-  const checklistValues: Record<string, string> = formData[field.key] || {};
-  const items = field.checklistItems || [];
-
-  const optionBtn = (active: boolean, color: string) =>
-    `w-8 h-8 rounded-full text-xs font-semibold transition-colors border ${
-      active
-        ? `${color} text-white border-transparent`
-        : 'bg-gray-50 dark:bg-[#1c1c1e] text-gray-500 dark:text-[#636366] border-gray-200 dark:border-[#38383a] hover:bg-gray-100 dark:hover:bg-[#38383a]'
-    }`;
-
-  return (
-    <div>
-      <label className="block text-sm font-medium text-gray-700 dark:text-[#a1a1a6] mb-2">
-        {t(field.labelKey)}
-      </label>
-      <div className="border border-gray-200 dark:border-[#38383a] rounded-lg overflow-hidden">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="bg-gray-50 dark:bg-[#1c1c1e]">
-              <th className="text-left px-3 py-2 text-xs font-medium text-gray-500 dark:text-[#a1a1a6] uppercase tracking-wider">
-                Item
-              </th>
-              <th className="text-center px-2 py-2 text-xs font-medium text-green-600 dark:text-green-400 uppercase">
-                Y
-              </th>
-              <th className="text-center px-2 py-2 text-xs font-medium text-red-600 dark:text-red-400 uppercase">
-                X
-              </th>
-              <th className="text-center px-2 py-2 text-xs font-medium text-gray-500 dark:text-[#a1a1a6] uppercase">
-                N/A
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100 dark:divide-[#38383a]">
-            {items.map((item) => {
-              const currentVal = checklistValues[item.key] || '';
-              return (
-                <tr key={item.key} className="bg-white dark:bg-[#2c2c2e]">
-                  <td className="px-3 py-2 text-gray-800 dark:text-[#f5f5f7]">
-                    {t(item.labelKey)}
-                  </td>
-                  <td className="text-center px-2 py-2">
-                    <button
-                      type="button"
-                      onClick={() => onChecklistChange(field.key, item.key, 'Y')}
-                      className={optionBtn(currentVal === 'Y', 'bg-green-500')}
-                    >
-                      Y
-                    </button>
-                  </td>
-                  <td className="text-center px-2 py-2">
-                    <button
-                      type="button"
-                      onClick={() => onChecklistChange(field.key, item.key, 'X')}
-                      className={optionBtn(currentVal === 'X', 'bg-red-500')}
-                    >
-                      X
-                    </button>
-                  </td>
-                  <td className="text-center px-2 py-2">
-                    <button
-                      type="button"
-                      onClick={() => onChecklistChange(field.key, item.key, 'N/A')}
-                      className={optionBtn(currentVal === 'N/A', 'bg-gray-400')}
-                    >
-                      N/A
-                    </button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
     </div>
   );
 }
