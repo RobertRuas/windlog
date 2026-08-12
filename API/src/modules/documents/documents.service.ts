@@ -359,7 +359,9 @@ export class DocumentsService {
     const fileName = fileMap[templateId];
     if (!fileName) return null;
 
-    const templatePath = path.join(__dirname, 'templates', fileName);
+    // Usa process.cwd() porque __dirname aponta para dist/ após compilação
+    // e os templates HTML não são copiados automaticamente
+    const templatePath = path.join(process.cwd(), 'src/modules/documents/templates', fileName);
 
     try {
       return fs.readFileSync(templatePath, 'utf-8');

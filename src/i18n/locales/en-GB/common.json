@@ -10,7 +10,8 @@
     "mail": "Email",
     "logs": "Logs",
     "notifications": "Notifications",
-    "feedbacks": "Feedbacks"
+    "feedbacks": "Feedbacks",
+    "documents": "Documents"
   },
   "notifications": {
     "title": "Notifications",

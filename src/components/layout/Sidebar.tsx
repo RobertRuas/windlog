@@ -29,6 +29,7 @@ import {
   Calendar,
   MessageSquare,
   Mail,
+  FileText,
 } from 'lucide-react';
 
 import { logout } from '@/services/auth.service';
@@ -43,6 +44,7 @@ const NAV_ITEMS = [
   { icon: FolderOpen, labelKey: 'nav.projects', path: '/projects', end: false, roles: [] },
   { icon: Calendar, labelKey: 'nav.timesheets', path: '/timesheets', end: false, roles: [] },
   { icon: Mail, labelKey: 'nav.mail', path: '/mail', end: false, roles: [] },
+  { icon: FileText, labelKey: 'nav.documents', path: '/documents', end: false, roles: [] },
   { icon: MessageSquare, labelKey: 'nav.feedbacks', path: '/feedbacks', end: false, roles: ['ADMIN'] },
   { icon: Settings, labelKey: 'nav.settings', path: '/settings', end: false, roles: [] },
 ] as const;

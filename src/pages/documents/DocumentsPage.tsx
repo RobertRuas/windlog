@@ -37,7 +37,6 @@ import {
   Edit,
   Trash2,
   Filter,
-  Download,
 } from 'lucide-react';
 
 import { Sidebar } from '@/components/layout/Sidebar';

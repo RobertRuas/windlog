@@ -26,7 +26,7 @@
  * ============================================================================
  */
 
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -69,9 +69,6 @@ export function DocumentViewPage() {
 
   // Estado para o modal de preview do documento
   const [showPreview, setShowPreview] = useState(false);
-
-  // Ref para o iframe do documento
-  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   // Busca documento pelo ID
   const { data: documentData, isLoading } = useQuery({

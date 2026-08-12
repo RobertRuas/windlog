@@ -245,6 +245,7 @@ model User {
   mailSignatures   MailSignature[]
   mailBlockedSenders MailBlockedSender[]
   mailAutoReply    MailAutoReply?
+  generatedDocuments GeneratedDocument[]
 }
 // ---------------------------------------------------------------------------
 // MODEL: USER DOCUMENT (Documentos Pessoais do Usuário)
@@ -357,6 +358,83 @@ model UserPhoneNumber {
   updatedAt DateTime @updatedAt
 
   @@index([userId])
+}
+
+// ---------------------------------------------------------------------------
+// ENUM: DOCUMENT STATUS (Status do Documento Gerado)
+// ---------------------------------------------------------------------------
+// Define os possíveis status de um documento gerado a partir de template
+// ---------------------------------------------------------------------------
+enum DocumentStatus {
+  DRAFT    // Rascunho (não assinado)
+  SIGNED   // Assinado
+  FINAL    // Final (pronto para envio)
+}
+
+// ---------------------------------------------------------------------------
+// MODEL: GENERATED DOCUMENT (Documentos Gerados a partir de Templates)
+// ---------------------------------------------------------------------------
+// Armazena documentos gerados a partir de templates HTML/SVG padronizados.
+// Cada documento tem um templateId (ex: "invoice", "car-daily-report")
+// e os dados do formulário são armazenados como JSON (variável por template).
+//
+// VERSIONAMENTO:
+// --------------
+// Ao editar um documento, uma nova versão é criada (version incrementado).
+// O documento original é mantido. A listagem mostra apenas a versão mais
+// recente de cada grupo (templateId + título).
+//
+// EXEMPLOS DE TEMPLATES:
+// ----------------------
+// - Invoice (NORD-FRM-072)
+// - Car Daily Report (NORD-FRM-072)
+// - Toolbox Talk Form (NORD-FRM-067)
+// ---------------------------------------------------------------------------
+model GeneratedDocument {
+  id          String   @id @default(uuid())
+
+  // Identificação do template e versão
+  /// ID do template (ex: "invoice", "car-daily-report", "toolbox-talk")
+  templateId  String
+  /// Número da versão (incrementado ao editar)
+  version     Int      @default(1)
+  /// Título exibível do documento (ex: "Invoice #001", "Car Daily Report - 15/05/2026")
+  title       String
+
+  // Dados do formulário (variável por template)
+  /// JSON com os dados preenchidos no formulário (estrutura varia por template)
+  formData    Json
+
+  // Status do documento
+  /// Status atual (enum DocumentStatus: DRAFT, SIGNED, FINAL)
+  status      DocumentStatus @default(DRAFT)
+
+  // Assinatura digital
+  /// Dados da assinatura em base64 PNG
+  signatureData String?
+  /// Data da assinatura
+  signatureDate DateTime?
+  /// Nome de quem assinou
+  signedBy      String?
+
+  // Relação com usuário criador
+  /// ID do usuário que criou o documento
+  createdBy   String
+  /// Referência ao usuário criador
+  creator     User     @relation(fields: [createdBy], references: [id])
+
+  // Soft delete
+  /// Data de exclusão (soft delete - nunca removido fisicamente)
+  deletedAt   DateTime?
+
+  // Timestamps
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Índices
+  @@index([createdBy])
+  @@index([templateId])
+  @@index([status])
 }
 
 // ---------------------------------------------------------------------------

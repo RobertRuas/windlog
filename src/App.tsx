@@ -53,6 +53,9 @@ import { WeeklyTimesheetPage } from '@/pages/weekly-timesheet/WeeklyTimesheetPag
 import { WeeklyTimesheetDetailPage } from '@/pages/weekly-timesheet/WeeklyTimesheetDetailPage';
 import { FeedbacksPage } from '@/pages/feedbacks/FeedbacksPage';
 import { MailPage } from '@/pages/mail/MailPage';
+import { DocumentsPage } from '@/pages/documents/DocumentsPage';
+import { DocumentFormPage } from '@/pages/documents/DocumentFormPage';
+import { DocumentViewPage } from '@/pages/documents/DocumentViewPage';
 import { ErrorPage } from '@/pages/error/ErrorPage';
 
 // Serviço de autenticação
@@ -415,6 +418,46 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <MailPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Rota protegida - listagem de documentos gerados (todos autenticados) */}
+          <Route
+            path="/documents"
+            element={
+              <ProtectedRoute>
+                <DocumentsPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Rota protegida - criar novo documento (todos autenticados) */}
+          <Route
+            path="/documents/new"
+            element={
+              <ProtectedRoute>
+                <DocumentFormPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Rota protegida - visualizar documento (todos autenticados) */}
+          <Route
+            path="/documents/:id"
+            element={
+              <ProtectedRoute>
+                <DocumentViewPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Rota protegida - editar documento (todos autenticados) */}
+          <Route
+            path="/documents/:id/edit"
+            element={
+              <ProtectedRoute>
+                <DocumentFormPage />
               </ProtectedRoute>
             }
           />

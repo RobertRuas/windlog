@@ -51,6 +51,84 @@ import {
 } from './template-form-configs';
 
 /**
+ * Dados fictícios para teste de cada template.
+ * TODO: Remover após testes iniciais — usar dados reais do formulário.
+ */
+function getDummyData(templateId: string): Record<string, any> {
+  const today = new Date().toISOString().split('T')[0];
+  const now = new Date().toISOString().slice(0, 16);
+
+  const dummyData: Record<string, Record<string, any>> = {
+    invoice: {
+      technicianName: 'Robert Ruas',
+      companyName: 'Nordic Access',
+      email: 'robert@nordicaccess.com',
+      address: 'Rua da Tecnologia 42, 1000-001 Lisboa',
+      vat: '295 293 713',
+      telephone: '+351 961 308 344',
+      ibanName: 'Robert Ruas',
+      iban: 'LT52 3250 0546 9342 3137',
+      swiftBic: 'REVOLT21',
+      currency: 'EUR',
+      invoiceNumber: '001',
+      invoiceDate: today,
+      paymentTerms: 'Net 30',
+      billingPeriodStart: today,
+      billingPeriodEnd: today,
+      clientName: 'Vestas Portugal',
+      clientAddress: 'Parque Empresarial, Porto',
+      clientContact: 'João Silva',
+      projectName: 'Turbina V110 - Manutenção',
+      projectLocation: 'Parque Eólico do Norte',
+      serviceDescription: 'Manutenção preventiva trimestral',
+      unitPrice: '85.00',
+      unit: 'hour',
+      quantity: '40',
+      subtotal: '3400.00',
+      taxRate: '23',
+      taxAmount: '782.00',
+      totalAmount: '4182.00',
+      bankName: 'Revolut Bank',
+      paymentMethod: 'Transferência bancária',
+      notes: 'Obrigado pelo negócio!',
+    },
+    'car-daily-report': {
+      date: now,
+      vehicle: 'Viatura-01',
+      plantNo: 'PL-001',
+      registration: 'AA-00-00',
+      mileage: '125000',
+      division: 'Norte',
+      nextServiceDue: '130000',
+      trailerNo: 'TR-01',
+      technicianComments: 'Veículo em bom estado geral.',
+      inspectionLeft: {
+        visualCheck: 'Y', brakes: 'Y', engineOil: 'Y', coolantLevels: 'Y',
+        tyresAndWheels: 'Y', spareWheel: 'Y', bodywork: 'Y', hydraulics: 'Y',
+      },
+      inspectionRight: {
+        mirrorsCctv: 'Y', tidinessOfInterior: 'Y', drivingAndSteeringControls: 'Y',
+        fireExtinguisher: 'Y', firstAidKit: 'Y', spillKit: 'Y', towBarHitch: 'Y', trailer: 'Y',
+      },
+      technicianName: 'Robert Ruas',
+    },
+    'toolbox-talk': {
+      date: today,
+      location: 'Parque Eólico do Norte',
+      supervisorName: 'Robert Ruas',
+      topic: 'Segurança em altura - Procedimentos de evacuação',
+      workers: 'João Silva, Maria Santos, Pedro Costa, Ana Ferreira',
+      discussion: 'Revisão dos procedimentos de evacuação em caso de emergência.\nVerificação dos equipamentos de proteção individual.\nTeste de comunicação por rádio.',
+      actionItems: 'Substituir cabo de segurança do trabalhador #3.\nAgendar treino de resgate para próxima semana.',
+      followUpDate: today,
+      signatures: 'João Silva, Maria Santos, Pedro Costa, Ana Ferreira',
+    },
+  };
+
+  return dummyData[templateId] || {};
+}
+
+/**
  * Página DocumentFormPage - formulário de criação/edição de documento.
  */
 export function DocumentFormPage() {
@@ -90,6 +168,14 @@ export function DocumentFormPage() {
       setFormData(doc.formData || {});
     }
   }, [documentData]);
+
+  // Preenche com dados fictícios para teste (apenas em modo criação)
+  useEffect(() => {
+    if (!isEditing && selectedTemplate) {
+      setTitle(`Teste - ${selectedTemplate}`);
+      setFormData(getDummyData(selectedTemplate));
+    }
+  }, [selectedTemplate, isEditing]);
 
   // Mutation para criar documento
   const createMutation = useMutation({

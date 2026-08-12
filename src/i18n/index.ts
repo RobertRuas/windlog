@@ -55,6 +55,7 @@ import ptOnboarding from './locales/pt/onboarding.json';
 import ptFeedback from './locales/pt/feedback.json';
 import ptNotifications from './locales/pt/notifications.json';
 import ptMail from './locales/pt/mail.json';
+import ptDocuments from './locales/pt/documents.json';
 
 // English (UK)
 import enGBCommon from './locales/en-GB/common.json';
@@ -69,6 +70,7 @@ import enGBOnboarding from './locales/en-GB/onboarding.json';
 import enGBFeedback from './locales/en-GB/feedback.json';
 import enGBNotifications from './locales/en-GB/notifications.json';
 import enGBMail from './locales/en-GB/mail.json';
+import enGBDocuments from './locales/en-GB/documents.json';
 
 /**
  * Inicializa o i18next com as configurações do projeto.
@@ -91,6 +93,7 @@ i18n
         feedback: ptFeedback,
         notifications: ptNotifications,
         mail: ptMail,
+        documents: ptDocuments,
       },
       'en-GB': {
         common: enGBCommon,
@@ -105,6 +108,7 @@ i18n
         feedback: enGBFeedback,
         notifications: enGBNotifications,
         mail: enGBMail,
+        documents: enGBDocuments,
       },
     },
 

@@ -76,9 +76,12 @@ export function renderTemplate(
  */
 export async function loadTemplateHtml(templateId: string): Promise<string | null> {
   try {
-    // Busca o template via API do backend
-    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-    const response = await fetch(`${baseUrl}/documents/templates/${templateId}/html`);
+    // Usa fetch direto porque o endpoint retorna HTML puro (não JSON)
+    const token = localStorage.getItem('accessToken');
+    const response = await fetch(`/api/v1/documents/templates/${templateId}/html`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      credentials: 'include',
+    });
     if (!response.ok) return null;
     return await response.text();
   } catch {
