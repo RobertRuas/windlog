@@ -64,6 +64,11 @@ export function renderTemplate(
     }
   }
 
+  // Injeta assinatura do utilizador se disponível
+  if (formData._userSignature) {
+    html = injectSignature(html, templateId, formData._userSignature, formData._signedByName);
+  }
+
   return html;
 }
 
@@ -212,6 +217,47 @@ function injectTextElement(
   if (lastGClose === -1) return html;
 
   return html.slice(0, lastGClose) + newText + '\n    ' + html.slice(lastGClose);
+}
+
+/**
+ * Injeta a assinatura do utilizador no template SVG.
+ * Converte a imagem base64 em um elemento <image> SVG na posição apropriada.
+ *
+ * @param html - HTML do template
+ * @param templateId - ID do template (para determinar posição)
+ * @param signatureData - Dados da assinatura em base64 (data URL)
+ * @param signerName - Nome de quem assinou (opcional)
+ */
+function injectSignature(
+  html: string,
+  templateId: string,
+  signatureData: string,
+  signerName?: string,
+): string {
+  // Posições da assinatura por template (ajustáveis)
+  const positions: Record<string, { x: number; y: number; width: number; height: number }> = {
+    invoice: { x: 80, y: 680, width: 200, height: 60 },
+    'car-daily-report': { x: 80, y: 540, width: 200, height: 60 },
+    'toolbox-talk': { x: 80, y: 560, width: 200, height: 60 },
+  };
+
+  const pos = positions[templateId] || positions['invoice'];
+
+  // Cria elemento <image> SVG com a assinatura base64
+  const sigImage = `<text id="sig_label" xml:space="preserve" ` +
+    `style="font-size:10px;font-family:Calibri;fill:#666666;" ` +
+    `x="${pos.x}" y="${pos.y - 5}">${escapeXml(signerName || 'Signed')}</text>` +
+    `<image id="user_signature" x="${pos.x}" y="${pos.y}" ` +
+    `width="${pos.width}" height="${pos.height}" ` +
+    `href="${signatureData}" preserveAspectRatio="xMidYMid meet" />`;
+
+  // Insere antes do último </g> antes de </svg>
+  const svgCloseIdx = html.lastIndexOf('</svg>');
+  if (svgCloseIdx === -1) return html;
+  const lastGClose = html.lastIndexOf('</g>', svgCloseIdx);
+  if (lastGClose === -1) return html;
+
+  return html.slice(0, lastGClose) + '\n    ' + sigImage + '\n    ' + html.slice(lastGClose);
 }
 
 /**

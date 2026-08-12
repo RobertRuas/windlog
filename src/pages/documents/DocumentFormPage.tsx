@@ -34,12 +34,37 @@ import {
   updateDocument,
   type DocumentTemplate,
 } from '@/services/document.service';
+import { getFormIdToKeyMap } from './template-field-maps';
+import { getProfile } from '@/services/auth.service';
+
+/**
+ * Mapeamento dos radios do checklist (por índice) para chaves do formData.
+ * O form HTML nomeia os radios como item-0, item-1, etc.
+ */
+const checklistIndexToKey: Record<string, string> = {
+  'item-0': 'inspectionLeft.visualCheck',
+  'item-1': 'inspectionRight.mirrorsCCTV',
+  'item-2': 'inspectionLeft.brakes',
+  'item-3': 'inspectionRight.tidinessInterior',
+  'item-4': 'inspectionLeft.engineOil',
+  'item-5': 'inspectionRight.drivingControls',
+  'item-6': 'inspectionLeft.coolantLevels',
+  'item-7': 'inspectionRight.fireExtinguisher',
+  'item-8': 'inspectionLeft.tyresAndWheels',
+  'item-9': 'inspectionRight.firstAidKit',
+  'item-10': 'inspectionLeft.spareWheel',
+  'item-11': 'inspectionRight.spillKit',
+  'item-12': 'inspectionLeft.bodywork',
+  'item-13': 'inspectionRight.towBarHitch',
+  'item-14': 'inspectionLeft.hydraulics',
+  'item-15': 'inspectionRight.trailer',
+};
 
 /**
  * Extrai dados de um formulário dentro de um iframe.
- * Lê todos os inputs nomeados e retorna um objeto plano.
+ * Usa o mapeamento formIdToKey para converter IDs dos inputs em chaves do formData.
  */
-function extractFormData(iframe: HTMLIFrameElement): Record<string, any> {
+function extractFormData(iframe: HTMLIFrameElement, templateId: string): Record<string, any> {
   const doc = iframe.contentDocument;
   if (!doc) return {};
 
@@ -47,43 +72,61 @@ function extractFormData(iframe: HTMLIFrameElement): Record<string, any> {
   const form = doc.querySelector('form');
   if (!form) return {};
 
-  // Inputs nomeados (text, email, date, datetime-local, number, hidden)
+  const idToKey = getFormIdToKeyMap(templateId);
+
+  // Extrai inputs por ID (text, email, date, datetime-local, number)
   form.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>(
-    'input[name], select[name], textarea[name]'
+    'input[id], select[id], textarea[id]'
   ).forEach((el) => {
-    const name = el.name;
-    if (!name) return;
+    const id = el.id;
+    if (!id) return;
+
+    // Converte ID do form para chave do formData
+    const fieldKey = idToKey[id] || id;
 
     if (el instanceof HTMLInputElement) {
-      if (el.type === 'radio') {
-        if (el.checked) data[name] = el.value;
-      } else if (el.type === 'checkbox') {
-        // Agrupa checkboxes por name
-        if (!data[name]) data[name] = [];
-        if (el.checked) (data[name] as string[]).push(el.value);
-      } else {
-        data[name] = el.value;
-      }
+      if (el.type === 'radio' || el.type === 'checkbox') return; // tratados abaixo
+      data[fieldKey] = el.value;
     } else {
-      data[name] = el.value;
+      data[fieldKey] = el.value;
     }
   });
 
-  // Checkboxes sem name (ex: toolbox-talk) — usa id como key
-  form.querySelectorAll<HTMLInputElement>('input[type="checkbox"]:not([name])').forEach((el) => {
+  // Radios do checklist (car-daily-report): item-0, item-1, etc.
+  const checkedRadios = form.querySelectorAll<HTMLInputElement>(
+    'input[type="radio"]:checked'
+  );
+  checkedRadios.forEach((radio) => {
+    const name = radio.name; // ex: "item-3"
+    const value = radio.value; // Y, X, ou N/A
+    const checkKey = checklistIndexToKey[name];
+    if (checkKey) {
+      // Chave aninhada: 'inspectionLeft.visualCheck' → { inspectionLeft: { visualCheck: 'Y' } }
+      const parts = checkKey.split('.');
+      if (parts.length === 2) {
+        if (!data[parts[0]]) data[parts[0]] = {};
+        data[parts[0]][parts[1]] = value;
+      } else {
+        data[checkKey] = value;
+      }
+    }
+  });
+
+  // Checkboxes (toolbox-talk): sec1-1, sec1-2, etc.
+  form.querySelectorAll<HTMLInputElement>('input[type="checkbox"]').forEach((el) => {
     if (el.id && el.checked) {
       data[`check_${el.id}`] = true;
     }
   });
 
-  // Tabelas dinâmicas — extrai rows como arrays
+  // Tabelas dinâmicas (invoice: project-table, cost-table)
   const tables = form.querySelectorAll<HTMLTableElement>('table[id]');
   tables.forEach((table) => {
     const tableId = table.id;
     const rows: Record<string, string>[] = [];
     table.querySelectorAll<HTMLTableRowElement>('tbody tr').forEach((tr) => {
       const rowData: Record<string, string> = {};
-      tr.querySelectorAll<HTMLInputElement>('input').forEach((input, idx) => {
+      tr.querySelectorAll<HTMLInputElement | HTMLSelectElement>('input, select').forEach((input, idx) => {
         rowData[`col${idx}`] = input.value;
       });
       if (Object.keys(rowData).length > 0) rows.push(rowData);
@@ -110,6 +153,12 @@ export function DocumentFormPage() {
   // Estado
   const [title, setTitle] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState(templateParam);
+
+  // Busca perfil do utilizador (para assinatura)
+  const { data: profile } = useQuery({
+    queryKey: ['profile', 'current'],
+    queryFn: getProfile,
+  });
 
   // Busca templates disponíveis
   const { data: templatesData } = useQuery({
@@ -217,7 +266,13 @@ export function DocumentFormPage() {
 
       // Extrai dados do formulário no iframe
       if (iframeRef.current) {
-        const extracted = extractFormData(iframeRef.current);
+        const extracted = extractFormData(iframeRef.current, selectedTemplate);
+
+        // Adiciona assinatura do perfil se disponível
+        if (profile?.signatureData) {
+          extracted._userSignature = profile.signatureData;
+          extracted._signedByName = `${profile.firstName || ''} ${profile.lastName || ''}`.trim() || profile.email;
+        }
 
         if (isEditing) {
           updateMutation.mutate({ title: title.trim(), formData: extracted });
