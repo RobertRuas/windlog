@@ -103,8 +103,12 @@
     "closeMenu": "Close menu"
   },
   "documents": {
+    "subtitle": "Module in development",
     "underConstruction": "Module Under Construction",
-    "comingSoon": "Module in development",
-    "willBeAvailable": "The Documents module is being rebuilt and will be available soon."
+    "willBeAvailable": "The Documents module is being rebuilt and will be available soon.",
+    "whatIsComing": "What's coming:",
+    "feature_invoices": "Standardised invoice generation from templates",
+    "feature_reports": "Daily vehicle reports with inspection checklists",
+    "feature_safety": "Safety forms (Toolbox Talks) with signatures"
   }
 }

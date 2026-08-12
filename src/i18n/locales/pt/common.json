@@ -103,8 +103,12 @@
     "closeMenu": "Fechar menu"
   },
   "documents": {
+    "subtitle": "Módulo em desenvolvimento",
     "underConstruction": "Módulo em Construção",
-    "comingSoon": "Módulo em desenvolvimento",
-    "willBeAvailable": "O módulo de Documentos está a ser reconstruído e estará disponível em breve."
+    "willBeAvailable": "O módulo de Documentos está a ser reconstruído e estará disponível em breve.",
+    "whatIsComing": "O que virá:",
+    "feature_invoices": "Geração de invoices padronizadas a partir de templates",
+    "feature_reports": "Relatórios diários de veículos com checklist de inspeção",
+    "feature_safety": "Formulários de segurança (Toolbox Talks) com assinaturas"
   }
 }
