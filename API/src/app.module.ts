@@ -44,7 +44,6 @@ import { WeeklyTimesheetModule } from './modules/weekly-timesheet/weekly-timeshe
 import { FeedbackModule } from './modules/feedback/feedback.module.js';
 import { MailModule } from './modules/mail/mail.module.js';
 import { TranslationModule } from './modules/translation/translation.module.js';
-import { DocumentsModule } from './modules/documents/documents.module.js';
 
 @Module({
   imports: [
@@ -133,11 +132,6 @@ import { DocumentsModule } from './modules/documents/documents.module.js';
     // TRANSLATION MODULE - Tradução com IA (Português -> Inglês)
     // -------------------------------------------------------------------------
     TranslationModule,
-
-    // -------------------------------------------------------------------------
-    // DOCUMENTS MODULE - Gestão de Documentos Gerados (Templates HTML/SVG)
-    // -------------------------------------------------------------------------
-    DocumentsModule,
 
     // -------------------------------------------------------------------------
     // PRÓXIMOS MÓDULOS SERÃO ADICIONADOS AQUI

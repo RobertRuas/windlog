@@ -53,9 +53,7 @@ import { WeeklyTimesheetPage } from '@/pages/weekly-timesheet/WeeklyTimesheetPag
 import { WeeklyTimesheetDetailPage } from '@/pages/weekly-timesheet/WeeklyTimesheetDetailPage';
 import { FeedbacksPage } from '@/pages/feedbacks/FeedbacksPage';
 import { MailPage } from '@/pages/mail/MailPage';
-import { DocumentsPage } from '@/pages/documents/DocumentsPage';
-import { DocumentFormPage } from '@/pages/documents/DocumentFormPage';
-import { DocumentViewPage } from '@/pages/documents/DocumentViewPage';
+import { DocumentsPlaceholderPage } from '@/pages/documents/DocumentsPlaceholderPage';
 import { ErrorPage } from '@/pages/error/ErrorPage';
 
 // Serviço de autenticação
@@ -422,42 +420,20 @@ export default function App() {
             }
           />
 
-          {/* Rota protegida - listagem de documentos gerados (todos autenticados) */}
+          {/* Rota protegida - documentos (em construção) */}
           <Route
             path="/documents"
             element={
               <ProtectedRoute>
-                <DocumentsPage />
+                <DocumentsPlaceholderPage />
               </ProtectedRoute>
             }
           />
-
-          {/* Rota protegida - criar novo documento (todos autenticados) */}
           <Route
-            path="/documents/new"
+            path="/documents/*"
             element={
               <ProtectedRoute>
-                <DocumentFormPage />
-              </ProtectedRoute>
-            }
-          />
-
-          {/* Rota protegida - visualizar documento (todos autenticados) */}
-          <Route
-            path="/documents/:id"
-            element={
-              <ProtectedRoute>
-                <DocumentViewPage />
-              </ProtectedRoute>
-            }
-          />
-
-          {/* Rota protegida - editar documento (todos autenticados) */}
-          <Route
-            path="/documents/:id/edit"
-            element={
-              <ProtectedRoute>
-                <DocumentFormPage />
+                <DocumentsPlaceholderPage />
               </ProtectedRoute>
             }
           />

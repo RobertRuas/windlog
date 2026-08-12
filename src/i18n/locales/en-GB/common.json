@@ -101,5 +101,10 @@
   "ariaLabels": {
     "openMenu": "Open menu",
     "closeMenu": "Close menu"
+  },
+  "documents": {
+    "underConstruction": "Module Under Construction",
+    "comingSoon": "Module in development",
+    "willBeAvailable": "The Documents module is being rebuilt and will be available soon."
   }
 }
