@@ -6,14 +6,25 @@
 # ---------------------
 # Faz o deploy automático da aplicação sempre que há push na branch main.
 #
+# ARQUITETURA DO SERVIDOR:
+# ------------------------
+# /opt/windlog/
+# ├── docker-compose.yml        → Banco de dados PostgreSQL central (windlog-db)
+# └── windlog-app/
+#     ├── docker-compose.yml    → App windlog (Nginx + NestJS)
+#     └── repo/                 → Este repositório
+#
+# O banco de dados é PARTILHADO por todas as aplicações do servidor.
+# O deploy da app garante que o DB está running antes de iniciar.
+#
 # COMO FUNCIONA?
 # --------------
-# Usa um self-hosted runner instalado no próprio servidor (porque o
-# servidor está atrás de um IP privado sem port-forward de SSH).
+# Usa um self-hosted runner instalado no próprio servidor.
 # O runner:
-#   1. Atualiza o repositório em /opt/windlog/windlog-app/repo
-#   2. Faz rebuild e restart do container via docker compose
-#   3. Verifica se o frontend responde
+#   1. Garante que o banco de dados central está ativo
+#   2. Atualiza o repositório em /opt/windlog/windlog-app/repo
+#   3. Faz rebuild e restart do container da app
+#   4. Verifica se o frontend responde
 # ============================================================================
 
 name: Deploy
@@ -34,7 +45,14 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      # Passo 1: Atualizar código no servidor
+      # Passo 1: Garantir que o banco de dados central está running
+      - name: Garantir banco de dados ativo
+        run: |
+          cd /opt/windlog
+          docker compose up -d
+          echo "✅ Banco de dados central verificado"
+
+      # Passo 2: Atualizar código no servidor
       # (sem git clean: a pasta public/ não é versionada e é necessária no build)
       - name: Atualizar repositório
         run: |
@@ -42,13 +60,13 @@ jobs:
           git fetch origin
           git reset --hard origin/main
 
-      # Passo 2: Rebuild e restart do container
+      # Passo 3: Rebuild e restart do container da app
       - name: Rebuild e restart
         run: |
           cd /opt/windlog/windlog-app
           docker compose up -d --build
 
-      # Passo 3: Verificar se a aplicação responde
+      # Passo 4: Verificar se a aplicação responde
       - name: Verificar aplicação
         run: |
           sleep 10

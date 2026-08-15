@@ -1,0 +1,52 @@
+# ============================================================================
+# DOCKER COMPOSE - Banco de Dados Central (Servidor windlog.org)
+# ============================================================================
+#
+# INSTALAÇÃO NO SERVIDOR:
+# -----------------------
+# Copiar este ficheiro para /opt/windlog/docker-compose.yml
+#   cp docker/db-server-compose.yml /opt/windlog/docker-compose.yml
+#
+# INICIAR:
+# --------
+# cd /opt/windlog && docker compose up -d
+#
+# Este container é PARTILHADO por todas as aplicações do servidor.
+# NÃO remover — todas as apps dependem deste serviço.
+#
+# REDE:
+# -----
+# O container está na rede 'proxy-net' para ser acessível
+# por outros containers via Docker DNS (hostname: "database")
+#
+# DADOS:
+# ------
+# Os dados são persistidos no volume 'postgres_data'.
+# Para backup: docker exec windlog-db pg_dump -U windlog windlog
+# ============================================================================
+
+services:
+  database:
+    image: postgres:16-alpine
+    container_name: windlog-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: windlog
+      POSTGRES_PASSWORD: windlog_pass
+      POSTGRES_DB: windlog
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - proxy-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U windlog -d windlog"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  proxy-net:
+    external: true
+
+volumes:
+  postgres_data:

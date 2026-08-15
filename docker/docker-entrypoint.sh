@@ -5,7 +5,7 @@
 #
 # O QUE FAZ?
 # ----------
-# 1. Aguarda o PostgreSQL externo estar acessível (database.windlog.org:5432)
+# 1. Aguarda o PostgreSQL centralizado estar acessível (container windlog-db)
 # 2. Aplica migrations pendentes (prisma migrate deploy)
 # 3. Executa seed (cria usuários iniciais se não existirem)
 # 4. Inicia nginx em background
@@ -14,6 +14,7 @@
 # NOTA:
 # -----
 # O seed é idempotente: se os usuários já existem, não cria duplicados.
+# O banco de dados é partilhado por todas as aplicações do servidor.
 # ============================================================================
 
 set -e
@@ -22,9 +23,9 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo "  🚀 Windlog - Starting production container..."
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-# ── 1. Aguardar PostgreSQL externo estar pronto ─────────────────────────────
+# ── 1. Aguardar PostgreSQL centralizado estar pronto ─────────────────────────
 echo ""
-echo "📦 Aguardando PostgreSQL (database.windlog.org:5432)..."
+echo "📦 Aguardando PostgreSQL (database:5432)..."
 
 MAX_RETRIES=30
 RETRY_COUNT=0

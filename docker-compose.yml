@@ -1,12 +1,6 @@
 # ============================================================================
-# DOCKER COMPOSE - Windlog (Produção - Servidor windlog.org)
+# DOCKER COMPOSE - Windlog App (Produção - Servidor windlog.org)
 # ============================================================================
-#
-# COMO USAR:
-# ----------
-# docker compose up -d --build       # Build e start em background
-# docker compose down                # Parar e remover containers
-# docker compose logs -f             # Ver logs em tempo real
 #
 # ARQUITETURA:
 # ------------
@@ -16,8 +10,9 @@
 #
 # BANCO DE DADOS:
 # ---------------
-# PostgreSQL externo: database.windlog.org:5432
-# (Não roda localmente — usa o servidor central)
+# PostgreSQL centralizado: container "windlog-db" (hostname: "database")
+# Gerido separadamente em /opt/windlog/docker-compose.yml
+# Partilhado por TODAS as aplicações do servidor.
 #
 # ACESSO:
 # -------
@@ -42,7 +37,7 @@ services:
     restart: unless-stopped
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=postgresql://admin:windlog2024@postgres:5432/windlog
+      - DATABASE_URL=postgresql://windlog:windlog_pass@database:5432/windlog
       - PORT=3000
       - LISTEN_HOST=127.0.0.1
       - JWT_SECRET=change-this-to-a-long-random-string-in-production
@@ -61,6 +56,13 @@ services:
       - "traefik.http.routers.windlog-app.rule=Host(`app.windlog.org`)"
       - "traefik.http.routers.windlog-app.entrypoints=web"
       - "traefik.http.services.windlog-app.loadbalancer.server.port=80"
+      - "autoheal=true"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost/api/v1/health').then(r=>{if(!r.ok)throw 1})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
 networks:
   proxy-net:
